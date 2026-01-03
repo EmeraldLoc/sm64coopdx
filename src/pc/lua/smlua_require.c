@@ -96,8 +96,8 @@ static struct ModFile* smlua_find_mod_file(const char* moduleName) {
             continue;
         }
 
-        // only consider lua files
-        if (!path_ends_with(file->relativePath, ".lua") && !path_ends_with(file->relativePath, ".luac")) {
+        // only consider lua and pluto files
+        if (!path_ends_with(file->relativePath, ".lua") && !path_ends_with(file->relativePath, ".luac") && !path_ends_with(file->relativePath, ".pluto") && !path_ends_with(file->relativePath, ".plutoc")) {
             continue;
         }
 

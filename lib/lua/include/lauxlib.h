@@ -13,7 +13,9 @@
 #include <stdio.h>
 
 #ifdef _WIN32
+#ifdef __cplusplus
 #include <string>
+#endif
 #endif
 
 #include "luaconf.h"
@@ -123,8 +125,10 @@ LUALIB_API int (luaL_ref) (lua_State *L, int t);
 LUALIB_API void (luaL_unref) (lua_State *L, int t, int ref);
 
 #ifdef _WIN32
+#ifdef __cplusplus
 PLUTOLIB_API std::wstring luaL_utf8_to_utf16(const char *utf8, size_t utf8_len);
 PLUTOLIB_API std::string luaL_utf16_to_utf8(const wchar_t *utf16, size_t utf16_len);
+#endif
 #endif
 
 LUALIB_API FILE* (luaL_fopen) (const char *filename, size_t filename_len,

@@ -23,7 +23,7 @@ size_t mod_get_lua_size(struct Mod* mod) {
 
     for (int i = 0; i < mod->fileCount; i++) {
         struct ModFile* file = &mod->files[i];
-        if (!(path_ends_with(file->relativePath, ".lua") || path_ends_with(file->relativePath, ".luac"))) { continue; }
+        if (!(path_ends_with(file->relativePath, ".lua") || path_ends_with(file->relativePath, ".luac") || path_ends_with(file->relativePath, ".pluto") || path_ends_with(file->relativePath, ".plutoc"))) { continue; }
         size += file->size;
     }
 
@@ -363,7 +363,7 @@ static bool mod_load_files(struct Mod* mod, char* fullPath) {
 
     // deal with mod directory
     {
-        const char* fileTypes[] = { ".lua", ".luac", NULL };
+        const char* fileTypes[] = { ".lua", ".luac", ".pluto", ".plutoc", NULL };
         if (!mod_load_files_dir(mod, fullPath, "", fileTypes, true)) { return false; }
     }
 
@@ -562,7 +562,7 @@ bool mod_load(struct Mods* mods, char* basePath, char* modName) {
     bool isDirectory = fs_sys_dir_exists(fullPath);
 
     // make sure mod is valid
-    if (path_ends_with(modName, ".lua")) {
+    if (path_ends_with(modName, ".lua") || path_ends_with(modName, ".pluto")) {
         valid = true;
     } else if (fs_sys_dir_exists(fullPath)) {
         char tmpPath[SYS_MAX_PATH] = { 0 };

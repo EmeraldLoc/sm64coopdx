@@ -118,6 +118,7 @@ static bool mod_fs_get_modpath(const char *modPath, char *dest) {
         return false;
     }
     char *ext = strstr(dest, ".lua");
+    if (!ext) ext = strstr(dest, ".pluto");
     if (ext) *ext = 0;
     return true;
 }

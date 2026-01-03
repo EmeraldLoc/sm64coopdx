@@ -320,12 +320,29 @@ void smlua_init(void) {
     luaL_requiref(L, "io", luaopen_io, 1);
     luaL_requiref(L, "os", luaopen_os, 1);
     luaL_requiref(L, "package", luaopen_package, 1);
+    luaL_requiref(L, "http", luaopen_http, 1);
+    luaL_requiref(L, "ffi", luaopen_ffi, 1);
+    luaL_requiref(L, "socket", luaopen_socket, 1);
 #endif
     luaL_requiref(L, "math", luaopen_math, 1);
     luaL_requiref(L, "string", luaopen_string, 1);
     luaL_requiref(L, "table", luaopen_table, 1);
     luaL_requiref(L, "coroutine", luaopen_coroutine, 1);
     luaL_requiref(L, "utf8", luaopen_utf8, 1);
+    luaL_requiref(L, "crypto", luaopen_crypto, 1);
+    luaL_requiref(L, "json", luaopen_json, 1);
+    luaL_requiref(L, "base32", luaopen_base32, 1);
+    luaL_requiref(L, "base64", luaopen_base64, 1);
+    luaL_requiref(L, "assert", luaopen_assert, 1);
+    luaL_requiref(L, "vector3", luaopen_vector3, 1);
+    luaL_requiref(L, "url", luaopen_url, 1);
+    luaL_requiref(L, "cat", luaopen_cat, 1);
+    luaL_requiref(L, "scheduler", luaopen_scheduler, 1);
+    luaL_requiref(L, "bigint", luaopen_bigint, 1);
+    luaL_requiref(L, "xml", luaopen_xml, 1);
+    luaL_requiref(L, "regex", luaopen_regex, 1);
+    luaL_requiref(L, "canvas", luaopen_canvas, 1);
+    luaL_requiref(L, "buffer", luaopen_buffer, 1);
 
     smlua_bind_hooks();
     smlua_bind_cobject();
@@ -353,8 +370,8 @@ void smlua_init(void) {
         gPcDebug.lastModRun = gLuaActiveMod;
         for (int j = 0; j < mod->fileCount; j++) {
             struct ModFile* file = &mod->files[j];
-            // skip loading non-lua files
-            if (!(path_ends_with(file->relativePath, ".lua") || path_ends_with(file->relativePath, ".luac"))) {
+            // skip loading non-lua and non-pluto files
+            if (!(path_ends_with(file->relativePath, ".lua") || path_ends_with(file->relativePath, ".luac") || path_ends_with(file->relativePath, ".pluto") || path_ends_with(file->relativePath, ".plutoc"))) {
                 continue;
             }
 
