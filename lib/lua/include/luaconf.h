@@ -314,7 +314,7 @@
 // Additions by Pluto that are not compatible with `extern "C"` use PLUTO_API instead of LUA_API.
 #define PLUTO_API	PLUTO_DLLSPEC
 
-#ifdef __cplusplus
+#ifdef PLUTO_FOR_CPP
   #define LUA_API          extern "C" PLUTO_API
   #define LUA_API_NORETURN extern "C" [[noreturn]] PLUTO_API
 #else

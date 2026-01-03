@@ -11,7 +11,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
-#ifdef __cplusplus
+#ifdef PLUTO_FOR_CPP
 #include <string>
 #include <string_view>
 #endif
@@ -258,7 +258,7 @@ LUA_API const char *(lua_pushlstring) (lua_State *L, const char *s, size_t len);
 LUA_API const char *(lua_pushextlstring) (lua_State *L,
 		const char *s, size_t len, lua_Alloc falloc, void *ud);
 LUA_API const char *(lua_pushstring) (lua_State *L, const char *s);
-#ifdef __cplusplus
+#ifdef PLUTO_FOR_CPP
 PLUTO_API const char *(pluto_pushstring) (lua_State* L, const std::string& str);
 //PLUTO_API const char *(pluto_pushstring) (lua_State* L, const std::string_view&& str);
 #endif
