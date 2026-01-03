@@ -399,18 +399,22 @@ static void djui_text_destroy(struct DjuiBase* base) {
     free(text);
 }
 
-struct DjuiText* djui_text_create(struct DjuiBase* parent, const char* message) {
+struct DjuiText* djui_text_create_with_font(struct DjuiBase* parent, const char* message, const struct DjuiFont *font) {
     struct DjuiText* text = calloc(1, sizeof(struct DjuiText));
     struct DjuiBase* base = &text->base;
 
     djui_base_init(parent, base, djui_text_render, djui_text_destroy);
 
     text->message = NULL;
-    djui_text_set_font(text, gDjuiFonts[configDjuiThemeFont == 0 ? FONT_NORMAL : FONT_ALIASED]);
+    djui_text_set_font(text, font);
     djui_text_set_font_scale(text, text->font->defaultFontScale);
     djui_text_set_text(text, message);
     djui_text_set_alignment(text, DJUI_HALIGN_LEFT, DJUI_VALIGN_TOP);
     djui_text_set_drop_shadow(text, 0, 0, 0, 0);
 
     return text;
+}
+
+struct DjuiText* djui_text_create(struct DjuiBase* parent, const char* message) {
+    return djui_text_create_with_font(parent, message, gDjuiFonts[configDjuiThemeFont == 0 ? FONT_NORMAL : FONT_ALIASED]);
 }

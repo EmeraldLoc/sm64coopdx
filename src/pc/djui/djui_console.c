@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "djui.h"
+#include "djui_unicode.h"
 #include "djui_console.h"
 #include "pc/pc_main.h"
 #include "engine/math_util.h"
@@ -131,6 +132,38 @@ static bool djui_console_on_key_down(UNUSED struct DjuiBase* base, int scancode)
     return true;
 }
 
+static void djui_font_mono_render_char(char* c) {
+    // replace undisplayable characters
+    if (*c == ' ') { return; }
+
+    u32 index = djui_unicode_get_sprite_index(c);
+    u32 tx = index % 32;
+    u32 ty = index / 32;
+    extern ALIGNED8 const Texture texture_font_special[];
+    djui_gfx_render_texture_tile(texture_font_special, 256, 128, G_IM_FMT_RGBA, G_IM_SIZ_32b, tx * 8, ty * 16, 8, 16, false, true);
+
+}
+
+static f32 djui_font_mono_char_width(UNUSED char* c) {
+    return 0.5f;
+}
+
+static const struct DjuiFont sDjuiFontMono = {
+    .charWidth            = 0.5f,
+    .charHeight           = 1.0f,
+    .lineHeight           = 0.8125f,
+    .xOffset              = 0.0f,
+    .yOffset              = 0.0f,
+    .defaultFontScale     = 32.0f,
+    .textBeginDisplayList = NULL,
+    .render_char          = djui_font_mono_render_char,
+    .char_width           = djui_font_mono_char_width,
+};
+
+struct DjuiText* djui_text_create_console(struct DjuiBase* parent, const char* message) {
+    return djui_text_create_with_font(parent, message, &sDjuiFontMono);
+}
+
 void djui_console_message_create(const char* message, enum ConsoleMessageLevel level) {
     if (sDjuiConsoleQueueMessages || !gDjuiConsole) {
         djui_console_message_queue(message, level);
@@ -142,7 +175,7 @@ void djui_console_message_create(const char* message, enum ConsoleMessageLevel l
 
     f32 maxTextWidth = gDjuiConsole->base.comp.width - gDjuiConsole->base.padding.left.value - gDjuiConsole->base.padding.right.value;
 
-    struct DjuiText* text = djui_text_create(cfBase, message);
+    struct DjuiText* text = djui_text_create_console(cfBase, message);
     struct DjuiBase* tBase = &text->base;
     djui_base_set_alignment(tBase, DJUI_HALIGN_LEFT, DJUI_VALIGN_BOTTOM);
     djui_base_set_size_type(tBase, DJUI_SVT_ABSOLUTE, DJUI_SVT_ABSOLUTE);

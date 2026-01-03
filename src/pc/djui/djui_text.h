@@ -20,4 +20,5 @@ void djui_text_set_alignment(struct DjuiText* text, enum DjuiHAlign hAlign, enum
 int djui_text_count_lines(struct DjuiText* text, u16 maxLines);
 f32 djui_text_find_width(struct DjuiText* text, u16 maxLines);
 
+struct DjuiText* djui_text_create_with_font(struct DjuiBase* parent, const char* message, const struct DjuiFont *font);
 struct DjuiText* djui_text_create(struct DjuiBase* parent, const char* message);
