@@ -15,6 +15,9 @@
 #include "pc/djui/djui.h"
 #include "pc/fs/fmem.h"
 
+static const char PLUTO_COMPAT_MODE[] = "pluto_use * = false\n";
+static const size_t PLUTO_COMPAT_MODE_LENGTH = sizeof(PLUTO_COMPAT_MODE) - 1;
+
 lua_State* gLuaState = NULL;
 u8 gLuaInitializingScript = 0;
 u8 gSmLuaSuppressErrors = 0;
@@ -86,7 +89,7 @@ void smlua_exec_str(const char* str) {
 #define LUA_BOM_11 0x0000000000005678llu
 #define LUA_BOM_19 0x4077280000000000llu
 
-static bool smlua_check_binary_header(struct ModFile *file) {
+static bool smlua_check_binary_header(struct ModFile *file, bool *isBinary) {
     FILE *f = f_open_r(file->cachedPath);
     if (f) {
 
@@ -102,6 +105,7 @@ static bool smlua_check_binary_header(struct ModFile *file) {
         // Check signature
         if (strcmp(signature, LUA_SIGNATURE) != 0) {
             f_close(f);
+            *isBinary = false;
             return true; // Not a binary lua
         }
 
@@ -189,6 +193,7 @@ static bool smlua_check_binary_header(struct ModFile *file) {
 
         // All's good
         f_close(f);
+        *isBinary = true;
         return true;
     }
     LOG_LUA("Failed to load lua script '%s': File not found.", file->cachedPath);
@@ -197,7 +202,8 @@ static bool smlua_check_binary_header(struct ModFile *file) {
 
 int smlua_load_script(struct Mod* mod, struct ModFile* file, u16 remoteIndex, bool isModInit) {
     int rc = LUA_OK;
-    if (!smlua_check_binary_header(file)) { return LUA_ERRMEM; }
+    bool isBinary;
+    if (!smlua_check_binary_header(file, &isBinary)) { return LUA_ERRMEM; }
 
     lua_State* L = gLuaState;
 
@@ -215,9 +221,13 @@ int smlua_load_script(struct Mod* mod, struct ModFile* file, u16 remoteIndex, bo
         return LUA_ERRFILE;
     }
 
+    // Enable pluto compatibility mode for .lua files
+    bool enablePlutoCompatMode = (!isBinary && str_ends_with(file->relativePath, ".lua"));
+
     f_seek(f, 0, SEEK_END);
-    size_t length = f_tell(f);
-    void *buffer = calloc(length + 1, 1);
+    size_t lengthToRead = f_tell(f);
+    size_t lengthToLoad = lengthToRead + (enablePlutoCompatMode ? PLUTO_COMPAT_MODE_LENGTH : 0);
+    void *buffer = calloc(lengthToLoad + 1, 1);
     if (!buffer) {
         LOG_LUA("Failed to load lua script '%s': Cannot allocate buffer.", file->cachedPath);
         gLuaInitializingScript = 0;
@@ -225,8 +235,15 @@ int smlua_load_script(struct Mod* mod, struct ModFile* file, u16 remoteIndex, bo
         return LUA_ERRMEM;
     }
 
+    // Add PLUTO_COMPAT_MODE at the top of the file to enable compatibility mode
+    void *head = buffer;
+    if (enablePlutoCompatMode) {
+        memcpy(head, PLUTO_COMPAT_MODE, PLUTO_COMPAT_MODE_LENGTH);
+        head += PLUTO_COMPAT_MODE_LENGTH;
+    }
+
     f_rewind(f);
-    if (f_read(buffer, 1, length, f) < length) {
+    if (f_read(head, 1, lengthToRead, f) < lengthToRead) {
         LOG_LUA("Failed to load lua script '%s': Unexpected early end of file.", file->cachedPath);
         gLuaInitializingScript = 0;
         lua_settop(L, prevTop);
@@ -235,7 +252,7 @@ int smlua_load_script(struct Mod* mod, struct ModFile* file, u16 remoteIndex, bo
     f_close(f);
     f_delete(f);
 
-    rc = luaL_loadbuffer(L, buffer, length, file->cachedPath);
+    rc = luaL_loadbuffer(L, buffer, lengthToLoad, file->cachedPath);
     if (rc != LUA_OK) { // only run on success
         LOG_LUA("Failed to load lua script '%s'.", file->cachedPath);
         LOG_LUA("%s", smlua_to_string(L, lua_gettop(L)));
