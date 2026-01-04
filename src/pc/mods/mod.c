@@ -427,7 +427,7 @@ static void mod_extract_fields(struct Mod* mod) {
     if (mod->isDirectory) {
         for (int i = 0; i < mod->fileCount; i++) {
             struct ModFile* file = &mod->files[i];
-            if (!strcmp(file->relativePath, "main.lua")) {
+            if (!(strcmp(file->relativePath, "main.lua")) || !(strcmp(file->relativePath, "main.pluto"))) {
                 relativePath = file->relativePath;
             }
         }
@@ -436,7 +436,7 @@ static void mod_extract_fields(struct Mod* mod) {
     }
 
     if (relativePath == NULL || !concat_path(path, mod->basePath, relativePath)) {
-        LOG_ERROR("Failed to find main lua file.");
+        LOG_ERROR("Failed to find main script file.");
         return;
     }
 
@@ -571,6 +571,14 @@ bool mod_load(struct Mods* mods, char* basePath, char* modName) {
             return true;
         }
         valid = fs_sys_path_exists(tmpPath);
+        if (!valid) {
+            tmpPath[0] = '\0';
+            if (!concat_path(tmpPath, fullPath, "main.pluto")) {
+                LOG_ERROR("Failed to concat path '%s' + '%s'", fullPath, "main.pluto");
+                return true;
+            }
+            valid = fs_sys_path_exists(tmpPath);
+        }
     }
 
     if (!valid) {
