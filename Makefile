@@ -999,7 +999,7 @@ endif
 
 # Network/Discord (ugh, needs cleanup)
 ifeq ($(WINDOWS_BUILD),1)
-  LDFLAGS += -lws2_32 -lwsock32
+  LDFLAGS += -lws2_32 -lwsock32 -ldnsapi
   ifeq ($(DISCORD_SDK),1)
     LDFLAGS += -Wl,-Bdynamic -L./lib/discordsdk/ -ldiscord_game_sdk -Wl,-Bstatic
   endif
