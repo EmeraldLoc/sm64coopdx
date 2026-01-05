@@ -941,6 +941,7 @@ else
 endif
 
 # Lua
+PLUTO_LIBS :=
 ifeq ($(WINDOWS_BUILD),1)
   ifeq ($(TARGET_BITS), 32)
     LDFLAGS += -Llib/lua/win32 -l:liblua53.a
@@ -949,9 +950,11 @@ ifeq ($(WINDOWS_BUILD),1)
   endif
 else ifeq ($(OSX_BUILD),1)
   ifeq ($(shell uname -m),arm64)
-    LDFLAGS += -L./lib/lua/mac_arm/ -l lua53
+    LDFLAGS += -L./lib/lua/mac_arm/ -l pluto
+    PLUTO_LIBS = ./lib/lua/mac_arm/libpluto.dylib
   else
-    LDFLAGS += -L./lib/lua/mac_intel/ -l lua53
+    LDFLAGS += -L./lib/lua/mac_intel/ -l pluto
+    PLUTO_LIBS = ./lib/lua/mac_intel/libpluto.dylib
   endif
 else ifeq ($(TARGET_RPI),1)
 	ifneq (,$(findstring aarch64,$(machine)))
@@ -1213,6 +1216,9 @@ $(BUILD_DIR)/$(RPC_LIBS):
 
 $(BUILD_DIR)/$(DISCORD_SDK_LIBS):
 	@$(CP) -f $(DISCORD_SDK_LIBS) $(BUILD_DIR)
+
+$(BUILD_DIR)/$(PLUTO_LIBS):
+	@$(CP) -f $(PLUTO_LIBS) $(BUILD_DIR)
 
 $(BUILD_DIR)/$(COOPNET_LIBS):
 	@$(CP) -f $(COOPNET_LIBS) $(BUILD_DIR)
@@ -1565,7 +1571,7 @@ ifeq ($(TARGET_N64),1)
   $(BUILD_DIR)/$(TARGET).objdump: $(ELF)
 	$(OBJDUMP) -D $< > $@
 else
-  $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(COOPNET_LIBS) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
+  $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(PLUTO_LIBS) $(BUILD_DIR)/$(COOPNET_LIBS) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
 	@$(PRINT) "$(GREEN)Linking executable: $(BLUE)$@ $(NO_COL)\n"
 	$(V)$(LD) $(PROF_FLAGS) -L $(BUILD_DIR) -o $@ $(O_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
 endif
@@ -1604,6 +1610,7 @@ all:
     cp build/us_pc/libdiscord_game_sdk.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libcoopnet.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libjuice.1.6.2.dylib $(APP_MACOS_DIR); \
+    cp build/us_pc/libpluto.dylib $(APP_MACOS_DIR); \
     cp $(SDL2_LIB) $(APP_MACOS_DIR)/libSDL2.dylib; \
     install_name_tool -change $(BREW_PREFIX)/opt/sdl2/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2.dylib $(APP_MACOS_DIR)/sm64coopdx; > /dev/null 2>&1 \
 		install_name_tool -id @executable_path/libSDL2.dylib $(APP_MACOS_DIR)/libSDL2.dylib; > /dev/null 2>&1 \
