@@ -272,7 +272,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 #ifdef USE_GLES
     append_line(vs_buf, &vs_len, "#version 300 es");
 #else
-    append_line(vs_buf, &vs_len, "#version 130");
+    append_line(vs_buf, &vs_len, "#version 150");
 #endif
     append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
     if (ccf.used_textures[0] || ccf.used_textures[1]) {
@@ -316,7 +316,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     append_line(fs_buf, &fs_len, "#version 300 es");
     append_line(fs_buf, &fs_len, "precision mediump float;");
 #else
-    append_line(fs_buf, &fs_len, "#version 130");
+    append_line(fs_buf, &fs_len, "#version 150");
 #endif
 
     if (ccf.used_textures[0] || ccf.used_textures[1]) {
@@ -332,6 +332,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     for (int i = 0; i < ccf.num_inputs; i++) {
         fs_len += sprintf(fs_buf + fs_len, "in vec%d vInput%d;\n", opt_alpha ? 4 : 3, i + 1);
     }
+    append_line(fs_buf, &fs_len, "out vec4 FragColor;");
     if (ccf.used_textures[0]) {
         append_line(fs_buf, &fs_len, "uniform sampler2D uTex0;");
         append_line(fs_buf, &fs_len, "uniform vec2 uTex0Size;");
@@ -347,7 +348,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     // Original author: ArthurCarvalho
     // Modified GLSL implementation by twinaphex, mupen64plus-libretro project.
     if (ccf.used_textures[0] || ccf.used_textures[1]) {
-        append_line(fs_buf, &fs_len, "#define TEX_OFFSET(off) texture2D(tex, texCoord - (off)/texSize)");
+        append_line(fs_buf, &fs_len, "#define TEX_OFFSET(off) texture(tex, texCoord - (off)/texSize)");
         append_line(fs_buf, &fs_len, "vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {");
         append_line(fs_buf, &fs_len, "    vec2 offset = fract(texCoord*texSize - vec2(0.5));");
         append_line(fs_buf, &fs_len, "    offset -= step(1.0, offset.x + offset.y);");
@@ -360,7 +361,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         append_line(fs_buf, &fs_len, "    if (doFilter && filterType == 2)");
         append_line(fs_buf, &fs_len, "        return filter3point(tex, uv, texSize);");
         append_line(fs_buf, &fs_len, "    else");
-        append_line(fs_buf, &fs_len, "        return texture2D(tex, uv);");
+        append_line(fs_buf, &fs_len, "        return texture(tex, uv);");
         append_line(fs_buf, &fs_len, "}");
     }
 
@@ -436,9 +437,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     }
 
     if (opt_alpha) {
-        append_line(fs_buf, &fs_len, "gl_FragColor = texel;");
+        append_line(fs_buf, &fs_len, "FragColor = texel;");
     } else {
-        append_line(fs_buf, &fs_len, "gl_FragColor = vec4(texel, 1.0);");
+        append_line(fs_buf, &fs_len, "FragColor = vec4(texel, 1.0);");
     }
     append_line(fs_buf, &fs_len, "}");
 
