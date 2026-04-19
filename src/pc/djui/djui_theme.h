@@ -7,7 +7,7 @@
 #define DJUI_THEME_CENTERED_WIDTH 1.3f
 #define DJUI_THEME_CENTERED_HEIGHT 0.921f
 
-enum DjuiThemeType {
+enum DjuiBuiltinThemes {
     DJUI_THEME_LIGHT,
     DJUI_THEME_DARK,
     DJUI_THEME_COUNT
