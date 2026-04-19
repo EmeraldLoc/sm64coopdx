@@ -41,6 +41,7 @@
 #endif
 
 static struct DateTime sDateTime;
+static struct DjuiTheme sRefDjuiTheme = { 0 };
 
 ///
 
@@ -121,7 +122,8 @@ enum DjuiFontType djui_menu_get_font(void) {
 }
 
 struct DjuiTheme* djui_menu_get_theme(void) {
-    return &configDjuiTheme;
+    sRefDjuiTheme = configDjuiTheme;
+    return &sRefDjuiTheme;
 }
 
 bool djui_is_playerlist_ping_visible(void) {
