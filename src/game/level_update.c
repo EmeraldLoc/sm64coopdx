@@ -43,6 +43,7 @@
 #include "pc/configfile.h"
 #include "pc/network/network.h"
 #include "pc/djui/djui.h"
+#include "pc/djui/djui_hud_utils.h"
 // used for getting gMainMenuSounds
 #include "pc/djui/djui_panel_menu_options.h"
 #include "pc/lua/smlua_hooks.h"
@@ -878,8 +879,7 @@ void verify_warp(struct MarioState *m, bool killMario) {
         return;
     }
 
-    m->numLives--;
-    if (m->numLives < 0) {
+    if (m->numLives <= 0) {
         sDelayedWarpOp = WARP_OP_GAME_OVER;
     } else {
         sSourceWarpNodeId = WARP_NODE_DEATH;
@@ -934,8 +934,7 @@ s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
                 break;
 
             case WARP_OP_DEATH:
-                m->numLives--;
-                if (m->numLives <= -1) {
+                if (m->numLives <= 0) {
                     sDelayedWarpOp = WARP_OP_GAME_OVER;
                 }
                 sDelayedWarpTimer = 48;
@@ -1766,6 +1765,7 @@ s32 update_level(void) {
 s32 init_level(void) {
     sync_objects_clear();
     geo_clear_interp_data();
+    djui_hud_clear_interp_data();
     reset_dialog_render_state();
 
     s32 val4 = 0;
@@ -1938,7 +1938,6 @@ s32 lvl_init_from_save_file(UNUSED s16 arg0, s16 levelNum) {
     disable_warp_checkpoint();
     save_file_move_cap_to_default_location();
     select_mario_cam_mode();
-    set_yoshi_as_not_dead();
 
     return levelNum;
 }
@@ -2028,7 +2027,6 @@ void fake_lvl_init_from_save_file(void) {
     disable_warp_checkpoint();
     save_file_move_cap_to_default_location();
     select_mario_cam_mode();
-    set_yoshi_as_not_dead();
     fadeout_music(30);
 
     gChangeLevel = gLevelValues.entryLevel;

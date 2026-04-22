@@ -4641,6 +4641,15 @@ GRAB_POS_BOWSER    = 3 --- @type MarioGrabPosGSCId
 --- | `GRAB_POS_BOWSER`
 
 --- @type integer
+MOD_FS_COMPRESSION_MIN = 0
+
+--- @type integer
+MOD_FS_COMPRESSION_MAX = 9
+
+--- @type integer
+MOD_FS_COMPRESSION_DEFAULT = 1
+
+--- @type integer
 MOD_FS_MAX_SIZE = 0x2000000
 
 --- @type integer
@@ -5625,6 +5634,12 @@ YOSHI_ACT_FINISH_JUMPING_AND_DESPAWN = 4
 
 --- @type integer
 YOSHI_ACT_GIVE_PRESENT = 5
+
+--- @type integer
+YOSHI_ACT_GONE = 6
+
+--- @type integer
+YOSHI_ACT_REAPPEAR = 7
 
 --- @type integer
 YOSHI_ACT_CREDITS = 10
@@ -8207,7 +8222,14 @@ HOOK_MARIO_OVERRIDE_FLOOR_CLASS             = 56 --- @type LuaHookedEventType
 HOOK_ON_ADD_SURFACE                         = 57 --- @type LuaHookedEventType
 HOOK_ON_CLEAR_AREAS                         = 58 --- @type LuaHookedEventType
 HOOK_ON_PACKET_BYTESTRING_RECEIVE           = 59 --- @type LuaHookedEventType
-HOOK_MAX                                    = 60 --- @type LuaHookedEventType
+HOOK_ON_FIND_WALL_COLLISION                 = 60 --- @type LuaHookedEventType
+HOOK_ON_FIND_CEIL                           = 61 --- @type LuaHookedEventType
+HOOK_ON_FIND_FLOOR                          = 62 --- @type LuaHookedEventType
+HOOK_ON_FIND_WATER_LEVEL                    = 63 --- @type LuaHookedEventType
+HOOK_ON_FIND_POISON_GAS_LEVEL               = 64 --- @type LuaHookedEventType
+HOOK_ON_FIND_SURFACE_ON_RAY                 = 65 --- @type LuaHookedEventType
+HOOK_ON_DYNOS_PACK_TOGGLED                  = 66 --- @type LuaHookedEventType
+HOOK_MAX                                    = 67 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8270,6 +8292,13 @@ HOOK_MAX                                    = 60 --- @type LuaHookedEventType
 --- | `HOOK_ON_ADD_SURFACE`
 --- | `HOOK_ON_CLEAR_AREAS`
 --- | `HOOK_ON_PACKET_BYTESTRING_RECEIVE`
+--- | `HOOK_ON_FIND_WALL_COLLISION`
+--- | `HOOK_ON_FIND_CEIL`
+--- | `HOOK_ON_FIND_FLOOR`
+--- | `HOOK_ON_FIND_WATER_LEVEL`
+--- | `HOOK_ON_FIND_POISON_GAS_LEVEL`
+--- | `HOOK_ON_FIND_SURFACE_ON_RAY`
+--- | `HOOK_ON_DYNOS_PACK_TOGGLED`
 --- | `HOOK_MAX`
 
 --- @type integer
@@ -11254,7 +11283,7 @@ COOP_OBJ_FLAG_NON_SYNC = (1 << 2)
 COOP_OBJ_FLAG_INITIALIZED = (1 << 3)
 
 --- @type string
-SM64COOPDX_VERSION = "v1.4.1"
+SM64COOPDX_VERSION = "v1.4.2"
 
 --- @type string
 VERSION_TEXT = "v"

@@ -1516,7 +1516,7 @@ u32 interact_player_pvp(struct MarioState* attacker, struct MarioState* victim) 
     // see if it was an attack
     u32 interaction = determine_interaction(attacker, cVictim->marioObj);
     // Specfically override jump kicks to prevent low damage and low knockback kicks
-    if (attacker->action == ACT_JUMP_KICK) { interaction = INT_KICK; }
+    if (attacker->action == ACT_JUMP_KICK && attacker->flags & MARIO_KICKING) { interaction = INT_KICK; }
     // Allow rollouts to attack
     else if (PLAYER_IN_ROLLOUT_FLIP(attacker)) { interaction = INT_HIT_FROM_BELOW; }
     if (!(interaction & INT_ANY_ATTACK) || (interaction & INT_HIT_FROM_ABOVE) || !passes_pvp_interaction_checks(attacker, cVictim)) {
@@ -2445,7 +2445,7 @@ void check_death_barrier(struct MarioState *m) {
         smlua_call_event_hooks(HOOK_ON_DEATH, m, &allowDeath);
         if (!allowDeath) { return; }
 
-        if (mario_can_bubble(m)) {
+        if ((mario_can_bubble(m) && m->numLives > 0)) {
             switch (gCurrCourseNum) {
                 case COURSE_COTMC:    // (20) Cavern of the Metal Cap
                 case COURSE_TOTWC:    // (21) Tower of the Wing Cap
