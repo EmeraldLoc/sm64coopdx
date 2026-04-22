@@ -4641,6 +4641,15 @@ GRAB_POS_BOWSER    = 3 --- @type MarioGrabPosGSCId
 --- | `GRAB_POS_BOWSER`
 
 --- @type integer
+MOD_FS_COMPRESSION_MIN = 0
+
+--- @type integer
+MOD_FS_COMPRESSION_MAX = 9
+
+--- @type integer
+MOD_FS_COMPRESSION_DEFAULT = 1
+
+--- @type integer
 MOD_FS_MAX_SIZE = 0x2000000
 
 --- @type integer
@@ -8213,9 +8222,10 @@ HOOK_ON_FIND_FLOOR                          = 62 --- @type LuaHookedEventType
 HOOK_ON_FIND_WATER_LEVEL                    = 63 --- @type LuaHookedEventType
 HOOK_ON_FIND_POISON_GAS_LEVEL               = 64 --- @type LuaHookedEventType
 HOOK_ON_FIND_SURFACE_ON_RAY                 = 65 --- @type LuaHookedEventType
-HOOK_BEFORE_PLAY_MODE_UPDATE                = 66 --- @type LuaHookedEventType
-HOOK_ON_PLAY_MODE_UPDATE                    = 67 --- @type LuaHookedEventType
-HOOK_MAX                                    = 68 --- @type LuaHookedEventType
+HOOK_ON_DYNOS_PACK_TOGGLED                  = 66 --- @type LuaHookedEventType
+HOOK_BEFORE_PLAY_MODE_UPDATE                = 67 --- @type LuaHookedEventType
+HOOK_ON_PLAY_MODE_UPDATE                    = 68 --- @type LuaHookedEventType
+HOOK_MAX                                    = 69 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8284,6 +8294,7 @@ HOOK_MAX                                    = 68 --- @type LuaHookedEventType
 --- | `HOOK_ON_FIND_WATER_LEVEL`
 --- | `HOOK_ON_FIND_POISON_GAS_LEVEL`
 --- | `HOOK_ON_FIND_SURFACE_ON_RAY`
+--- | `HOOK_ON_DYNOS_PACK_TOGGLED`
 --- | `HOOK_BEFORE_PLAY_MODE_UPDATE`
 --- | `HOOK_ON_PLAY_MODE_UPDATE`
 --- | `HOOK_MAX`
