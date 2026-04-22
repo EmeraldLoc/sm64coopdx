@@ -118,6 +118,7 @@ override_disallowed_functions = {
     "src/game/mario.h":                         [ " init_mario" ],
     "src/pc/djui/djui_console.h":               [ " djui_console_create", "djui_console_message_create", "djui_console_message_dequeue" ],
     "src/pc/djui/djui_chat_message.h":          [ "create_from" ],
+    "src/pc/djui/djui_hud_utils.h":             [ "djui_hud_clear_interp_data" ],
     "src/game/interaction.h":                   [ "process_interaction", "_handle_" ],
     "src/game/save_file.h":                     [ "save_file_get_all_filenames", "save_file_get_dir", "save_file_get_first_available_index", "save_file_get_amount_of_available_indexes", "save_file_get_first_active_index", "save_file_rename_file" ],
     "src/game/sound_init.h":                    [ "_loop_", "thread4_", "set_sound_mode" ],
@@ -952,7 +953,7 @@ def build_function(function, do_extern):
             sparam = build_param(fid, param, i)
             param_var, param_value = sparam.split('=')
             param_type = param_var.replace(pid, '').strip()
-            s += '    %s = (%s) NULL;\n' % (param_var.strip(), param_type)
+            s += '    %s = (%s) %s;\n' % (param_var.strip(), param_type, "NULL" if '*' in param_type else "0")
             s += '    if (top >= %d) {\n' % (i)
             s += '        %s = %s\n' % (pid, param_value.strip())
             s += '        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %%u for function \'%%s\'", %d, "%s"); return 0; }\n' % (i, fid)
@@ -1343,7 +1344,7 @@ def doc_function(fname, function):
         s += '- None\n'
 
     s += '\n### Returns\n'
-    if rtype != None:
+    if len(rvalues) > 0:
         for _, ptype, plink in rvalues:
             if plink:
                 s += '- [%s](%s)\n' % (ptype, plink)

@@ -12318,7 +12318,60 @@ int smlua_func_djui_hud_reset_color(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_djui_hud_get_rotation(UNUSED lua_State* L) {
+int smlua_func_djui_hud_get_text_color(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_hud_get_text_color", 0, top);
+        return 0;
+    }
+
+
+    smlua_push_object(L, LOT_DJUICOLOR, djui_hud_get_text_color(), NULL);
+
+    return 1;
+}
+
+int smlua_func_djui_hud_set_text_color(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 4) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_hud_set_text_color", 4, top);
+        return 0;
+    }
+
+    u8 r = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_set_text_color"); return 0; }
+    u8 g = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "djui_hud_set_text_color"); return 0; }
+    u8 b = smlua_to_integer(L, 3);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "djui_hud_set_text_color"); return 0; }
+    u8 a = smlua_to_integer(L, 4);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "djui_hud_set_text_color"); return 0; }
+
+    djui_hud_set_text_color(r, g, b, a);
+
+    return 1;
+}
+
+int smlua_func_djui_hud_reset_text_color(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_hud_reset_text_color", 0, top);
+        return 0;
+    }
+
+
+    djui_hud_reset_text_color();
+
+    return 1;
+}
+
+int smlua_func_djui_hud_get_rotation(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -12328,9 +12381,17 @@ int smlua_func_djui_hud_get_rotation(UNUSED lua_State* L) {
     }
 
 
-    smlua_push_object(L, LOT_HUDUTILSROTATION, djui_hud_get_rotation(), NULL);
+    s16 rotation;
+    f32 pivotX;
+    f32 pivotY;
 
-    return 1;
+    djui_hud_get_rotation(&rotation, &pivotX, &pivotY);
+
+    lua_pushinteger(L, rotation);
+    lua_pushnumber(L, pivotX);
+    lua_pushnumber(L, pivotY);
+
+    return 3;
 }
 
 int smlua_func_djui_hud_set_rotation(lua_State* L) {
@@ -12363,13 +12424,13 @@ int smlua_func_djui_hud_set_rotation_interpolated(lua_State* L) {
         return 0;
     }
 
-    s32 prevRotation = smlua_to_integer(L, 1);
+    s16 prevRotation = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_set_rotation_interpolated"); return 0; }
     f32 prevPivotX = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "djui_hud_set_rotation_interpolated"); return 0; }
     f32 prevPivotY = smlua_to_number(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "djui_hud_set_rotation_interpolated"); return 0; }
-    s32 rotation = smlua_to_integer(L, 4);
+    s16 rotation = smlua_to_integer(L, 4);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "djui_hud_set_rotation_interpolated"); return 0; }
     f32 pivotX = smlua_to_number(L, 5);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 5, "djui_hud_set_rotation_interpolated"); return 0; }
@@ -12377,6 +12438,69 @@ int smlua_func_djui_hud_set_rotation_interpolated(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 6, "djui_hud_set_rotation_interpolated"); return 0; }
 
     djui_hud_set_rotation_interpolated(prevRotation, prevPivotX, prevPivotY, rotation, pivotX, pivotY);
+
+    return 1;
+}
+
+int smlua_func_djui_hud_get_text_alignment(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_hud_get_text_alignment", 0, top);
+        return 0;
+    }
+
+
+    f32 textHAlign;
+    f32 textVAlign;
+
+    djui_hud_get_text_alignment(&textHAlign, &textVAlign);
+
+    lua_pushnumber(L, textHAlign);
+    lua_pushnumber(L, textVAlign);
+
+    return 2;
+}
+
+int smlua_func_djui_hud_set_text_alignment(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_hud_set_text_alignment", 2, top);
+        return 0;
+    }
+
+    f32 textHAlign = smlua_to_number(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_set_text_alignment"); return 0; }
+    f32 textVAlign = smlua_to_number(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "djui_hud_set_text_alignment"); return 0; }
+
+    djui_hud_set_text_alignment(textHAlign, textVAlign);
+
+    return 1;
+}
+
+int smlua_func_djui_hud_set_text_alignment_interpolated(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 4) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "djui_hud_set_text_alignment_interpolated", 4, top);
+        return 0;
+    }
+
+    f32 prevTextHAlign = smlua_to_number(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_set_text_alignment_interpolated"); return 0; }
+    f32 prevTextVAlign = smlua_to_number(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "djui_hud_set_text_alignment_interpolated"); return 0; }
+    f32 textHAlign = smlua_to_number(L, 3);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "djui_hud_set_text_alignment_interpolated"); return 0; }
+    f32 textVAlign = smlua_to_number(L, 4);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "djui_hud_set_text_alignment_interpolated"); return 0; }
+
+    djui_hud_set_text_alignment_interpolated(prevTextHAlign, prevTextVAlign, textHAlign, textVAlign);
 
     return 1;
 }
@@ -12666,9 +12790,15 @@ int smlua_func_djui_hud_measure_text(lua_State* L) {
     const char* message = smlua_to_string(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "djui_hud_measure_text"); return 0; }
 
-    lua_pushnumber(L, djui_hud_measure_text(message));
+    f32 width;
+    f32 height;
 
-    return 1;
+    djui_hud_measure_text(message, &width, &height);
+
+    lua_pushnumber(L, width);
+    lua_pushnumber(L, height);
+
+    return 2;
 }
 
 int smlua_func_djui_hud_print_text(lua_State* L) {
@@ -22919,6 +23049,25 @@ int smlua_func_mod_fs_file_set_public(lua_State* L) {
     return 1;
 }
 
+int smlua_func_mod_fs_file_set_compression(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_fs_file_set_compression", 2, top);
+        return 0;
+    }
+
+    struct ModFsFile* file = (struct ModFsFile*)smlua_to_cobject(L, 1, LOT_MODFSFILE);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_fs_file_set_compression"); return 0; }
+    s32 level = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_fs_file_set_compression"); return 0; }
+
+    lua_pushboolean(L, mod_fs_file_set_compression(file, level));
+
+    return 1;
+}
+
 int smlua_func_mod_fs_hide_errors(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -22974,6 +23123,25 @@ int smlua_func_mod_storage_save(lua_State* L) {
     return 1;
 }
 
+int smlua_func_mod_storage_save_integer(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_storage_save_integer", 2, top);
+        return 0;
+    }
+
+    const char* key = smlua_to_string(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_save_integer"); return 0; }
+    lua_Integer value = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_storage_save_integer"); return 0; }
+
+    lua_pushboolean(L, mod_storage_save_integer(key, value));
+
+    return 1;
+}
+
 int smlua_func_mod_storage_save_number(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -22985,7 +23153,7 @@ int smlua_func_mod_storage_save_number(lua_State* L) {
 
     const char* key = smlua_to_string(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_save_number"); return 0; }
-    f32 value = smlua_to_number(L, 2);
+    lua_Number value = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_storage_save_number"); return 0; }
 
     lua_pushboolean(L, mod_storage_save_number(key, value));
@@ -23025,6 +23193,23 @@ int smlua_func_mod_storage_load(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_load"); return 0; }
 
     lua_pushstring(L, mod_storage_load(key));
+
+    return 1;
+}
+
+int smlua_func_mod_storage_load_integer(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_storage_load_integer", 1, top);
+        return 0;
+    }
+
+    const char* key = smlua_to_string(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_load_integer"); return 0; }
+
+    lua_pushinteger(L, mod_storage_load_integer(key));
 
     return 1;
 }
@@ -26787,24 +26972,6 @@ int smlua_func_cur_obj_check_anim_frame_in_range(lua_State* L) {
     return 1;
 }
 
-int smlua_func_cur_obj_check_frame_prior_current_frame(lua_State* L) {
-    if (L == NULL) { return 0; }
-
-    int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "cur_obj_check_frame_prior_current_frame", 1, top);
-        return 0;
-    }
-
-    s16 * a0 = (s16 *)smlua_to_cpointer(L, 1, LVT_S16_P);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "cur_obj_check_frame_prior_current_frame"); return 0; }
-
-    extern s32 cur_obj_check_frame_prior_current_frame(s16 *a0);
-    lua_pushinteger(L, cur_obj_check_frame_prior_current_frame(a0));
-
-    return 1;
-}
-
 int smlua_func_mario_is_in_air_action(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -30330,6 +30497,21 @@ int smlua_func_smlua_audio_utils_replace_sequence(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "smlua_audio_utils_replace_sequence"); return 0; }
 
     smlua_audio_utils_replace_sequence(sequenceId, bankId, defaultVolume, m64Name);
+
+    return 1;
+}
+
+int smlua_func_smlua_audio_utils_allocate_sequence(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "smlua_audio_utils_allocate_sequence", 0, top);
+        return 0;
+    }
+
+
+    lua_pushinteger(L, smlua_audio_utils_allocate_sequence());
 
     return 1;
 }
@@ -34211,6 +34393,28 @@ int smlua_func_get_active_mod(UNUSED lua_State* L) {
     return 1;
 }
 
+int smlua_func_get_mod_files(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "get_mod_files", 1, 2, top);
+        return 0;
+    }
+
+    struct Mod* mod = (struct Mod*)smlua_to_cobject(L, 1, LOT_MOD);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "get_mod_files"); return 0; }
+    const char* subDirectory = (const char*) NULL;
+    if (top >= 2) {
+        subDirectory = smlua_to_string(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "get_mod_files"); return 0; }
+    }
+
+    smlua_push_lua_table(L, get_mod_files(mod, subDirectory));
+
+    return 1;
+}
+
 int smlua_func_set_window_title(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -37367,9 +37571,15 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "djui_hud_get_color", smlua_func_djui_hud_get_color);
     smlua_bind_function(L, "djui_hud_set_color", smlua_func_djui_hud_set_color);
     smlua_bind_function(L, "djui_hud_reset_color", smlua_func_djui_hud_reset_color);
+    smlua_bind_function(L, "djui_hud_get_text_color", smlua_func_djui_hud_get_text_color);
+    smlua_bind_function(L, "djui_hud_set_text_color", smlua_func_djui_hud_set_text_color);
+    smlua_bind_function(L, "djui_hud_reset_text_color", smlua_func_djui_hud_reset_text_color);
     smlua_bind_function(L, "djui_hud_get_rotation", smlua_func_djui_hud_get_rotation);
     smlua_bind_function(L, "djui_hud_set_rotation", smlua_func_djui_hud_set_rotation);
     smlua_bind_function(L, "djui_hud_set_rotation_interpolated", smlua_func_djui_hud_set_rotation_interpolated);
+    smlua_bind_function(L, "djui_hud_get_text_alignment", smlua_func_djui_hud_get_text_alignment);
+    smlua_bind_function(L, "djui_hud_set_text_alignment", smlua_func_djui_hud_set_text_alignment);
+    smlua_bind_function(L, "djui_hud_set_text_alignment_interpolated", smlua_func_djui_hud_set_text_alignment_interpolated);
     smlua_bind_function(L, "djui_hud_get_screen_width", smlua_func_djui_hud_get_screen_width);
     smlua_bind_function(L, "djui_hud_get_screen_height", smlua_func_djui_hud_get_screen_height);
     smlua_bind_function(L, "djui_hud_get_mouse_x", smlua_func_djui_hud_get_mouse_x);
@@ -37943,14 +38153,17 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "mod_fs_file_erase", smlua_func_mod_fs_file_erase);
     smlua_bind_function(L, "mod_fs_file_set_text_mode", smlua_func_mod_fs_file_set_text_mode);
     smlua_bind_function(L, "mod_fs_file_set_public", smlua_func_mod_fs_file_set_public);
+    smlua_bind_function(L, "mod_fs_file_set_compression", smlua_func_mod_fs_file_set_compression);
     smlua_bind_function(L, "mod_fs_hide_errors", smlua_func_mod_fs_hide_errors);
     smlua_bind_function(L, "mod_fs_get_last_error", smlua_func_mod_fs_get_last_error);
 
     // mod_storage.h
     smlua_bind_function(L, "mod_storage_save", smlua_func_mod_storage_save);
+    smlua_bind_function(L, "mod_storage_save_integer", smlua_func_mod_storage_save_integer);
     smlua_bind_function(L, "mod_storage_save_number", smlua_func_mod_storage_save_number);
     smlua_bind_function(L, "mod_storage_save_bool", smlua_func_mod_storage_save_bool);
     smlua_bind_function(L, "mod_storage_load", smlua_func_mod_storage_load);
+    smlua_bind_function(L, "mod_storage_load_integer", smlua_func_mod_storage_load_integer);
     smlua_bind_function(L, "mod_storage_load_number", smlua_func_mod_storage_load_number);
     smlua_bind_function(L, "mod_storage_load_bool", smlua_func_mod_storage_load_bool);
     smlua_bind_function(L, "mod_storage_load_all", smlua_func_mod_storage_load_all);
@@ -38147,7 +38360,6 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "cur_obj_check_if_at_animation_end", smlua_func_cur_obj_check_if_at_animation_end);
     smlua_bind_function(L, "cur_obj_check_anim_frame", smlua_func_cur_obj_check_anim_frame);
     smlua_bind_function(L, "cur_obj_check_anim_frame_in_range", smlua_func_cur_obj_check_anim_frame_in_range);
-    smlua_bind_function(L, "cur_obj_check_frame_prior_current_frame", smlua_func_cur_obj_check_frame_prior_current_frame);
     smlua_bind_function(L, "mario_is_in_air_action", smlua_func_mario_is_in_air_action);
     smlua_bind_function(L, "mario_is_dive_sliding", smlua_func_mario_is_dive_sliding);
     smlua_bind_function(L, "cur_obj_set_y_vel_and_animation", smlua_func_cur_obj_set_y_vel_and_animation);
@@ -38354,6 +38566,7 @@ void smlua_bind_functions_autogen(void) {
     // smlua_audio_utils.h
     smlua_bind_function(L, "smlua_audio_utils_reset_all", smlua_func_smlua_audio_utils_reset_all);
     smlua_bind_function(L, "smlua_audio_utils_replace_sequence", smlua_func_smlua_audio_utils_replace_sequence);
+    smlua_bind_function(L, "smlua_audio_utils_allocate_sequence", smlua_func_smlua_audio_utils_allocate_sequence);
     smlua_bind_function(L, "audio_stream_load", smlua_func_audio_stream_load);
     smlua_bind_function(L, "audio_stream_destroy", smlua_func_audio_stream_destroy);
     smlua_bind_function(L, "audio_stream_play", smlua_func_audio_stream_play);
@@ -38591,6 +38804,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "set_environment_region", smlua_func_set_environment_region);
     smlua_bind_function(L, "mod_file_exists", smlua_func_mod_file_exists);
     smlua_bind_function(L, "get_active_mod", smlua_func_get_active_mod);
+    smlua_bind_function(L, "get_mod_files", smlua_func_get_mod_files);
     smlua_bind_function(L, "set_window_title", smlua_func_set_window_title);
     smlua_bind_function(L, "reset_window_title", smlua_func_reset_window_title);
     smlua_bind_function(L, "get_os_name", smlua_func_get_os_name);
