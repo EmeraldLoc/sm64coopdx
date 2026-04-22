@@ -551,7 +551,7 @@ static void save_name_read(char** tokens, int numTokens) {
     snprintf(configSaveNames[index], MAX_SAVE_NAME_STRING, "%s", fullSaveName);
 }
 
-static void save_name_write(FILE* file) {
+static void save_name_write(UNUSED FILE* file) {
     // don't write save name data anymore, this only exists for compat
     /*for (int i = 0; i < 4; i++) {
         fprintf(file, "%s %d %s\n", "save-name:", i, configSaveNames[i]);
