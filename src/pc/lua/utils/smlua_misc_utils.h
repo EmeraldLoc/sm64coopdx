@@ -245,6 +245,8 @@ void set_environment_region(u8 index, s16 value);
 bool mod_file_exists(const char* filename);
 /* |description|Gets the mod currently being processed|descriptionEnd| */
 struct Mod* get_active_mod(void);
+/* |description|Gets all files a mod contains|descriptionEnd| */
+LuaTable get_mod_files(struct Mod* mod, OPTIONAL const char* subDirectory);
 
 /* |description|Sets the window title to a custom title|descriptionEnd| */
 void set_window_title(const char* title);
