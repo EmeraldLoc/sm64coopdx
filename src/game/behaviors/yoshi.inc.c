@@ -45,7 +45,7 @@ void bhv_yoshi_init(void) {
         sync_object_init_field(o, o->oHomeY);
         sync_object_init_field(o, o->oHomeZ);
         sync_object_init_field(o, o->oAction);
-        sync_object_init_field_with_size(o, o->globalPlayerIndex, 8);
+        sync_object_init_field(o, o->globalPlayerIndex);
     }
 }
 
@@ -212,12 +212,12 @@ void yoshi_give_present_loop(void) {
     }
 }
 
-void yoshi_gone() {
+void yoshi_gone(void) {
     cur_obj_become_intangible();
     cur_obj_hide();
 }
 
-void yoshi_reappear() {
+void yoshi_reappear(void) {
     if (gCurrLevelNum != LEVEL_CASTLE_GROUNDS || !dynos_level_is_vanilla_level(gCurrLevelNum)) {
         o->oHomeX = sYoshiHomeLocations[2];
         o->oHomeY = 3174.0f;
