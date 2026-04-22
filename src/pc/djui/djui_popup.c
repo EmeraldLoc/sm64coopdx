@@ -37,7 +37,7 @@ static void djui_popup_destroy(struct DjuiBase* base) {
     free(popup);
 }
 
-static void djui_popup_create_internal(const char* message, int lines, int paddingLines) {
+static void djui_popup_create_internal(const char* message, f32 lines, int paddingLines) {
     if (djui_is_popup_disabled()) { return; }
     if (paddingLines < 0) paddingLines = 0;
     struct DjuiPopup* popup = calloc(1, sizeof(struct DjuiPopup));
@@ -68,8 +68,11 @@ static void djui_popup_create_internal(const char* message, int lines, int paddi
 
 void djui_popup_create(const char* message, int lines) {
     f32 width, height;
+    s8 font = djui_hud_get_font(); // save selected lua font
+    djui_hud_set_font(configDjuiThemeFont == 0 ? FONT_NORMAL : FONT_ALIASED);
     djui_hud_measure_text(djui_text_get_uncolored_string(NULL, strlen(message + 1), message), &width, &height);
-    int linesReq = (int)ceilf(width / DJUI_POPUP_WIDTH);
+    djui_hud_set_font(font); // load selected lua font
+    int linesReq = (int)ceilf(height / 32.0f);
     if (linesReq < 1) linesReq = 1;
     if (linesReq > lines) linesReq = lines;
     djui_popup_create_internal(message, linesReq, lines - linesReq);
@@ -77,8 +80,12 @@ void djui_popup_create(const char* message, int lines) {
 
 void djui_popup_create_auto_scaling(const char* message, int paddingLines) {
     f32 width, height;
+    s8 font = djui_hud_get_font(); // save selected lua font
+    djui_hud_set_font(configDjuiThemeFont == 0 ? FONT_NORMAL : FONT_ALIASED);
     djui_hud_measure_text(djui_text_get_uncolored_string(NULL, strlen(message + 1), message), &width, &height);
-    int linesReq = (int)ceilf(width / DJUI_POPUP_WIDTH);
+    djui_hud_set_font(font); // load selected lua font
+    djui_popup_create_internal(message, height, paddingLines);
+    int linesReq = (int)ceilf(height / 32.0f);
     if (linesReq < 1) linesReq = 1;
     djui_popup_create_internal(message, linesReq, paddingLines);
 }
