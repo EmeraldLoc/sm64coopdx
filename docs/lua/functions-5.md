@@ -2929,7 +2929,7 @@ Disconnects the local player with DisconnectType `dcType` (default is DC_LEAVE) 
 ## [set_yoshi_as_not_dead](#set_yoshi_as_not_dead)
 
 ### Description
-Resets Yoshi as being alive
+Marks Yoshi as alive
 
 ### Lua Example
 `set_yoshi_as_not_dead()`

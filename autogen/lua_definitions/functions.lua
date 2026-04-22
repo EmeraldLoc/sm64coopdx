@@ -8013,7 +8013,7 @@ function network_disconnect(dcType, reason)
     -- ...
 end
 
---- Resets Yoshi as being alive
+--- Marks Yoshi as alive
 function set_yoshi_as_not_dead()
     -- ...
 end
