@@ -17813,26 +17813,6 @@ int smlua_func_bhv_end_toad_loop(UNUSED lua_State* L) {
     return 1;
 }
 
-/*
-int smlua_func_stub_is_textbox_active(lua_State* L) {
-    if (L == NULL) { return 0; }
-
-    int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "stub_is_textbox_active", 1, top);
-        return 0;
-    }
-
-    u16 * a0 = (u16 *)smlua_to_cpointer(L, 1, LVT_U16_P);
-    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "stub_is_textbox_active"); return 0; }
-
-    extern UNUSED static void stub_is_textbox_active(u16 *a0);
-    UNIMPLEMENTED -->(L, stub_is_textbox_active(a0));
-
-    return 1;
-}
-*/
-
 int smlua_func_get_star_collection_dialog(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -37932,7 +37912,6 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "get_credits_str_width", smlua_func_get_credits_str_width);
     smlua_bind_function(L, "bhv_end_peach_loop", smlua_func_bhv_end_peach_loop);
     smlua_bind_function(L, "bhv_end_toad_loop", smlua_func_bhv_end_toad_loop);
-    //smlua_bind_function(L, "stub_is_textbox_active", smlua_func_stub_is_textbox_active); <--- UNIMPLEMENTED
     smlua_bind_function(L, "get_star_collection_dialog", smlua_func_get_star_collection_dialog);
     smlua_bind_function(L, "handle_save_menu", smlua_func_handle_save_menu);
     smlua_bind_function(L, "cutscene_take_cap_off", smlua_func_cutscene_take_cap_off);
