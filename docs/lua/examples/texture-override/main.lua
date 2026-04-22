@@ -1,6 +1,5 @@
 -- name: Matrix Code
 -- description: Run /matrix and a builtin texture name to replace with the digital rain
--- deluxe: true
 
 local sMatrixFrames = {}
 for i = 0, 10 do

@@ -1404,6 +1404,7 @@
    - [mod_fs_file_erase](functions-5.md#mod_fs_file_erase)
    - [mod_fs_file_set_text_mode](functions-5.md#mod_fs_file_set_text_mode)
    - [mod_fs_file_set_public](functions-5.md#mod_fs_file_set_public)
+   - [mod_fs_file_set_compression](functions-5.md#mod_fs_file_set_compression)
    - [mod_fs_hide_errors](functions-5.md#mod_fs_hide_errors)
    - [mod_fs_get_last_error](functions-5.md#mod_fs_get_last_error)
 
@@ -1411,9 +1412,11 @@
 
 - mod_storage.h
    - [mod_storage_save](functions-5.md#mod_storage_save)
+   - [mod_storage_save_integer](functions-5.md#mod_storage_save_integer)
    - [mod_storage_save_number](functions-5.md#mod_storage_save_number)
    - [mod_storage_save_bool](functions-5.md#mod_storage_save_bool)
    - [mod_storage_load](functions-5.md#mod_storage_load)
+   - [mod_storage_load_integer](functions-5.md#mod_storage_load_integer)
    - [mod_storage_load_number](functions-5.md#mod_storage_load_number)
    - [mod_storage_load_bool](functions-5.md#mod_storage_load_bool)
    - [mod_storage_load_all](functions-5.md#mod_storage_load_all)

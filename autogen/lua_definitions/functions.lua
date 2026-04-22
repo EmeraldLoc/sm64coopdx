@@ -7769,6 +7769,14 @@ function mod_fs_file_set_public(file, pub)
     -- ...
 end
 
+--- @param file ModFsFile
+--- @param level integer
+--- @return boolean
+--- Sets the compression level of the provided modfs `file`. Must be between 0 (no compression) and 9 (most compression). Returns true on success.
+function mod_fs_file_set_compression(file, level)
+    -- ...
+end
+
 --- @param hide boolean
 --- Hides script errors raised by `mod_fs` functions. Errors messages are still generated and can be retrieved with `mod_fs_get_last_error()`
 function mod_fs_hide_errors(hide)
@@ -7790,9 +7798,17 @@ function mod_storage_save(key, value)
 end
 
 --- @param key string
+--- @param value integer
+--- @return boolean
+--- Saves a `key` corresponding to an integer `value` to mod storage
+function mod_storage_save_integer(key, value)
+    -- ...
+end
+
+--- @param key string
 --- @param value number
 --- @return boolean
---- Saves a `key` corresponding to a float `value` to mod storage
+--- Saves a `key` corresponding to a number `value` to mod storage
 function mod_storage_save_number(key, value)
     -- ...
 end
@@ -7813,8 +7829,15 @@ function mod_storage_load(key)
 end
 
 --- @param key string
+--- @return integer
+--- Loads an integer `value` from a `key` in mod storage
+function mod_storage_load_integer(key)
+    -- ...
+end
+
+--- @param key string
 --- @return number
---- Loads a float `value` from a `key` in mod storage
+--- Loads a number `value` from a `key` in mod storage
 function mod_storage_load_number(key)
     -- ...
 end
