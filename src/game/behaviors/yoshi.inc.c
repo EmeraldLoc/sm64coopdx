@@ -152,7 +152,7 @@ void yoshi_walk_and_jump_off_roof_loop(void) {
     o->oForwardVel = 10.0f;
     object_step();
     cur_obj_init_animation(1);
-    if (!gDjuiInMainMenu && o->oTimer == 0
+    if (o->oTimer == 0
     && o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex
     && gMarioStates[0].interactObj == o
     && (gMarioStates[0].action == ACT_READING_NPC_DIALOG
