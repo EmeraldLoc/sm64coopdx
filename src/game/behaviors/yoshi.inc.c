@@ -104,9 +104,7 @@ void yoshi_idle_loop(void) {
     }
 
     // Credits; Yoshi appears at this position overlooking the castle near the end of the credits
-    if (gPlayerCameraState->cameraEvent == CAM_EVENT_START_ENDING ||
-        gPlayerCameraState->cameraEvent == CAM_EVENT_START_END_WAVING ||
-        gDjuiInMainMenu) {
+    if (gPlayerCameraState->cameraEvent == CAM_EVENT_START_ENDING || gPlayerCameraState->cameraEvent == CAM_EVENT_START_END_WAVING || gDjuiInMainMenu) {
         o->oAction = YOSHI_ACT_CREDITS;
         o->oPosX = -1798.0f;
         o->oPosY = 3174.0f;
@@ -154,7 +152,7 @@ void yoshi_walk_and_jump_off_roof_loop(void) {
     o->oForwardVel = 10.0f;
     object_step();
     cur_obj_init_animation(1);
-    if (o->oTimer == 0
+    if (!gDjuiInMainMenu && o->oTimer == 0
     && o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex
     && gMarioStates[0].interactObj == o
     && (gMarioStates[0].action == ACT_READING_NPC_DIALOG
@@ -270,6 +268,13 @@ void yoshi_reappear(void) {
 }
 
 void bhv_yoshi_loop(void) {
+    // sanity check main menu
+    if (gDjuiInMainMenu) {
+        cur_obj_init_animation(0);
+        yoshi_idle_loop();
+        return;
+    }
+
     switch (o->oAction) {
         case YOSHI_ACT_IDLE:
             yoshi_idle_loop();
