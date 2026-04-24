@@ -278,9 +278,11 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 #endif
     append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
     num_floats += 4;
-    append_line(vs_buf, &vs_len, "in vec2 aTexCoord;");
-    append_line(vs_buf, &vs_len, "out vec2 vTexCoord;");
-    num_floats += 2;
+    for (int t = 0; t < 2; t++) {
+        vs_len += sprintf(vs_buf + vs_len, "in vec2 aTexCoord%d;\n", t);
+        vs_len += sprintf(vs_buf + vs_len, "out vec2 vTexCoord%d;\n", t);
+        num_floats += 2;
+    }
     append_line(vs_buf, &vs_len, "in vec4 aFog;");
     append_line(vs_buf, &vs_len, "out vec4 vFog;");
     num_floats += 4;
@@ -299,7 +301,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     append_line(vs_buf, &vs_len, "out vec3 vBarycentric;");
     num_floats += 3;
     append_line(vs_buf, &vs_len, "void main() {");
-    append_line(vs_buf, &vs_len, "vTexCoord = aTexCoord;");
+    for (int t = 0; t < 2; t++) {
+        vs_len += sprintf(vs_buf + vs_len, "vTexCoord%d = aTexCoord%d;\n", t, t);
+    }
     append_line(vs_buf, &vs_len, "vFog = aFog;");
     append_line(vs_buf, &vs_len, "vLightMap = aLightMap;");
     for (int i = 0; i < CC_MAX_INPUTS; i++) {
@@ -319,22 +323,21 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 #endif
 
     append_line(fs_buf, &fs_len, "out vec4 fragColor;");
-
-    append_line(fs_buf, &fs_len, "in vec2 vTexCoord;");
+    for (int t = 0; t < 2; t++) {
+        fs_len += sprintf(fs_buf + fs_len, "in vec2 vTexCoord%d;\n", t);
+    }
     append_line(fs_buf, &fs_len, "in vec4 vFog;");
     append_line(fs_buf, &fs_len, "in vec2 vLightMap;");
     for (int i = 0; i < CC_MAX_INPUTS; i++) {
         fs_len += sprintf(fs_buf + fs_len, "in vec4 vInput%d;\n", i + 1);
     }
-    if (ccf.used_textures[0]) {
-        append_line(fs_buf, &fs_len, "uniform sampler2D uTex0;");
-        append_line(fs_buf, &fs_len, "uniform vec2 uTex0Size;");
-        append_line(fs_buf, &fs_len, "uniform bool uTex0Filter;");
-    }
-    if (ccf.used_textures[1]) {
-        append_line(fs_buf, &fs_len, "uniform sampler2D uTex1;");
-        append_line(fs_buf, &fs_len, "uniform vec2 uTex1Size;");
-        append_line(fs_buf, &fs_len, "uniform bool uTex1Filter;");
+
+    for (int t = 0; t < 2; t++) {
+        if (ccf.used_textures[t]) {
+            fs_len += sprintf(fs_buf + fs_len, "uniform sampler2D uTex%d;\n", t);
+            fs_len += sprintf(fs_buf + fs_len, "uniform vec2 uTex%dSize;\n", t);
+            fs_len += sprintf(fs_buf + fs_len, "uniform bool uTex%dFilter;\n", t);
+        }
     }
 
     // 3 point texture filtering
@@ -380,7 +383,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     }
 
     if (ccf.used_textures[0]) {
-        append_line(fs_buf, &fs_len, "vec4 texVal0 = sampleTex(uTex0, vTexCoord, uTex0Size, uTex0Filter, uFilter);");
+        append_line(fs_buf, &fs_len, "vec4 texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter, uFilter);");
     }
     if (ccf.used_textures[1]) {
         if (opt_light_map) {
@@ -388,7 +391,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
             append_line(fs_buf, &fs_len, "texVal0.rgb *= uLightmapColor.rgb;");
             append_line(fs_buf, &fs_len, "texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;");
         } else {
-            append_line(fs_buf, &fs_len, "vec4 texVal1 = sampleTex(uTex1, vTexCoord, uTex1Size, uTex1Filter, uFilter);");
+            append_line(fs_buf, &fs_len, "vec4 texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter, uFilter);");
         }
     }
 
@@ -535,9 +538,13 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     prg->attrib_sizes[cnt] = 4;
     ++cnt;
 
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aTexCoord");
-    prg->attrib_sizes[cnt] = 2;
-    ++cnt;
+    for (int t = 0; t < 2; t++) {
+        char name[16];
+        sprintf(name, "aTexCoord%d", t);
+        prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, name);
+        prg->attrib_sizes[cnt] = 2;
+        ++cnt;
+    }
 
     prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aFog");
     prg->attrib_sizes[cnt] = 4;
@@ -573,14 +580,16 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     gfx_opengl_load_shader(prg);
 
-    GLint sampler_location = glGetUniformLocation(shader_program, "uTex0");
-    prg->uniform_locations[0] = glGetUniformLocation(shader_program, "uTex0Size");
-    prg->uniform_locations[1] = glGetUniformLocation(shader_program, "uTex0Filter");
-    glUniform1i(sampler_location, 0);
-    sampler_location = glGetUniformLocation(shader_program, "uTex1");
-    prg->uniform_locations[2] = glGetUniformLocation(shader_program, "uTex1Size");
-    prg->uniform_locations[3] = glGetUniformLocation(shader_program, "uTex1Filter");
-    glUniform1i(sampler_location, 1);
+    for (int t = 0; t < 2; t++) {
+        char name[16];
+        sprintf(name, "uTex%d", t);
+        GLint sampler_location = glGetUniformLocation(shader_program, name);
+        sprintf(name, "uTex%dSize", t);
+        prg->uniform_locations[t * 2] = glGetUniformLocation(shader_program, name);
+        sprintf(name, "uTex%dFilter", t);
+        prg->uniform_locations[t * 2 + 1] = glGetUniformLocation(shader_program, name);
+        glUniform1i(sampler_location, t);
+    }
 
     prg->uniform_locations[4] = glGetUniformLocation(shader_program, "uFrameCount");
 
@@ -594,7 +603,6 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     prg->used_lightmap = opt_light_map;
 
-    // hah
     prg->uniform_locations[6] = glGetUniformLocation(shader_program, "uFilter");
     prg->uniform_locations[7] = glGetUniformLocation(shader_program, "uModelViewMatrix");
     prg->uniform_locations[8] = glGetUniformLocation(shader_program, "uProjectionMatrix");
@@ -637,11 +645,11 @@ static GLuint gfx_opengl_new_texture(void) {
 }
 
 static void gfx_opengl_select_texture(int tile, GLuint texture_id) {
-     opengl_tex[tile] = tex_cache + texture_id;
-     opengl_curtex = tile;
-     glActiveTexture(GL_TEXTURE0 + tile);
-     glBindTexture(GL_TEXTURE_2D, opengl_tex[tile]->gltex);
-     gfx_opengl_set_texture_uniforms(opengl_prg, tile);
+    opengl_tex[tile] = tex_cache + texture_id;
+    opengl_curtex = tile;
+    glActiveTexture(GL_TEXTURE0 + tile);
+    glBindTexture(GL_TEXTURE_2D, opengl_tex[tile]->gltex);
+    gfx_opengl_set_texture_uniforms(opengl_prg, tile);
 }
 
 static void gfx_opengl_upload_texture(const uint8_t *rgba32_buf, int width, int height) {

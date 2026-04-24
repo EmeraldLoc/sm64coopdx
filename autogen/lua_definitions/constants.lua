@@ -4751,6 +4751,15 @@ GRAB_POS_BOWSER    = 3 --- @type MarioGrabPosGSCId
 --- | `GRAB_POS_BOWSER`
 
 --- @type integer
+MOD_FS_COMPRESSION_MIN = 0
+
+--- @type integer
+MOD_FS_COMPRESSION_MAX = 9
+
+--- @type integer
+MOD_FS_COMPRESSION_DEFAULT = 1
+
+--- @type integer
 MOD_FS_MAX_SIZE = 0x2000000
 
 --- @type integer
@@ -8323,10 +8332,11 @@ HOOK_ON_FIND_FLOOR                          = 62 --- @type LuaHookedEventType
 HOOK_ON_FIND_WATER_LEVEL                    = 63 --- @type LuaHookedEventType
 HOOK_ON_FIND_POISON_GAS_LEVEL               = 64 --- @type LuaHookedEventType
 HOOK_ON_FIND_SURFACE_ON_RAY                 = 65 --- @type LuaHookedEventType
-HOOK_ON_REFRESH_SHADERS                     = 66 --- @type LuaHookedEventType
-HOOK_ON_VERTEX_SHADER_CREATE                = 67 --- @type LuaHookedEventType
-HOOK_ON_FRAGMENT_SHADER_CREATE              = 68 --- @type LuaHookedEventType
-HOOK_MAX                                    = 69 --- @type LuaHookedEventType
+HOOK_ON_DYNOS_PACK_TOGGLED                  = 66 --- @type LuaHookedEventType
+HOOK_ON_REFRESH_SHADERS                     = 67 --- @type LuaHookedEventType
+HOOK_ON_VERTEX_SHADER_CREATE                = 68 --- @type LuaHookedEventType
+HOOK_ON_FRAGMENT_SHADER_CREATE              = 69 --- @type LuaHookedEventType
+HOOK_MAX                                    = 70 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8395,6 +8405,7 @@ HOOK_MAX                                    = 69 --- @type LuaHookedEventType
 --- | `HOOK_ON_FIND_WATER_LEVEL`
 --- | `HOOK_ON_FIND_POISON_GAS_LEVEL`
 --- | `HOOK_ON_FIND_SURFACE_ON_RAY`
+--- | `HOOK_ON_DYNOS_PACK_TOGGLED`
 --- | `HOOK_ON_REFRESH_SHADERS`
 --- | `HOOK_ON_VERTEX_SHADER_CREATE`
 --- | `HOOK_ON_FRAGMENT_SHADER_CREATE`
