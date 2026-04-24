@@ -272,7 +272,6 @@ void yoshi_reappear(void) {
 void bhv_yoshi_loop(void) {
     // sanity check main menu
     if (gDjuiInMainMenu) {
-        cur_obj_init_animation(0);
         yoshi_idle_loop();
         return;
     }
