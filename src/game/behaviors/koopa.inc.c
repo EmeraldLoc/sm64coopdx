@@ -84,7 +84,7 @@ static void bhv_koopa_the_quick_on_sent_pre(void) {
     koopaShotFromCannon = gMarioShotFromCannon;
 }
 
-void bhv_koopa_the_quick_override_ownership(u8* shouldOverride, u8* shouldOwn) {
+void bhv_koopa_the_quick_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
     *shouldOverride = TRUE;
     *shouldOwn = (get_network_player_smallest_global() == gNetworkPlayerLocal);
 }
@@ -861,6 +861,22 @@ static void koopa_the_quick_act_after_race(void) {
     if (!o->parentObj) { return; }
 
     if (o->parentObj->oKoopaRaceEndpointUnk100 == 0 && o->parentObj->oKoopaRaceEndpointRaceStatus != 0) {
+        // double check no other mario is interacting with koopa
+        for (int i = 1; i < MAX_PLAYERS; i++) {
+            struct MarioState *m = &gMarioStates[i];
+            if (!is_player_active(m)) continue;
+            if (m->action != ACT_READING_NPC_DIALOG) continue;
+            if (
+                // make sure the dialog mario is reading is koopa the quick end dialog
+                m->dialogId != gBehaviorValues.dialogs.KoopaQuickCheatedDialog &&
+                m->dialogId != *sKoopaTheQuickProperties[o->oKoopaTheQuickRaceIndex].winText &&
+                m->dialogId != gBehaviorValues.dialogs.KoopaQuickLostDialog
+            ) {
+                continue;
+            }
+            return; // another mario is talking to koopa the quick
+        }
+
         if (cur_obj_can_mario_activate_textbox_2(marioState, 400.0f, 400.0f)) {
             stop_background_music(SEQUENCE_ARGS(4, SEQ_LEVEL_SLIDE));
 
@@ -869,7 +885,6 @@ static void koopa_the_quick_act_after_race(void) {
             if (o->parentObj->oKoopaRaceEndpointRaceWinner != 0) {
                 if (o->parentObj->oKoopaRaceEndpointRaceCheated != 0) {
                     // Mario cheated
-                    //o->parentObj->oKoopaRaceEndpointRaceStatus = 0;
                     o->parentObj->oKoopaRaceEndpointUnk100 = gBehaviorValues.dialogs.KoopaQuickCheatedDialog;
                 } else {
                     // Mario won

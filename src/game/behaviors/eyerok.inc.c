@@ -302,7 +302,8 @@ void bhv_eyerok_boss_loop(void) {
 
 static s32 eyerok_hand_check_attacked(void) {
     if (!o->parentObj) { return FALSE; }
-    struct Object *player = nearest_player_to_object(o);
+    struct MarioState *marioState = nearest_mario_state_to_object(o);
+    struct Object *player = marioState ? marioState->marioObj : NULL;
     s32 angleToPlayer = player ? obj_angle_to_object(o, player) : 0;
     if (o->oEyerokReceivedAttack != 0 && abs_angle_diff(angleToPlayer, o->oFaceAngleYaw) < 0x3000) {
         cur_obj_play_sound_2(SOUND_OBJ2_EYEROK_SOUND_SHORT);
@@ -321,6 +322,12 @@ static s32 eyerok_hand_check_attacked(void) {
         o->oMoveFlags = 0;
         o->oGravity = -4.0f;
         o->oAnimState = 3;
+
+        if (o->parentObj->oEyerokBossNumHands <= 0) {
+            o->parentObj->globalPlayerIndex = network_global_index_from_local(marioState->playerIndex);
+            network_send_object(o);
+            network_send_object(o->parentObj);
+        }
 
         return TRUE;
     } else {

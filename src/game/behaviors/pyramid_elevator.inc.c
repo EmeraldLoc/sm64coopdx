@@ -24,7 +24,7 @@ void bhv_pyramid_elevator_init(void) {
             sync_object_init_field(o, o->oAction);
             sync_object_init_field(o, o->oTimer);
             sync_object_init_field(o, o->oPosY);
-            sync_object_init_field(o, o->oVelY);
+            sync_object_init_field(o, o->areaTimer);
         }
     }
 }
@@ -50,7 +50,8 @@ void bhv_pyramid_elevator_loop(void) {
             o->oPosY = o->oHomeY - sins(o->oTimer * 0x1000) * 10.0f;
             if (o->oTimer == 8) {
                 o->oAction = PYRAMID_ELEVATOR_CONSTANT_VELOCITY;
-                if (cur_obj_is_mario_on_platform()) { network_send_object(o); }
+                o->areaTimer = gNetworkAreaTimer;
+                network_send_object(o);
             }
             break;
 
@@ -59,12 +60,11 @@ void bhv_pyramid_elevator_loop(void) {
          * track, transition to the final state.
          */
         case PYRAMID_ELEVATOR_CONSTANT_VELOCITY:
-            o->oVelY = -10.0f;
-            o->oPosY += o->oVelY;
+            o->oVelY = -10; // set for displacement
+            o->oPosY = o->oHomeY - (gNetworkAreaTimer - o->areaTimer) * 10.0f;
             if (o->oPosY < 128.0f) {
                 o->oPosY = 128.0f;
                 o->oAction = PYRAMID_ELEVATOR_END_MOVING;
-                if (cur_obj_is_mario_on_platform()) { network_send_object(o); }
             }
             break;
 
@@ -85,7 +85,7 @@ void bhv_pyramid_elevator_loop(void) {
          * We will no longer move from this point.
          */
         case PYRAMID_ELEVATOR_AT_BOTTOM:
-            o->oVelY = 0;
+            o->oVelY = 0; // set for displacement
             o->oPosY = 128.0f;
             break;
     }

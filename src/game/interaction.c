@@ -2308,13 +2308,23 @@ u32 check_npc_talk(struct MarioState *m, struct Object *o) {
 u32 interact_text(struct MarioState *m, UNUSED u32 interactType, struct Object *o) {
     if (!m || !o) { return FALSE; }
 
-    // make sure no other mario is reading a sign
-    // let npc's handle themselves properly
+    // make sure no other mario is reading the object's dialog
     for (int i = 0; i < MAX_PLAYERS; i++) {
         struct MarioState *marioState = &gMarioStates[i];
         if (!is_player_active(marioState)) continue;
-        if (marioState->action != ACT_READING_SIGN) continue;
-        if (marioState->interactObj == o) return FALSE; // another mario is interacting with the sign
+        if (marioState->action != ACT_READING_SIGN && marioState->action != ACT_READING_NPC_DIALOG) continue;
+        if (marioState->interactObj != o) continue;
+
+        // another mario is interacting with this object's dialog, push out of object
+        if (o->oInteractionSubtype & INT_SUBTYPE_SIGN) {
+            // do nothing
+        } else if (o->oInteractionSubtype & INT_SUBTYPE_NPC) {
+            push_mario_out_of_object(m, o, -10.0f);
+        } else {
+            push_mario_out_of_object(m, o, 2.0f);
+        }
+
+        return FALSE;
     }
 
     u32 interact = FALSE;
@@ -2508,19 +2518,16 @@ void pss_begin_slide(UNUSED struct MarioState *m) {
 }
 
 void pss_end_slide(struct MarioState *m) {
-    if (!m) { return; }
+    if (!m || m->playerIndex != 0) { return; }
     //! This flag isn't set on death or level entry, allowing double star spawn
     u16 slideTime = level_control_timer(TIMER_CONTROL_STOP);
     if (slideTime < gLevelValues.pssSlideStarTime) {
-        // only let local player spawn the star
-        if (m->playerIndex == 0) {
-            // PSS secret star uses oBehParams to spawn
-            s32 savedBehParams = m->marioObj->oBehParams;
-            m->marioObj->oBehParams = (gLevelValues.pssSlideStarIndex << 24);
-            f32 *starPos = gLevelValues.starPositions.PssSlideStarPos;
-            spawn_default_star(starPos[0], starPos[1], starPos[2]);
-            m->marioObj->oBehParams = savedBehParams;
-        }
+        // PSS secret star uses oBehParams to spawn
+        s32 savedBehParams = m->marioObj->oBehParams;
+        m->marioObj->oBehParams = (gLevelValues.pssSlideStarIndex << 24);
+        f32 *starPos = gLevelValues.starPositions.PssSlideStarPos;
+        spawn_default_star(starPos[0], starPos[1], starPos[2]); // deduplication should prevent the star from spawning twice
+        m->marioObj->oBehParams = savedBehParams;
     }
 }
 
