@@ -149,7 +149,9 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
     num_floats += 4;
     append_line(buf, &len, "    float2 uv : TEXCOORD;");
     num_floats += 2;
-    append_line(buf, &len, "    float4 screenPos : TEXCOORD1;");
+    append_line(buf, &len, "    float2 uv2 : TEXCOORD1;");
+    num_floats += 2;
+    append_line(buf, &len, "    float4 screenPos : SCREENPOS;");
     append_line(buf, &len, "    float4 fog : FOG;");
     num_floats += 4;
     append_line(buf, &len, "    float2 lightmap : LIGHTMAP;");
