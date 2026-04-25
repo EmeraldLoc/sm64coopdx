@@ -399,7 +399,7 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
 
 u32 gfx_get_program_id_from_shader_index(u8 shaderIndex) {
 #ifdef RAPI_GL
-    struct ShaderProgram* program = RAPI.lookup_shader_using_index(shaderIndex);
+    struct ShaderProgram *program = RAPI.lookup_shader_using_index(shaderIndex);
     if (!program) return 0;
     return program->opengl_program_id;
 #else

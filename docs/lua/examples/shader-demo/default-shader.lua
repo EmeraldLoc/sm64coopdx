@@ -94,8 +94,10 @@ local function on_vertex_shader_create(cc, shaderIndex)
     local vertexShader = {}
     table.insert(vertexShader, "#version 150")
     table.insert(vertexShader, "in vec4 aVtxPos;")
-    table.insert(vertexShader, "in vec2 aTexCoord;")
-    table.insert(vertexShader, "out vec2 vTexCoord;")
+    table.insert(vertexShader, "in vec2 aTexCoord0;")
+    table.insert(vertexShader, "out vec2 vTexCoord0;")
+    table.insert(vertexShader, "in vec2 aTexCoord1;")
+    table.insert(vertexShader, "out vec2 vTexCoord1;")
     table.insert(vertexShader, "in vec4 aFog;")
     table.insert(vertexShader, "out vec4 vFog;")
     table.insert(vertexShader, "in vec2 aLightMap;")
@@ -112,7 +114,8 @@ local function on_vertex_shader_create(cc, shaderIndex)
     table.insert(vertexShader, "out vec3 vBarycentric;")
 
     table.insert(vertexShader, "void main() {")
-    table.insert(vertexShader, "vTexCoord = aTexCoord;")
+    table.insert(vertexShader, "vTexCoord0 = aTexCoord0;")
+    table.insert(vertexShader, "vTexCoord1 = aTexCoord1;")
     table.insert(vertexShader, "vFog = aFog;")
     table.insert(vertexShader, "vLightMap = aLightMap;")
     for i = 1, CC_MAX_INPUTS do
@@ -141,7 +144,8 @@ local function on_fragment_shader_create(cc, shaderIndex)
     table.insert(fragmentShader, "#version 150")
 
     table.insert(fragmentShader, "out vec4 fragColor;")
-    table.insert(fragmentShader, "in vec2 vTexCoord;")
+    table.insert(fragmentShader, "in vec2 vTexCoord0;")
+    table.insert(fragmentShader, "in vec2 vTexCoord1;")
     table.insert(fragmentShader, "in vec4 vFog;")
     table.insert(fragmentShader, "in vec2 vLightMap;")
 
@@ -198,7 +202,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if ccf.used_textures[1] then
-        table.insert(fragmentShader, "vec4 texVal0 = sampleTex(uTex0, vTexCoord, uTex0Size, uTex0Filter, uFilter);")
+        table.insert(fragmentShader, "vec4 texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter, uFilter);")
     end
     if ccf.used_textures[2] then
         if opt_light_map then
@@ -206,7 +210,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
             table.insert(fragmentShader, "texVal0.rgb *= uLightmapColor.rgb;")
             table.insert(fragmentShader, "texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;")
         else
-            table.insert(fragmentShader, "vec4 texVal1 = sampleTex(uTex1, vTexCoord, uTex1Size, uTex1Filter, uFilter);")
+            table.insert(fragmentShader, "vec4 texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter, uFilter);")
         end
     end
 

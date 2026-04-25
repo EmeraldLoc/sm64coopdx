@@ -248,7 +248,7 @@ static void append_formula(char *buf, size_t *len, uint8_t* cmd, bool do_single,
     }
 }
 
-static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorCombiner* cc) {
+static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorCombiner *cc) {
     struct CCFeatures ccf = { 0 };
     gfx_cc_get_features(cc, &ccf);
 
@@ -448,9 +448,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     puts(fs_buf);
     puts("End");*/
 
-    const char* vertexShader = vs_buf;
+    const char *vertexShader = vs_buf;
     bool usingCustomVertexShader = false;
-    const char* fragmentShader = fs_buf;
+    const char *fragmentShader = fs_buf;
     bool usingCustomFragmentShader = false;
 
     smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, shader_program_pool_index, &vertexShader);
@@ -611,7 +611,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     return prg;
 }
 
-static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner* cc) {
+static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner *cc) {
     for (size_t i = 0; i < shader_program_pool_size; i++) {
         if (shader_program_pool[i].hash == cc->hash) {
             return &shader_program_pool[i];

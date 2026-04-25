@@ -140,7 +140,7 @@ static struct ShaderProgram *gfx_dummy_renderer_lookup_shader(UNUSED struct Colo
     return NULL;
 }
 
-static struct ShaderProgram *gfx_dummy_renderer_lookup_shader_using_index(u8 shaderIndex) {
+static struct ShaderProgram *gfx_dummy_renderer_lookup_shader_using_index(UNUSED u8 shaderIndex) {
     return NULL;
 }
 

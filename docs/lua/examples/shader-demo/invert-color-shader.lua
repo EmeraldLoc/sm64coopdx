@@ -91,7 +91,7 @@ end
 ---@param cc ColorCombiner
 ---@param shaderIndex integer
 local function on_fragment_shader_create(cc, shaderIndex)
-    -- egt color combiner info and features
+    -- get color combiner info and features
     local ccf = gfx_color_combiner_get_features(cc)
     local opt_alpha = cc.cm.flags & USE_ALPHA ~= 0
     local opt_fog = cc.cm.flags & USE_FOG ~= 0
@@ -105,7 +105,8 @@ local function on_fragment_shader_create(cc, shaderIndex)
     table.insert(fragmentShader, "#version 150")
 
     table.insert(fragmentShader, "out vec4 fragColor;")
-    table.insert(fragmentShader, "in vec2 vTexCoord;")
+    table.insert(fragmentShader, "in vec2 vTexCoord0;")
+    table.insert(fragmentShader, "in vec2 vTexCoord1;")
     table.insert(fragmentShader, "in vec4 vFog;")
     table.insert(fragmentShader, "in vec2 vLightMap;")
 
@@ -162,7 +163,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if ccf.used_textures[1] then
-        table.insert(fragmentShader, "vec4 texVal0 = sampleTex(uTex0, vTexCoord, uTex0Size, uTex0Filter, uFilter);")
+        table.insert(fragmentShader, "vec4 texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter, uFilter);")
     end
     if ccf.used_textures[2] then
         if opt_light_map then
@@ -170,7 +171,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
             table.insert(fragmentShader, "texVal0.rgb *= uLightmapColor.rgb;")
             table.insert(fragmentShader, "texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;")
         else
-            table.insert(fragmentShader, "vec4 texVal1 = sampleTex(uTex1, vTexCoord, uTex1Size, uTex1Filter, uFilter);")
+            table.insert(fragmentShader, "vec4 texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter, uFilter);")
         end
     end
 

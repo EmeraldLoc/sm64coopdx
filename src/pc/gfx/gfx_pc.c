@@ -48,6 +48,8 @@ static struct ColorCombiner color_combiner_pool[CC_MAX_SHADERS] = { 0 };
 static uint8_t color_combiner_pool_size = 0;
 static uint8_t color_combiner_pool_index = 0;
 
+static struct ColorCombiner *sPrevCombinerForLookup = NULL;
+
 struct RSP rsp = { 0 };
 
 static struct RDP {
@@ -81,7 +83,7 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 
 static bool dropped_frame = false;
 
-static float buf_vbo[MAX_BUFFERED * ((18 + (CC_MAX_INPUTS * 4)) * 3)] = { 0.0f }; // 3 vertices in a triangle and 18 floats per verticies plus the 4 floats per input for verticies
+static float buf_vbo[MAX_BUFFERED * ((16 + (CC_MAX_INPUTS * 4) + (2 * 2)) * 3)] = { 0.0f }; // 3 vertices in a triangle and 16 floats per verticies plus the 4 floats per input for verticies plus the 2 per texture
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -251,14 +253,13 @@ static void gfx_generate_cc(struct ColorCombiner *cc) {
 static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineMode* cm) {
     combine_mode_update_hash(cm);
 
-    static struct ColorCombiner *prev_combiner;
-    if (prev_combiner != NULL && prev_combiner->cm.hash == cm->hash) {
-        return prev_combiner;
+    if (sPrevCombinerForLookup != NULL && sPrevCombinerForLookup->cm.hash == cm->hash) {
+        return sPrevCombinerForLookup;
     }
 
     for (size_t i = 0; i < color_combiner_pool_size; i++) {
         if (color_combiner_pool[i].cm.hash == cm->hash) {
-            return prev_combiner = &color_combiner_pool[i];
+            return sPrevCombinerForLookup = &color_combiner_pool[i];
         }
     }
 
@@ -271,7 +272,7 @@ static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineM
     memcpy(&comb->cm, cm, sizeof(struct CombineMode));
     gfx_generate_cc(comb);
 
-    return prev_combiner = comb;
+    return sPrevCombinerForLookup = comb;
 }
 
 void gfx_texture_cache_clear(void) {
@@ -1150,8 +1151,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
 
             int shifts = rdp.texture_tile[j].shifts;
             int shiftt = rdp.texture_tile[j].shiftt;
-            UNUSED int masks = rdp.texture_tile[j].masks;
-            UNUSED int maskt = rdp.texture_tile[j].maskt;
             if (shifts != 0) {
                 if (shifts <= 10) {
                     u /= 1 << shifts;
@@ -2092,6 +2091,7 @@ void gfx_remove_all_color_combiners() {
 
     color_combiner_pool_index = 0;
     color_combiner_pool_size = 0;
+    sPrevCombinerForLookup = NULL;
 }
 
   /////////////////////////
