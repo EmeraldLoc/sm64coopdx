@@ -18,21 +18,21 @@ Shaders can be created via the `HOOK_ON_VERTEX_SHADER_CREATE` and `HOOK_ON_FRAGM
 
 ## Vertex Shaders
 
-The bread and butter of vertex shaders are inputs. Inputs are given by the game's code and can be used for getting the vertex data. A list of inputs can be found [here](#Inputs). Something important about inputs is that a fragment shader cannot get inputs from C, so you need to pass inputs from the vertex shader as outputs for the fragment shader. An example of that would be the texture coords.
+The bread and butter of vertex shaders are inputs. Inputs are given by the game's code and can be used for getting the vertex data. A list of inputs can be found [here](#Inputs). Something important about inputs is that a fragment shader cannot get inputs from C, so you need to pass inputs from the vertex shader as outputs for the fragment shader. An example of that would be the normals.
 
 ```lua
-in vec2 aTexCoord;
-out vec2 vTexCoord;
-vTexCoord = aTexCoord;
+in vec3 aNormal;
+out vec3 vNormal;
+vNormal = aNormal;
 ```
 
 As you can see, the input is gotten in the vertex shader, and the output is created, which will be received in the fragment shader.
 
 ```lua
-in vec2 vTexCoord;
+in vec3 vNormal;
 ```
 
-Here, the fragment shader takes the tex coord output we created in the vertex shader.
+Here, the fragment shader takes the normal output we created in the vertex shader.
 
 Getting back on track, for our vertex shader example, we are going to mirror the entire world. First, grab the [default C shader in Lua](../examples/shader-demo/default-shader.lua), specifically the vertex portion. Most of this shader will be passing inputs to the fragment shader, but what we care about is this portion:
 
@@ -56,6 +56,8 @@ gl_Position = vec4(aVtxPos.x * -1.0, aVtxPos.yzw);
 ```
 
 If you run the mod, you should now have a mirrored game! That's the basic rundown on vertex shaders! If something still isn't working, compare your code with [the example vertex shader](../examples/shader-demo/mirror-shader.lua) and try to figure out what you did wrong.
+
+<img width="640" height="416" alt="Screenshot 2026-04-24 at 7 09 03 PM" src="https://github.com/user-attachments/assets/4218e701-1a71-4420-bf0f-fd8fff8baf81" />
 
 ## Fragment Shaders
 
@@ -86,6 +88,8 @@ fragColor = vec4(1.0 - texel.rgb, 1.0);
 ```
 
 And that's it! All colors in your game should now be completely inverted! That's the basic rundown on fragment shaders! If something still isn't working, compare your code with [the example fragment shader](../examples/shader-demo/invert-color-shader.lua) and try to figure out what you did wrong.
+
+<img width="640" height="416" alt="Screenshot 2026-04-24 at 7 07 43 PM" src="https://github.com/user-attachments/assets/1b25a55d-082a-447d-8c75-a33ef143f2e2" />
 
 ## Uniforms
 
@@ -144,7 +148,8 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 | Input Name | Type | Description |
 | ---- | ---- | ---- |
 | `aVtxPos` | `vec4` | The vertex position (x, y, z, w) |
-| `aTexCoord` | `vec2` | The standard UV mapping for the primary texture |
+| `aTexCoord0` | `vec2` | The UV mapping for the primary texture |
+| `aTexCoord1` | `vec2` | The UV mapping for the secondary texture |
 | `aNormal` | `vec3` | The direction the surface is facing |
 | `aFog` | `vec4` | Fog data provided by C |
 | `aLightMap` | `vec2` | UV coordinates for a light map |
@@ -153,7 +158,7 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 
 ## Dealing with the HUD and Skybox
 
-If you want to hide the HUD, you can by checking the vertex position. If the vertex position's z is greater than zero, it is not a hud element. By default the vertex position is not included in the fragment shader, so you may need to create a varying variable and send it over.
+If you need to check for the HUD to not modify it or only modify it, you can by checking the vertex position. If the vertex position's z is greater than zero, it is not a hud element. By default the vertex position is not included in the fragment shader, so you may need to create a varying variable and send it over.
 
 To check for the skybox, the skybox lives somewhere in between layer 0 and layer 2. You should do a range check to find it, for instance, `aVtxPos.z > 0 && aVtxPos.z < 2`.
 
@@ -162,8 +167,8 @@ Currently where the hud lives below 0 is a bit random, so right now it's best to
 ## Limitations
 
 - No more than a single shader can be used at a time. This means that if 2 mods want to use their own shader, only one will be picked.
-- Currently you can only do one shader pass. While for most cases a single shader pass works fine, for many types of shaders it is very limiting. This is a unfortunate limitation with the current system.
-- There are only so many inputs. While I made sure to include as many as possible, there may still be some missing for your own shaders.
-- DirectX and OpenGL Legacy support is non-existent.
+- Currently you can only do one shader pass. While for most cases a single shader pass works fine, for many types of shaders it is very limiting. This is an unfortunate limitation with the current system.
+- There are only so many inputs. While many are provided, there may still be some missing for your own shaders.
+- DirectX is not supported.
 
 While these limitations may improve in the future, this is where we are stuck for right now.
