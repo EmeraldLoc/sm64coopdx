@@ -209,6 +209,7 @@ Vtx *make_skybox_rect(s32 tileRow, s32 tileCol, s8 colorIndex, s32 row, s32 col)
         f32 g = gSkyboxColor[1] / 255.0f;
         f32 b = gSkyboxColor[2] / 255.0f;
         u8 *colors = sSkyboxColors[colorIndex];
+        // dk why the heck -2 works here for Z to allow shader code to detect it
         make_vertex(verts, 0, x, y, -2, 0, 0, colors[0] * r, colors[1] * g, colors[2] * b, 255);
         make_vertex(verts, 1, x, y - SKYBOX_TILE_HEIGHT, -2, 0, 31 << 5, colors[0] * r, colors[1] * g, colors[2] * b, 255);
         make_vertex(verts, 2, x + SKYBOX_TILE_WIDTH, y - SKYBOX_TILE_HEIGHT, -2, 31 << 5, 31 << 5, colors[0] * r, colors[1] * g, colors[2] * b, 255);
