@@ -158,9 +158,9 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 
 ## Dealing with the HUD and Skybox
 
-If you need to check for the HUD to not modify it or only modify it, you can by checking the vertex position. If the vertex position's z is greater than zero, it is not a hud element. By default the vertex position is not included in the fragment shader, so you may need to create a varying variable and send it over.
+If you need to check for the HUD to not modify it or only modify it, you can by checking the vertex position. If the vertex position's z is greater than zero, it is not a hud element. If it is 0 or less than 0, it is a hud element. By default the vertex position is not included in the fragment shader, so you may need to create a varying variable and send it over.
 
-To check for the skybox, the skybox lives somewhere in between layer 0 and layer 2. You should do a range check to find it, for instance, `aVtxPos.z > 0 && aVtxPos.z < 2`.
+To check for the skybox, the skybox lives somewhere in between Z 0 and 1. You should do a range check to find it, for instance, `aVtxPos.z > 0 && aVtxPos.z < 1`.
 
 Currently where the hud lives below 0 is a bit random, so right now it's best to either hide it all or none of it.
 
