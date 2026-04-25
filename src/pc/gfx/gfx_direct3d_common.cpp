@@ -149,7 +149,7 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
     num_floats += 4;
     append_line(buf, &len, "    float2 uv : TEXCOORD;");
     num_floats += 2;
-    append_line(buf, &len, "    float2 uv2 : TEXCOORD1;");
+    append_line(buf, &len, "    float2 uv2 : TEXCOORDTWO;");
     num_floats += 2;
     append_line(buf, &len, "    float4 screenPos : SCREENPOS;");
     append_line(buf, &len, "    float4 fog : FOG;");
@@ -218,7 +218,6 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
 
     append_str(buf, &len, "PSInput VSMain(float4 position : POSITION");
     append_str(buf, &len, ", float2 uv : TEXCOORD");
-    append_str(buf, &len, ", float2 uv2 : TEXCOORD1");
     append_str(buf, &len, ", float4 fog : FOG");
     append_str(buf, &len, ", float2 lightmap : LIGHTMAP");
     for (int32_t i = 0; i < CC_MAX_INPUTS; i++) {
