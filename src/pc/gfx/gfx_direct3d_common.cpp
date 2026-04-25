@@ -230,7 +230,6 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
     append_line(buf, &len, "    result.position = position;");
     append_line(buf, &len, "    result.screenPos = position;");
     append_line(buf, &len, "    result.uv = uv;");
-    append_line(buf, &len, "    result.uv2 = uv2;");
     append_line(buf, &len, "    result.fog = fog;");
     append_line(buf, &len, "    result.lightmap = lightmap;");
     for (int32_t i = 0; i < CC_MAX_INPUTS; i++) {
