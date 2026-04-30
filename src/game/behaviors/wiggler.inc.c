@@ -416,9 +416,7 @@ static void wiggler_act_shrink(void) {
             f32 *starPos = gLevelValues.starPositions.WigglerStarPos;
             struct Object *star = spawn_default_star(starPos[0], starPos[1], starPos[2]);
 
-            // If we're not the closet to Wiggler,
-            // Don't play this cutscene!
-            if (star != NULL && nearest_mario_state_to_object(o) != &gMarioStates[0]) {
+            if (star != NULL && o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex) {
                 star->oStarSpawnExtCutsceneFlags = 0;
             }
 

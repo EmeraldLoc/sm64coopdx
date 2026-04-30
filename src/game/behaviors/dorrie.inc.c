@@ -44,22 +44,23 @@ void dorrie_act_move(void) {
         o->oForwardVel = 0.0f;
         o->oDorrieYawVel = 0;
     } else {
-        f32 angleSumX = 0.0f;
-        f32 angleSumY = 0.0f;
+        f32 angleVectorX = 0.0f;
+        f32 angleVectorY = 0.0f;
         u8 count = 0;
 
         for (s32 i = 0; i < MAX_PLAYERS; i++) {
             if (!is_player_active(&gMarioStates[i])) { continue; }
-            struct Object* player = gMarioStates[i].marioObj;
+            struct Object *player = gMarioStates[i].marioObj;
             if (player->platform != o) { continue; }
 
-            angleSumX += coss(player->oFaceAngleYaw);
-            angleSumY += sins(player->oFaceAngleYaw);
+            // increment angle vector
+            angleVectorX += coss(player->oFaceAngleYaw);
+            angleVectorY += sins(player->oFaceAngleYaw);
             count++;
         }
 
         if (count > 0) {
-            targetYaw = 0x4000 - atan2s(angleSumY, angleSumX);
+            targetYaw = 0x4000 - atan2s(angleVectorY, angleVectorX);
             targetSpeed = 10;
         } else {
             circularTurn = 0x4000 - atan2s(2000.0f, o->oDorrieDistToHome - 2000.0f);

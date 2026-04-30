@@ -268,8 +268,9 @@ void bully_spawn_coin(void) {
 void bully_act_level_death(void) {
     if (obj_lava_death() == 1) {
         if (o->oBehParams2ndByte == BULLY_BP_SIZE_SMALL) {
-            if (o->oBullySubtype == BULLY_STYPE_MINION)
+            if (o->oBullySubtype == BULLY_STYPE_MINION) {
                 o->parentObj->oBullyKBTimerAndMinionKOCounter++;
+            }
             bully_spawn_coin();
         } else {
             spawn_mist_particles();

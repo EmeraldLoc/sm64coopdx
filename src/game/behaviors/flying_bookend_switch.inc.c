@@ -137,10 +137,10 @@ void bhv_flying_bookend_loop(void) {
 void bhv_bookend_spawn_loop(void) {
     if (!sync_object_is_initialized(o->oSyncID)) { sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS); }
 
-    struct MarioState* marioState = nearest_mario_state_to_object(o);
+    struct MarioState *marioState = nearest_mario_state_to_object(o);
     if (marioState && marioState->playerIndex != 0) { return; }
 
-    struct Object* book;
+    struct Object *book;
 
     if (!(o->activeFlags & ACTIVE_FLAG_IN_DIFFERENT_ROOM)) {
         if (o->oTimer > 40 && marioState && obj_is_near_to_and_facing_mario(marioState, 600.0f, 0x2000)) {

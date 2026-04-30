@@ -122,7 +122,7 @@ void bhv_lll_bowser_puzzle_spawn_pieces(f32 pieceWidth) {
  * Does the initial spawn of the puzzle pieces and then waits to spawn 5 coins.
  */
 void bhv_lll_bowser_puzzle_loop(void) {
-    struct Object* player = nearest_player_to_object(o);
+    struct Object *player = gMarioStates[0].visibleToEnemies ? gMarioStates[0].marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
 
     // does an event based sync. Specifically the action for spawning coins is what is synced
@@ -143,9 +143,12 @@ void bhv_lll_bowser_puzzle_loop(void) {
         case BOWSER_PUZZLE_ACT_WAIT_FOR_COMPLETE:
             // If both completion flags are set and Mario is within 1000 units...
             if (o->oBowserPuzzleCompletionFlags == 3 && distanceToPlayer < 1000.0f) {
+                struct Object *spawn_objects[5];
+                u32 models[5];
                 // Spawn 5 coins.
                 for (s32 i = 0; i < 5; i++) {
-                    spawn_object(o, MODEL_YELLOW_COIN, bhvSingleCoinGetsSpawned);
+                    spawn_objects[i] = spawn_object(o, MODEL_YELLOW_COIN, bhvSingleCoinGetsSpawned);
+                    models[i] = MODEL_YELLOW_COIN;
                 }
 
                 // Reset completion flags (even though they never get checked again).
@@ -154,6 +157,8 @@ void bhv_lll_bowser_puzzle_loop(void) {
                 // Go to next action so we don't spawn 5 coins ever again.
                 o->oAction++;
                 network_send_object(o);
+
+                network_send_spawn_objects(spawn_objects, models, 5);
             }
             break;
         case BOWSER_PUZZLE_ACT_DONE:

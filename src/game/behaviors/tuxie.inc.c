@@ -12,6 +12,23 @@ void play_penguin_walking_sound(s32 walk) {
     }
 }
 
+static bool another_mario_talking_to_tuxie_mother(void) {
+    // make sure no other mario is talking to the penguin
+    for (int i = 1; i < MAX_PLAYERS; i++) {
+        struct MarioState *m = &gMarioStates[i];
+        if (!is_player_active(m)) continue;
+        if (
+            m->dialogId != gBehaviorValues.dialogs.TuxieMotherDialog &&
+            m->dialogId != gBehaviorValues.dialogs.TuxieMotherBabyFoundDialog &&
+            m->dialogId != gBehaviorValues.dialogs.TuxieMotherBabyWrongDialog
+        ) {
+            continue;
+        }
+        return true;
+    }
+    return false;
+}
+
 void tuxies_mother_act_2(void) {
     struct Object *player = gMarioStates[0].marioObj;
     s32 angleToPlayer = obj_angle_to_object(o, player);
@@ -105,7 +122,7 @@ void tuxies_mother_act_1(void) {
             }
             break;
         case 2:
-            if (o->prevObj && o->prevObj->oHeldState == HELD_FREE) {
+            if (o->prevObj && o->prevObj->oHeldState == HELD_FREE && another_mario_talking_to_tuxie_mother()) {
                 //! Same bug as above
                 o->prevObj->OBJECT_FIELD_S32(o->oInteractionSubtype) &= ~INT_SUBTYPE_DROP_IMMEDIATELY;
                 obj_set_behavior(o->prevObj, bhvPenguinBaby);
@@ -136,16 +153,17 @@ void tuxies_mother_act_0(void) {
     if (distToSmallPenguin < 500.0f) {
         inRangeOfPenguin = 1;
     }
-    if (smallPenguinObj != NULL && smallPenguinObj->heldByPlayerIndex == 0 && distToSmallPenguin < 300.0f && smallPenguinObj->oHeldState != HELD_FREE) {
+    if (smallPenguinObj != NULL && smallPenguinObj->heldByPlayerIndex == 0 && distToSmallPenguin < 300.0f && smallPenguinObj->oHeldState != HELD_FREE && !another_mario_talking_to_tuxie_mother()) {
         o->oAction = 1;
         smallPenguinObj->oSmallPenguinUnk88 = 1;
         o->prevObj = smallPenguinObj;
     } else {
         switch (o->oSubAction) {
             case 0:
-                if (cur_obj_can_mario_activate_textbox_2(marioState, 300.0f, 100.0f) && inRangeOfPenguin == 0) {
-                    o->oSubAction++;
-                }
+                if (!cur_obj_can_mario_activate_textbox_2(marioState, 300.0f, 100.0f)) break;
+                if (inRangeOfPenguin != 0) break;
+                if (another_mario_talking_to_tuxie_mother()) break;
+                o->oSubAction++;
                 break;
             case 1:
                 if (marioState->visibleToEnemies && cur_obj_update_dialog_with_cutscene(marioState, 2, 1, CUTSCENE_DIALOG, gBehaviorValues.dialogs.TuxieMotherDialog, tuxies_mother_act_0_continue_dialog)) {

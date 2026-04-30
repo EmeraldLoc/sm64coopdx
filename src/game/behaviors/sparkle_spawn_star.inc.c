@@ -29,7 +29,7 @@ void bhv_spawned_star_init(void) {
     if (gNetworkAreaLoaded && spawnedFromExclamationBox) {
         o->oStarSpawnExtCutsceneFlags = 1;
         o->parentObj = o;
-        struct Object* spawn_objects[] = { o };
+        struct Object *spawn_objects[] = { o };
         u32 models[] = { MODEL_STAR };
         network_send_spawn_objects(spawn_objects, models, 1);
     }

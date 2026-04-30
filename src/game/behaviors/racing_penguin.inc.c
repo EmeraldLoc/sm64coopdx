@@ -79,6 +79,7 @@ void bhv_racing_penguin_init(void) {
         sync_object_init_field(o, o->oRacingPenguinMarioWon);
         sync_object_init_field(o, o->oRacingPenguinReachedBottom);
         sync_object_init_field(o, o->areaTimer);
+        sync_object_init_field(o, o->globalPlayerIndex);
     }
     o->areaTimerType = AREA_TIMER_TYPE_MAXIMUM;
     o->areaTimer = 0;
@@ -87,20 +88,40 @@ void bhv_racing_penguin_init(void) {
 }
 
 static void racing_penguin_act_wait_for_mario(void) {
-    struct Object *player = nearest_player_to_object(o);
+    struct MarioState *marioState = nearest_mario_state_to_object(o);
+    struct Object *player = marioState ? marioState->marioObj : NULL;
     if (!player) { return; }
-    if (o->oTimer > o->oRacingPenguinInitTextCooldown && o->oPosY - player->oPosY <= 0.0f
-        && cur_obj_can_mario_activate_textbox_2(&gMarioStates[0], 400.0f, 400.0f)) {
+    if (o->oTimer > o->oRacingPenguinInitTextCooldown && o->oPosY - player->oPosY <= 0.0f && cur_obj_can_mario_activate_textbox_2(marioState, 400.0f, 400.0f)) {
         o->oAction = RACING_PENGUIN_ACT_SHOW_INIT_TEXT;
+        o->globalPlayerIndex = network_global_index_from_local(marioState->playerIndex);
+        network_send_object(o);
     }
 }
 
 u8 racing_penguin_act_show_init_text_continue_dialog(void) { return o->oAction == RACING_PENGUIN_ACT_SHOW_INIT_TEXT; }
 
 static void racing_penguin_act_show_init_text(void) {
-    if (!gMarioStates[0].visibleToEnemies) { return; }
     if (!BHV_ARR_CHECK(sRacingPenguinData, o->oBehParams2ndByte, struct RacingPenguinData)) { return; }
-    s32 response = obj_update_race_proposition_dialog(&gMarioStates[0], *sRacingPenguinData[o->oBehParams2ndByte].text, racing_penguin_act_show_init_text_continue_dialog);
+    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        // use player with the smallest global index instead
+        struct NetworkPlayer *np = get_network_player_smallest_global();
+        marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        o->globalPlayerIndex = np->globalIndex;
+
+        // double check that we are actually active and visible this time
+        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+            o->oAction = RACING_PENGUIN_ACT_WAIT_FOR_MARIO;
+            o->oRacingPenguinInitTextCooldown = 60;
+            o->globalPlayerIndex = 0;
+            network_send_object(o);
+            return;
+        } else {
+            network_send_object(o);
+        }
+    }
+    s32 response = obj_update_race_proposition_dialog(marioState, *sRacingPenguinData[o->oBehParams2ndByte].text, racing_penguin_act_show_init_text_continue_dialog);
 
     if (response == 1) {
         struct Object *child;
@@ -189,7 +210,6 @@ static void racing_penguin_act_race(void) {
     if (isInAir) {
         if (o->oTimer > 60 && !o->oRacingPenguinMarioCheated) {
             o->oRacingPenguinMarioCheated = TRUE;
-            network_send_object(o);
         }
     } else {
         o->oTimer = 0;
@@ -221,6 +241,22 @@ static void racing_penguin_act_show_final_text(void) {
         if (cur_obj_rotate_yaw_toward(0, 200)) {
             cur_obj_init_animation_with_sound(3);
             o->oForwardVel = 0.0f;
+
+            // double check no other mario is talking to the penguin
+            for (int i = 1; i < MAX_PLAYERS; i++) {
+                struct MarioState *m = &gMarioStates[i];
+                if (!is_player_active(m)) continue;
+                if (m->action != ACT_READING_NPC_DIALOG) continue;
+                if (
+                    // make sure the dialog mario is reading is race penguin end dialog
+                    m->dialogId != gBehaviorValues.dialogs.RacingPenguinCheatDialog &&
+                    m->dialogId != gBehaviorValues.dialogs.RacingPenguinWinDialog &&
+                    m->dialogId != gBehaviorValues.dialogs.RacingPenguinLostDialog
+                ) {
+                    continue;
+                }
+                return; // another mario is talking to the penguin
+            }
 
             if (cur_obj_can_mario_activate_textbox_2(&gMarioStates[0], 400.0f, 400.0f)) {
                 if (o->oRacingPenguinMarioWon) {
@@ -303,10 +339,9 @@ void bhv_penguin_race_finish_line_update(void) {
 }
 
 void bhv_penguin_race_shortcut_check_update(void) {
-    struct Object *player = gMarioStates[0].marioObj;
+    struct Object *player = gMarioStates[0].visibleToEnemies ? gMarioStates[0].marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
     if (distanceToPlayer < 500.0f && o->parentObj && !o->parentObj->oRacingPenguinMarioCheated) {
         o->parentObj->oRacingPenguinMarioCheated = TRUE;
-        network_send_object(o->parentObj);
     }
 }

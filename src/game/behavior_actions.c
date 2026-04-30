@@ -86,10 +86,10 @@ struct OpenableGrill {
     const Collision *collision;
 };
 
-s32 D_8032F0C0[] = { SAVE_FLAG_HAVE_WING_CAP, SAVE_FLAG_HAVE_METAL_CAP, SAVE_FLAG_HAVE_VANISH_CAP };
+s32 gCapSwitchSaveFlags[] = { SAVE_FLAG_HAVE_WING_CAP, SAVE_FLAG_HAVE_METAL_CAP, SAVE_FLAG_HAVE_VANISH_CAP };
 
 // Boo Roll
-s16 D_8032F0CC[] = { 6047, 5664, 5292, 4934, 4587, 4254, 3933, 3624, 3329, 3046, 2775,
+s16 sBooHitAngleValues[] = { 6047, 5664, 5292, 4934, 4587, 4254, 3933, 3624, 3329, 3046, 2775,
                      2517, 2271, 2039, 1818, 1611, 1416, 1233, 1063, 906,  761,  629,
                      509,  402,  308,  226,  157,  100,  56,   25,   4,    0 };
 

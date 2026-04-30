@@ -204,7 +204,7 @@ void bhv_generic_bowling_ball_spawner_loop(void) {
     bowlingBall->oBehParams2ndByte = o->oBehParams2ndByte;
 
     // send out the bowlingBall object
-    struct Object* spawn_objects[] = { bowlingBall };
+    struct Object *spawn_objects[] = { bowlingBall };
     u32 models[] = { MODEL_BOWLING_BALL };
     network_send_spawn_objects(spawn_objects, models, 1);
 }

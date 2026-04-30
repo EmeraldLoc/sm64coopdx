@@ -230,8 +230,8 @@ static void boo_move_during_hit(s32 roll, f32 fVel) {
     o->oMoveAngleYaw = o->oBooMoveYawDuringHit;
 
     if (roll != FALSE) {
-        o->oFaceAngleYaw  += D_8032F0CC[o->oTimer];
-        o->oFaceAngleRoll += D_8032F0CC[o->oTimer];
+        o->oFaceAngleYaw  += sBooHitAngleValues[o->oTimer];
+        o->oFaceAngleRoll += sBooHitAngleValues[o->oTimer];
     }
 }
 
@@ -256,7 +256,7 @@ static s32 boo_update_after_bounced_on(f32 a0) {
     }
 
     if (o->oTimer < 32) {
-        boo_move_during_hit(FALSE, D_8032F0CC[o->oTimer]/5000.0f * a0);
+        boo_move_during_hit(FALSE, sBooHitAngleValues[o->oTimer]/5000.0f * a0);
     } else {
         cur_obj_become_tangible();
         boo_reset_after_hit();
@@ -276,7 +276,7 @@ static s32 big_boo_update_during_nonlethal_hit(f32 a0) {
     }
 
     if (o->oTimer < 32) {
-        boo_move_during_hit(TRUE, D_8032F0CC[o->oTimer]/5000.0f * a0);
+        boo_move_during_hit(TRUE, sBooHitAngleValues[o->oTimer]/5000.0f * a0);
     } else if (o->oTimer < 48) {
         big_boo_shake_after_hit();
     } else {
