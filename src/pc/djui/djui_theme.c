@@ -207,6 +207,7 @@ static bool theme_ini_init(const char* themeFile) {
 
 void djui_themes_save_current(bool setThemeArray) {
     struct DjuiTheme* theme = calloc(1, sizeof(struct DjuiTheme));
+    if (!theme) return;
     memcpy(theme, &configDjuiTheme, sizeof(struct DjuiTheme));
     djui_themes_save(theme, setThemeArray);
 }
@@ -305,6 +306,7 @@ void djui_theme_delete(struct DjuiTheme* theme) {
         if (!gDjuiThemes[i]) return;
         if (memcmp(theme, gDjuiThemes[i], sizeof(struct DjuiTheme)) != 0) continue;
         if (memcmp(theme, &configDjuiTheme, sizeof(struct DjuiTheme)) == 0) {
+            // this will always hit a valid index because builtin themes exist
             int prevValidIndex = i - 1;
             while (!gDjuiThemes[prevValidIndex]) {
                 prevValidIndex--;
