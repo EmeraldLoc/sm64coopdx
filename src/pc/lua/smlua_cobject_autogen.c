@@ -1714,11 +1714,11 @@ static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "oCameraLakituBlinkTimer",                    LVT_S32,                 offsetof(struct Object, oCameraLakituBlinkTimer),                    false, LOT_NONE,         1,                    sizeof(s32)                   },
     { "oCameraLakituCircleRadius",                  LVT_F32,                 offsetof(struct Object, oCameraLakituCircleRadius),                  false, LOT_NONE,         1,                    sizeof(f32)                   },
     { "oCameraLakituFinishedDialog",                LVT_S32,                 offsetof(struct Object, oCameraLakituFinishedDialog),                false, LOT_NONE,         1,                    sizeof(s32)                   },
+#ifndef VERSION_JP
+    { "oCameraLakituMusicPlayed",                   LVT_S32,                 offsetof(struct Object, oCameraLakituMusicPlayed),                   false, LOT_NONE,         1,                    sizeof(s32)                   },
+#endif
     { "oCameraLakituPitchVel",                      LVT_S16,                 offsetof(struct Object, oCameraLakituPitchVel),                      false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCameraLakituSpeed",                         LVT_F32,                 offsetof(struct Object, oCameraLakituSpeed),                         false, LOT_NONE,         1,                    sizeof(f32)                   },
-#ifndef VERSION_JP
-    { "oCameraLakituUnk104",                        LVT_S32,                 offsetof(struct Object, oCameraLakituUnk104),                        false, LOT_NONE,         1,                    sizeof(s32)                   },
-#endif
     { "oCameraLakituYawVel",                        LVT_S16,                 offsetof(struct Object, oCameraLakituYawVel),                        false, LOT_NONE,         1,                    sizeof(s16)                   },
     { "oCannonBarrelBubblesUnkF4",                  LVT_F32,                 offsetof(struct Object, oCannonBarrelBubblesUnkF4),                  false, LOT_NONE,         1,                    sizeof(f32)                   },
     { "oCannonPlayerIndex",                         LVT_S32,                 offsetof(struct Object, oCannonPlayerIndex),                         false, LOT_NONE,         1,                    sizeof(s32)                   },
@@ -2478,7 +2478,7 @@ static struct LuaObjectField sServerSettingsFields[LUA_SERVER_SETTINGS_FIELD_COU
     { "playerKnockbackStrength",     LVT_U8,  offsetof(struct ServerSettings, playerKnockbackStrength),     false, LOT_NONE, 1, sizeof(u8)                      },
     { "pvpType",                     LVT_S32, offsetof(struct ServerSettings, pvpType),                     false, LOT_NONE, 1, sizeof(enum PvpType)            },
     { "skipIntro",                   LVT_U8,  offsetof(struct ServerSettings, skipIntro),                   false, LOT_NONE, 1, sizeof(u8)                      },
-    { "stayInLevelAfterStar",        LVT_U8,  offsetof(struct ServerSettings, stayInLevelAfterStar),        false, LOT_NONE, 1, sizeof(u8)                      },
+    { "stayInLevelAfterStar",        LVT_S32, offsetof(struct ServerSettings, stayInLevelAfterStar),        false, LOT_NONE, 1, sizeof(enum StarExitType)       },
 };
 
 #define LUA_SPAWN_INFO_FIELD_COUNT 8

@@ -4890,6 +4890,15 @@ PLAYER_PVP_REVAMPED = 1 --- @type PvpType
 --- | `PLAYER_PVP_CLASSIC`
 --- | `PLAYER_PVP_REVAMPED`
 
+STAR_LEAVE_LEVEL   = 0 --- @type StarExitType
+STAR_STAY_IN_LEVEL = 1 --- @type StarExitType
+STAR_NON_STOP      = 2 --- @type StarExitType
+
+--- @alias StarExitType
+--- | `STAR_LEAVE_LEVEL`
+--- | `STAR_STAY_IN_LEVEL`
+--- | `STAR_NON_STOP`
+
 --- @type integer
 UNKNOWN_LOCAL_INDEX = (-1)
 
@@ -5773,6 +5782,12 @@ YOSHI_ACT_FINISH_JUMPING_AND_DESPAWN = 4
 
 --- @type integer
 YOSHI_ACT_GIVE_PRESENT = 5
+
+--- @type integer
+YOSHI_ACT_GONE = 6
+
+--- @type integer
+YOSHI_ACT_REAPPEAR = 7
 
 --- @type integer
 YOSHI_ACT_CREDITS = 10

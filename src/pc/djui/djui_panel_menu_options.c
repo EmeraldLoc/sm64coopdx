@@ -150,7 +150,7 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
             // sVanillaDemosCheckbox = checkbox3;
         }
 
-        char* djuiScaleChoices[5] = { DLANG(DJUI_THEMES, AUTO), "x0.5", "x0.85", "x1.0", "x1.5" };
+        char* djuiScaleChoices[5] = { DLANG(DJUI_THEMES, AUTO), "x0.5", "x0.75", "x1.0", "x1.5" };
         djui_selectionbox_create(body, DLANG(DJUI_THEMES, DJUI_SCALE), djuiScaleChoices, 5, &configDjuiScale, djui_panel_theme_djui_setting_change);
         djui_checkbox_create(body, DLANG(DJUI_THEMES, CENTER), &configDjuiThemeCenter, djui_panel_theme_djui_setting_change);
         djui_checkbox_create(body, DLANG(DJUI_THEMES, SMOOTH_SCROLLING), &configSmoothScrolling, NULL);

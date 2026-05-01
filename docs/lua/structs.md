@@ -2282,7 +2282,7 @@
 | oCameraLakituSpeed | `number` |  |
 | oCameraLakituCircleRadius | `number` |  |
 | oCameraLakituFinishedDialog | `integer` |  |
-| oCameraLakituUnk104 | `integer` |  |
+| oCameraLakituMusicPlayed | `integer` |  |
 | oCameraLakituPitchVel | `integer` |  |
 | oCameraLakituYawVel | `integer` |  |
 | oEnemyLakituNumSpinies | `integer` |  |
@@ -2786,8 +2786,8 @@
 | playerInteractions | [enum PlayerInteractions](constants.md#enum-PlayerInteractions) |  |
 | bouncyLevelBounds | [enum BouncyLevelBounds](constants.md#enum-BouncyLevelBounds) |  |
 | pvpType | [enum PvpType](constants.md#enum-PvpType) |  |
+| stayInLevelAfterStar | [enum StarExitType](constants.md#enum-StarExitType) |  |
 | playerKnockbackStrength | `integer` |  |
-| stayInLevelAfterStar | `integer` |  |
 | skipIntro | `integer` |  |
 | bubbleDeath | `integer` |  |
 | enablePlayersInLevelDisplay | `integer` |  |

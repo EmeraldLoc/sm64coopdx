@@ -1708,7 +1708,7 @@
 --- @field public oCameraLakituSpeed number
 --- @field public oCameraLakituCircleRadius number
 --- @field public oCameraLakituFinishedDialog integer
---- @field public oCameraLakituUnk104 integer
+--- @field public oCameraLakituMusicPlayed integer
 --- @field public oCameraLakituPitchVel integer
 --- @field public oCameraLakituYawVel integer
 --- @field public oEnemyLakituNumSpinies integer
@@ -2142,8 +2142,8 @@
 --- @field public playerInteractions PlayerInteractions
 --- @field public bouncyLevelBounds BouncyLevelBounds
 --- @field public pvpType PvpType
+--- @field public stayInLevelAfterStar StarExitType
 --- @field public playerKnockbackStrength integer
---- @field public stayInLevelAfterStar integer
 --- @field public skipIntro integer
 --- @field public bubbleDeath integer
 --- @field public enablePlayersInLevelDisplay integer

@@ -67,7 +67,7 @@ static bool djui_panel_join_direct_ip_parse_port(char** msg) {
     return port <= 65535;
 }
 
-static bool djui_panel_join_direct_ip_valid(char* buffer) {
+UNUSED static bool djui_panel_join_direct_ip_valid(char* buffer) {
     char** msg = &buffer;
 
     if (!djui_panel_join_direct_ip_parse_numbers(msg)) { return false; }
