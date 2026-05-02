@@ -148,7 +148,7 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
     append_line(buf, &len, "    float4 position : SV_POSITION;");
     for (int t = 0; t < 2; t++) {
         if (ccf.used_textures[t]) {
-            buf_len += sprintf(buf + buf_len, "    float2 uv%d : TEXCOORD%d;", t, t);
+            len += sprintf(buf + len, "    float2 uv%d : TEXCOORD%d;", t, t);
             num_floats += 2;
         }
     }
@@ -222,7 +222,7 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
     append_str(buf, &len, "PSInput VSMain(float4 position : POSITION");
     for (int t = 0; t < 2; t++) {
         if (ccf.used_textures[t]) {
-            buf_len += sprintf(buf + buf_len, ", float2 uv%d : TEXCOORD%d;", t, t);
+            len += sprintf(buf + len, ", float2 uv%d : TEXCOORD%d;", t, t);
         }
     }
     if (cc.cm.use_fog) {
@@ -242,7 +242,7 @@ void gfx_direct3d_common_build_shader(char buf[4096], size_t& len, size_t& num_f
     }
     for (int t = 0; t < 2; t++) {
         if (ccf.used_textures[t]) {
-            buf_len += sprintf(buf + buf_len, "    result.uv%d = uv%d;", t, t);
+            len += sprintf(buf + len, "    result.uv%d = uv%d;", t, t);
         }
     }
     if (cc.cm.use_fog) {
