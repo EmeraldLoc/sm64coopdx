@@ -1,18 +1,12 @@
 # Lua Reference
 
-The Lua scripting API is in early development.
-
-Expect many more things to be supported in the future.
-
-<br />
-
 ## How to install Lua mods
-Lua scripts you make can be placed either the `mods` folder in the base directory, or in `<SAVE FILE LOCATION>/mods`
+Lua scripts you make can be placed either the `mods` folder in the base directory, or in `<SAVE FILE LOCATION>/mods`. You can also drag and drop mods into the window to install them.
 
 Save file locations:
-- Windows: `%appdata%/sm64ex-coop`
-- Linux: `~/.local/share/sm64ex-coop`
-- MacOS: `~/Library/Application Support/sm64ex-coop`
+- Windows: `%appdata%/sm64coopdx`
+- Linux: `~/.local/share/sm64coopdx`
+- MacOS: `~/Library/Application Support/sm64coopdx`
 
 <br />
 

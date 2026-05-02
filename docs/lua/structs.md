@@ -53,6 +53,7 @@
 - [GraphNodeSwitchCase](#GraphNodeSwitchCase)
 - [GraphNodeTranslation](#GraphNodeTranslation)
 - [GraphNodeTranslationRotation](#GraphNodeTranslationRotation)
+- [HudDisplay](#HudDisplay)
 - [InstantWarp](#InstantWarp)
 - [LakituState](#LakituState)
 - [LevelValues](#LevelValues)
@@ -1425,6 +1426,22 @@
 
 <br />
 
+## [HudDisplay](#HudDisplay)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| lives | `integer` |  |
+| coins | `integer` |  |
+| stars | `integer` |  |
+| wedges | `integer` |  |
+| keys | `integer` |  |
+| flags | `integer` |  |
+| timer | `integer` |  |
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [InstantWarp](#InstantWarp)
 
 | Field | Type | Access |
@@ -1746,6 +1763,10 @@
 | isStream | `boolean` | read-only |
 | baseVolume | `number` |  |
 | loaded | `boolean` | read-only |
+| position | `number` |  |
+| looping | `boolean` |  |
+| frequency | `number` |  |
+| volume | `number` |  |
 
 [:arrow_up_small:](#)
 
@@ -1788,6 +1809,7 @@
 | filepath | `string` | read-only |
 | size | `integer` | read-only |
 | offset | `integer` | read-only |
+| compressionLevel | `integer` | read-only |
 | isText | `boolean` | read-only |
 | isPublic | `boolean` | read-only |
 
@@ -1814,6 +1836,7 @@
 | erase | [`mod_fs_file_erase`](functions-5.md#mod_fs_file_erase) |
 | set_text_mode | [`mod_fs_file_set_text_mode`](functions-5.md#mod_fs_file_set_text_mode) |
 | set_public | [`mod_fs_file_set_public`](functions-5.md#mod_fs_file_set_public) |
+| set_compression | [`mod_fs_file_set_compression`](functions-5.md#mod_fs_file_set_compression) |
 
 [:arrow_up_small:](#)
 
@@ -2319,7 +2342,7 @@
 | oCameraLakituSpeed | `number` |  |
 | oCameraLakituCircleRadius | `number` |  |
 | oCameraLakituFinishedDialog | `integer` |  |
-| oCameraLakituUnk104 | `integer` |  |
+| oCameraLakituMusicPlayed | `integer` |  |
 | oCameraLakituPitchVel | `integer` |  |
 | oCameraLakituYawVel | `integer` |  |
 | oEnemyLakituNumSpinies | `integer` |  |
@@ -2834,8 +2857,8 @@
 | playerInteractions | [enum PlayerInteractions](constants.md#enum-PlayerInteractions) |  |
 | bouncyLevelBounds | [enum BouncyLevelBounds](constants.md#enum-BouncyLevelBounds) |  |
 | pvpType | [enum PvpType](constants.md#enum-PvpType) |  |
+| stayInLevelAfterStar | [enum StarExitType](constants.md#enum-StarExitType) |  |
 | playerKnockbackStrength | `integer` |  |
-| stayInLevelAfterStar | `integer` |  |
 | skipIntro | `integer` |  |
 | bubbleDeath | `integer` |  |
 | enablePlayersInLevelDisplay | `integer` |  |
