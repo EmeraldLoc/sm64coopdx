@@ -378,20 +378,6 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     ied[ied_index++] = { "LIGHTMAP", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
     for (uint32_t i = 0; i < CC_MAX_INPUTS; i++) {
         ied[ied_index++] = { "INPUT", i, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-    for (unsigned int t = 0; t < 2; t++) {
-        if (cc_features.used_textures[t]) {
-            ied[ied_index++] = { "TEXCOORD", t, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-        }
-    }
-    if (cc->cm.use_fog) {
-        ied[ied_index++] = { "FOG", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-    }
-    if (cc->cm.light_map) {
-        ied[ied_index++] = { "LIGHTMAP", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
-    }
-    for (uint32_t i = 0; i < cc_features.num_inputs; i++) {
-        DXGI_FORMAT format = cc->cm.use_alpha ? DXGI_FORMAT_R32G32B32A32_FLOAT : DXGI_FORMAT_R32G32B32_FLOAT;
-        ied[ied_index++] = { "INPUT", i, format, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
     }
     ied[ied_index++] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
     ied[ied_index++] = { "BARYCENTRIC", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 };
