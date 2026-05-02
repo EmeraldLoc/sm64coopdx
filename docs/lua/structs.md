@@ -56,6 +56,7 @@
 - [GraphNodeSwitchCase](#GraphNodeSwitchCase)
 - [GraphNodeTranslation](#GraphNodeTranslation)
 - [GraphNodeTranslationRotation](#GraphNodeTranslationRotation)
+- [HudDisplay](#HudDisplay)
 - [InstantWarp](#InstantWarp)
 - [LakituState](#LakituState)
 - [LevelValues](#LevelValues)
@@ -1478,6 +1479,22 @@
 
 <br />
 
+## [HudDisplay](#HudDisplay)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| lives | `integer` |  |
+| coins | `integer` |  |
+| stars | `integer` |  |
+| wedges | `integer` |  |
+| keys | `integer` |  |
+| flags | `integer` |  |
+| timer | `integer` |  |
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [InstantWarp](#InstantWarp)
 
 | Field | Type | Access |
@@ -1799,6 +1816,10 @@
 | isStream | `boolean` | read-only |
 | baseVolume | `number` |  |
 | loaded | `boolean` | read-only |
+| position | `number` |  |
+| looping | `boolean` |  |
+| frequency | `number` |  |
+| volume | `number` |  |
 
 [:arrow_up_small:](#)
 
@@ -2878,8 +2899,8 @@
 | playerInteractions | [enum PlayerInteractions](constants.md#enum-PlayerInteractions) |  |
 | bouncyLevelBounds | [enum BouncyLevelBounds](constants.md#enum-BouncyLevelBounds) |  |
 | pvpType | [enum PvpType](constants.md#enum-PvpType) |  |
+| stayInLevelAfterStar | [enum StarExitType](constants.md#enum-StarExitType) |  |
 | playerKnockbackStrength | `integer` |  |
-| stayInLevelAfterStar | `integer` |  |
 | skipIntro | `integer` |  |
 | bubbleDeath | `integer` |  |
 | enablePlayersInLevelDisplay | `integer` |  |

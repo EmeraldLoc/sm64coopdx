@@ -982,6 +982,15 @@
 --- @field public translation Vec3s
 --- @field public rotation Vec3s
 
+--- @class HudDisplay
+--- @field public lives integer
+--- @field public coins integer
+--- @field public stars integer
+--- @field public wedges integer
+--- @field public keys integer
+--- @field public flags integer
+--- @field public timer integer
+
 --- @class InstantWarp
 --- @field public id integer
 --- @field public area integer
@@ -1226,6 +1235,10 @@
 --- @field public isStream boolean
 --- @field public baseVolume number
 --- @field public loaded boolean
+--- @field public position number
+--- @field public looping boolean
+--- @field public frequency number
+--- @field public volume number
 
 --- @class ModFs
 --- @field public mod Mod
@@ -2185,8 +2198,8 @@
 --- @field public playerInteractions PlayerInteractions
 --- @field public bouncyLevelBounds BouncyLevelBounds
 --- @field public pvpType PvpType
+--- @field public stayInLevelAfterStar StarExitType
 --- @field public playerKnockbackStrength integer
---- @field public stayInLevelAfterStar integer
 --- @field public skipIntro integer
 --- @field public bubbleDeath integer
 --- @field public enablePlayersInLevelDisplay integer
