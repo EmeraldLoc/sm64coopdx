@@ -167,9 +167,12 @@ UNUSED static u8 eyerok_boss_act_show_intro_text_continue_dialog(void) {
 static void eyerok_boss_act_show_intro_text(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState)) {
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead
-        marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        struct NetworkPlayer *np = get_network_player_smallest_global();
+        marioState = &gMarioStates[np->localIndex];
+        o->globalPlayerIndex = np->globalIndex;
+        network_send_object(o);
     }
     if (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 0, CUTSCENE_DIALOG, gBehaviorValues.dialogs.EyerokIntroDialog, eyerok_boss_act_show_intro_text_continue_dialog)) {
         o->oAction = EYEROK_BOSS_ACT_FIGHT;
@@ -234,9 +237,12 @@ u8 eyerok_boss_act_die_continue_dialog(void) { return o->oAction == EYEROK_BOSS_
 static void eyerok_boss_act_die(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState)) {
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead
-        marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        struct NetworkPlayer *np = get_network_player_smallest_global();
+        marioState = &gMarioStates[np->localIndex];
+        o->globalPlayerIndex = np->globalIndex;
+        network_send_object(o);
     }
     if (o->oTimer == 60) {
         if (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 0, CUTSCENE_DIALOG, gBehaviorValues.dialogs.EyerokDefeatedDialog, eyerok_boss_act_die_continue_dialog)) {

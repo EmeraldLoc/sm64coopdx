@@ -65,9 +65,12 @@ void king_bobomb_act_0(void) {
     } else {
         if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState)) {
+        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
             // use player with the smallest global index instead
-            marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+            struct NetworkPlayer *np = get_network_player_smallest_global();
+            marioState = &gMarioStates[np->localIndex];
+            o->globalPlayerIndex = np->globalIndex;
+            network_send_object(o);
         }
         if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 1, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombIntroDialog, king_bobomb_act_0_continue_dialog)) {
             o->oAction = 2;
@@ -243,7 +246,7 @@ void king_bobomb_act_7(void) {
         marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
     }
     // update dialog if we are within king bobomb's area
-    bool canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f);
+    bool canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f && marioState->visibleToEnemies);
     if (!canUpdateDialog) {
         // iterate through players via global index until we find someone who can
         for (int i = 0; i < MAX_PLAYERS; i++) {
@@ -252,7 +255,7 @@ void king_bobomb_act_7(void) {
             marioState = &gMarioStates[np->localIndex];
 
             if (!is_player_active(marioState)) continue;
-            canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f);
+            canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f && marioState->visibleToEnemies);
             if (!canUpdateDialog) continue;
             break;
         }
@@ -376,9 +379,12 @@ void king_bobomb_act_5(void) { // bobomb returns home
         case 4:
             if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
             marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-            if (!is_player_active(marioState)) {
+            if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
                 // use player with the smallest global index instead
-                marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+                struct NetworkPlayer *np = get_network_player_smallest_global();
+                marioState = &gMarioStates[np->localIndex];
+                o->globalPlayerIndex = np->globalIndex;
+                network_send_object(o);
             }
             if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 1, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombCheatDialog, king_bobomb_act_5_continue_dialog)) {
                 o->oAction = 2;

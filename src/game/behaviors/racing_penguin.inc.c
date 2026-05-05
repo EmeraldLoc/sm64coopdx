@@ -107,7 +107,7 @@ static void racing_penguin_act_show_init_text(void) {
     if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead
         struct NetworkPlayer *np = get_network_player_smallest_global();
-        marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        marioState = &gMarioStates[np->localIndex];
         o->globalPlayerIndex = np->globalIndex;
 
         // double check that we are actually active and visible this time
