@@ -616,7 +616,7 @@ static char *get_update_path() {
 
 bool can_update_game() {
     // the file is not guaranteed to exist, so make sure we have the updater installed
-    return fs_sys_file_exists(get_update_path()) && !gUpdateMessage;
+    return fs_sys_file_exists(get_update_path()) && gUpdateMessage;
 }
 
 void update_game(void) {
@@ -638,6 +638,9 @@ void update_game(void) {
     }
     exit(0);
 #else
+    fclose(stdin);
+    fclose(stdout);
+    fclose(stderr);
     execl(updateExecFilePath, "coopdx-updater", NULL);
     exit(1);
 #endif
