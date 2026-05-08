@@ -628,7 +628,11 @@ void update_game(void) {
 
     si.cb = sizeof(si);
 
-    if (CreateProcessA(updateExecFilePath, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
+    char commandBuf[SYS_MAX_PATH];
+    // this can truncate, but under normal use, SYS_MAX_PATH should not ever be filled up
+    snprintf(commandBuf, sizeof(commandBuf), "%s --game-update", updateExecFilePath);
+
+    if (CreateProcessA(NULL, commandBuf, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
     }

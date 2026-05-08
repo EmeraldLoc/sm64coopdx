@@ -46,6 +46,8 @@ ENHANCE_LEVEL_TEXTURES ?= 1
 DISCORD_SDK ?= 1
 # Enable CoopNet SDK (used for CoopNet server hosting)
 COOPNET ?= 1
+# Enable Updater (used for automatic updates)
+UPDATER ?= 1
 # Enable docker build workarounds
 DOCKERBUILD ?= 0
 # Sets your optimization level for building.
@@ -1006,8 +1008,10 @@ endif
 
 # Updater
 UPDATER_EXEC :=
-ifeq ($(COOPNET),1)
-  ifeq ($(OSX_BUILD),1)
+ifeq ($(UPDATER),1)
+  ifeq ($(WINDOWS_BUILD),1)
+    UPDATER_EXEC += ./updater/win64/coopdx-updater.exe
+  else ifeq ($(OSX_BUILD),1)
     ifeq ($(shell uname -m),arm64)
       UPDATER_EXEC += ./updater/mac_arm/coopdx-updater
     else
