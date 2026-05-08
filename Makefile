@@ -1600,8 +1600,6 @@ ifeq ($(OSX_BUILD),1)
   SDL2_LIB := $(shell find $(BREW_PREFIX)/lib/ | grep libSDL2- | sort -n | uniq)
 endif
 
-UPDATE_BINARY_PATH := updater/
-
 all:
 	@if [ "$(USE_APP)" = "0" ]; then \
 		rm -rf build/us_pc/sm64coopdx.app; \
