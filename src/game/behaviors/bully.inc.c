@@ -41,7 +41,9 @@ static void bhv_bully_network_init(void) {
     // there are multiple bully behaviors that use this function
     // syncing bullies works by doing the standard distance-based sync
     // but overriding ownership and ignoring syncing if the bully is dead
-    struct SyncObject* so = sync_object_init(o, 4000.0f);
+    // this behavior should probably be reworked at some point, but there's
+    // not a whole lot of better options
+    struct SyncObject *so = sync_object_init(o, 4000.0f);
     if (so) {
         sync_object_init_field(o, o->oFlags);
         sync_object_init_field(o, o->oBullyKBTimerAndMinionKOCounter);
@@ -100,7 +102,7 @@ void bhv_big_bully_init(void) {
 
     if (gCurrCourseNum == COURSE_LLL) {
         spawn_object_abs_with_rot(o, 0, MODEL_NONE, bhvLllTumblingBridge, 0, 154, -5631, 0, 0, 0);
-        struct Object* lllTumblingBridge = cur_obj_nearest_object_with_behavior(bhvLllTumblingBridge);
+        struct Object *lllTumblingBridge = cur_obj_nearest_object_with_behavior(bhvLllTumblingBridge);
         if (lllTumblingBridge != NULL) { lllTumblingBridge->oIntangibleTimer = -1; }
     }
 }
@@ -136,7 +138,7 @@ void bully_act_chase_mario(void) {
     f32 posY = o->oPosY;
     f32 homeZ = o->oHomeZ;
 
-    struct Object* player = nearest_player_to_object(o);
+    struct Object *player = nearest_player_to_object(o);
 
     if (o->oTimer < 10) {
         o->oForwardVel = 3.0;
@@ -162,7 +164,7 @@ void bully_act_chase_mario(void) {
 }
 
 void bully_act_knockback(void) {
-    struct Object* player = nearest_player_to_object(o);
+    struct Object *player = nearest_player_to_object(o);
     if (o->oForwardVel < 10.0 && (s32) o->oVelY == 0) {
         o->oForwardVel = 1.0;
         o->oBullyKBTimerAndMinionKOCounter++;
@@ -365,7 +367,7 @@ void bhv_big_bully_with_minions_init(void) {
 void big_bully_spawn_star(void) {
     if (obj_lava_death() == 1) {
         spawn_mist_particles();
-        f32* starPos = gLevelValues.starPositions.BigBullyStarPos;
+        f32 *starPos = gLevelValues.starPositions.BigBullyStarPos;
         spawn_networked_default_star(starPos[0], starPos[1], starPos[2], o->oBullyLastNetworkPlayerIndex);
     }
 }
@@ -414,8 +416,9 @@ void bhv_big_bully_with_minions_loop(void) {
             if (o->oBullyKBTimerAndMinionKOCounter == 3) {
                 play_puzzle_jingle();
 
-                if (o->oTimer >= 91)
+                if (o->oTimer >= 91) {
                     o->oAction = BULLY_ACT_ACTIVATE_AND_FALL;
+                }
             }
             break;
 

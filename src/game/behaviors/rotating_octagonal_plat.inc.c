@@ -15,5 +15,5 @@ void bhv_rotating_octagonal_plat_init(void) {
 }
 
 void bhv_rotating_octagonal_plat_loop(void) {
-    o->oFaceAngleYaw += o->oAngleVelYaw;
+    o->oFaceAngleYaw = gNetworkAreaTimer * o->oAngleVelYaw;
 }
