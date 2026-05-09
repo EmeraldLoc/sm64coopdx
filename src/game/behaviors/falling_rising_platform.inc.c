@@ -19,16 +19,14 @@ void bhv_squishable_platform_loop(void) {
     o->oPlatformTimer += 0x80;
 }
 
-void bhv_bitfs_sinking_platform_loop(void) {
-    // uses standard distance-based sync system
-    if (!sync_object_is_initialized(o->oSyncID)) {
-        struct SyncObject* so = sync_object_init(o, 4000.0f);
-        if (so) {
-            so->minUpdateRate = 5.0f;
-            sync_object_init_field(o, o->oPlatformTimer);
-        }
-    }
+void bhv_bitfs_sinking_platform_init(void) {
+    // synced via area timer
+    o->areaTimerType = AREA_TIMER_TYPE_LOOP;
+    o->areaTimer = 0;
+    o->areaTimerDuration = 256;
+}
 
+void bhv_bitfs_sinking_platform_loop(void) {
     o->oPosY -= sins(o->oPlatformTimer) * 0.58; //! f32 double conversion error accumulates on Wii VC causing the platform to rise up
     o->oPlatformTimer += 0x100;
 }
@@ -38,10 +36,20 @@ void bhv_ddd_moving_pole_loop(void) {
     obj_copy_pos_and_angle(o, o->parentObj);
 }
 
+void bhv_bitfs_sinking_cage_platform_init(void) {
+    if (o->oBehParams2ndByte != 0) {
+        o->oPosY -= 300.0f;
+    }
+
+    o->areaTimerType = AREA_TIMER_TYPE_LOOP;
+    o->areaTimer = 0;
+    o->areaTimerDuration = 256;
+}
+
 void bhv_bitfs_sinking_cage_platform_loop(void) {
     // uses standard distance-based sync system
     if (!sync_object_is_initialized(o->oSyncID)) {
-        struct SyncObject* so = sync_object_init(o, 4000.0f);
+        struct SyncObject *so = sync_object_init(o, 4000.0f);
         if (so) {
             so->minUpdateRate = 5.0f;
             sync_object_init_field(o, o->oPlatformTimer);
@@ -53,8 +61,6 @@ void bhv_bitfs_sinking_cage_platform_loop(void) {
     }
 
     if (o->oBehParams2ndByte != 0) {
-        if (o->oTimer == 0)
-            o->oPosY -= 300.0f;
         o->oPosY += sins(o->oPlatformTimer) * 7.0f;
     } else {
         o->oPosY -= sins(o->oPlatformTimer) * 3.0f;

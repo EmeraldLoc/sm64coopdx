@@ -2,7 +2,8 @@
 void bhv_swing_platform_init(void) {
     o->oSwingPlatformAngle = 0x2000;
 
-    // uses standard distance-based syncing
+    // uses standard distance-based syncing. Can't use area timer based syncing because the object is not
+    // fixed, very unfortunate
     struct SyncObject *so = sync_object_init(o, 4000.0f);
     if (so) {
         so->minUpdateRate = 5.0f;

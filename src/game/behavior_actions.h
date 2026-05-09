@@ -184,8 +184,12 @@ void bhv_unused_particle_spawn_loop(void);
 void bhv_ukiki_cage_star_loop(void);
 /* |description|Behavior loop function for Ukiki cage|descriptionEnd| */
 void bhv_ukiki_cage_loop(void);
+/* |description|Behavior init function for Bowser in the Fire Sea sinking platform|descriptionEnd| */
+void bhv_bitfs_sinking_platform_init(void);
 /* |description|Behavior loop function for Bowser in the Fire Sea sinking platform|descriptionEnd| */
 void bhv_bitfs_sinking_platform_loop(void);
+/* |description|Behavior init function for Bowser in the Fire Sea sinking cage platform|descriptionEnd| */
+void bhv_bitfs_sinking_cage_platform_init(void);
 /* |description|Behavior loop function for Bowser in the Fire Sea sinking cage platform|descriptionEnd| */
 void bhv_bitfs_sinking_cage_platform_loop(void);
 /* |description|Behavior loop function for Dire Dire Docks moving pole|descriptionEnd| */

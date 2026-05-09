@@ -77,10 +77,9 @@ void bhv_activated_back_and_forth_platform_init(void) {
  */
 void bhv_activated_back_and_forth_platform_update(void) {
     u8 doSendNetwork = FALSE;
-    UNUSED s32 unused[3];
 
-    struct MarioState* marioState = nearest_possible_mario_state_to_object(o);
-    struct Object* player = marioState ? marioState->marioObj : NULL;
+    struct MarioState *marioState = nearest_possible_mario_state_to_object(o);
+    struct Object *player = marioState ? marioState->marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
 
     // oVelY is used for vertical platforms' movement and also for
