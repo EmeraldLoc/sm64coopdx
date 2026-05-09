@@ -205,16 +205,14 @@ void bookshelf_manager_act_2(void) {
             }
         } else {
             if (o->oBookSwitchManagerUnkF4 >= 3) {
-                if (o->oTimer > 100) {
-                    if (so && so->owned) {
-                        o->parentObj = cur_obj_nearest_object_with_behavior(bhvHauntedBookshelf);
-                        o->oAction = 3;
-                        network_send_object(o);
-                        if (o->parentObj != NULL) {
-                            o->parentObj->oAction = 1;
-                            o->oPosX = o->parentObj->oPosX;
-                            network_send_object(o->parentObj);
-                        }
+                if (o->oTimer > 100 && so && so->owned) {
+                    o->parentObj = cur_obj_nearest_object_with_behavior(bhvHauntedBookshelf);
+                    o->oAction = 3;
+                    network_send_object(o);
+                    if (o->parentObj != NULL) {
+                        o->parentObj->oAction = 1;
+                        o->oPosX = o->parentObj->oPosX;
+                        network_send_object(o->parentObj);
                     }
                 } else if (o->oTimer == 30) {
                     play_puzzle_jingle();
@@ -228,12 +226,11 @@ void bookshelf_manager_act_2(void) {
 
 void bookshelf_manager_act_3(void) {
     // opening bookshelf
-
     if (o->parentObj == NULL || o->parentObj->behavior != smlua_override_behavior(bhvHauntedBookshelf)) {
         o->parentObj = cur_obj_nearest_object_with_behavior(bhvHauntedBookshelf);
     }
 
-    struct SyncObject* so = sync_object_get(o->oSyncID);
+    struct SyncObject *so = sync_object_get(o->oSyncID);
     if (o->oTimer > 85) {
         if (so && so->owned) {
             o->oAction = 4;
@@ -247,8 +244,7 @@ void bookshelf_manager_act_3(void) {
 
 void bookshelf_manager_act_4(void) {
     // bookshelf is done opening
-
-    struct SyncObject* so = sync_object_get(o->oSyncID);
+    struct SyncObject *so = sync_object_get(o->oSyncID);
     if (o->oBookSwitchManagerUnkF4 >= 3) {
         obj_mark_for_deletion(o);
     } else if (so && so->owned) {
@@ -263,7 +259,7 @@ void bhv_haunted_bookshelf_manager_override_ownership(u8 *shouldOverride, u8 *sh
 }
 
 static u8 bhv_haunted_bookshelf_manager_ignore_if_true(void) {
-    struct SyncObject* so = sync_object_get(o->oSyncID);
+    struct SyncObject *so = sync_object_get(o->oSyncID);
     if (!so) { return true; }
     return so->owned;
 }
@@ -271,7 +267,7 @@ static u8 bhv_haunted_bookshelf_manager_ignore_if_true(void) {
 void bhv_haunted_bookshelf_manager_loop(void) {
     // uses event based syncing and has the player with the smallest index as the owner
     if (!sync_object_is_initialized(o->oSyncID)) {
-        struct SyncObject* so = sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS);
+        struct SyncObject *so = sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS);
         if (so) {
             so->syncDeathEvent = FALSE;
             so->override_ownership = bhv_haunted_bookshelf_manager_override_ownership;
@@ -335,11 +331,8 @@ void bhv_book_switch_loop(void) {
     if (o->parentObj->oAction == 4) {
         obj_mark_for_deletion(o);
     } else {
-        //s32 attackType = obj_check_attacks(&sBookSwitchHitbox, o->oAction); // can't do this because it only works for the local mario
-        obj_set_hitbox(o, &sBookSwitchHitbox);
-        o->oInteractStatus = 0;
+        s32 attackType = obj_check_attacks(&sBookSwitchHitbox, o->oAction);
         if (o->parentObj->oBookSwitchManagerUnkF8 != 0 || o->oAction == 1) {
-            s32 interaction = determine_interaction(marioState, o);
             if (distanceToPlayer < 100.0f) {
                 cur_obj_become_tangible();
             } else {
@@ -355,14 +348,13 @@ void bhv_book_switch_loop(void) {
                 cur_obj_play_sound_2(SOUND_OBJ_DEFAULT_DEATH);
             }
 
-            if (approach_f32_ptr(&o->oBookSwitchUnkF4, 50.0f, 20.0f) && interaction & INT_ANY_ATTACK) {
-                if (o->parentObj->oBookSwitchManagerUnkF4 >= 0 && o->oTimer > 60) {
-                    s32 attackType = attack_object(marioState, o, interaction);
-                    if (attackType == ATTACK_PUNCH || attackType == ATTACK_KICK_OR_TRIP || attackType == ATTACK_FROM_BELOW) {
-                        if (so && so->owned && o->oAction != 2) {
-                            o->oAction = 2;
-                            network_send_object(o);
-                        }
+            if (approach_f32_ptr(&o->oBookSwitchUnkF4, 50.0f, 20.0f)) {
+                if (o->parentObj->oBookSwitchManagerUnkF4 >= 0 && o->oTimer > 60
+                    && (attackType == ATTACK_PUNCH || attackType == ATTACK_KICK_OR_TRIP
+                    ||  attackType == ATTACK_FROM_BELOW)) {
+                    if (so && so->owned && o->oAction != 2) {
+                        o->oAction = 2;
+                        network_send_object(o);
                     }
                 }
             } else {

@@ -270,7 +270,7 @@ u32 determine_interaction(struct MarioState *m, struct Object *o) {
 /**
  * Sets the interaction types for INT_STATUS_INTERACTED, INT_STATUS_WAS_ATTACKED
  */
-u32 attack_object(struct MarioState* m, struct Object *o, s32 interaction) {
+static u32 attack_object(struct MarioState* m, struct Object *o, s32 interaction) {
     if (!o) { return 0; }
     u32 attackType = 0;
 
