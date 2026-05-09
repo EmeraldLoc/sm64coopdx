@@ -5,7 +5,6 @@
 #include "djui_panel_modlist.h"
 #include "djui_panel_playerlist.h"
 
-#include "djui_flow_layout.h"
 #include "pc/controller/controller_sdl.h"
 #include "pc/controller/controller_mouse.h"
 #include "pc/controller/controller_keyboard.h"
@@ -23,8 +22,6 @@ static enum PadHoldDirection sKeyboardHoldDirection = PAD_HOLD_DIR_NONE;
 static u16 sKeyboardButtons = 0;
 
 static bool sIgnoreInteractableUntilCursorReleased = false;
-static f32 sCursorDownStartY = 0;
-static bool sDragScrollActive = false;
 
 struct DjuiBase* gDjuiHovered = NULL;
 struct DjuiBase* gDjuiCursorDownOn = NULL;
@@ -127,7 +124,7 @@ static void djui_interactable_on_focus_end(struct DjuiBase* base) {
     CALL_CALLBACK(on_focus_end);
 }
 
-static void djui_interactable_on_value_change(struct DjuiBase* base) {
+UNUSED static void djui_interactable_on_value_change(struct DjuiBase* base) {
     if (base               == NULL) { return; }
     if (base->interactable == NULL) { return; }
 
@@ -466,11 +463,7 @@ void djui_interactable_update(void) {
         if (gDjuiHovered != NULL) {
             gInteractableMouseDown = gDjuiHovered;
             gDjuiHovered = NULL;
-            sCursorDownStartY = gCursorY;
-            sDragScrollActive = false;
             djui_interactable_on_cursor_down_begin(gInteractableMouseDown, !mouseButtons);
-        } else if (sDragScrollActive) {
-            djui_interactable_on_cursor_down(gInteractableMouseDown);
         } else {
             // check if vertical drag exceeds threshold to steal touch for scrolling
             f32 dragDist = gCursorY - sCursorDownStartY;
@@ -501,7 +494,6 @@ void djui_interactable_update(void) {
         if (gInteractableMouseDown != NULL) {
             djui_interactable_on_cursor_down_end(gInteractableMouseDown);
             gInteractableMouseDown = NULL;
-            sDragScrollActive = false;
         }
         struct DjuiBase* lastHovered = gDjuiHovered;
         gDjuiHovered = NULL;

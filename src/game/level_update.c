@@ -1144,7 +1144,7 @@ void update_hud_values(void) {
                 gHudDisplay.coins += 1;
                 play_sound(coinSound, gMarioState->marioObj->header.gfx.cameraToObject);
 
-                if (gServerSettings.stayInLevelAfterStar > 0 && gCurrCourseNum != COURSE_NONE) {
+                if (gServerSettings.stayInLevelAfterStar > STAR_LEAVE_LEVEL && gCurrCourseNum != COURSE_NONE) {
                     // retain vanilla behavior
                     if (gLevelValues.numCoinsToLife == 50) {
                         if (gHudDisplay.coins == 50 || gHudDisplay.coins == 100 || gHudDisplay.coins == 150) {
@@ -1503,6 +1503,44 @@ UNUSED static s32 play_mode_unused(void) {
     return 0;
 }
 
+s32 update_current_play_mode() {
+    s32 changeLevel = 0;
+
+    s16 hookPlaymode = sCurrPlayMode;
+    if (smlua_call_event_hooks(HOOK_BEFORE_PLAY_MODE_UPDATE, sCurrPlayMode, &hookPlaymode)) {
+        sCurrPlayMode = hookPlaymode;
+    }
+
+    switch (sCurrPlayMode) {
+        case PLAY_MODE_NORMAL:
+            changeLevel = play_mode_normal();
+            break;
+        case PLAY_MODE_PAUSED:
+            if (!network_check_singleplayer_pause()) {
+                changeLevel = play_mode_normal();
+            }
+
+            if (sCurrPlayMode == PLAY_MODE_PAUSED) {
+                changeLevel = play_mode_paused();
+            }
+            break;
+        case PLAY_MODE_CHANGE_AREA:
+            changeLevel = play_mode_change_area();
+            break;
+        case PLAY_MODE_CHANGE_LEVEL:
+            changeLevel = play_mode_change_level();
+            break;
+        case PLAY_MODE_FRAME_ADVANCE:
+            changeLevel = play_mode_frame_advance();
+            break;
+    }
+    s32 hookChangeLevel = changeLevel;
+    if (smlua_call_event_hooks(HOOK_ON_PLAY_MODE_UPDATE, sCurrPlayMode, &hookChangeLevel)) {
+        changeLevel = hookChangeLevel;
+    }
+    return changeLevel;
+}
+
 void update_menu_level(void) {
     // figure out level
     s32 curLevel = 0;
@@ -1730,29 +1768,7 @@ s32 update_level(void) {
         gCurrentArea->localAreaTimer++;
     }
 
-    switch (sCurrPlayMode) {
-        case PLAY_MODE_NORMAL:
-            changeLevel = play_mode_normal();
-            break;
-        case PLAY_MODE_PAUSED:
-            if (!network_check_singleplayer_pause()) {
-                changeLevel = play_mode_normal();
-            }
-
-            if (sCurrPlayMode == PLAY_MODE_PAUSED) {
-                changeLevel = play_mode_paused();
-            }
-            break;
-        case PLAY_MODE_CHANGE_AREA:
-            changeLevel = play_mode_change_area();
-            break;
-        case PLAY_MODE_CHANGE_LEVEL:
-            changeLevel = play_mode_change_level();
-            break;
-        case PLAY_MODE_FRAME_ADVANCE:
-            changeLevel = play_mode_frame_advance();
-            break;
-    }
+    changeLevel = update_current_play_mode();
 
     if (changeLevel) {
         reset_volume();
@@ -1938,7 +1954,6 @@ s32 lvl_init_from_save_file(UNUSED s16 arg0, s16 levelNum) {
     disable_warp_checkpoint();
     save_file_move_cap_to_default_location();
     select_mario_cam_mode();
-    set_yoshi_as_not_dead();
 
     return levelNum;
 }
@@ -2028,7 +2043,6 @@ void fake_lvl_init_from_save_file(void) {
     disable_warp_checkpoint();
     save_file_move_cap_to_default_location();
     select_mario_cam_mode();
-    set_yoshi_as_not_dead();
     fadeout_music(30);
 
     gChangeLevel = gLevelValues.entryLevel;
