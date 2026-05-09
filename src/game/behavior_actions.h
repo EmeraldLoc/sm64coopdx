@@ -198,6 +198,8 @@ void bhv_ddd_moving_pole_loop(void);
 void bhv_platform_normals_init(void);
 /* |description|Behavior loop function for Lethal Lava Land and Bowser in the Fire Sea tilting inverted pyramid|descriptionEnd| */
 void bhv_tilting_inverted_pyramid_loop(void);
+/* |description|Behavior init function for squishable platform|descriptionEnd| */
+void bhv_squishable_platform_init(void);
 /* |description|Behavior loop function for squishable platform|descriptionEnd| */
 void bhv_squishable_platform_loop(void);
 /* |description|Behavior loop function for beta moving flames spawn|descriptionEnd| */

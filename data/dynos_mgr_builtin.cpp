@@ -1546,6 +1546,7 @@ static const DynosBuiltinFunction sDynosBuiltinFuncs[] = {
     define_builtin_function(bhv_ddd_moving_pole_loop, FUNCTION_BHV),
     define_builtin_function(bhv_platform_normals_init, FUNCTION_BHV),
     define_builtin_function(bhv_tilting_inverted_pyramid_loop, FUNCTION_BHV),
+    define_builtin_function(bhv_squishable_platform_init, FUNCTION_BHV),
     define_builtin_function(bhv_squishable_platform_loop, FUNCTION_BHV),
     define_builtin_function(bhv_beta_moving_flames_spawn_loop, FUNCTION_BHV),
     define_builtin_function(bhv_beta_moving_flames_loop, FUNCTION_BHV),

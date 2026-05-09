@@ -1270,6 +1270,7 @@ const BehaviorScript bhvSquishablePlatform[] = {
     LOAD_COLLISION_DATA(bitfs_seg7_collision_squishable_platform),
     SET_FLOAT(oCollisionDistance, 10000),
     CALL_NATIVE(bhv_platform_normals_init),
+    CALL_NATIVE(bhv_squishable_platform_init),
     BEGIN_LOOP(),
         CALL_NATIVE(bhv_squishable_platform_loop),
         CALL_NATIVE(load_object_collision_model),
