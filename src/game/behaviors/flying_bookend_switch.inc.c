@@ -148,7 +148,7 @@ void bhv_bookend_spawn_loop(void) {
             if (book != NULL) {
                 book->oAction = 3;
 
-                struct Object* spawn_objects[] = { book };
+                struct Object *spawn_objects[] = { book };
                 u32 models[] = { MODEL_BOOKEND };
                 network_send_spawn_objects(spawn_objects, models, 1);
 
@@ -190,7 +190,7 @@ void bookshelf_manager_act_2(void) {
     // detect if we can open, and open bookshelf if we should
 
     //if (!(o->activeFlags & ACTIVE_FLAG_IN_DIFFERENT_ROOM)) {
-        struct SyncObject* so = sync_object_get(o->oSyncID);
+        struct SyncObject *so = sync_object_get(o->oSyncID);
         if (o->oBookSwitchManagerUnkF4 < 0) {
             if (o->oTimer > 30) {
                 if (so && so->owned) {
@@ -257,7 +257,7 @@ void bookshelf_manager_act_4(void) {
     }
 }
 
-void bhv_haunted_bookshelf_manager_override_ownership(u8* shouldOverride, u8* shouldOwn) {
+void bhv_haunted_bookshelf_manager_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
     *shouldOverride = TRUE;
     *shouldOwn = get_network_player_smallest_global() == gNetworkPlayerLocal;
 }
@@ -323,12 +323,10 @@ void bhv_book_switch_loop(void) {
         }
     }
 
-    struct Object *book;
-
-    struct MarioState* marioState = nearest_mario_state_to_object(o);
-    struct Object* player = marioState ? marioState->marioObj : NULL;
+    struct MarioState *marioState = nearest_mario_state_to_object(o);
+    struct Object *player = marioState ? marioState->marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
-    struct SyncObject* so = sync_object_get(o->oSyncID);
+    struct SyncObject *so = sync_object_get(o->oSyncID);
 
     o->header.gfx.scale[0] = 2.0f;
     o->header.gfx.scale[1] = 0.9f;
@@ -337,8 +335,11 @@ void bhv_book_switch_loop(void) {
     if (o->parentObj->oAction == 4) {
         obj_mark_for_deletion(o);
     } else {
-        s32 attackType = obj_check_attacks(&sBookSwitchHitbox, o->oAction);
+        //s32 attackType = obj_check_attacks(&sBookSwitchHitbox, o->oAction); // can't do this because it only works for the local mario
+        obj_set_hitbox(o, &sBookSwitchHitbox);
+        o->oInteractStatus = 0;
         if (o->parentObj->oBookSwitchManagerUnkF8 != 0 || o->oAction == 1) {
+            s32 interaction = determine_interaction(marioState, o);
             if (distanceToPlayer < 100.0f) {
                 cur_obj_become_tangible();
             } else {
@@ -354,9 +355,10 @@ void bhv_book_switch_loop(void) {
                 cur_obj_play_sound_2(SOUND_OBJ_DEFAULT_DEATH);
             }
 
-            if (approach_f32_ptr(&o->oBookSwitchUnkF4, 50.0f, 20.0f)) {
+            if (approach_f32_ptr(&o->oBookSwitchUnkF4, 50.0f, 20.0f) && interaction & INT_ANY_ATTACK) {
                 if (o->parentObj->oBookSwitchManagerUnkF4 >= 0 && o->oTimer > 60) {
-                    if (attackType == 1 || attackType == 2 || attackType == 6) {
+                    s32 attackType = attack_object(marioState, o, interaction);
+                    if (attackType == ATTACK_PUNCH || attackType == ATTACK_KICK_OR_TRIP || attackType == ATTACK_FROM_BELOW) {
                         if (so && so->owned && o->oAction != 2) {
                             o->oAction = 2;
                             network_send_object(o);
@@ -386,12 +388,12 @@ void bhv_book_switch_loop(void) {
                         }
 
                         if (so && so->owned) {
-                            book = spawn_object_abs_with_rot(o, 0, MODEL_BOOKEND, bhvFlyingBookend,
+                            struct Object *book = spawn_object_abs_with_rot(o, 0, MODEL_BOOKEND, bhvFlyingBookend,
                                                              0x1FC * randBool - 0x8CA, 890, z, 0,
                                                              0x8000 * randBool + 0x4000, 0);
                             if (book != NULL) {
                                 book->oAction = 3;
-                                struct Object* spawn_objects[] = { book };
+                                struct Object *spawn_objects[] = { book };
                                 u32 models[] = { MODEL_BOOKEND };
                                 network_send_spawn_objects(spawn_objects, models, 1);
                             }

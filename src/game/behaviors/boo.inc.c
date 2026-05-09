@@ -653,12 +653,12 @@ static void big_boo_act_2(void) {
 }
 
 static void big_boo_spawn_ghost_hunt_star(void) {
-    f32* starPos = gLevelValues.starPositions.GhostHuntBooStarPos;
+    f32 *starPos = gLevelValues.starPositions.GhostHuntBooStarPos;
     spawn_default_star(starPos[0], starPos[1], starPos[2]);
 }
 
 static void big_boo_spawn_balcony_star(void) {
-    f32* starPos = gLevelValues.starPositions.BalconyBooStarPos;
+    f32 *starPos = gLevelValues.starPositions.BalconyBooStarPos;
     spawn_default_star(starPos[0], starPos[1], starPos[2]);
 }
 

@@ -432,6 +432,7 @@ Useful for handling different types of player-object collisions, attacks, and ob
 |descriptionEnd| */
 u32 determine_interaction(struct MarioState *m, struct Object *o);
 
+u32 attack_object(struct MarioState* m, struct Object *o, s32 interaction);
 u32 process_interaction(struct MarioState *m, u32 interactType, struct Object *o, u32 (*interact_function)(struct MarioState *, u32 interactType, struct Object *));
 
 #endif // INTERACTION_H
