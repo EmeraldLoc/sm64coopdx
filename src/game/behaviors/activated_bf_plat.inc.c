@@ -37,8 +37,7 @@ void bhv_activated_back_and_forth_platform_init(void) {
         o->oActivatedBackAndForthPlatformFlipRotation = 0x8000;
     }
 
-    o->collisionData =
-        segmented_to_virtual(sActivatedBackAndForthPlatformCollisionModels[platformType]);
+    o->collisionData = segmented_to_virtual(sActivatedBackAndForthPlatformCollisionModels[platformType]);
 
     // Max distance the platform should move.
     // Equivalent to 50 * (oBehParams2ndByte & 0x7F), i.e. 50 * (oBehParams2ndByte % 128).
@@ -56,6 +55,7 @@ void bhv_activated_back_and_forth_platform_init(void) {
 
     o->oActivatedBackAndForthPlatformStartYaw = o->oFaceAngleYaw;
 
+    // uses event based syncing. Syncs when we finish a cycle
     sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS);
     sync_object_init_field(o, o->oPosX);
     sync_object_init_field(o, o->oPosY);
