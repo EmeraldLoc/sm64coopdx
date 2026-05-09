@@ -1017,6 +1017,8 @@ ifeq ($(UPDATER),1)
     else
       UPDATER_EXEC += ./updater/mac_intel/coopdx-updater
     endif
+  else ifeq ($(TARGET_RPI),0)
+    UPDATER_EXEC += ./updater/linux/coopdx-updater
   endif
 endif
 
