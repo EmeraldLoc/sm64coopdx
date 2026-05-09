@@ -191,6 +191,8 @@ The lua functions sent to `hook_event()` will be automatically called by SM64 wh
 | HOOK_ON_FIND_POISON_GAS_LEVEL | Called after poison gas level detection completes. Return a number to override the gas level | `number` x, `number` z, `number` gasLevel |
 | HOOK_ON_FIND_SURFACE_ON_RAY | Called after ray-surface intersection completes. Return `surface` to override the hit surface, or `surface, hitPos` to override both | `Vec3f` orig, `Vec3f` dir, [Surface](../structs.md#Surface) hitSurface, `Vec3f` hitPos |
 | HOOK_ON_DYNOS_PACK_TOGGLED | Called after a DynOS pack is toggled | `string` dynosPackName, `boolean` enabled |
+| HOOK_BEFORE_PLAY_MODE_UPDATE | Called before the play mode is ran. Return a number to override the play mode to be ran. | `number` playMode |
+| HOOK_ON_PLAY_MODE_UPDATE | Called after the play mode is ran. Return a number to override the change level. | `number` playMode |
 
 ### Parameters
 

@@ -62,6 +62,7 @@
     - [enum PlayerInteractions](#enum-PlayerInteractions)
     - [enum BouncyLevelBounds](#enum-BouncyLevelBounds)
     - [enum PvpType](#enum-PvpType)
+    - [enum StarExitType](#enum-StarExitType)
 - [network_player.h](#network_playerh)
     - [enum NetworkPlayerType](#enum-NetworkPlayerType)
 - [obj_behaviors.c](#obj_behaviorsc)
@@ -78,6 +79,7 @@
 - [seq_ids.h](#seq_idsh)
     - [enum SeqId](#enum-SeqId)
 - [sm64.h](#sm64h)
+- [smlua_audio_utils.h](#smlua_audio_utilsh)
 - [smlua_hooks.h](#smlua_hooksh)
     - [enum LuaHookedEventType](#enum-LuaHookedEventType)
     - [enum LuaHookedEventReturn](#enum-LuaHookedEventReturn)
@@ -90,6 +92,7 @@
 - [smlua_model_utils.h](#smlua_model_utilsh)
     - [enum ModelExtendedId](#enum-ModelExtendedId)
 - [sounds.h](#soundsh)
+- [surface_load.h](#surface_loadh)
 - [surface_terrains.h](#surface_terrainsh)
 - [types.h](#typesh)
     - [enum SpTaskState](#enum-SpTaskState)
@@ -1314,6 +1317,7 @@
 - G_VTX_EXT
 - G_SETENVRGB
 - G_PPARTTOCOLOR
+- G_STATE_EXT
 
 [:arrow_up_small:](#)
 
@@ -2234,6 +2238,13 @@
 | :--------- | :---- |
 | PLAYER_PVP_CLASSIC | 0 |
 | PLAYER_PVP_REVAMPED | 1 |
+
+### [enum StarExitType](#StarExitType)
+| Identifier | Value |
+| :--------- | :---- |
+| STAR_LEAVE_LEVEL | 0 |
+| STAR_STAY_IN_LEVEL | 1 |
+| STAR_NON_STOP | 2 |
 
 [:arrow_up_small:](#)
 
@@ -3478,6 +3489,16 @@
 
 <br />
 
+## [smlua_audio_utils.h](#smlua_audio_utils.h)
+- MOD_AUDIO_CHANNEL_MASTER
+- MOD_AUDIO_CHANNEL_MUSIC
+- MOD_AUDIO_CHANNEL_SFX
+- MOD_AUDIO_CHANNEL_ENV
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [smlua_hooks.h](#smlua_hooks.h)
 
 ### [enum LuaHookedEventType](#LuaHookedEventType)
@@ -3550,7 +3571,9 @@
 | HOOK_ON_FIND_POISON_GAS_LEVEL | 64 |
 | HOOK_ON_FIND_SURFACE_ON_RAY | 65 |
 | HOOK_ON_DYNOS_PACK_TOGGLED | 66 |
-| HOOK_MAX | 67 |
+| HOOK_BEFORE_PLAY_MODE_UPDATE | 67 |
+| HOOK_ON_PLAY_MODE_UPDATE | 68 |
+| HOOK_MAX | 69 |
 - MAX_HOOKED_BEHAVIORS
 
 [:arrow_up_small:](#)
@@ -4496,6 +4519,15 @@
 
 <br />
 
+## [surface_load.h](#surface_load.h)
+- SURFACE_POOL_STATIC
+- SURFACE_POOL_DYNAMIC
+- SURFACE_POOL_SOC
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [surface_terrains.h](#surface_terrains.h)
 - SURFACE_DEFAULT
 - SURFACE_BURNING
@@ -4702,6 +4734,7 @@
 - ANIM_FLAG_6
 - ANIM_FLAG_7
 - ANIM_FLAG_BONE_TRANS
+- ANIM_FLAG_BONE_SCALE
 - OBJECT_MAX_BHV_STACK
 - OBJECT_NUM_REGULAR_FIELDS
 - OBJECT_NUM_CUSTOM_FIELDS

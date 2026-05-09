@@ -15,7 +15,7 @@ struct CLIOptions gCLIOpts;
 
 static void print_help(void) {
     log_to_terminal("sm64coopdx\n");
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
     log_to_terminal("--console                 Enables the Windows console.\n");
 #endif
     log_to_terminal("--savepath SAVEPATH       Overrides the default save/config path ('!' expands to executable path).\n");
@@ -35,7 +35,10 @@ static void print_help(void) {
     log_to_terminal("--no-discord              Disables discord integration.\n");
     log_to_terminal("--disable-mods            Disables all mods that are already enabled.\n");
     log_to_terminal("--enable-mod MODNAME      Enables a mod.\n");
-    log_to_terminal("--headless                Enable Headless mode.");
+    log_to_terminal("--headless                Enable Headless mode.\n");
+#if defined(_WIN32)
+    log_to_terminal("--backend                 Sets the backend to either 'opengl' or 'directx'.");
+#endif
 }
 
 static inline int arg_string(const char *name, const char *value, char *target, int maxLength) {
@@ -58,9 +61,12 @@ bool parse_cli_opts(int argc, char* argv[]) {
     // initialize options with false values
     memset(&gCLIOpts, 0, sizeof(gCLIOpts));
     gCLIOpts.enableMods = NULL;
+#if defined(_WIN32)
+    gCLIOpts.backend = -1;
+#endif
 
     for (int i = 1; i < argc; i++) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
         if (!strcmp(argv[i], "--console")) {
             gCLIOpts.console = true;
         } else if (!strcmp(argv[i], "--savepath") && (i + 1) < argc) {
@@ -116,6 +122,14 @@ bool parse_cli_opts(int argc, char* argv[]) {
             gCLIOpts.enableMods[gCLIOpts.enabledModsCount - 1] = strdup(argv[++i]);
         } else if (!strcmp(argv[i], "--headless")) {
             gCLIOpts.headless = true;
+#if defined(_WIN32)
+        } else if (!strcmp(argv[i], "--backend") && (i + 1) < argc) {
+            if (!strcmp(argv[i + 1], "opengl")) {
+                gCLIOpts.backend = GAPI_GL;
+            } else if (!strcmp(argv[i + 1], "directx")) {
+                gCLIOpts.backend = GAPI_D3D11;
+            }
+#endif
         } else if (!strcmp(argv[i], "--help")) {
             print_help();
             return false;
