@@ -1453,7 +1453,13 @@ void bhv_bowser_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
     if (tiltingTimer > 0) {
         tiltingTimer--;
         *shouldOverride = TRUE;
-        *shouldOwn = (get_network_player_smallest_global() == gNetworkPlayerLocal);
+        struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
+        if (!is_player_active(marioState)) {
+            // if the owner left, set the global player index to the player with the smallest global
+            o->globalPlayerIndex = get_network_player_smallest_global(o->globalPlayerIndex);
+            network_send_object(o);
+        }
+        *shouldOwn = (o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex);
         return;
     }
 
