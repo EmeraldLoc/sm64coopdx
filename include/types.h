@@ -112,6 +112,7 @@ struct VblankHandler
 #define ANIM_FLAG_6           (1 << 6) // 0x40
 #define ANIM_FLAG_7           (1 << 7) // 0x80
 #define ANIM_FLAG_BONE_TRANS  (1 << 8)
+#define ANIM_FLAG_BONE_SCALE  (1 << 9)
 
 struct Animation {
     // TODO: Optimize this later if possible.
@@ -283,7 +284,10 @@ struct Object
 
     Mat4 transform;
 
+    // Obsolete: pool index is no longer stable
     u32 firstSurface;
+
+    // Tracks the number of dynamic surfaces currently owned by this object.
     u32 numSurfaces;
 
     u32 heldByPlayerIndex;
@@ -348,6 +352,7 @@ struct Surface
     s16 type;
     s8 flags;
     s8 room;
+    s8 poolType;
     s16 force;
     s16 lowerY;
     s16 upperY;
@@ -366,6 +371,7 @@ struct Surface
 
     f32 originOffset;
     u32 modifiedTimestamp;
+    u32 socId;
 
     struct Object *object;
 };

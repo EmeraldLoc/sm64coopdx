@@ -4050,27 +4050,6 @@ function djui_hud_measure_text(message)
     -- ...
 end
 
---- @param message string
---- @param x number
---- @param y number
---- @param scale number
---- Prints DJUI HUD text onto the screen
-function djui_hud_print_text(message, x, y, scale)
-    -- ...
-end
-
---- @param message string
---- @param prevX number
---- @param prevY number
---- @param prevScale number
---- @param x number
---- @param y number
---- @param scale number
---- Prints interpolated DJUI HUD text onto the screen
-function djui_hud_print_text_interpolated(message, prevX, prevY, prevScale, x, y, scale)
-    -- ...
-end
-
 --- @param texInfo TextureInfo
 --- @param x number
 --- @param y number
@@ -5162,6 +5141,12 @@ end
 --- @param count integer
 --- Sets the max amount of lights that can affect a vertex
 function le_set_max_lights_per_vertex(count)
+    -- ...
+end
+
+--- @param value boolean
+--- This will let the user control the lighting engine in real time to disable or enable it.
+function le_set_enabled(value)
     -- ...
 end
 
@@ -10359,6 +10344,20 @@ function audio_stream_set_volume(audio, volume)
     -- ...
 end
 
+--- @param audio ModAudio
+--- @return integer
+--- Gets the volume channel of an `audio` stream
+function audio_stream_get_volume_channel(audio)
+    -- ...
+end
+
+--- @param audio ModAudio
+--- @param channel integer
+--- Sets the volume channel of an `audio` stream
+function audio_stream_set_volume_channel(audio, channel)
+    -- ...
+end
+
 --- @param filename string
 --- @return ModAudio
 --- Loads an `audio` sample
@@ -10751,6 +10750,32 @@ end
 --- @param data Pointer_Collision
 --- Gets a table of the surface types from `data`
 function smlua_collision_util_find_surface_types(data)
+    -- ...
+end
+
+--- @param dynamic boolean
+--- @param surfaceType integer
+--- @param vertex1 Vec3s
+--- @param vertex2 Vec3s
+--- @param vertex3 Vec3s
+--- @return Surface
+--- Allocates a new collision surface with the given vertices, computes the surface normal and other fields, and inserts it into the spatial partition. Returns the new surface, or `nil` if the triangle is degenerate (zero area). Set `dynamic` to `true` for surfaces that are cleared each frame, or `false` for persistent static surfaces
+function smlua_collision_add_surface(dynamic, surfaceType, vertex1, vertex2, vertex3)
+    -- ...
+end
+
+--- @param surface Surface
+--- @param vertex1 Vec3s
+--- @param vertex2 Vec3s
+--- @param vertex3 Vec3s
+--- Moves an existing collision surface to new vertex positions. Recalculates the surface normal, origin offset, and Y bounds, removes the surface from its old spatial partition cells, and re-adds it to the correct cells. The previous vertices are preserved for interpolation
+function smlua_collision_move_surface(surface, vertex1, vertex2, vertex3)
+    -- ...
+end
+
+--- @param surface Surface
+--- Fully deletes a collision surface: removes it from the spatial partitions and frees its pool slot.
+function smlua_collision_delete_surface(surface)
     -- ...
 end
 
@@ -12589,6 +12614,12 @@ end
 --- @return Surface
 --- Gets a surface corresponding to `index` from the static object collision
 function get_static_object_surface(col, index)
+    -- ...
+end
+
+--- @param col StaticObjectCollision
+--- Removes all surfaces belonging to a static object collision and reclaims the SOC metadata
+function remove_static_object_collision(col)
     -- ...
 end
 
