@@ -339,13 +339,11 @@ void djui_interactable_on_text_editing(char* text, int cursorPos) {
 }
 
 void djui_interactable_on_scroll(float x, float y) {
-    // Priority: focused element (e.g. chat input)
-    if (gInteractableFocus && gInteractableFocus->interactable
-        && gInteractableFocus->interactable->on_scroll) {
+    if (gInteractableFocus && gInteractableFocus->interactable && gInteractableFocus->interactable->on_scroll) {
         gInteractableFocus->interactable->on_scroll(gInteractableFocus, x, y);
         return;
     }
-    // Bubble from hovered element up to ancestors
+
     struct DjuiBase* base = gDjuiHovered;
     while (base) {
         if (base->interactable && base->interactable->on_scroll) {
@@ -477,10 +475,7 @@ void djui_interactable_update(void) {
             // check if vertical drag exceeds threshold to steal touch for scrolling
             f32 dragDist = gCursorY - sCursorDownStartY;
             if (dragDist < 0) { dragDist = -dragDist; }
-            if (gInteractableMouseDown != NULL && dragDist > 10.0f
-                && gDjuiFlowLayoutScrollRender
-                && (!gInteractableMouseDown->interactable
-                    || !gInteractableMouseDown->interactable->on_cursor_down)) {
+            if (gInteractableMouseDown != NULL && dragDist > 10.0f && (!gInteractableMouseDown->interactable || !gInteractableMouseDown->interactable->on_cursor_down)) {
                 struct DjuiBase* parent = gInteractableMouseDown->parent;
                 while (parent) {
                     if (parent->render == gDjuiFlowLayoutScrollRender) {
@@ -493,6 +488,7 @@ void djui_interactable_update(void) {
                     }
                     parent = parent->parent;
                 }
+
                 if (!sDragScrollActive) {
                     djui_interactable_on_cursor_down(gInteractableMouseDown);
                 }

@@ -5,11 +5,10 @@ struct DjuiFlowLayout {
     struct DjuiBase base;
     enum DjuiFlowDirection flowDirection;
     struct DjuiScreenValue margin;
-    // Scroll
     bool scrollEnabled;
-    f32  scrollY;
-    f32  contentHeight;
-    f32  touchStartY;
+    f32 scrollY;
+    f32 contentHeight;
+    f32 touchStartY;
 };
 
 extern bool (*gDjuiFlowLayoutScrollRender)(struct DjuiBase*);

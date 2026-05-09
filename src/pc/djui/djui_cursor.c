@@ -3,9 +3,11 @@
 #include "djui_flow_layout.h"
 #include "pc/controller/controller_mouse.h"
 #include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/debuglog.h"
 #include "pc/pc_main.h"
 
 #define CURSOR_GFX_MAX_SIZE 20
+#define DJUI_CURSOR_ALIGNMENT_TOLERANCE 20.0f
 
 extern ALIGNED8 u8 gd_texture_hand_open[];
 extern ALIGNED8 u8 gd_texture_hand_closed[];
@@ -69,7 +71,7 @@ static f32 djui_cursor_base_distance(struct DjuiBase* base, f32 xScale, f32 ySca
     return sqrtf((x * x) * xScale + (y * y) * yScale);
 }
 
-static void djui_cursor_move_check(s8 xDir, s8 yDir, struct DjuiBase** pick, struct DjuiBase* base) {
+static void djui_cursor_move_check(s8 xDir, s8 yDir, struct DjuiBase **pick, struct DjuiBase *base) {
     if (!base->visible) { return; }
 
     if (base->interactable != NULL && base->interactable->enabled) {
@@ -78,8 +80,9 @@ static void djui_cursor_move_check(s8 xDir, s8 yDir, struct DjuiBase** pick, str
         y1 = base->elem.y;
         x2 = base->elem.x + base->elem.width;
         y2 = base->elem.y + base->elem.height;
-        bool xWithin = (gCursorX >= x1 && gCursorX <= x2) || sCursorMouseControlled;
-        bool yWithin = (gCursorY >= y1 && gCursorY <= y2) || sCursorMouseControlled;
+
+        bool xWithin = (gCursorX >= x1 - DJUI_CURSOR_ALIGNMENT_TOLERANCE && gCursorX <= x2 + DJUI_CURSOR_ALIGNMENT_TOLERANCE);
+        bool yWithin = (gCursorY >= y1 - DJUI_CURSOR_ALIGNMENT_TOLERANCE && gCursorY <= y2 + DJUI_CURSOR_ALIGNMENT_TOLERANCE);
 
         bool valid = false;
         if (yDir > 0 && gCursorY < y1 && xWithin) { valid = true; }
@@ -101,7 +104,7 @@ static void djui_cursor_move_check(s8 xDir, s8 yDir, struct DjuiBase** pick, str
     }
 
     // check all children
-    struct DjuiBaseChild* child = base->child;
+    struct DjuiBaseChild *child = base->child;
     while (child != NULL) {
         djui_cursor_move_check(xDir, yDir, pick, child->base);
         child = child->next;
@@ -114,26 +117,32 @@ void djui_cursor_move(s8 xDir, s8 yDir) {
     struct DjuiBase* pick = NULL;
     djui_cursor_move_check(xDir, yDir, &pick, &gDjuiRoot->base);
     if (pick != NULL) {
+        // look for scroll flow layout
+        struct DjuiBase* parent = pick->parent;
+        while (parent) {
+            if (parent->render == gDjuiFlowLayoutScrollRender) {
+                // auto scroll to have the element in bounds
+                struct DjuiFlowLayout* layout = (struct DjuiFlowLayout*)parent;
+                f32 targetTop = pick->elem.y;
+                f32 targetBottom = pick->elem.y + pick->elem.height;
+                f32 visibleTop = parent->clip.y;
+                f32 visibleBottom = parent->clip.y + parent->clip.height;
+
+                LOG_CONSOLE("Element Y is %f, whereas clip y for flow is %f", targetTop, visibleTop)
+                LOG_CONSOLE("Clip Height is %f, whereas clip height for flow is %f", pick->clip.height, parent->clip.height)
+
+                if (targetTop < visibleTop) {
+                    layout->scrollY -= (visibleTop - targetTop);
+                } else if (targetBottom > visibleBottom) {
+                    layout->scrollY += (targetBottom - visibleBottom);
+                }
+                break;
+            }
+            parent = parent->parent;
+        }
+
         sCursorMouseControlled = false;
         djui_cursor_input_controlled_center(pick);
-
-        // auto-scroll scrollable flow layout to show the picked element
-        if (gDjuiFlowLayoutScrollRender) {
-            struct DjuiBase* parent = pick->parent;
-            while (parent) {
-                if (parent->render == gDjuiFlowLayoutScrollRender) {
-                    struct DjuiFlowLayout* layout = (struct DjuiFlowLayout*)parent;
-                    f32 targetTop = pick->elem.y;
-                    f32 targetBot = pick->elem.y + pick->elem.height;
-                    f32 visTop = parent->clip.y;
-                    f32 visBot = parent->clip.y + parent->clip.height;
-                    if (targetTop < visTop) { layout->scrollY -= (visTop - targetTop); }
-                    else if (targetBot > visBot) { layout->scrollY += (targetBot - visBot); }
-                    break;
-                }
-                parent = parent->parent;
-            }
-        }
     }
 }
 

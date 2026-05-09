@@ -1,6 +1,7 @@
 #include "djui.h"
 
-bool (*gDjuiFlowLayoutScrollRender)(struct DjuiBase*) = NULL;
+static bool djui_flow_layout_scroll_render(struct DjuiBase* base);
+bool (*gDjuiFlowLayoutScrollRender)(struct DjuiBase*) = djui_flow_layout_scroll_render;
 
   ////////////////
  // properties //
@@ -53,7 +54,7 @@ static bool djui_flow_layout_scroll_render(struct DjuiBase* base) {
     // draw background
     djui_rect_render(base);
 
-    // compute content height from visible children
+    // get content height from visible children
     f32 contentHeight = layout->margin.value;
     struct DjuiBaseChild* child = base->child;
     while (child != NULL) {
@@ -75,6 +76,7 @@ static bool djui_flow_layout_scroll_render(struct DjuiBase* base) {
 
     // draw scrollbar indicator
     if (maxScroll > 0) {
+        // !! Scroll TODO: This doesn't use any themes! Just a random color!
         struct DjuiBaseRect* clip = &base->clip;
         f32 thumbRatio = clip->height / contentHeight;
         f32 thumbH = clip->height * thumbRatio;
@@ -98,8 +100,7 @@ static bool djui_flow_layout_scroll_render(struct DjuiBase* base) {
     return true;
 }
 
-static void djui_flow_layout_on_scroll(struct DjuiBase* base, float x, float y) {
-    UNUSED f32 unused = x;
+static void djui_flow_layout_on_scroll(struct DjuiBase* base, UNUSED float x, float y) {
     struct DjuiFlowLayout* layout = (struct DjuiFlowLayout*)base;
     layout->scrollY -= y * 48.0f;
 }
@@ -116,22 +117,16 @@ static void flow_scroll_update(struct DjuiBase* base) {
     layout->touchStartY = gCursorY;
 }
 
-static void flow_scroll_end(UNUSED struct DjuiBase* base) {}
-
 void djui_flow_layout_enable_scroll(struct DjuiFlowLayout* layout) {
     layout->scrollEnabled = true;
     layout->scrollY = 0;
     layout->base.render = djui_flow_layout_scroll_render;
     layout->base.abandonAfterChildRenderFail = false;
 
-    if (!gDjuiFlowLayoutScrollRender) {
-        gDjuiFlowLayoutScrollRender = djui_flow_layout_scroll_render;
-    }
-
     djui_interactable_create(&layout->base, NULL);
+    layout->base.interactable->enabled = false;
     djui_interactable_hook_scroll(&layout->base, djui_flow_layout_on_scroll);
-    djui_interactable_hook_cursor_down(&layout->base,
-        flow_scroll_begin, flow_scroll_update, flow_scroll_end);
+    djui_interactable_hook_cursor_down(&layout->base, flow_scroll_begin, flow_scroll_update, NULL);
 }
 
 static void djui_flow_layout_destroy(struct DjuiBase* base) {
