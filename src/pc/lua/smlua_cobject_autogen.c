@@ -1472,16 +1472,19 @@ static struct LuaObjectField sModFields[LUA_MOD_FIELD_COUNT] = {
     { "size",                 LVT_U64,      offsetof(struct Mod, size),                 true, LOT_NONE },
 };
 
-#define LUA_MOD_AUDIO_FIELD_COUNT 8
+#define LUA_MOD_AUDIO_FIELD_COUNT 11
 static struct LuaObjectField sModAudioFields[LUA_MOD_AUDIO_FIELD_COUNT] = {
-    { "baseVolume", LVT_F32,      offsetof(struct ModAudio, baseVolume), false, LOT_NONE },
-    { "filepath",   LVT_STRING_P, offsetof(struct ModAudio, filepath),   true,  LOT_NONE },
-    { "frequency",  LVT_PROPERTY, .get = "audio_stream_get_frequency",   .set = "audio_stream_set_frequency" },
-    { "isStream",   LVT_BOOL,     offsetof(struct ModAudio, isStream),   true,  LOT_NONE },
-    { "loaded",     LVT_BOOL,     offsetof(struct ModAudio, loaded),     true,  LOT_NONE },
-    { "looping",    LVT_PROPERTY, .get = "audio_stream_get_looping",     .set = "audio_stream_set_looping" },
-    { "position",   LVT_PROPERTY, .get = "audio_stream_get_position",    .set = "audio_stream_set_position" },
-    { "volume",     LVT_PROPERTY, .get = "audio_stream_get_volume",      .set = "audio_stream_set_volume" },
+    { "baseVolume",   LVT_F32,      offsetof(struct ModAudio, baseVolume),    false, LOT_NONE },
+    { "channel",      LVT_PROPERTY, .get = "audio_stream_get_volume_channel", .set = "audio_stream_set_volume_channel" },
+    { "file",         LVT_PROPERTY, .get = "return_self"                                      },
+    { "filepath",     LVT_STRING_P, offsetof(struct ModAudio, filepath),      true,  LOT_NONE },
+    { "frequency",    LVT_PROPERTY, .get = "audio_stream_get_frequency",      .set = "audio_stream_set_frequency" },
+    { "isStream",     LVT_BOOL,     offsetof(struct ModAudio, isStream),      true,  LOT_NONE },
+    { "loaded",       LVT_BOOL,     offsetof(struct ModAudio, loaded),        true,  LOT_NONE },
+    { "looping",      LVT_PROPERTY, .get = "audio_stream_get_looping",        .set = "audio_stream_set_looping" },
+    { "position",     LVT_PROPERTY, .get = "audio_stream_get_position",       .set = "audio_stream_set_position" },
+    { "relativePath", LVT_STRING_P, offsetof(struct ModAudio, relativePath),  true,  LOT_NONE },
+    { "volume",       LVT_PROPERTY, .get = "audio_stream_get_volume",         .set = "audio_stream_set_volume" },
 };
 
 #define LUA_MOD_FS_FIELD_COUNT 15
@@ -2572,7 +2575,7 @@ static struct LuaObjectField sStaticObjectCollisionFields[LUA_STATIC_OBJECT_COLL
     { "length", LVT_U16, offsetof(struct StaticObjectCollision, length), true, LOT_NONE },
 };
 
-#define LUA_SURFACE_FIELD_COUNT 16
+#define LUA_SURFACE_FIELD_COUNT 18
 static struct LuaObjectField sSurfaceFields[LUA_SURFACE_FIELD_COUNT] = {
     { "flags",             LVT_S8,        offsetof(struct Surface, flags),             false, LOT_NONE   },
     { "force",             LVT_S16,       offsetof(struct Surface, force),             false, LOT_NONE   },
@@ -2581,10 +2584,12 @@ static struct LuaObjectField sSurfaceFields[LUA_SURFACE_FIELD_COUNT] = {
     { "normal",            LVT_COBJECT,   offsetof(struct Surface, normal),            true,  LOT_VEC3F  },
     { "object",            LVT_COBJECT_P, offsetof(struct Surface, object),            false, LOT_OBJECT },
     { "originOffset",      LVT_F32,       offsetof(struct Surface, originOffset),      false, LOT_NONE   },
+    { "poolType",          LVT_S8,        offsetof(struct Surface, poolType),          true,  LOT_NONE   },
     { "prevVertex1",       LVT_COBJECT,   offsetof(struct Surface, prevVertex1),       true,  LOT_VEC3S  },
     { "prevVertex2",       LVT_COBJECT,   offsetof(struct Surface, prevVertex2),       true,  LOT_VEC3S  },
     { "prevVertex3",       LVT_COBJECT,   offsetof(struct Surface, prevVertex3),       true,  LOT_VEC3S  },
     { "room",              LVT_S8,        offsetof(struct Surface, room),              false, LOT_NONE   },
+    { "socId",             LVT_U32,       offsetof(struct Surface, socId),             true,  LOT_NONE   },
     { "type",              LVT_S16,       offsetof(struct Surface, type),              false, LOT_NONE   },
     { "upperY",            LVT_S16,       offsetof(struct Surface, upperY),            false, LOT_NONE   },
     { "vertex1",           LVT_COBJECT,   offsetof(struct Surface, vertex1),           true,  LOT_VEC3S  },
