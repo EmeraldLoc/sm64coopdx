@@ -34,25 +34,13 @@ void bhv_bitfs_sinking_cage_platform_init(void) {
         o->oPosY -= 300.0f;
     }
 
+    // synced via area timer
     o->areaTimerType = AREA_TIMER_TYPE_LOOP;
     o->areaTimer = 0;
     o->areaTimerDuration = 256;
 }
 
 void bhv_bitfs_sinking_cage_platform_loop(void) {
-    // uses standard distance-based sync system
-    if (!sync_object_is_initialized(o->oSyncID)) {
-        struct SyncObject *so = sync_object_init(o, 4000.0f);
-        if (so) {
-            so->minUpdateRate = 5.0f;
-            sync_object_init_field(o, o->oPlatformTimer);
-        }
-    }
-
-    if ((((o->oPlatformTimer / 0x100) % 60) == 0) && sync_object_is_owned_locally(o->oSyncID)) {
-        network_send_object(o);
-    }
-
     if (o->oBehParams2ndByte != 0) {
         o->oPosY += sins(o->oPlatformTimer) * 7.0f;
     } else {
