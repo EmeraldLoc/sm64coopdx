@@ -2107,6 +2107,30 @@ Gets the mod currently being processed
 
 <br />
 
+## [get_mod_files](#get_mod_files)
+
+### Description
+Gets all files a mod contains
+
+### Lua Example
+`local tableValue = get_mod_files(mod, subDirectory)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| mod | [Mod](structs.md#Mod) |
+| subDirectory | `string` |
+
+### Returns
+- `table`
+
+### C Prototype
+`LuaTable get_mod_files(struct Mod* mod, OPTIONAL const char* subDirectory);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [set_window_title](#set_window_title)
 
 ### Description
@@ -5033,6 +5057,29 @@ Gets a surface corresponding to `index` from the static object collision
 
 ### C Prototype
 `struct Surface *get_static_object_surface(struct StaticObjectCollision *col, u32 index);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [remove_static_object_collision](#remove_static_object_collision)
+
+### Description
+Removes all surfaces belonging to a static object collision and reclaims the SOC metadata
+
+### Lua Example
+`remove_static_object_collision(col)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| col | [StaticObjectCollision](structs.md#StaticObjectCollision) |
+
+### Returns
+- None
+
+### C Prototype
+`void remove_static_object_collision(struct StaticObjectCollision *col);`
 
 [:arrow_up_small:](#)
 

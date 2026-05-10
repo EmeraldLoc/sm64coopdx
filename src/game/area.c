@@ -26,6 +26,7 @@
 #include "pc/network/network.h"
 #include "pc/lua/smlua_hooks.h"
 #include "pc/djui/djui.h"
+#include "pc/djui/djui_hud_utils.h"
 #include "pc/djui/djui_panel_pause.h"
 #include "pc/nametags.h"
 #include "engine/lighting_engine.h"
@@ -254,6 +255,7 @@ void clear_areas(void) {
 
     le_clear();
     geo_clear_interp_data();
+    djui_hud_clear_interp_data();
 }
 
 void clear_area_graph_nodes(void) {
@@ -313,6 +315,7 @@ void unload_area(void) {
 
     le_clear();
     geo_clear_interp_data();
+    djui_hud_clear_interp_data();
 }
 
 void load_mario_area(void) {
@@ -445,13 +448,15 @@ void play_transition_after_delay(s16 transType, s16 time, u8 red, u8 green, u8 b
 
 void render_game(void) {
     dynos_update_gfx();
-    if (gCurrentArea != NULL && !gWarpTransition.pauseRendering) {
-        geo_process_root(gCurrentArea->root, gViewportOverride, gViewportClip, gFBSetColor);
+    if (gCurrentArea != NULL) {
+        if (!gWarpTransition.pauseRendering) {
+            geo_process_root(gCurrentArea->root, gViewportOverride, gViewportClip, gFBSetColor);
 
-        gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&gViewportFullscreen));
+            gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&gViewportFullscreen));
 
-        gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
-                      SCREEN_HEIGHT - BORDER_HEIGHT);
+            gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
+                          SCREEN_HEIGHT - BORDER_HEIGHT);
+        }
 
         if (!gDjuiDisabled) {
             djui_reset_hud_params();
@@ -463,44 +468,57 @@ void render_game(void) {
             smlua_call_event_hooks(HOOK_ON_HUD_RENDER_BEHIND, djui_reset_hud_params);
             djui_gfx_displaylist_end();
         }
-        render_hud();
 
-        gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        render_text_labels();
-        do_cutscene_handler();
-        if (!gDjuiInMainMenu) {
-            print_displaying_credits_entry();
-        }
-        gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
-                      SCREEN_HEIGHT - BORDER_HEIGHT);
-        gPauseScreenMode = render_menus_and_dialogs();
+        if (!gWarpTransition.pauseRendering) {
+            render_hud();
 
-        if (gPauseScreenMode != 0) {
-            gSaveOptSelectIndex = gPauseScreenMode;
-        }
-
-        if (gViewportClip != NULL) {
-            make_viewport_clip_rect(gViewportClip);
-        } else
+            gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+            render_text_labels();
+            do_cutscene_handler();
+            if (!gDjuiInMainMenu) {
+                print_displaying_credits_entry();
+            }
             gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
                           SCREEN_HEIGHT - BORDER_HEIGHT);
+            gPauseScreenMode = render_menus_and_dialogs();
 
-        if (gWarpTransition.isActive) {
-            if (gWarpTransDelay == 0) {
-                gWarpTransition.isActive = !render_screen_transition(0, gWarpTransition.type, gWarpTransition.time,
-                                                                     &gWarpTransition.data);
-                if (!gWarpTransition.isActive) {
-                    if (gWarpTransition.type & 1) {
-                        gWarpTransition.pauseRendering = TRUE;
-                    } else {
-                        set_warp_transition_rgb(0, 0, 0);
-                    }
-                }
+            if (gPauseScreenMode != 0) {
+                gSaveOptSelectIndex = gPauseScreenMode;
+            }
+
+            if (gViewportClip != NULL) {
+                make_viewport_clip_rect(gViewportClip);
             } else {
-                gWarpTransDelay--;
+                gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
+                              SCREEN_HEIGHT - BORDER_HEIGHT);
+            }
+
+            if (gWarpTransition.isActive) {
+                if (gWarpTransDelay == 0) {
+                    gWarpTransition.isActive = !render_screen_transition(0, gWarpTransition.type, gWarpTransition.time,
+                                                                         &gWarpTransition.data);
+                    if (!gWarpTransition.isActive) {
+                        if (gWarpTransition.type & 1) {
+                            gWarpTransition.pauseRendering = TRUE;
+                        } else {
+                            set_warp_transition_rgb(0, 0, 0);
+                        }
+                    }
+                } else {
+                    gWarpTransDelay--;
+                }
             }
         }
     } else {
+        // this will get drawn over anyway so it doesn't
+        // matter to try and setup the rendering
+        //
+        // call this so any code running will still run
+        // even if nothing is shown on screen
+        if (!gDjuiDisabled) {
+            smlua_call_event_hooks(HOOK_ON_HUD_RENDER_BEHIND, djui_reset_hud_params);
+        }
+
         render_text_labels();
         if (gViewportClip != NULL) {
             clear_viewport(gViewportClip, gWarpTransFBSetColor);
