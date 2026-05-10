@@ -1036,17 +1036,23 @@ void bowser_dead_hide(void) {
     o->oGravity = 0;
 }
 
-u8 bowser_dead_not_bits_end_continue_dialog(void) { return o->oAction == BOWSER_ACT_DEAD && o->oSubAction == 3; }
+u8 bowser_dead_not_bits_end_continue_dialog(void) { return o->oAction == BOWSER_ACT_DEAD && o->oSubAction == 3 && o->oBowserUnkF8 < 2; }
 
 s32 bowser_dead_not_bits_end(void) {
-    struct MarioState *marioState = nearest_mario_state_to_object(o);
-
     if (o->oBowserUnkF8 < 2) {
         if (o->oBowserUnkF8 == 0) {
+            struct MarioState *nearestMario = nearest_mario_state_to_object(o);
             seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
+            o->globalPlayerIndex = nearestMario != NULL ? network_global_index_from_local(nearest_mario_state_to_object(o)->playerIndex) : 0;
             o->oBowserUnkF8++;
+            network_send_object(o);
         }
-        if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, *sBowserDefeatedDialogText[o->oBehParams2ndByte], 0, bowser_dead_not_bits_end_continue_dialog)) {
+        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
+        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+            marioState = NULL; // this ensures dialog is skipped
+        }
+        if (!marioState || (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, *sBowserDefeatedDialogText[o->oBehParams2ndByte], 0, bowser_dead_not_bits_end_continue_dialog))) {
             o->oBowserUnkF8++;
             cur_obj_play_sound_2(SOUND_GENERAL2_BOWSER_EXPLODE);
             seq_player_unlower_volume(SEQ_PLAYER_LEVEL, 60);
@@ -1068,18 +1074,24 @@ s32 bowser_dead_not_bits_end(void) {
 u8 bowser_dead_bits_end_continue_dialog(void) { return o->oAction == BOWSER_ACT_DEAD && o->oBowserUnkF8 < 2; }
 
 s32 bowser_dead_bits_end(void) {
-    struct MarioState *marioState = nearest_mario_state_to_object(o);
-
     if (o->oBowserUnkF8 < 2) {
         s32 dialogID = gBehaviorValues.dialogs.Bowser3Defeated120StarsDialog;
         if (gHudDisplay.stars < 120) {
             dialogID = gBehaviorValues.dialogs.Bowser3DefeatedDialog;
         }
         if (o->oBowserUnkF8 == 0) {
+            struct MarioState *nearestMario = nearest_mario_state_to_object(o);
             seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
+            o->globalPlayerIndex = nearestMario != NULL ? network_global_index_from_local(nearest_mario_state_to_object(o)->playerIndex) : 0;
             o->oBowserUnkF8++;
+            network_send_object(o);
         }
-        if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, dialogID, 0, bowser_dead_bits_end_continue_dialog)) {
+        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
+        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+            marioState = NULL;
+        }
+        if (!marioState || (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, dialogID, 0, bowser_dead_bits_end_continue_dialog))) {
             cur_obj_set_model(smlua_model_util_load(E_MODEL_BOWSER2));
             seq_player_unlower_volume(SEQ_PLAYER_LEVEL, 60);
             seq_player_fade_out(SEQ_PLAYER_LEVEL, 1);
@@ -1106,23 +1118,25 @@ void bowser_act_dead(void) {
         case 2:
             if (bowser_dead_wait_for_mario()) {
                 o->oBowserUnkF8 = 0;
-                if (BITS)
+                if (BITS) {
                     o->oSubAction = 10;
-                else {
+                } else {
                     o->activeFlags |= ACTIVE_FLAG_DITHERED_ALPHA;
                     o->oSubAction++;
                 }
             }
             break;
         case 3:
-            if (bowser_dead_not_bits_end())
+            if (bowser_dead_not_bits_end()) {
                 o->oSubAction++;
+            }
             break;
         case 4:
             break;
         case 10:
-            if (bowser_dead_bits_end())
+            if (bowser_dead_bits_end()) {
                 o->oSubAction++;
+            }
             break;
         case 11:
             break;
