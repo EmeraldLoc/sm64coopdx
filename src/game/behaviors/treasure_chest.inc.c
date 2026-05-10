@@ -15,7 +15,6 @@ static struct ObjectHitbox sTreasureChestBottomHitbox = {
     .hurtboxHeight = 310,
 };
 
-
 void bhv_treasure_chest_top_loop(void) {
     if (!o->parentObj || !o->parentObj->parentObj) {
         obj_mark_for_deletion(o);
