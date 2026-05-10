@@ -6,7 +6,7 @@ struct SpawnParticlesInfo sThiTopPuffs = {
 
 void bhv_thi_huge_island_top_loop(void) {
     if (gTHIWaterDrained & 1) {
-        if (o->oTimer == 0 && gEnvironmentRegionsLength > 18) {
+        if (gEnvironmentRegionsLength > 18) {
             gEnvironmentRegions[18] = 3000;
         }
         cur_obj_hide();
@@ -47,6 +47,7 @@ void bhv_thi_tiny_island_top_loop(void) {
                 gTHIWaterDrained |= 1;
                 play_puzzle_jingle();
                 o->oAction += 1;
+                network_send_thi_water_drained();
             }
         }
     } else {
