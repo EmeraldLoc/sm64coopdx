@@ -1767,6 +1767,7 @@
 | looping | `boolean` |  |
 | frequency | `number` |  |
 | volume | `number` |  |
+| channel | `integer` |  |
 
 [:arrow_up_small:](#)
 
@@ -2964,7 +2965,6 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| index | `integer` | read-only |
 | length | `integer` | read-only |
 
 [:arrow_up_small:](#)
@@ -2978,6 +2978,7 @@
 | type | `integer` |  |
 | flags | `integer` |  |
 | room | `integer` |  |
+| poolType | `integer` | read-only |
 | force | `integer` |  |
 | lowerY | `integer` |  |
 | upperY | `integer` |  |
@@ -2990,6 +2991,7 @@
 | normal | [Vec3f](structs.md#Vec3f) | read-only |
 | originOffset | `number` |  |
 | modifiedTimestamp | `integer` |  |
+| socId | `integer` | read-only |
 | object | [Object](structs.md#Object) |  |
 
 [:arrow_up_small:](#)

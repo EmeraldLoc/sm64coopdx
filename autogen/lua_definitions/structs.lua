@@ -1210,6 +1210,7 @@
 --- @field public looping boolean
 --- @field public frequency number
 --- @field public volume number
+--- @field public channel integer
 
 --- @class ModFs
 --- @field public mod Mod
@@ -1291,9 +1292,6 @@
 --- @field public overrideLocation string
 --- @field public overrideModelIndex integer
 --- @field public overridePalette PlayerPalette
---- @field public paletteIndex integer
---- @field public overridePaletteIndex integer
---- @field public overridePaletteIndexLp integer
 
 --- @class Object
 --- @field public header ObjectNode
@@ -2245,13 +2243,13 @@
 --- @field public dialog6 integer
 
 --- @class StaticObjectCollision
---- @field public index integer
 --- @field public length integer
 
 --- @class Surface
 --- @field public type integer
 --- @field public flags integer
 --- @field public room integer
+--- @field public poolType integer
 --- @field public force integer
 --- @field public lowerY integer
 --- @field public upperY integer
@@ -2264,6 +2262,7 @@
 --- @field public normal Vec3f
 --- @field public originOffset number
 --- @field public modifiedTimestamp integer
+--- @field public socId integer
 --- @field public object Object
 
 --- @class TextureInfo
