@@ -22,11 +22,22 @@ struct ObjectHitbox sPiranhaPlantFireHitbox = {
     .hurtboxHeight = 20,
 };
 
-s32 sNumActiveFirePiranhaPlants;
-s32 sNumKilledFirePiranhaPlants;
-
 inline static u8 is_giant_fire_piranha_plant() {
     return (o->oBehParams & 0x00FF0000) != 0;
+}
+
+static u8 active_fire_piranha_plant_count() {
+    u8 activeCount = 0;
+    struct Object *obj = obj_get_first_with_behavior_id(id_bhvFirePiranhaPlant);
+
+    while (obj != NULL) {
+        if (obj->oFirePiranhaPlantActive) {
+            activeCount++;
+        }
+
+        obj = obj_get_next_with_same_behavior_id(obj);
+    }
+    return activeCount;
 }
 
 void bhv_fire_piranha_plant_init(void) {
@@ -43,12 +54,9 @@ void bhv_fire_piranha_plant_init(void) {
             o->oNumLootCoins = 2;
         }
     }
-    sNumActiveFirePiranhaPlants = sNumKilledFirePiranhaPlants = 0;
 
     // use standard distance based syncing
     sync_object_init(o, 4000.0f);
-    sync_object_init_field(o, sNumActiveFirePiranhaPlants);
-    sync_object_init_field(o, sNumKilledFirePiranhaPlants);
 }
 
 static void fire_piranha_plant_act_hide(void) {
@@ -68,12 +76,11 @@ static void fire_piranha_plant_act_hide(void) {
     } else if (approach_f32_ptr(&o->oFirePiranhaPlantScale, 0.0f, 0.04f * o->oFirePiranhaPlantNeutralScale)) {
         cur_obj_become_intangible();
         if (o->oFirePiranhaPlantActive) {
-            sNumActiveFirePiranhaPlants -= 1;
             o->oFirePiranhaPlantActive = FALSE;
 
             if (is_giant_fire_piranha_plant() && o->oHealth == 0) {
-                if (++sNumKilledFirePiranhaPlants == 5) {
-                    f32* starPos = gLevelValues.starPositions.BigPiranhasStarPos;
+                if (count_objects_with_behavior(o->behavior) <= 1) {
+                    f32 *starPos = gLevelValues.starPositions.BigPiranhasStarPos;
                     spawn_default_star(starPos[0], starPos[1], starPos[2]);
                     network_send_object(o);
                 }
@@ -81,11 +88,10 @@ static void fire_piranha_plant_act_hide(void) {
                 obj_die_if_health_non_positive();
                 set_object_respawn_info_bits(o, 1);
             }
-        } else if (sNumActiveFirePiranhaPlants < 2 && o->oTimer > 100 && distanceToPlayer > 100.0f && distanceToPlayer < 800.0f) {
+        } else if (active_fire_piranha_plant_count() < 2 && o->oTimer > 100 && distanceToPlayer > 100.0f && distanceToPlayer < 800.0f) {
             cur_obj_play_sound_2(SOUND_OBJ_PIRANHA_PLANT_APPEAR);
 
             o->oFirePiranhaPlantActive = TRUE;
-            sNumActiveFirePiranhaPlants += 1;
 
             cur_obj_unhide();
             o->oAction = FIRE_PIRANHA_PLANT_ACT_GROW;
@@ -138,11 +144,7 @@ void bhv_fire_piranha_plant_update(void) {
     }
 
     if (obj_check_attacks(&sFirePiranhaPlantHitbox, o->oAction)) {
-        if (--o->oHealth < 0) {
-            if (o->oFirePiranhaPlantActive) {
-                sNumActiveFirePiranhaPlants -= 1;
-            }
-        } else {
+        if (--o->oHealth >= 0) {
             cur_obj_init_animation_with_sound(2);
         }
 

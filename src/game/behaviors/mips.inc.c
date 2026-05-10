@@ -68,7 +68,7 @@ void bhv_mips_init(void) {
     cur_obj_init_animation(0);
 
     // distance-based standard sync system
-    struct SyncObject* so = sync_object_init(o, 4000.0f);
+    struct SyncObject *so = sync_object_init(o, 4000.0f);
     if (so) {
         sync_object_init_field(o, o->oMipsStartWaypointIndex);
         sync_object_init_field(o, o->oForwardVel);
@@ -256,8 +256,6 @@ static u8 bhv_mips_held_continue_dialog(void) {
  * Handles MIPS being held by Mario.
  */
 void bhv_mips_held(void) {
-    s32 dialogID;
-
     if (o->heldByPlayerIndex >= MAX_PLAYERS) { return; }
     struct Object *player = gMarioStates[o->heldByPlayerIndex].marioObj;
 
@@ -269,19 +267,20 @@ void bhv_mips_held(void) {
     // If MIPS hasn't spawned his star yet...
     if (o->oMipsStarStatus == MIPS_STAR_STATUS_HAVENT_SPAWNED_STAR) {
         // Choose dialog based on which MIPS encounter this is.
+        s32 dialogID;
         if (o->oBehParams2ndByte == 0) {
             dialogID = gBehaviorValues.dialogs.Mips1Dialog;
         } else {
             dialogID = gBehaviorValues.dialogs.Mips2Dialog;
         }
 
-        if (should_start_or_continue_dialog(&gMarioStates[o->heldByPlayerIndex], o) && set_mario_npc_dialog(&gMarioStates[0], 1, bhv_mips_held_continue_dialog) == 2) {
+        if (should_start_or_continue_dialog(&gMarioStates[o->heldByPlayerIndex], o) && set_mario_npc_dialog(&gMarioStates[o->heldByPlayerIndex], 1, bhv_mips_held_continue_dialog) == 2) {
             //o->activeFlags |= ACTIVE_FLAG_INITIATED_TIME_STOP;
             if (cutscene_object_with_dialog(CUTSCENE_DIALOG, o, dialogID)) {
                 o->oInteractionSubtype |= INT_SUBTYPE_DROP_IMMEDIATELY;
                 o->activeFlags &= ~ACTIVE_FLAG_INITIATED_TIME_STOP;
                 o->oMipsStarStatus = MIPS_STAR_STATUS_SHOULD_SPAWN_STAR;
-                set_mario_npc_dialog(&gMarioStates[0], 0, NULL);
+                set_mario_npc_dialog(&gMarioStates[o->heldByPlayerIndex], 0, NULL);
             }
         }
     }
