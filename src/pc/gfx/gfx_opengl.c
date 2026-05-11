@@ -94,7 +94,9 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
     glUniform1f(prg->uniform_locations[4], (float)frame_count);
     glUniform3f(prg->uniform_locations[5], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
     glUniform1i(prg->uniform_locations[6], configFiltering);
-    glUniformMatrix4fv(prg->uniform_locations[7], 1, GL_FALSE, (const GLfloat *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
+    if (rsp.modelview_matrix_stack_size > 0) {
+        glUniformMatrix4fv(prg->uniform_locations[7], 1, GL_FALSE, (const GLfloat *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
+    }
     glUniformMatrix4fv(prg->uniform_locations[8], 1, GL_FALSE, (const GLfloat *)rsp.MP_matrix);
     glUniformMatrix4fv(prg->uniform_locations[9], 1, GL_FALSE, (const GLfloat *)rsp.P_matrix);
     glUniformMatrix4fv(prg->uniform_locations[10], 1, GL_FALSE, (const GLfloat *)gInverseCameraMatrix.m);
