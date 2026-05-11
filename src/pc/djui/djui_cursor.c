@@ -128,9 +128,6 @@ void djui_cursor_move(s8 xDir, s8 yDir) {
                 f32 visibleTop = parent->clip.y;
                 f32 visibleBottom = parent->clip.y + parent->clip.height;
 
-                LOG_CONSOLE("Element Y is %f, whereas clip y for flow is %f", targetTop, visibleTop)
-                LOG_CONSOLE("Clip Height is %f, whereas clip height for flow is %f", pick->clip.height, parent->clip.height)
-
                 if (targetTop < visibleTop) {
                     layout->scrollY -= (visibleTop - targetTop);
                 } else if (targetBottom > visibleBottom) {
