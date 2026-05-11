@@ -802,6 +802,50 @@ Deletes a display list created by `gfx_create`
 
 <br />
 
+## [gfx_set_culling_enabled](#gfx_set_culling_enabled)
+
+### Description
+Sets culling for all triangles. Set to false to disable culling, set to true to use normal preset
+
+### Lua Example
+`gfx_set_culling_enabled(enable)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| enable | `boolean` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_set_culling_enabled(bool enable);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_is_culling_enabled](#gfx_is_culling_enabled)
+
+### Description
+Get if culling is enabled or not
+
+### Lua Example
+`local booleanValue = gfx_is_culling_enabled()`
+
+### Parameters
+- None
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool gfx_is_culling_enabled();`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_delete_all](#gfx_delete_all)
 
 ### Description
@@ -847,7 +891,7 @@ Reloads all shaders
 ## [gfx_color_combiner_get_features](#gfx_color_combiner_get_features)
 
 ### Description
-Gets features from a color combiner.
+Gets features from a color combiner
 
 ### Lua Example
 `local cCFeaturesValue = gfx_color_combiner_get_features(cc)`
@@ -870,21 +914,22 @@ Gets features from a color combiner.
 ## [gfx_get_program_id_from_shader_index](#gfx_get_program_id_from_shader_index)
 
 ### Description
-Gets a program id from the shader index.
+Gets a program id from the shader index. Specify a frame pass to get the program id for a specific pass
 
 ### Lua Example
-`local integerValue = gfx_get_program_id_from_shader_index(shaderIndex)`
+`local integerValue = gfx_get_program_id_from_shader_index(shaderIndex, framePassIndex)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
 | shaderIndex | `integer` |
+| framePassIndex | `integer` |
 
 ### Returns
 - `integer`
 
 ### C Prototype
-`u32 gfx_get_program_id_from_shader_index(u8 shaderIndex);`
+`u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex);`
 
 [:arrow_up_small:](#)
 
@@ -893,7 +938,7 @@ Gets a program id from the shader index.
 ## [gfx_use_program](#gfx_use_program)
 
 ### Description
-Uses a specific program. Required for setting uniforms.
+Uses a specific program. Required for setting uniforms
 
 ### Lua Example
 `gfx_use_program(program)`
@@ -916,7 +961,7 @@ Uses a specific program. Required for setting uniforms.
 ## [gfx_shader_get_uniform_location](#gfx_shader_get_uniform_location)
 
 ### Description
-Gets the location of a shader uniform in a program for modification.
+Gets the location of a shader uniform in a program for modification
 
 ### Lua Example
 `local integerValue = gfx_shader_get_uniform_location(program, name)`
@@ -940,7 +985,7 @@ Gets the location of a shader uniform in a program for modification.
 ## [gfx_shader_set_int](#gfx_shader_set_int)
 
 ### Description
-Sets the value of a shader uniform of type int.
+Sets the value of a shader uniform of type int
 
 ### Lua Example
 `gfx_shader_set_int(loc, value)`
@@ -964,7 +1009,7 @@ Sets the value of a shader uniform of type int.
 ## [gfx_shader_set_bool](#gfx_shader_set_bool)
 
 ### Description
-Sets the value of a shader uniform of type bool.
+Sets the value of a shader uniform of type bool
 
 ### Lua Example
 `gfx_shader_set_bool(loc, value)`
@@ -988,7 +1033,7 @@ Sets the value of a shader uniform of type bool.
 ## [gfx_shader_set_float](#gfx_shader_set_float)
 
 ### Description
-Sets the value of a shader uniform of type float.
+Sets the value of a shader uniform of type float
 
 ### Lua Example
 `gfx_shader_set_float(loc, value)`
@@ -1012,7 +1057,7 @@ Sets the value of a shader uniform of type float.
 ## [gfx_shader_set_vec2](#gfx_shader_set_vec2)
 
 ### Description
-Sets the value of a shader uniform of type vec2.
+Sets the value of a shader uniform of type vec2
 
 ### Lua Example
 `gfx_shader_set_vec2(loc, x, y)`
@@ -1037,7 +1082,7 @@ Sets the value of a shader uniform of type vec2.
 ## [gfx_shader_set_vec3](#gfx_shader_set_vec3)
 
 ### Description
-Sets the value of a shader uniform of type vec3.
+Sets the value of a shader uniform of type vec3
 
 ### Lua Example
 `gfx_shader_set_vec3(loc, x, y, z)`
@@ -1063,7 +1108,7 @@ Sets the value of a shader uniform of type vec3.
 ## [gfx_shader_set_vec4](#gfx_shader_set_vec4)
 
 ### Description
-Sets the value of a shader uniform of type vec4.
+Sets the value of a shader uniform of type vec4
 
 ### Lua Example
 `gfx_shader_set_vec4(loc, w, x, y, z)`
@@ -1090,7 +1135,7 @@ Sets the value of a shader uniform of type vec4.
 ## [gfx_shader_set_mat4](#gfx_shader_set_mat4)
 
 ### Description
-Sets the value of a shader uniform of type mat4.
+Sets the value of a shader uniform of type mat4
 
 ### Lua Example
 `gfx_shader_set_mat4(loc, mat)`
@@ -1106,6 +1151,120 @@ Sets the value of a shader uniform of type mat4.
 
 ### C Prototype
 `void gfx_shader_set_mat4(int loc, const Mat4 mat);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_create_frame_pass](#gfx_shader_create_frame_pass)
+
+### Description
+Creates a frame pass to be used when rendering the game. Allows for multipass shaders. Returns the frame pass index
+
+### Lua Example
+`local integerValue = gfx_shader_create_frame_pass()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`int gfx_shader_create_frame_pass();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_remove_frame_pass](#gfx_shader_remove_frame_pass)
+
+### Description
+Deletes a frame pass using `framePassIndex`
+
+### Lua Example
+`gfx_shader_remove_frame_pass(framePassIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_remove_frame_pass(int framePassIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_frame_pass_viewport](#gfx_shader_set_frame_pass_viewport)
+
+### Description
+Sets a frame passes viewport size
+
+### Lua Example
+`gfx_shader_set_frame_pass_viewport(framePassIndex, width, height)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+| width | `integer` |
+| height | `integer` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_frame_pass_draw_world](#gfx_shader_set_frame_pass_draw_world)
+
+### Description
+Configures whether a frame pass should redraw the whole scene or use a fullscreen quad
+
+### Lua Example
+`gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+| drawWorldGeometry | `boolean` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_get_current_frame_pass](#gfx_shader_get_current_frame_pass)
+
+### Description
+Gets the current active frame pass index. If there is no active frame pass, it returns -1
+
+### Lua Example
+`local integerValue = gfx_shader_get_current_frame_pass()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`int gfx_shader_get_current_frame_pass();`
 
 [:arrow_up_small:](#)
 

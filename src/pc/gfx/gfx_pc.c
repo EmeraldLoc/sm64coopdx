@@ -39,6 +39,10 @@
 #include "pc/gfx/gfx_screen_config.h"
 #include "pc/gfx/gfx_window_manager_api.h"
 
+#include "pc/lua/smlua.h"
+
+#include "pc/debuglog.h"
+
 #define G_TX_LOADTILE_6_UNKNOWN 6
 
 u8 gGfxPcResetTex1 = 0;
@@ -51,6 +55,8 @@ static uint8_t color_combiner_pool_index = 0;
 static struct ColorCombiner *sPrevCombinerForLookup = NULL;
 
 struct RSP rsp = { 0 };
+struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES] = { 0 };
+int gCurrentFramePassIndex = -1;
 
 static struct RDP {
     const uint8_t *palette[2];
@@ -99,6 +105,7 @@ Color gLightingColor[2] = { { 0xFF, 0xFF, 0xFF }, { 0xFF, 0xFF, 0xFF } };
 Color gVertexColor = { 0xFF, 0xFF, 0xFF };
 Color gFogColor = { 0xFF, 0xFF, 0xFF };
 f32 gFogIntensity = 1;
+bool gCullingEnabled = true;
 
 // need inverse camera matrix to compute world space for lighting engine
 static Mat4 sInverseCameraMatrix;
@@ -259,6 +266,9 @@ static struct ColorCombiner *gfx_lookup_or_create_color_combiner(struct CombineM
 
     for (size_t i = 0; i < color_combiner_pool_size; i++) {
         if (color_combiner_pool[i].cm.hash == cm->hash) {
+            if (color_combiner_pool[i].prg == NULL) {
+                color_combiner_pool[i].prg = gfx_lookup_or_create_shader_program(&color_combiner_pool[i]);
+            }
             return sPrevCombinerForLookup = &color_combiner_pool[i];
         }
     }
@@ -994,12 +1004,12 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
     struct GfxVertex *v_arr[3] = {v1, v2, v3};
 
-    if (v1->clip_rej & v2->clip_rej & v3->clip_rej) {
+    if (v1->clip_rej & v2->clip_rej & v3->clip_rej && gCullingEnabled) {
         // The whole triangle lies outside the visible area
         return;
     }
 
-    if ((rsp.geometry_mode & G_CULL_BOTH) != 0) {
+    if ((rsp.geometry_mode & G_CULL_BOTH) != 0 && gCullingEnabled) {
         float dx1 = v1->x / (v1->w) - v2->x / (v2->w);
         float dy1 = v1->y / (v1->w) - v2->y / (v2->w);
         float dx2 = v3->x / (v3->w) - v2->x / (v2->w);
@@ -1632,6 +1642,26 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     }
 }
 
+static void gfx_draw_fullscreen_quad(bool useLuaShader) {
+    float quadVerticies[] = {
+        -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+        -1.0f, -1.0f, 0.0f, 1.0f,   0.0f, 0.0f,
+         1.0f, -1.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+
+        -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
+         1.0f, -1.0f, 0.0f, 1.0f,   1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
+    };
+
+    gfx_rapi->create_or_load_post_process_shader(&gFramePasses[gCurrentFramePassIndex], gCurrentFramePassIndex, useLuaShader);
+
+    gfx_rapi->set_use_alpha(false);
+    gfx_rapi->set_depth_test(false);
+    gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
+    gfx_rapi->set_depth_test(true);
+    gfx_rapi->set_use_alpha(true);
+}
+
 static void gfx_dp_texture_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lry, UNUSED uint8_t tile, int16_t uls, int16_t ult, int16_t dsdx, int16_t dtdy, bool flip) {
     struct CombineMode saved_combine_mode = rdp.combine_mode;
     if ((rdp.other_mode_h & (3U << G_MDSFT_CYCLETYPE)) == G_CYC_COPY) {
@@ -2051,7 +2081,69 @@ void gfx_run(Gfx *commands) {
 
     //double t0 = gfx_wapi->get_time();
     gfx_rapi->start_frame();
-    gfx_run_dl(commands);
+
+    bool isFramePassActive = false;
+
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        struct FramePass *framePass = &gFramePasses[i];
+        if (!framePass->active) continue;
+        isFramePassActive = true;
+
+        gCurrentFramePassIndex = i;
+
+        if (framePass->fbo == 0) {
+            gfx_rapi->create_framebuffer(&framePass->fbo, &framePass->depthBuffer, &framePass->passTexture, framePass->width, framePass->height);
+        }
+        gfx_rapi->set_framebuffer(framePass->fbo, framePass->width, framePass->height);
+
+        // this clears color and depth
+        gfx_rapi->start_frame();
+
+        if (framePass->drawWorldGeometry) {
+            if (i > 0) {
+                gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
+            }
+
+            // reset color combiner programs
+            for (int i = 0; i < CC_MAX_SHADERS; i++) {
+                color_combiner_pool[i].prg = NULL;
+            }
+
+            gfx_rapi->set_depth_test(false);
+            gfx_run_dl(commands);
+            gfx_end_frame_render();
+        } else {
+            if (i > 0) {
+                gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
+                gfx_draw_fullscreen_quad(true);
+            }
+        }
+    }
+
+    gCurrentFramePassIndex = -1;
+
+    if (!isFramePassActive) {
+        // draw as normal
+        gfx_rapi->reset_framebuffer();
+        gfx_run_dl(commands);
+    } else {
+        gfx_rapi->reset_framebuffer();
+
+        gCurrentFramePassIndex = -1;
+
+        int lastActiveIdx = -1;
+        for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
+            if (gFramePasses[i].active) {
+                lastActiveIdx = i;
+                break;
+            }
+        }
+
+        if (lastActiveIdx != -1) {
+            gfx_rapi->bind_texture_raw(10, gFramePasses[lastActiveIdx].passTexture);
+            gfx_draw_fullscreen_quad(false);  // draw final picture
+        }
+    }
 }
 
 void gfx_end_frame_render(void) {

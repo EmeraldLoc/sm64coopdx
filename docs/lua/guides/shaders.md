@@ -106,9 +106,10 @@ A shader may contain uniforms. As a naming convention, uniform variables typical
 | `uFilter` | `int` | The current global filtering mode (0 = Point, 1 = Linear, 2 = Three-point) |
 | `uFrameCount` | `float` | A timer that increases every frame |
 | `uLightmapColor` | `vec3` | The RGB color multiplier applied to the environment/lightmap |
-| `uModelViewMatrix` | `mat4` | Transforms objects from world space to view space |
-| `uProjectionMatrix` | `mat4` | Transforms view space to clip space |
-| `uInverseViewMatrix` | `mat4` | The inverse of the view matrix |
+| `uModelViewMatrix` | `mat4` | Both the model and view matrix. Multiply by the `uInverseCameraMatrix` to get the model matrix, and multiply by said model matrix to get the view matrix |
+| `uProjectionMatrix` | `mat4` | Transforms view space to clip space, the inverse of the matrix transforms clip space to view space |
+| `uInverseCameraMatrix` | `mat4` | The inverse of the camera matrix. Transforms view space to world space |
+| `uXAdjustRatio` | `float` | For 16:9. This is the amount the X in clip space is adjusted by. When working with `uInverseCameraMatrix`, you should edit the clip space vector to undo the effects done in source |
 
 For defining a custom uniform in lua, first, define the uniform and use the uniform as you intend in your shader code. Next you're going to want to store the shader index given by the hook. Create a table and store all your shader indexes. Then in lua, in any hook as seen fit, iterate through the list of shader indexes. Now, create a variable and set it to the returned value of `gfx_get_program_id_from_shader_index`. First, use that program with `gfx_use_program`, then get the uniform with `gfx_shader_get_uniform_location`. You should then set it with the appropriate `gfx_shader_set_` function. Here is an example:
 
@@ -147,7 +148,7 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 
 | Input Name | Type | Description |
 | ---- | ---- | ---- |
-| `aVtxPos` | `vec4` | The vertex position (x, y, z, w) |
+| `aVtxPos` | `vec4` | The vertex position in clip space (x, y, z, w) |
 | `aTexCoord0` | `vec2` | The UV mapping for the primary texture |
 | `aTexCoord1` | `vec2` | The UV mapping for the secondary texture |
 | `aNormal` | `vec3` | The direction the surface is facing |
@@ -167,7 +168,6 @@ Currently where the hud lives below 0 is a bit random, so right now it's best to
 ## Limitations
 
 - No more than a single shader can be used at a time. This means that if 2 mods want to use their own shader, only one will be picked.
-- Currently you can only do one shader pass. While for most cases a single shader pass works fine, for many types of shaders it is very limiting. This is an unfortunate limitation with the current system.
 - There are only so many inputs. While many are provided, there may still be some missing for your own shaders.
 - DirectX is not supported.
 

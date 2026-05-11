@@ -382,6 +382,14 @@ void gfx_delete_all() {
     dynos_gfx_delete_all();
 }
 
+void gfx_set_culling_enabled(bool enable) {
+    gCullingEnabled = enable;
+}
+
+bool gfx_is_culling_enabled() {
+    return gCullingEnabled;
+}
+
 void gfx_reload_shaders() {
 #ifdef RAPI_GL
     gfx_remove_all_color_combiners();
@@ -397,9 +405,9 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
 }
 
 
-u32 gfx_get_program_id_from_shader_index(u8 shaderIndex) {
+u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex) {
 #ifdef RAPI_GL
-    struct ShaderProgram *program = RAPI.lookup_shader_using_index(shaderIndex);
+    struct ShaderProgram *program = RAPI.lookup_shader_using_index(shaderIndex, framePassIndex);
     if (!program) return 0;
     return program->opengl_program_id;
 #else
@@ -475,6 +483,63 @@ void gfx_shader_set_mat4(int loc, const Mat4 mat) {
         glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)mat);
     }
 #endif
+}
+
+int gfx_shader_create_frame_pass() {
+    // iterates through frame passes until it finds one that's inactive
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        struct FramePass *framePass = &gFramePasses[i];
+        if (framePass->active) continue;
+
+        memset(framePass, 0, sizeof(struct FramePass));
+
+        // set default's
+        framePass->active = true;
+        gfx_get_dimensions(&framePass->width, &framePass->height);
+
+        return i;
+    }
+
+    return -1;
+}
+
+void gfx_shader_remove_frame_pass(int framePassIndex) {
+    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
+
+    struct FramePass *framePass = &gFramePasses[framePassIndex];
+    if (!framePass->active) return;
+
+    gfx_get_current_rendering_api()->delete_framebuffer(framePass->fbo, framePass->depthBuffer, framePass->passTexture);
+    memset(framePass, 0, sizeof(struct FramePass));
+}
+
+void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height) {
+    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
+
+    struct FramePass *framePass = &gFramePasses[framePassIndex];
+    if (!framePass->active) return;
+
+    framePass->width = width;
+    framePass->height = height;
+
+    // needs to be recreated
+    gfx_get_current_rendering_api()->delete_framebuffer(framePass->fbo, framePass->depthBuffer, framePass->passTexture);
+    framePass->fbo = 0;
+    framePass->depthBuffer = 0;
+    framePass->passTexture = 0;
+}
+
+void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry) {
+    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
+
+    struct FramePass *framePass = &gFramePasses[framePassIndex];
+    if (!framePass->active) return;
+
+    framePass->drawWorldGeometry = drawWorldGeometry;
+}
+
+int gfx_shader_get_current_frame_pass() {
+    return gCurrentFramePassIndex;
 }
 
 Vtx *vtx_get_from_name(const char *name, RET u32 *count) {

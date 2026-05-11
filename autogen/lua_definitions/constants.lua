@@ -8351,7 +8351,9 @@ HOOK_ON_DYNOS_PACK_TOGGLED                  = 66 --- @type LuaHookedEventType
 HOOK_ON_REFRESH_SHADERS                     = 67 --- @type LuaHookedEventType
 HOOK_ON_VERTEX_SHADER_CREATE                = 68 --- @type LuaHookedEventType
 HOOK_ON_FRAGMENT_SHADER_CREATE              = 69 --- @type LuaHookedEventType
-HOOK_MAX                                    = 70 --- @type LuaHookedEventType
+HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE   = 70 --- @type LuaHookedEventType
+HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE = 71 --- @type LuaHookedEventType
+HOOK_MAX                                    = 72 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8424,6 +8426,8 @@ HOOK_MAX                                    = 70 --- @type LuaHookedEventType
 --- | `HOOK_ON_REFRESH_SHADERS`
 --- | `HOOK_ON_VERTEX_SHADER_CREATE`
 --- | `HOOK_ON_FRAGMENT_SHADER_CREATE`
+--- | `HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE`
+--- | `HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE`
 --- | `HOOK_MAX`
 
 --- @type integer

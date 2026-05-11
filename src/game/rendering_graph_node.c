@@ -184,7 +184,7 @@ LookAt lookAt;
 
 static struct GraphNodePerspective *sPerspectiveNode = NULL;
 static Gfx* sPerspectivePos   = NULL;
-static Mtx* sPerspectiveMtx = NULL;
+static Mtx* sPerspectiveMtx   = NULL;
 static f32 sPerspectiveAspect = 0;
 
 static Vp*  sViewport        = NULL;
@@ -1370,7 +1370,7 @@ static s32 obj_is_in_view(struct GraphNodeObject *node, Mat4 matrix) {
 
     if (node->node.flags & GRAPH_RENDER_INVISIBLE) {
         return FALSE;
-    } else if (node->skipInViewCheck) {
+    } else if (node->skipInViewCheck || !gCullingEnabled) {
         return TRUE;
     }
 

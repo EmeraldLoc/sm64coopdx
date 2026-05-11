@@ -7,6 +7,9 @@
 struct GfxRenderingAPI;
 struct GfxWindowManagerAPI;
 
+#define MAX_CUSTOM_FRAME_PASSES 8
+#define MAX_FRAME_PASSES MAX_CUSTOM_FRAME_PASSES + 1
+
 struct RSP {
     ALIGNED16 Mat4 MP_matrix;
     ALIGNED16 Mat4 P_matrix;
@@ -31,13 +34,26 @@ struct RSP {
     struct GfxVertex loaded_vertices[MAX_VERTICES + 4];
 };
 
+struct FramePass {
+    u32 fbo;
+    u32 depthBuffer;
+    u32 passTexture;
+    u32 width;
+    u32 height;
+    bool active;
+    bool drawWorldGeometry;
+};
+
 extern struct RSP rsp;
+extern struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES];
+extern int gCurrentFramePassIndex;
 
 extern Vec3f gLightingDir;
 extern Color gLightingColor[2];
 extern Color gVertexColor;
 extern Color gFogColor;
 extern f32 gFogIntensity;
+extern bool gCullingEnabled;
 
 #ifdef __cplusplus
 extern "C" {

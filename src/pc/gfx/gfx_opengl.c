@@ -52,9 +52,11 @@ struct GLTexture {
     bool filter;
 };
 
-static struct ShaderProgram shader_program_pool[CC_MAX_SHADERS];
-static uint8_t shader_program_pool_size = 0;
-static uint8_t shader_program_pool_index = 0;
+static struct ShaderProgram shader_program_pool[CC_MAX_SHADERS][MAX_FRAME_PASSES];
+static uint8_t shader_program_pool_size[MAX_FRAME_PASSES] = { 0 };
+static uint8_t shader_program_pool_index[MAX_FRAME_PASSES] = { 0 };
+
+static struct ShaderProgram post_process_shader_program_pool[MAX_FRAME_PASSES];
 
 static GLuint opengl_vbo;
 static GLuint opengl_vao;
@@ -77,6 +79,10 @@ static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
     size_t num_floats = prg->num_floats;
     size_t pos = 0;
 
+    for (int i = 0; i < MAX_SHADER_ATTRIBUTES; i++) {
+        glDisableVertexAttribArray(i);
+    }
+
     for (int i = 0; i < prg->num_attribs; i++) {
         glEnableVertexAttribArray(prg->attrib_locations[i]);
         glVertexAttribPointer(prg->attrib_locations[i], prg->attrib_sizes[i], GL_FLOAT, GL_FALSE, num_floats * sizeof(float), (void *) (pos * sizeof(float)));
@@ -89,14 +95,18 @@ static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
     glUniform3f(prg->uniform_locations[5], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
     glUniform1i(prg->uniform_locations[6], configFiltering);
     glUniformMatrix4fv(prg->uniform_locations[7], 1, GL_FALSE, (const GLfloat *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
-    glUniformMatrix4fv(prg->uniform_locations[8], 1, GL_FALSE, (const GLfloat *)rsp.P_matrix);
-    glUniformMatrix4fv(prg->uniform_locations[9], 1, GL_FALSE, (const GLfloat *)gInverseCameraMatrix.m);
+    glUniformMatrix4fv(prg->uniform_locations[8], 1, GL_FALSE, (const GLfloat *)rsp.MP_matrix);
+    glUniformMatrix4fv(prg->uniform_locations[9], 1, GL_FALSE, (const GLfloat *)rsp.P_matrix);
+    glUniformMatrix4fv(prg->uniform_locations[10], 1, GL_FALSE, (const GLfloat *)gInverseCameraMatrix.m);
+    glUniform1f(prg->uniform_locations[11], (float)gfx_current_dimensions.aspect_ratio);
+    glUniform1f(prg->uniform_locations[12], (float)gfx_current_dimensions.x_adjust_ratio);
 }
 
 static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, const int tile) {
+    if (!prg) return;
     if (opengl_tex[tile]) {
-        glUniform2f(prg->uniform_locations[tile*2 + 0], opengl_tex[tile]->size[0], opengl_tex[tile]->size[1]);
-        glUniform1i(prg->uniform_locations[tile*2 + 1], opengl_tex[tile]->filter);
+        glUniform2f(prg->uniform_locations[tile * 2 + 0], opengl_tex[tile]->size[0], opengl_tex[tile]->size[1]);
+        glUniform1i(prg->uniform_locations[tile * 2 + 1], opengl_tex[tile]->filter);
     }
 }
 
@@ -121,13 +131,18 @@ static void gfx_opengl_load_shader(struct ShaderProgram *new_prg) {
 }
 
 static void gfx_opengl_remove_shaders(void) {
-    for (int i = 0; i < CC_MAX_SHADERS; i++) {
-        gfx_opengl_unload_shader(&shader_program_pool[i]);
-        memset(&shader_program_pool[i], 0, sizeof(shader_program_pool[i]));
-    }
+    for (int i = 0; i < MAX_FRAME_PASSES; i++) {
+        for (int j = 0; j < CC_MAX_SHADERS; j++) {
+            gfx_opengl_unload_shader(&shader_program_pool[i][j]);
+            memset(&shader_program_pool[i][j], 0, sizeof(shader_program_pool[i][j]));
+        }
 
-    shader_program_pool_index = 0;
-    shader_program_pool_size = 0;
+        gfx_opengl_unload_shader(&post_process_shader_program_pool[i]);
+        memset(&post_process_shader_program_pool[i], 0, sizeof(post_process_shader_program_pool[i]));
+
+        shader_program_pool_index[i] = 0;
+        shader_program_pool_size[i] = 0;
+    }
 }
 
 static void append_str(char *buf, size_t *len, const char *str) {
@@ -453,8 +468,10 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     const char *fragmentShader = fs_buf;
     bool usingCustomFragmentShader = false;
 
-    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, shader_program_pool_index, &vertexShader);
-    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, shader_program_pool_index, &fragmentShader);
+    int framePassIndex = gCurrentFramePassIndex + 1;
+
+    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], &vertexShader);
+    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], &fragmentShader);
 
     if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
     if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
@@ -530,9 +547,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     size_t cnt = 0;
 
-    struct ShaderProgram *prg = &shader_program_pool[shader_program_pool_index];
-    shader_program_pool_index = (shader_program_pool_index + 1) % CC_MAX_SHADERS;
-    if (shader_program_pool_size < CC_MAX_SHADERS) { shader_program_pool_size++; }
+    struct ShaderProgram *prg = &shader_program_pool[framePassIndex][shader_program_pool_index[framePassIndex]];
+    shader_program_pool_index[framePassIndex] = (shader_program_pool_index[framePassIndex] + 1) % CC_MAX_SHADERS;
+    if (shader_program_pool_size[framePassIndex] < CC_MAX_SHADERS) { shader_program_pool_size[framePassIndex]++; }
 
     prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aVtxPos");
     prg->attrib_sizes[cnt] = 4;
@@ -605,30 +622,240 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     prg->uniform_locations[6] = glGetUniformLocation(shader_program, "uFilter");
     prg->uniform_locations[7] = glGetUniformLocation(shader_program, "uModelViewMatrix");
-    prg->uniform_locations[8] = glGetUniformLocation(shader_program, "uProjectionMatrix");
-    prg->uniform_locations[9] = glGetUniformLocation(shader_program, "uInverseViewMatrix");
+    prg->uniform_locations[8] = glGetUniformLocation(shader_program, "uModelProjectionMatrix");
+    prg->uniform_locations[9] = glGetUniformLocation(shader_program, "uProjectionMatrix");
+    prg->uniform_locations[10] = glGetUniformLocation(shader_program, "uInverseCameraMatrix");
+    prg->uniform_locations[11] = glGetUniformLocation(shader_program, "uAspectRatio");
+    prg->uniform_locations[12] = glGetUniformLocation(shader_program, "uXAdjustRatio");
+
+    GLint passTexLoc = glGetUniformLocation(shader_program, "uPassTex");
+    if (passTexLoc != -1) {
+        glUniform1i(passTexLoc, 10);
+    }
+
+    return prg;
+}
+
+static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(struct FramePass *framePass, uint8_t framePassIndex, bool useLuaShader) {
+    // if a shader already exists, use that instead
+    if (post_process_shader_program_pool[framePassIndex].opengl_program_id != 0) {
+        gfx_opengl_load_shader(&post_process_shader_program_pool[framePassIndex]);
+        return &post_process_shader_program_pool[framePassIndex];
+    }
+
+    // default vertex and fragment shader
+    char vs_buf[] = "#version 150\n"
+    "in vec4 aVtxPos;"
+    "in vec2 aTexCoord;"
+    "out vec2 vTexCoord;"
+    "void main() {"
+    "    vTexCoord = aTexCoord;"
+    "    gl_Position = aVtxPos;"
+    "}";
+
+    char fs_buf[] = "#version 150\n"
+    "precision mediump float;"
+    "uniform sampler2D uPassTex;"
+    "in vec2 vTexCoord;"
+    "out vec4 fragColor;"
+    "void main() {"
+    "    fragColor = texture(uPassTex, vTexCoord);"
+    "}";
+
+    const char *vertexShader = vs_buf;
+    bool usingCustomVertexShader = false;
+    const char *fragmentShader = fs_buf;
+    bool usingCustomFragmentShader = false;
+
+    if (useLuaShader) {
+        // let lua override the shader
+        smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, framePassIndex, &vertexShader);
+        smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, framePassIndex, &fragmentShader);
+        if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
+        if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
+    }
+
+    const GLchar *sources[2] = { vertexShader, fragmentShader };
+    GLint lengths[2] = { strlen(vertexShader), strlen(fragmentShader) };
+    GLint success;
+
+    GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &sources[0], &lengths[0]);
+    glCompileShader(vertex_shader);
+    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        GLint max_length = 0;
+        glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
+        char error_log[1024];
+        glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
+        if (!usingCustomVertexShader) {
+            fprintf(stderr, "Vertex shader compilation failed\n");
+            fprintf(stderr, "%s\n", &error_log[0]);
+            sys_fatal("vertex shader compilation failed (see terminal)");
+        } else {
+            LOG_LUA_LINE("Vertex Shader: %s", error_log);
+        }
+        usingCustomVertexShader = false;
+        sources[0] = vs_buf;
+        lengths[0] = strlen(vs_buf);
+        glShaderSource(vertex_shader, 1, &sources[0], &lengths[0]);
+        glCompileShader(vertex_shader);
+        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            fprintf(stderr, "Vertex shader compilation failed\n");
+            glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
+            fprintf(stderr, "%s\n", &error_log[0]);
+            sys_fatal("vertex shader compilation failed (see terminal)");
+        }
+    }
+
+    GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, &sources[1], &lengths[1]);
+    glCompileShader(fragment_shader);
+    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        GLint max_length = 0;
+        glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
+        char error_log[1024];
+        glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
+        if (!usingCustomFragmentShader) {
+            fprintf(stderr, "Fragment shader compilation failed\n");
+            fprintf(stderr, "%s\n", &error_log[0]);
+            sys_fatal("fragment shader compilation failed (see terminal)");
+        } else {
+            LOG_LUA_LINE("Fragment Shader: %s", &error_log[0]);
+        }
+        usingCustomFragmentShader = false;
+        sources[1] = fs_buf;
+        lengths[1] = strlen(fs_buf);
+        glShaderSource(fragment_shader, 1, &sources[1], &lengths[1]);
+        glCompileShader(fragment_shader);
+        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            fprintf(stderr, "Fragment shader compilation failed\n");
+            glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
+            fprintf(stderr, "%s\n", &error_log[0]);
+            sys_fatal("fragment shader compilation failed (see terminal)");
+        }
+    }
+
+    GLuint shader_program = glCreateProgram();
+    glAttachShader(shader_program, vertex_shader);
+    glAttachShader(shader_program, fragment_shader);
+    glLinkProgram(shader_program);
+
+    size_t cnt = 0;
+
+    struct ShaderProgram *prg = &post_process_shader_program_pool[framePassIndex];
+
+    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aVtxPos");
+    prg->attrib_sizes[cnt] = 4;
+    ++cnt;
+
+    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aTexCoord");
+    prg->attrib_sizes[cnt] = 2;
+    ++cnt;
+
+    prg->hash = framePassIndex;
+    prg->opengl_program_id = shader_program;
+    prg->num_floats = 6;
+    prg->num_attribs = cnt;
+
+    gfx_opengl_load_shader(prg);
+
+    for (int t = 0; t < 2; t++) {
+        char name[16];
+        sprintf(name, "uTex%d", t);
+        GLint sampler_location = glGetUniformLocation(shader_program, name);
+        sprintf(name, "uTex%dSize", t);
+        prg->uniform_locations[t * 2] = glGetUniformLocation(shader_program, name);
+        sprintf(name, "uTex%dFilter", t);
+        prg->uniform_locations[t * 2 + 1] = glGetUniformLocation(shader_program, name);
+        glUniform1i(sampler_location, t);
+    }
+
+    prg->uniform_locations[4] = glGetUniformLocation(shader_program, "uFrameCount");
+    prg->uniform_locations[5] = glGetUniformLocation(shader_program, "uLightmapColor");
+    prg->uniform_locations[6] = glGetUniformLocation(shader_program, "uFilter");
+    prg->uniform_locations[7] = glGetUniformLocation(shader_program, "uModelViewMatrix");
+    prg->uniform_locations[8] = glGetUniformLocation(shader_program, "uModelProjectionMatrix");
+    prg->uniform_locations[9] = glGetUniformLocation(shader_program, "uProjectionMatrix");
+    prg->uniform_locations[10] = glGetUniformLocation(shader_program, "uInverseCameraMatrix");
+    prg->uniform_locations[11] = glGetUniformLocation(shader_program, "uAspectRatio");
+    prg->uniform_locations[12] = glGetUniformLocation(shader_program, "uXAdjustRatio");
+
+    GLint passTexLoc = glGetUniformLocation(shader_program, "uPassTex");
+    if (passTexLoc != -1) {
+        glUniform1i(passTexLoc, 10);
+    }
 
     return prg;
 }
 
 static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner *cc) {
-    for (size_t i = 0; i < shader_program_pool_size; i++) {
-        if (shader_program_pool[i].hash == cc->hash) {
-            return &shader_program_pool[i];
+    int framePassIndex = gCurrentFramePassIndex + 1;
+    for (size_t i = 0; i < shader_program_pool_size[framePassIndex]; i++) {
+        if (shader_program_pool[framePassIndex][i].hash == cc->hash) {
+            return &shader_program_pool[framePassIndex][i];
         }
     }
     return NULL;
 }
 
-static struct ShaderProgram* gfx_opengl_lookup_shader_using_index(uint8_t shaderIndex) {
-    if (shaderIndex >= shader_program_pool_size) return NULL;
-    return &shader_program_pool[shaderIndex];
+static struct ShaderProgram* gfx_opengl_lookup_shader_using_index(uint8_t shaderIndex, uint8_t framePassIndex) {
+    framePassIndex++;
+    if (shaderIndex >= shader_program_pool_size[framePassIndex]) return NULL;
+    return &shader_program_pool[framePassIndex][shaderIndex];
 }
 
 static void gfx_opengl_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
     *num_inputs = prg->num_inputs;
     used_textures[0] = prg->used_textures[0];
     used_textures[1] = prg->used_textures[1];
+}
+
+static void gfx_opengl_create_framebuffer(u32 *fbo, u32 *depthBuffer, u32 *tex, u32 width, u32 height) {
+    glGenFramebuffers(1, fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, *fbo);
+
+    glGenTextures(1, tex);
+    glBindTexture(GL_TEXTURE_2D, *tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *tex, 0);
+
+    // create depth buffer
+    glGenRenderbuffers(1, depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, *depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, *depthBuffer);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        LOG_ERROR("Framebuffer is not complete!");
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+static void gfx_opengl_delete_framebuffer(u32 fbo, u32 depthBuffer, u32 tex) {
+    if (fbo) glDeleteFramebuffers(1, &fbo);
+    if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
+    if (tex) glDeleteTextures(1, &tex);
+}
+
+static void gfx_opengl_set_framebuffer(u32 fbo, u32 width, u32 height) {
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glViewport(0, 0, width, height);
+}
+
+static void gfx_opengl_reset_framebuffer(void) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    u32 windowWidth, windowHeight;
+    gfx_get_dimensions(&windowWidth, &windowHeight);
+    glViewport(0, 0, windowWidth, windowHeight);
 }
 
 static GLuint gfx_opengl_new_texture(void) {
@@ -650,6 +877,11 @@ static void gfx_opengl_select_texture(int tile, GLuint texture_id) {
     glActiveTexture(GL_TEXTURE0 + tile);
     glBindTexture(GL_TEXTURE_2D, opengl_tex[tile]->gltex);
     gfx_opengl_set_texture_uniforms(opengl_prg, tile);
+}
+
+static void gfx_opengl_bind_texture_raw(int tile, GLuint texture_id) {
+    glActiveTexture(GL_TEXTURE0 + tile);
+    glBindTexture(GL_TEXTURE_2D, texture_id);
 }
 
 static void gfx_opengl_upload_texture(const uint8_t *rgba32_buf, int width, int height) {
@@ -778,6 +1010,7 @@ static void gfx_opengl_start_frame(void) {
 
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
+    glClearDepth(1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
@@ -798,11 +1031,17 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_load_shader,
     gfx_opengl_remove_shaders,
     gfx_opengl_create_and_load_new_shader,
+    gfx_opengl_create_or_load_post_process_shader,
     gfx_opengl_lookup_shader,
     gfx_opengl_lookup_shader_using_index,
     gfx_opengl_shader_get_info,
+    gfx_opengl_create_framebuffer,
+    gfx_opengl_delete_framebuffer,
+    gfx_opengl_set_framebuffer,
+    gfx_opengl_reset_framebuffer,
     gfx_opengl_new_texture,
     gfx_opengl_select_texture,
+    gfx_opengl_bind_texture_raw,
     gfx_opengl_upload_texture,
     gfx_opengl_set_sampler_parameters,
     gfx_opengl_set_depth_test,

@@ -136,11 +136,15 @@ static struct ShaderProgram *gfx_dummy_renderer_create_and_load_new_shader(UNUSE
     return NULL;
 }
 
+static struct ShaderProgram *gfx_dummy_renderer_create_or_load_post_process_shader(UNUSED struct FramePass *framePass, UNUSED u8 framePassIndex, UNUSED bool useLuaShader) {
+    return NULL;
+}
+
 static struct ShaderProgram *gfx_dummy_renderer_lookup_shader(UNUSED struct ColorCombiner* cc) {
     return NULL;
 }
 
-static struct ShaderProgram *gfx_dummy_renderer_lookup_shader_using_index(UNUSED u8 shaderIndex) {
+static struct ShaderProgram *gfx_dummy_renderer_lookup_shader_using_index(UNUSED u8 shaderIndex, UNUSED u8 framePassIndex) {
     return NULL;
 }
 
@@ -150,11 +154,26 @@ static void gfx_dummy_renderer_shader_get_info(UNUSED struct ShaderProgram *prg,
     used_textures[1] = false;
 }
 
+static void gfx_dummy_renderer_create_framebuffer(UNUSED u32 *fbo, UNUSED u32 *depthBuffer, UNUSED u32 *tex, UNUSED u32 width, UNUSED u32 height) {
+}
+
+static void gfx_dummy_renderer_delete_framebuffer(UNUSED u32 fbo, UNUSED u32 depthBuffer, UNUSED u32 tex) {
+}
+
+static void gfx_dummy_renderer_set_framebuffer(UNUSED u32 fbo, UNUSED u32 width, UNUSED u32 height) {
+}
+
+static void gfx_dummy_renderer_reset_framebuffer(void) {
+}
+
 static uint32_t gfx_dummy_renderer_new_texture(void) {
     return 0;
 }
 
 static void gfx_dummy_renderer_select_texture(UNUSED int tile, UNUSED uint32_t texture_id) {
+}
+
+static void gfx_dummy_renderer_bind_texture_raw(UNUSED int tile, UNUSED uint32_t texture_id) {
 }
 
 static void gfx_dummy_renderer_upload_texture(UNUSED const uint8_t *rgba32_buf, UNUSED int width, UNUSED int height) {
@@ -232,11 +251,17 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_load_shader,
     gfx_dummy_renderer_remove_shaders,
     gfx_dummy_renderer_create_and_load_new_shader,
+    gfx_dummy_renderer_create_or_load_post_process_shader,
     gfx_dummy_renderer_lookup_shader,
     gfx_dummy_renderer_lookup_shader_using_index,
     gfx_dummy_renderer_shader_get_info,
+    gfx_dummy_renderer_create_framebuffer,
+    gfx_dummy_renderer_delete_framebuffer,
+    gfx_dummy_renderer_set_framebuffer,
+    gfx_dummy_renderer_reset_framebuffer,
     gfx_dummy_renderer_new_texture,
     gfx_dummy_renderer_select_texture,
+    gfx_dummy_renderer_bind_texture_raw,
     gfx_dummy_renderer_upload_texture,
     gfx_dummy_renderer_set_sampler_parameters,
     gfx_dummy_renderer_set_depth_test,

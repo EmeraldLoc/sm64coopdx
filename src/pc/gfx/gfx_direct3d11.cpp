@@ -416,6 +416,10 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     return (struct ShaderProgram *)(d3d.shader_program = prg);
 }
 
+static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(UNUSED struct ColorCombiner* cc) {
+    return NULL;
+}
+
 static struct ShaderProgram *gfx_d3d11_lookup_shader(struct ColorCombiner* cc) {
     for (size_t i = 0; i < d3d.shader_program_pool_size; i++) {
         if (d3d.shader_program_pool[i].hash == cc->hash) {
@@ -425,7 +429,7 @@ static struct ShaderProgram *gfx_d3d11_lookup_shader(struct ColorCombiner* cc) {
     return nullptr;
 }
 
-static struct ShaderProgram *gfx_d3d11_lookup_shader_using_index(u8 shaderIndex) {
+static struct ShaderProgram *gfx_d3d11_lookup_shader_using_index(u8 shaderIndex, UNUSED u8 framePassIndex) {
     if (shaderIndex >= d3d.shader_program_pool_size) return nullptr;
     return (struct ShaderProgram *)&d3d.shader_program_pool[shaderIndex];
 }
@@ -438,6 +442,18 @@ static void gfx_d3d11_shader_get_info(struct ShaderProgram *prg, uint8_t *num_in
     used_textures[1] = p->used_textures[1];
 }
 
+static void gfx_d3d11_create_framebuffer(UNUSED u32 *fbo, UNUSED u32 *depthBuffer, UNUSED u32 *tex, UNUSED u32 width, UNUSED u32 height) {
+}
+
+static void gfx_d3d11_delete_framebuffer(UNUSED u32 fbo, UNUSED u32 depthBuffer, UNUSED u32 tex) {
+}
+
+static void gfx_d3d11_set_framebuffer(UNUSED u32 fbo) {
+}
+
+static void gfx_d3d11_reset_framebuffer(void) {
+}
+
 static uint32_t gfx_d3d11_new_texture(void) {
     d3d.textures.resize(d3d.textures.size() + 1);
     return (uint32_t)(d3d.textures.size() - 1);
@@ -446,6 +462,9 @@ static uint32_t gfx_d3d11_new_texture(void) {
 static void gfx_d3d11_select_texture(int tile, uint32_t texture_id) {
     d3d.current_tile = tile;
     d3d.current_texture_ids[tile] = texture_id;
+}
+
+static void gfx_d3d11_bind_texture_raw(UNUSED int tile, UNUSED uint32_t texture_id) {
 }
 
 static D3D11_TEXTURE_ADDRESS_MODE gfx_cm_to_d3d11(uint32_t val) {
@@ -726,11 +745,17 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_load_shader,
     gfx_d3d11_remove_shaders,
     gfx_d3d11_create_and_load_new_shader,
+    gfx_d3d11_create_or_load_post_process_shader,
     gfx_d3d11_lookup_shader,
     gfx_d3d11_lookup_shader_using_index,
     gfx_d3d11_shader_get_info,
+    gfx_d3d11_create_framebuffer,
+    gfx_d3d11_delete_framebuffer;
+    gfx_d3d11_set_framebuffer,
+    gfx_d3d11_reset_framebuffer,
     gfx_d3d11_new_texture,
     gfx_d3d11_select_texture,
+    gfx_d3d11_bind_texture_raw,
     gfx_d3d11_upload_texture,
     gfx_d3d11_set_sampler_parameters,
     gfx_d3d11_set_depth_test,

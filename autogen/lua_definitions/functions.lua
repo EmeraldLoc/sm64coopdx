@@ -10984,6 +10984,18 @@ function gfx_delete(gfx)
     -- ...
 end
 
+--- @param enable boolean
+--- Sets culling for all triangles. Set to false to disable culling, set to true to use normal preset
+function gfx_set_culling_enabled(enable)
+    -- ...
+end
+
+--- @return boolean
+--- Get if culling is enabled or not
+function gfx_is_culling_enabled()
+    -- ...
+end
+
 --- Deletes all display lists created by `gfx_create`
 function gfx_delete_all()
     -- ...
@@ -10996,20 +11008,21 @@ end
 
 --- @param cc ColorCombiner
 --- @return CCFeatures
---- Gets features from a color combiner.
+--- Gets features from a color combiner
 function gfx_color_combiner_get_features(cc)
     -- ...
 end
 
 --- @param shaderIndex integer
+--- @param framePassIndex? integer
 --- @return integer
---- Gets a program id from the shader index.
-function gfx_get_program_id_from_shader_index(shaderIndex)
+--- Gets a program id from the shader index. Specify a frame pass to get the program id for a specific pass
+function gfx_get_program_id_from_shader_index(shaderIndex, framePassIndex)
     -- ...
 end
 
 --- @param program integer
---- Uses a specific program. Required for setting uniforms.
+--- Uses a specific program. Required for setting uniforms
 function gfx_use_program(program)
     -- ...
 end
@@ -11017,28 +11030,28 @@ end
 --- @param program integer
 --- @param name string
 --- @return integer
---- Gets the location of a shader uniform in a program for modification.
+--- Gets the location of a shader uniform in a program for modification
 function gfx_shader_get_uniform_location(program, name)
     -- ...
 end
 
 --- @param loc integer
 --- @param value integer
---- Sets the value of a shader uniform of type int.
+--- Sets the value of a shader uniform of type int
 function gfx_shader_set_int(loc, value)
     -- ...
 end
 
 --- @param loc integer
 --- @param value boolean
---- Sets the value of a shader uniform of type bool.
+--- Sets the value of a shader uniform of type bool
 function gfx_shader_set_bool(loc, value)
     -- ...
 end
 
 --- @param loc integer
 --- @param value number
---- Sets the value of a shader uniform of type float.
+--- Sets the value of a shader uniform of type float
 function gfx_shader_set_float(loc, value)
     -- ...
 end
@@ -11046,7 +11059,7 @@ end
 --- @param loc integer
 --- @param x number
 --- @param y number
---- Sets the value of a shader uniform of type vec2.
+--- Sets the value of a shader uniform of type vec2
 function gfx_shader_set_vec2(loc, x, y)
     -- ...
 end
@@ -11055,7 +11068,7 @@ end
 --- @param x number
 --- @param y number
 --- @param z number
---- Sets the value of a shader uniform of type vec3.
+--- Sets the value of a shader uniform of type vec3
 function gfx_shader_set_vec3(loc, x, y, z)
     -- ...
 end
@@ -11065,15 +11078,48 @@ end
 --- @param x number
 --- @param y number
 --- @param z number
---- Sets the value of a shader uniform of type vec4.
+--- Sets the value of a shader uniform of type vec4
 function gfx_shader_set_vec4(loc, w, x, y, z)
     -- ...
 end
 
 --- @param loc integer
 --- @param mat Mat4
---- Sets the value of a shader uniform of type mat4.
+--- Sets the value of a shader uniform of type mat4
 function gfx_shader_set_mat4(loc, mat)
+    -- ...
+end
+
+--- @return integer
+--- Creates a frame pass to be used when rendering the game. Allows for multipass shaders. Returns the frame pass index
+function gfx_shader_create_frame_pass()
+    -- ...
+end
+
+--- @param framePassIndex integer
+--- Deletes a frame pass using `framePassIndex`
+function gfx_shader_remove_frame_pass(framePassIndex)
+    -- ...
+end
+
+--- @param framePassIndex integer
+--- @param width integer
+--- @param height integer
+--- Sets a frame passes viewport size
+function gfx_shader_set_frame_pass_viewport(framePassIndex, width, height)
+    -- ...
+end
+
+--- @param framePassIndex integer
+--- @param drawWorldGeometry boolean
+--- Configures whether a frame pass should redraw the whole scene or use a fullscreen quad
+function gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry)
+    -- ...
+end
+
+--- @return integer
+--- Gets the current active frame pass index. If there is no active frame pass, it returns -1
+function gfx_shader_get_current_frame_pass()
     -- ...
 end
 

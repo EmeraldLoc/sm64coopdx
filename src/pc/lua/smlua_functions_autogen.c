@@ -32613,6 +32613,38 @@ int smlua_func_gfx_delete(lua_State* L) {
     return 1;
 }
 
+int smlua_func_gfx_set_culling_enabled(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_set_culling_enabled", 1, top);
+        return 0;
+    }
+
+    bool enable = smlua_to_boolean(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_set_culling_enabled"); return 0; }
+
+    gfx_set_culling_enabled(enable);
+
+    return 1;
+}
+
+int smlua_func_gfx_is_culling_enabled(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_is_culling_enabled", 0, top);
+        return 0;
+    }
+
+
+    lua_pushboolean(L, gfx_is_culling_enabled());
+
+    return 1;
+}
+
 int smlua_func_gfx_delete_all(UNUSED lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -32664,15 +32696,20 @@ int smlua_func_gfx_get_program_id_from_shader_index(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_get_program_id_from_shader_index", 1, top);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "gfx_get_program_id_from_shader_index", 1, 2, top);
         return 0;
     }
 
     u8 shaderIndex = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_get_program_id_from_shader_index"); return 0; }
+    u8 framePassIndex = (u8) 0;
+    if (top >= 2) {
+        framePassIndex = smlua_to_integer(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_get_program_id_from_shader_index"); return 0; }
+    }
 
-    lua_pushinteger(L, gfx_get_program_id_from_shader_index(shaderIndex));
+    lua_pushinteger(L, gfx_get_program_id_from_shader_index(shaderIndex, framePassIndex));
 
     return 1;
 }
@@ -32856,6 +32893,93 @@ int smlua_func_gfx_shader_set_mat4(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_shader_set_mat4"); return 0; }
 
     gfx_shader_set_mat4(loc, mat);
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_create_frame_pass(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_create_frame_pass", 0, top);
+        return 0;
+    }
+
+
+    lua_pushinteger(L, gfx_shader_create_frame_pass());
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_remove_frame_pass(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_remove_frame_pass", 1, top);
+        return 0;
+    }
+
+    int framePassIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_remove_frame_pass"); return 0; }
+
+    gfx_shader_remove_frame_pass(framePassIndex);
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_frame_pass_viewport(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 3) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_set_frame_pass_viewport", 3, top);
+        return 0;
+    }
+
+    int framePassIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_set_frame_pass_viewport"); return 0; }
+    int width = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_shader_set_frame_pass_viewport"); return 0; }
+    int height = smlua_to_integer(L, 3);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "gfx_shader_set_frame_pass_viewport"); return 0; }
+
+    gfx_shader_set_frame_pass_viewport(framePassIndex, width, height);
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_frame_pass_draw_world(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_set_frame_pass_draw_world", 2, top);
+        return 0;
+    }
+
+    int framePassIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_set_frame_pass_draw_world"); return 0; }
+    bool drawWorldGeometry = smlua_to_boolean(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_shader_set_frame_pass_draw_world"); return 0; }
+
+    gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry);
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_get_current_frame_pass(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_get_current_frame_pass", 0, top);
+        return 0;
+    }
+
+
+    lua_pushinteger(L, gfx_shader_get_current_frame_pass());
 
     return 1;
 }
@@ -38933,6 +39057,8 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_create", smlua_func_gfx_create);
     smlua_bind_function(L, "gfx_resize", smlua_func_gfx_resize);
     smlua_bind_function(L, "gfx_delete", smlua_func_gfx_delete);
+    smlua_bind_function(L, "gfx_set_culling_enabled", smlua_func_gfx_set_culling_enabled);
+    smlua_bind_function(L, "gfx_is_culling_enabled", smlua_func_gfx_is_culling_enabled);
     smlua_bind_function(L, "gfx_delete_all", smlua_func_gfx_delete_all);
     smlua_bind_function(L, "gfx_reload_shaders", smlua_func_gfx_reload_shaders);
     smlua_bind_function(L, "gfx_color_combiner_get_features", smlua_func_gfx_color_combiner_get_features);
@@ -38946,6 +39072,11 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_shader_set_vec3", smlua_func_gfx_shader_set_vec3);
     smlua_bind_function(L, "gfx_shader_set_vec4", smlua_func_gfx_shader_set_vec4);
     smlua_bind_function(L, "gfx_shader_set_mat4", smlua_func_gfx_shader_set_mat4);
+    smlua_bind_function(L, "gfx_shader_create_frame_pass", smlua_func_gfx_shader_create_frame_pass);
+    smlua_bind_function(L, "gfx_shader_remove_frame_pass", smlua_func_gfx_shader_remove_frame_pass);
+    smlua_bind_function(L, "gfx_shader_set_frame_pass_viewport", smlua_func_gfx_shader_set_frame_pass_viewport);
+    smlua_bind_function(L, "gfx_shader_set_frame_pass_draw_world", smlua_func_gfx_shader_set_frame_pass_draw_world);
+    smlua_bind_function(L, "gfx_shader_get_current_frame_pass", smlua_func_gfx_shader_get_current_frame_pass);
     smlua_bind_function(L, "vtx_get_from_name", smlua_func_vtx_get_from_name);
     smlua_bind_function(L, "vtx_get_name", smlua_func_vtx_get_name);
     smlua_bind_function(L, "vtx_get_count", smlua_func_vtx_get_count);
