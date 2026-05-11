@@ -602,9 +602,9 @@ void str_seperator_concat(char *output_buffer, int buffer_size, char** strings, 
     }
 }
 
-static char *get_update_path() {
+static char *get_update_path(void) {
 #ifdef _WIN32
-    char updateExecFilename[] = "coopdx-updater.exe"; // WIP
+    char updateExecFilename[] = "coopdx-updater.exe";
 #else
     char updateExecFilename[] = "coopdx-updater";
 #endif
@@ -614,7 +614,7 @@ static char *get_update_path() {
     return sUpdateExecFilePath;
 }
 
-bool can_update_game() {
+bool can_update_game(void) {
     // the file is not guaranteed to exist, so make sure we have the updater installed
     return fs_sys_file_exists(get_update_path()) && gUpdateMessage;
 }
