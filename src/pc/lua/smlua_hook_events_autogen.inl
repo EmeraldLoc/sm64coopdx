@@ -2051,3 +2051,51 @@ bool smlua_call_event_hooks_HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE(u8 frame
     }
     return false;
 }
+
+bool smlua_call_event_hooks_HOOK_BEFORE_DRAW_GEOMETRY() {
+    lua_State *L = gLuaState;
+    if (L == NULL) { return false; }
+    bool hookResult = false;
+
+    struct LuaHookedEvent *hook = &sHookedEvents[HOOK_BEFORE_DRAW_GEOMETRY];
+    for (int i = 0; i < hook->count; i++) {
+        s32 prevTop = lua_gettop(L);
+
+        // push the callback onto the stack
+        lua_rawgeti(L, LUA_REGISTRYINDEX, hook->reference[i]);
+
+        // call the callback
+        if (0 != smlua_call_hook(L, 0, 0, 0, hook->mod[i], hook->modFile[i])) {
+            LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_BEFORE_DRAW_GEOMETRY], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
+            continue;
+        }
+        hookResult = true;
+
+        lua_settop(L, prevTop);
+    }
+    return hookResult;
+}
+
+bool smlua_call_event_hooks_HOOK_ON_DRAW_GEOMETRY() {
+    lua_State *L = gLuaState;
+    if (L == NULL) { return false; }
+    bool hookResult = false;
+
+    struct LuaHookedEvent *hook = &sHookedEvents[HOOK_ON_DRAW_GEOMETRY];
+    for (int i = 0; i < hook->count; i++) {
+        s32 prevTop = lua_gettop(L);
+
+        // push the callback onto the stack
+        lua_rawgeti(L, LUA_REGISTRYINDEX, hook->reference[i]);
+
+        // call the callback
+        if (0 != smlua_call_hook(L, 0, 0, 0, hook->mod[i], hook->modFile[i])) {
+            LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_DRAW_GEOMETRY], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
+            continue;
+        }
+        hookResult = true;
+
+        lua_settop(L, prevTop);
+    }
+    return hookResult;
+}

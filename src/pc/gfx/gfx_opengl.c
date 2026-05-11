@@ -52,7 +52,7 @@ struct GLTexture {
     bool filter;
 };
 
-static struct ShaderProgram shader_program_pool[CC_MAX_SHADERS][MAX_FRAME_PASSES];
+static struct ShaderProgram shader_program_pool[MAX_FRAME_PASSES][CC_MAX_SHADERS];
 static uint8_t shader_program_pool_size[MAX_FRAME_PASSES] = { 0 };
 static uint8_t shader_program_pool_index[MAX_FRAME_PASSES] = { 0 };
 
@@ -794,9 +794,10 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(struc
 
 static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner *cc) {
     int framePassIndex = gCurrentFramePassIndex + 1;
+    if (framePassIndex == 0) return NULL;
     for (size_t i = 0; i < shader_program_pool_size[framePassIndex]; i++) {
         if (shader_program_pool[framePassIndex][i].hash == cc->hash) {
-            return &shader_program_pool[framePassIndex][i];
+             return &shader_program_pool[framePassIndex][i];
         }
     }
     return NULL;
@@ -1010,7 +1011,6 @@ static void gfx_opengl_start_frame(void) {
 
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
-    glClearDepth(1.0f);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);

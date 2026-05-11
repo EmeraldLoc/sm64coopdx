@@ -2096,8 +2096,16 @@ void gfx_run(Gfx *commands) {
         }
         gfx_rapi->set_framebuffer(framePass->fbo, framePass->width, framePass->height);
 
-        // this clears color and depth
-        gfx_rapi->start_frame();
+        gfx_rapi->start_frame(); // resets color and depth
+
+        gfx_sp_reset(); // reset's the rsp
+
+        // synchronize part of the rendering state and GL as it can get desynced from
+        // rendering the fullscreen quad
+        gfx_rapi->set_use_alpha(false);
+        rendering_state.alpha_blend = false;
+        gfx_rapi->set_depth_test(false);
+        rendering_state.depth_test = false;
 
         if (framePass->drawWorldGeometry) {
             if (i > 0) {
@@ -2109,9 +2117,10 @@ void gfx_run(Gfx *commands) {
                 color_combiner_pool[i].prg = NULL;
             }
 
-            gfx_rapi->set_depth_test(false);
+            smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
             gfx_run_dl(commands);
             gfx_end_frame_render();
+            smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
             if (i > 0) {
                 gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
@@ -2125,7 +2134,10 @@ void gfx_run(Gfx *commands) {
     if (!isFramePassActive) {
         // draw as normal
         gfx_rapi->reset_framebuffer();
+        smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
         gfx_run_dl(commands);
+        gfx_end_frame_render();
+        smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
     } else {
         gfx_rapi->reset_framebuffer();
 
