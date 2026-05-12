@@ -55,6 +55,7 @@ static uint8_t color_combiner_pool_index = 0;
 static struct ColorCombiner *sPrevCombinerForLookup = NULL;
 
 struct RSP rsp = { 0 };
+struct FramePass gDefaultDrawGeometryFramePass = { 0 };
 struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES] = { 0 };
 int gCurrentFramePassIndex = -1;
 
@@ -2057,11 +2058,12 @@ void gfx_start_frame(void) {
         // Avoid division by zero
         gfx_current_dimensions.height = 1;
     }
-    if (configForce4By3
-        && ((4.0f / 3.0f) * gfx_current_dimensions.height) < gfx_current_dimensions.width) {
+    if (configForce4By3 && ((4.0f / 3.0f) * gfx_current_dimensions.height) < gfx_current_dimensions.width) {
         gfx_current_dimensions.x_adjust_4by3 = (gfx_current_dimensions.width - (4.0f / 3.0f) * gfx_current_dimensions.height) / 2;
         gfx_current_dimensions.width = (4.0f / 3.0f) * gfx_current_dimensions.height;
-    } else { gfx_current_dimensions.x_adjust_4by3 = 0; }
+    } else {
+        gfx_current_dimensions.x_adjust_4by3 = 0;
+    }
     gfx_current_dimensions.aspect_ratio = ((float)gfx_current_dimensions.width / (float)gfx_current_dimensions.height);
     gfx_current_dimensions.x_adjust_ratio = (4.0f / 3.0f) / gfx_current_dimensions.aspect_ratio;
 }
@@ -2071,15 +2073,12 @@ void gfx_run(Gfx *commands) {
 
     sHasInverseCameraMatrix = false;
 
-    //puts("New frame");
-
     if (!gfx_wapi->start_frame()) {
         dropped_frame = true;
         return;
     }
     dropped_frame = false;
 
-    //double t0 = gfx_wapi->get_time();
     gfx_rapi->start_frame();
 
     bool isFramePassActive = false;
@@ -2089,8 +2088,15 @@ void gfx_run(Gfx *commands) {
         if (!framePass->active) continue;
         isFramePassActive = true;
 
+        // remove default frame pass if we have lua frame pass
+        if (gDefaultDrawGeometryFramePass.active) {
+            gfx_rapi->delete_framebuffer(framePass->fbo, framePass->depthBuffer, framePass->passTexture);
+            memset(framePass, 0, sizeof(struct FramePass));
+        }
+
         gCurrentFramePassIndex = i;
 
+        // setup framebuffer
         if (framePass->fbo == 0) {
             gfx_rapi->create_framebuffer(&framePass->fbo, &framePass->depthBuffer, &framePass->passTexture, framePass->width, framePass->height);
         }
@@ -2099,6 +2105,7 @@ void gfx_run(Gfx *commands) {
         gfx_rapi->start_frame(); // resets color and depth
 
         gfx_sp_reset(); // reset's the rsp
+        sHasInverseCameraMatrix = false;
 
         // synchronize part of the rendering state and GL as it can get desynced from
         // rendering the fullscreen quad
@@ -2108,6 +2115,7 @@ void gfx_run(Gfx *commands) {
         rendering_state.depth_test = false;
 
         if (framePass->drawWorldGeometry) {
+            // bind pass tex if it exists
             if (i > 0) {
                 gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
             }
@@ -2117,11 +2125,13 @@ void gfx_run(Gfx *commands) {
                 color_combiner_pool[i].prg = NULL;
             }
 
+            // render
             smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
             gfx_run_dl(commands);
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
+            // if there is a pass texture, render new pass in a fullscreen quad
             if (i > 0) {
                 gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
                 gfx_draw_fullscreen_quad(true);
@@ -2131,30 +2141,33 @@ void gfx_run(Gfx *commands) {
 
     gCurrentFramePassIndex = -1;
 
+    // run default draw world frame pass first if lua frame passes don't exist
     if (!isFramePassActive) {
-        // draw as normal
-        gfx_rapi->reset_framebuffer();
+        // reset frame pass
+        memset(&gDefaultDrawGeometryFramePass, 0, sizeof(struct FramePass));
+        gDefaultDrawGeometryFramePass.active = true;
+        gfx_get_dimensions(&gDefaultDrawGeometryFramePass.width, &gDefaultDrawGeometryFramePass.height);
+        gfx_rapi->set_framebuffer(gDefaultDrawGeometryFramePass.fbo, gDefaultDrawGeometryFramePass.width, gDefaultDrawGeometryFramePass.height);
+        // draw world into frame buffer
         smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
         gfx_run_dl(commands);
         gfx_end_frame_render();
         smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
-    } else {
-        gfx_rapi->reset_framebuffer();
+    }
 
-        gCurrentFramePassIndex = -1;
+    gfx_rapi->reset_framebuffer();
 
-        int lastActiveIdx = -1;
-        for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
-            if (gFramePasses[i].active) {
-                lastActiveIdx = i;
-                break;
-            }
+    int lastPassTex = gDefaultDrawGeometryFramePass.passTexture;
+    for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
+        if (gFramePasses[i].active) {
+            lastPassTex = gFramePasses[i].passTexture;
+            break;
         }
+    }
 
-        if (lastActiveIdx != -1) {
-            gfx_rapi->bind_texture_raw(10, gFramePasses[lastActiveIdx].passTexture);
-            gfx_draw_fullscreen_quad(false);  // draw final picture
-        }
+    if (lastPassTex != -1) {
+        gfx_rapi->bind_texture_raw(10, lastPassTex);
+        gfx_draw_fullscreen_quad(false);  // draw final quad
     }
 }
 

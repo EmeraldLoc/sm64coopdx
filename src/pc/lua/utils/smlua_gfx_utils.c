@@ -500,6 +500,7 @@ int gfx_shader_create_frame_pass() {
         return i;
     }
 
+    LOG_LUA("gfx_shader_create_frame_pass: Ran out of frame passes to allocate!")
     return -1;
 }
 
