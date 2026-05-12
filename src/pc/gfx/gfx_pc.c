@@ -55,7 +55,7 @@ static uint8_t color_combiner_pool_index = 0;
 static struct ColorCombiner *sPrevCombinerForLookup = NULL;
 
 struct RSP rsp = { 0 };
-struct FramePass gDefaultDrawGeometryFramePass = { 0 };
+struct FramePass gDefaultGeoFramePass = { 0 };
 struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES] = { 0 };
 int gCurrentFramePassIndex = -1;
 
@@ -1643,7 +1643,7 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     }
 }
 
-static void gfx_draw_fullscreen_quad(bool useLuaShader) {
+static void gfx_draw_fullscreen_quad() {
     float quadVerticies[] = {
         -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 1.0f,   0.0f, 0.0f,
@@ -1654,7 +1654,7 @@ static void gfx_draw_fullscreen_quad(bool useLuaShader) {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
-    gfx_rapi->create_or_load_post_process_shader(&gFramePasses[gCurrentFramePassIndex], gCurrentFramePassIndex, useLuaShader);
+    gfx_rapi->create_or_load_post_process_shader();
 
     gfx_rapi->set_use_alpha(false);
     gfx_rapi->set_depth_test(false);
@@ -2079,8 +2079,6 @@ void gfx_run(Gfx *commands) {
     }
     dropped_frame = false;
 
-    gfx_rapi->start_frame();
-
     bool isFramePassActive = false;
 
     for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
@@ -2089,9 +2087,9 @@ void gfx_run(Gfx *commands) {
         isFramePassActive = true;
 
         // remove default frame pass if we have lua frame pass
-        if (gDefaultDrawGeometryFramePass.active) {
-            gfx_rapi->delete_framebuffer(framePass->fbo, framePass->depthBuffer, framePass->passTexture);
-            memset(framePass, 0, sizeof(struct FramePass));
+        if (gDefaultGeoFramePass.active) {
+            gfx_rapi->delete_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.depthBuffer, gDefaultGeoFramePass.passTexture);
+            memset(&gDefaultGeoFramePass, 0, sizeof(struct FramePass));
         }
 
         gCurrentFramePassIndex = i;
@@ -2104,7 +2102,7 @@ void gfx_run(Gfx *commands) {
 
         gfx_rapi->start_frame(); // resets color and depth
 
-        gfx_sp_reset(); // reset's the rsp
+        gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
 
         // synchronize part of the rendering state and GL as it can get desynced from
@@ -2121,8 +2119,8 @@ void gfx_run(Gfx *commands) {
             }
 
             // reset color combiner programs
-            for (int i = 0; i < CC_MAX_SHADERS; i++) {
-                color_combiner_pool[i].prg = NULL;
+            for (int j = 0; j < CC_MAX_SHADERS; j++) {
+                color_combiner_pool[j].prg = NULL;
             }
 
             // render
@@ -2131,10 +2129,10 @@ void gfx_run(Gfx *commands) {
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
-            // if there is a pass texture, render new pass in a fullscreen quad
+            // if there is a pass texture, render new pass in a fullscreen quad, otherwise don't render
             if (i > 0) {
                 gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
-                gfx_draw_fullscreen_quad(true);
+                gfx_draw_fullscreen_quad();
             }
         }
     }
@@ -2143,11 +2141,31 @@ void gfx_run(Gfx *commands) {
 
     // run default draw world frame pass first if lua frame passes don't exist
     if (!isFramePassActive) {
-        // reset frame pass
-        memset(&gDefaultDrawGeometryFramePass, 0, sizeof(struct FramePass));
-        gDefaultDrawGeometryFramePass.active = true;
-        gfx_get_dimensions(&gDefaultDrawGeometryFramePass.width, &gDefaultDrawGeometryFramePass.height);
-        gfx_rapi->set_framebuffer(gDefaultDrawGeometryFramePass.fbo, gDefaultDrawGeometryFramePass.width, gDefaultDrawGeometryFramePass.height);
+        // activate and configure frame pass
+        if (!gDefaultGeoFramePass.active) {
+            memset(&gDefaultGeoFramePass, 0, sizeof(struct FramePass));
+            gDefaultGeoFramePass.active = true;
+            gDefaultGeoFramePass.drawWorldGeometry = true;
+        }
+
+        // create/update fbo
+        if (gDefaultGeoFramePass.fbo == 0 || gDefaultGeoFramePass.width != gfx_current_dimensions.width || gDefaultGeoFramePass.height != gfx_current_dimensions.height) {
+            gfx_rapi->delete_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.depthBuffer, gDefaultGeoFramePass.passTexture);
+            gfx_get_dimensions(&gDefaultGeoFramePass.width, &gDefaultGeoFramePass.height);
+            gfx_rapi->create_framebuffer(&gDefaultGeoFramePass.fbo, &gDefaultGeoFramePass.depthBuffer, &gDefaultGeoFramePass.passTexture, gDefaultGeoFramePass.width, gDefaultGeoFramePass.height);
+        }
+
+        gfx_rapi->set_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.width, gDefaultGeoFramePass.height);
+
+        gfx_rapi->start_frame(); // resets color and depth for this fbo
+
+        // synchronize part of the rendering state and GL as it can get desynced from
+        // rendering the fullscreen quad
+        gfx_rapi->set_use_alpha(false);
+        rendering_state.alpha_blend = false;
+        gfx_rapi->set_depth_test(false);
+        rendering_state.depth_test = false;
+
         // draw world into frame buffer
         smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
         gfx_run_dl(commands);
@@ -2157,17 +2175,21 @@ void gfx_run(Gfx *commands) {
 
     gfx_rapi->reset_framebuffer();
 
-    int lastPassTex = gDefaultDrawGeometryFramePass.passTexture;
-    for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
-        if (gFramePasses[i].active) {
-            lastPassTex = gFramePasses[i].passTexture;
-            break;
+    int lastPassTex = -1;
+    if (gDefaultGeoFramePass.active) {
+        lastPassTex = gDefaultGeoFramePass.passTexture;
+    } else {
+        for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
+            if (gFramePasses[i].active) {
+                lastPassTex = gFramePasses[i].passTexture;
+                break;
+            }
         }
     }
 
     if (lastPassTex != -1) {
         gfx_rapi->bind_texture_raw(10, lastPassTex);
-        gfx_draw_fullscreen_quad(false);  // draw final quad
+        gfx_draw_fullscreen_quad();  // draw final quad
     }
 }
 

@@ -777,7 +777,7 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     le_shutdown();
     gfx_remove_all_color_combiners();
     RAPI.remove_shaders();
-    // remove all frame passes
+    // remove all custom frame passes
     for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
         gfx_shader_remove_frame_pass(i);
     }

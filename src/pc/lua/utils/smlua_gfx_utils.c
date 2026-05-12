@@ -493,7 +493,7 @@ int gfx_shader_create_frame_pass() {
 
         memset(framePass, 0, sizeof(struct FramePass));
 
-        // set default's
+        // set default values
         framePass->active = true;
         gfx_get_dimensions(&framePass->width, &framePass->height);
 

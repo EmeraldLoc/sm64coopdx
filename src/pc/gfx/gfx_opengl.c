@@ -638,7 +638,8 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     return prg;
 }
 
-static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(struct FramePass *framePass, uint8_t framePassIndex, bool useLuaShader) {
+static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void) {
+    int framePassIndex = gCurrentFramePassIndex + 1;
     // if a shader already exists, use that instead
     if (post_process_shader_program_pool[framePassIndex].opengl_program_id != 0) {
         gfx_opengl_load_shader(&post_process_shader_program_pool[framePassIndex]);
@@ -656,7 +657,6 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(struc
     "}";
 
     char fs_buf[] = "#version 150\n"
-    "precision mediump float;"
     "uniform sampler2D uPassTex;"
     "in vec2 vTexCoord;"
     "out vec4 fragColor;"
@@ -669,13 +669,11 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(struc
     const char *fragmentShader = fs_buf;
     bool usingCustomFragmentShader = false;
 
-    if (useLuaShader) {
-        // let lua override the shader
-        smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, framePassIndex, &vertexShader);
-        smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, framePassIndex, &fragmentShader);
-        if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
-        if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
-    }
+    // let lua override the shader
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, framePassIndex, &vertexShader);
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, framePassIndex, &fragmentShader);
+    if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
+    if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
 
     const GLchar *sources[2] = { vertexShader, fragmentShader };
     GLint lengths[2] = { strlen(vertexShader), strlen(fragmentShader) };
@@ -844,9 +842,9 @@ static void gfx_opengl_create_framebuffer(u32 *fbo, u32 *depthBuffer, u32 *tex, 
 }
 
 static void gfx_opengl_delete_framebuffer(u32 fbo, u32 depthBuffer, u32 tex) {
-    if (fbo) glDeleteFramebuffers(1, &fbo);
-    if (depthBuffer) glDeleteRenderbuffers(1, &depthBuffer);
-    if (tex) glDeleteTextures(1, &tex);
+    if (fbo > 0) glDeleteFramebuffers(1, &fbo);
+    if (depthBuffer > 0) glDeleteRenderbuffers(1, &depthBuffer);
+    if (tex > 0) glDeleteTextures(1, &tex);
 }
 
 static void gfx_opengl_set_framebuffer(u32 fbo, u32 width, u32 height) {
