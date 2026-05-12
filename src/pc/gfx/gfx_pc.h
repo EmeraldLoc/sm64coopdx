@@ -62,6 +62,7 @@ extern "C" {
 void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, const char *window_title);
 struct GfxRenderingAPI *gfx_get_current_rendering_api(void);
 void gfx_start_frame(void);
+void gfx_run_basic(Gfx *commands);
 void gfx_run(Gfx *commands);
 void gfx_end_frame_render(void);
 void gfx_display_frame(void);

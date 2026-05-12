@@ -1657,10 +1657,10 @@ static void gfx_draw_fullscreen_quad() {
     gfx_rapi->create_or_load_post_process_shader();
 
     gfx_rapi->set_use_alpha(false);
+    rendering_state.alpha_blend = false;
     gfx_rapi->set_depth_test(false);
+    rendering_state.depth_test = false;
     gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
-    gfx_rapi->set_depth_test(true);
-    gfx_rapi->set_use_alpha(true);
 }
 
 static void gfx_dp_texture_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lry, UNUSED uint8_t tile, int16_t uls, int16_t ult, int16_t dsdx, int16_t dtdy, bool flip) {
@@ -2068,23 +2068,11 @@ void gfx_start_frame(void) {
     gfx_current_dimensions.x_adjust_ratio = (4.0f / 3.0f) / gfx_current_dimensions.aspect_ratio;
 }
 
-void gfx_run(Gfx *commands) {
-    gfx_sp_reset();
-
-    sHasInverseCameraMatrix = false;
-
-    if (!gfx_wapi->start_frame()) {
-        dropped_frame = true;
-        return;
-    }
-    dropped_frame = false;
-
-    bool isFramePassActive = false;
-
+static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
     for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
         struct FramePass *framePass = &gFramePasses[i];
         if (!framePass->active) continue;
-        isFramePassActive = true;
+        *isLuaPassesActive = true;
 
         // remove default frame pass if we have lua frame pass
         if (gDefaultGeoFramePass.active) {
@@ -2104,13 +2092,6 @@ void gfx_run(Gfx *commands) {
 
         gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
-
-        // synchronize part of the rendering state and GL as it can get desynced from
-        // rendering the fullscreen quad
-        gfx_rapi->set_use_alpha(false);
-        rendering_state.alpha_blend = false;
-        gfx_rapi->set_depth_test(false);
-        rendering_state.depth_test = false;
 
         if (framePass->drawWorldGeometry) {
             // bind pass tex if it exists
@@ -2136,12 +2117,37 @@ void gfx_run(Gfx *commands) {
             }
         }
     }
+}
+
+void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a multipass system
+    gfx_sp_reset();
+    sHasInverseCameraMatrix = false;
+
+    if (!gfx_wapi->start_frame()) {
+        dropped_frame = true;
+        return;
+    }
+    dropped_frame = false;
+
+    gfx_rapi->start_frame();
+    gfx_run_dl(commands);
+}
+
+void gfx_run(Gfx *commands) {
+    if (!gfx_wapi->start_frame()) {
+        dropped_frame = true;
+        return;
+    }
+    dropped_frame = false;
+
+    bool isLuaPassesActive = false;
+    gfx_process_lua_passes(commands, &isLuaPassesActive);
 
     gCurrentFramePassIndex = -1;
 
     // run default draw world frame pass first if lua frame passes don't exist
-    if (!isFramePassActive) {
-        // activate and configure frame pass
+    if (!isLuaPassesActive) {
+        // activate and configure default frame pass
         if (!gDefaultGeoFramePass.active) {
             memset(&gDefaultGeoFramePass, 0, sizeof(struct FramePass));
             gDefaultGeoFramePass.active = true;
@@ -2157,14 +2163,10 @@ void gfx_run(Gfx *commands) {
 
         gfx_rapi->set_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.width, gDefaultGeoFramePass.height);
 
-        gfx_rapi->start_frame(); // resets color and depth for this fbo
+        gfx_rapi->start_frame(); // resets color and depth
 
-        // synchronize part of the rendering state and GL as it can get desynced from
-        // rendering the fullscreen quad
-        gfx_rapi->set_use_alpha(false);
-        rendering_state.alpha_blend = false;
-        gfx_rapi->set_depth_test(false);
-        rendering_state.depth_test = false;
+        gfx_sp_reset(); // resets the rsp
+        sHasInverseCameraMatrix = false;
 
         // draw world into frame buffer
         smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
@@ -2174,6 +2176,11 @@ void gfx_run(Gfx *commands) {
     }
 
     gfx_rapi->reset_framebuffer();
+
+    gfx_rapi->start_frame(); // resets color and depth
+
+    gfx_sp_reset(); // resets the rsp
+    sHasInverseCameraMatrix = false;
 
     int lastPassTex = -1;
     if (gDefaultGeoFramePass.active) {
