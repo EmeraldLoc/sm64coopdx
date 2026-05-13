@@ -427,11 +427,10 @@ bool gfx_is_culling_enabled() {
 }
 
 void gfx_reload_shaders() {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     gfx_remove_all_color_combiners();
-    gfx_get_current_rendering_api.remove_shaders();
+    gfx_get_current_rendering_api()->remove_shaders();
     smlua_call_event_hooks(HOOK_ON_REFRESH_SHADERS);
-#endif
 }
 
 struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
@@ -442,83 +441,69 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
 
 
 u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return 0; }
     struct ShaderProgram *program = gfx_get_current_rendering_api()->lookup_shader_using_index(shaderIndex, framePassIndex);
     if (!program) return 0;
     return program->opengl_program_id;
-#else
-    return 0;
-#endif
 }
 
 void gfx_use_program(u32 program) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     glUseProgram(program);
-#endif
 }
 
 int gfx_shader_get_uniform_location(u32 program, const char* name) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return 0; }
     return glGetUniformLocation(program, name);
-#else
-    return 0;
-#endif
 }
 
 void gfx_shader_set_int(int loc, int value) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform1i(loc, value);
     }
-#endif
 }
 
 void gfx_shader_set_bool(int loc, bool value) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform1i(loc, (int)value);
     }
-#endif
 }
 
 void gfx_shader_set_float(int loc, float value) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform1f(loc, value);
     }
-#endif
 }
 
 void gfx_shader_set_vec2(int loc, float x, float y) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform2f(loc, x, y);
     }
-#endif
 }
 
 void gfx_shader_set_vec3(int loc, float x, float y, float z) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform3f(loc, x, y, z);
     }
-#endif
 }
 
 void gfx_shader_set_vec4(int loc, float x, float y, float z, float w) {
-#ifdef RAPI_GL
+    if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform4f(loc, x, y, z, w);
     }
-#endif
 }
 
 void gfx_shader_set_mat4(int loc, const Mat4 mat) {
-#ifdef RAPI_GL
+if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)mat);
     }
-#endif
 }
 
 int gfx_shader_create_frame_pass() {
