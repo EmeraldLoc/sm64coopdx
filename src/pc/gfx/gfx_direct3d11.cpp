@@ -475,7 +475,7 @@ static void gfx_d3d11_create_framebuffer(UNUSED u32 *fbo, UNUSED u32 *depthBuffe
 static void gfx_d3d11_delete_framebuffer(UNUSED u32 fbo, UNUSED u32 depthBuffer, UNUSED u32 tex) {
 }
 
-static void gfx_d3d11_set_framebuffer(UNUSED u32 fbo) {
+static void gfx_d3d11_set_framebuffer(UNUSED u32 fbo, UNUSED u32 width, UNUSED u32 height) {
 }
 
 static void gfx_d3d11_reset_framebuffer(void) {
@@ -800,7 +800,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_lookup_shader_using_index,
     gfx_d3d11_shader_get_info,
     gfx_d3d11_create_framebuffer,
-    gfx_d3d11_delete_framebuffer;
+    gfx_d3d11_delete_framebuffer,
     gfx_d3d11_set_framebuffer,
     gfx_d3d11_reset_framebuffer,
     gfx_d3d11_new_texture,
