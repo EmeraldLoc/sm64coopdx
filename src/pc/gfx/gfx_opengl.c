@@ -670,8 +670,8 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     bool usingCustomFragmentShader = false;
 
     // let lua override the shader
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, framePassIndex, &vertexShader);
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, framePassIndex, &fragmentShader);
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, &vertexShader);
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, &fragmentShader);
     if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
     if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
 

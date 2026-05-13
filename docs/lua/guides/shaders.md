@@ -8,33 +8,45 @@
 
 ## Before Starting...
 
-While this guide does go into a lot of detail, you should still have some basic knowledge on how writing mods in Lua works, and a bit of knowledge on how shaders work will also go a very long way.
+You should have some basic knowledge on how writing mods in Lua works, and for more advanced shaders you should know how to work with shaders. But even if you are a beginner, you may find use in this guide.
 
 When testing shaders, it is recommended to launch your game with the terminal. While technically the game will fallback on default shaders if a shader fails to compile, there are multiple cases that are common enough to where you will appreciate running the game via a terminal since the console will be unavailable/invisible.
 
+## Types of Shaders
+
+There are two types of shaders, post process shaders and "scene" shaders. Post process shaders are significantly easier than scene shaders, but scene shaders give you significantly more power. We will mainly be going over post process shaders in this guide.
+
+The [default C scene shader converted to Lua can be found here](../examples/shader-demo/default-shader.lua). It does all of the boilerplate for you.
+
 ## Creating Shaders
 
-Shaders can be created via the `HOOK_ON_VERTEX_SHADER_CREATE` and `HOOK_ON_FRAGMENT_SHADER_CREATE` hooks. These hooks provides a [ColorCombiner](../structs.md#ColorCombiner) and shader index, and expects you to return a vertex shader back. The vertex shader allows for manipulating vertex data, whereas the fragment shader allows for manipulating color data. You do not have to provide both, but if you only use one, you are expected to send/receive the proper data back.
+Scene shaders can be created via the `HOOK_ON_VERTEX_SHADER_CREATE` and `HOOK_ON_FRAGMENT_SHADER_CREATE` hooks. These hooks provides a [ColorCombiner](../structs.md#ColorCombiner) and shader index, and the hooks expects you to return a shader back.
+
+Post process shaders can be created via the `HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE` and `HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE` hooks. These hooks provide no parameters, and expect you to return a shader back.
+
+The vertex shader allows for manipulating vertex data, whereas the fragment shader allows for manipulating color data. You do not have to provide both, but if you only use one, you are expected to send/receive data back as expected by their respective default shaders.
 
 ## Vertex Shaders
 
-The bread and butter of vertex shaders are inputs. Inputs are given by the game's code and can be used for getting the vertex data. A list of inputs can be found [here](#Inputs). Something important about inputs is that a fragment shader cannot get inputs from C, so you need to pass inputs from the vertex shader as outputs for the fragment shader. An example of that would be the normals.
+The bread and butter of vertex shaders are inputs. Inputs are given by the game's code and can be used for getting the vertex data. A list of inputs for shaders can be found [here](#Inputs). Something important about inputs is that a fragment shader cannot get inputs from C, so you need to pass inputs from the vertex shader as outputs for the fragment shader. An example of that would be the vertex position.
 
 ```lua
-in vec3 aNormal;
-out vec3 vNormal;
-vNormal = aNormal;
+in vec4 aVtxPos;
+out vec4 vVtxPos;
+vVtxPos = aVtxPos;
 ```
 
-As you can see, the input is gotten in the vertex shader, and the output is created, which will be received in the fragment shader.
+The input `aVtxPos` is provided by C, and the output is created, which will be received in the fragment shader.
 
 ```lua
-in vec3 vNormal;
+in vec4 vVtxPos;
 ```
 
-Here, the fragment shader takes the normal output we created in the vertex shader.
+The fragment shader takes in the vertex pos we exported in the vertex shader.
 
-Getting back on track, for our vertex shader example, we are going to mirror the entire world. First, grab the [default C shader in Lua](../examples/shader-demo/default-shader.lua), specifically the vertex portion. Most of this shader will be passing inputs to the fragment shader, but what we care about is this portion:
+For a post process vertex shader example, we are going to mirror the entire world. First, grab the [default C post process shader converted to Lua](../examples/shader-demo/default-post-process-shader.lua), specifically the vertex portion.
+
+*Note: While the format shown in the default shaders use `table.insert(xShader, "line")`, this is not at all required. You may use any method you'd like, including loading the shader from a different file. This method was picked for it's ease to inject any if statement checks anywhere you'd like that's outside the shader.*
 
 ```lua
 gl_Position = aVtxPos;
@@ -59,9 +71,11 @@ If you run the mod, you should now have a mirrored game! That's the basic rundow
 
 <img width="640" height="416" alt="Screenshot 2026-04-24 at 7 09 03 PM" src="https://github.com/user-attachments/assets/4218e701-1a71-4420-bf0f-fd8fff8baf81" />
 
+*Note: Alternatively, to accomplish the same effect, you can flip the texture coordinate in the fragment shader.*
+
 ## Fragment Shaders
 
-Fragment shaders are quite a bit more involved, but I'll try to keep it simple. First, grab the [default C shader in Lua](../examples/shader-demo/default-shader.lua), specifically the fragment shader portion, as well as the `shader_item_to_str` and `append_formula` functions. While we won't be explaining what those do right now, to summarize, they are there to handle the color combiner.
+First, grab the [default C post process shader converted to Lua](../examples/shader-demo/default-post-process-shader.lua), specifically the fragment shader portion.
 
 For our example fragment shader, we are going to be inverting the colors. Actually doing this is quite simple, but before we get to that, let's explain what we are working with:
 
@@ -73,18 +87,24 @@ out vec4 fragColor;
 
 In the fragment shader, we create an output for the fragment color. Unlike the vertex shader, an output does not go to another shader, instead, it goes to OpenGL to be used for color data.
 
-All the outputs in the vertex shader can be read in the fragment shader as inputs. This allows data to be carried over from one to the other.
+All the outputs in the vertex shader can be read in the fragment shader as inputs. This allows data to be carried over from one to the other. What was `out` in the vertex shader becomes `in` in the fragment shader.
 
-For our example, inverting the colors, we only have to look at 2 lines. One for if the color combiner specifies an alpha, and the other if it does not. If we do have an alpha, we want to preserve it when inverting the color. Colors in OpenGL, unlike the rest of sm64, are stored in between `0.0` and `1.0`. That means if I want to represent half of red, I would need to use `0.5` instead of `128`. For inverting a color this is simple. Combining these things, we need to subtract a full color, or `1.0`, by the rgb of `texel`, then pass in the alpha value as normal.
+For our example, inverting the colors, it's quite simple.
 
 ```lua
-fragColor = vec4(1.0 - texel.rgb, texel.a);
+fragColor = texture(uPassTex, vTexCoord);
 ```
 
-If the color combiner does not have an alpha value, then the alpha should simply be `1.0`, or fully opaque.
+Currently, this is what the frag color is set to. Instead of setting `fragColor` directly, we should first take the color outputted by the `texture` function and insert it into it's own variable.
 
 ```lua
-fragColor = vec4(1.0 - texel.rgb, 1.0);
+vec4 texColor = texture(uPassTex, vTexCoord);
+```
+
+Then, inverting that color becomes trivial. When we set `fragColor`, all we need to do is invert `texColor.rgb` and preserve `texColor.a`. This can be done with the following syntax:
+
+```lua
+fragColor = vec4(1.0 - texColor.rgb, texColor.a);
 ```
 
 And that's it! All colors in your game should now be completely inverted! That's the basic rundown on fragment shaders! If something still isn't working, compare your code with [the example fragment shader](../examples/shader-demo/invert-color-shader.lua) and try to figure out what you did wrong.
@@ -110,8 +130,9 @@ A shader may contain uniforms. As a naming convention, uniform variables typical
 | `uProjectionMatrix` | `mat4` | Transforms view space to clip space, the inverse of the matrix transforms clip space to view space |
 | `uInverseCameraMatrix` | `mat4` | The inverse of the camera matrix. Transforms view space to world space |
 | `uXAdjustRatio` | `float` | For 16:9. This is the amount the X in clip space is adjusted by. When working with `uInverseCameraMatrix`, you should edit the clip space vector to undo the effects done in source |
+| `uPassTex` | `sampler2D` | The texture from the previous pass |
 
-For defining a custom uniform in lua, first, define the uniform and use the uniform as you intend in your shader code. Next you're going to want to store the shader index given by the hook. Create a table and store all your shader indexes. Then in lua, in any hook as seen fit, iterate through the list of shader indexes. Now, create a variable and set it to the returned value of `gfx_get_program_id_from_shader_index`. First, use that program with `gfx_use_program`, then get the uniform with `gfx_shader_get_uniform_location`. You should then set it with the appropriate `gfx_shader_set_` function. Here is an example:
+For defining a custom uniform in lua, first, define the uniform and use the uniform as you intend in your shader code. Next you're going to want to store the shader index given by the hook, and if necessary the frame pass index as well. Create a table and store all your shader indexes. Then in lua, in any hook as seen fit, iterate through the list of shader indexes. Now, create a variable and set it to the returned value of `gfx_get_program_id_from_shader_index`. First, use that program with `gfx_use_program`, then get the uniform with `gfx_shader_get_uniform_location`. You should then set it with the appropriate `gfx_shader_set_` function. Here is an example:
 
 ```lua
 local fogColor = { r = 168, g = 175, b = 195 }
@@ -134,7 +155,7 @@ end
 
 That allows you to define your own uniforms and set your uniforms in Lua!
 
-Lastly, if you have multiple shaders, you should cleanup the list of shader indexes on a shader refresh. Use the `HOOK_ON_REFRESH_SHADERS` hook to reset the shader indexes table, or do anything you need to when it comes to refreshing shaders.
+Lastly, if you have multiple shaders and find yourself frequently calling `gfx_reload_shaders`, you should cleanup the list of shader indexes on a shader refresh. Use the `HOOK_ON_REFRESH_SHADERS` hook to reset the shader indexes table, or do anything you need to when it comes to refreshing shaders.
 
 ```lua
 hook_event(HOOK_ON_REFRESH_SHADERS, function ()
@@ -145,6 +166,8 @@ end)
 ## Inputs
 
 Inputs are passed into the vertex shader for further use. Here is a list of inputs provided by C.
+
+### Scene Shader Inputs
 
 | Input Name | Type | Description |
 | ---- | ---- | ---- |
@@ -157,17 +180,45 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 | `aInputX` | `vec4` | Color/alpha input from the Color Combiner, with X being the input number |
 | `aBarycentric` | `vec3` | The barycentric coordinates of the vertex within its triangle |
 
+### Post Process Shader Inputs
+
+| Input Name | Type | Description |
+| ---- | ---- | ---- |
+| `aVtxPos` | `vec4` | The vertex position in clip space (x, y, z, w) |
+| `aTexCoord` | `vec2` | The UV mapping for the pass texture |
+
 ## Dealing with the HUD and Skybox
 
-If you need to check for the HUD to not modify it or only modify it, you can by checking the vertex position. If the vertex position's z is greater than zero, it is not a hud element. If it is 0 or less than 0, it is a hud element. By default the vertex position is not included in the fragment shader, so you may need to create a varying variable and send it over.
+TODO: Update for uniforms provided in shader presets
 
-To check for the skybox, the skybox lives somewhere in between Z 0 and 1. You should do a range check to find it, for instance, `aVtxPos.z > 0 && aVtxPos.z < 1`.
+## Multipass Shaders
 
-Currently where the hud lives below 0 is a bit random, so right now it's best to either hide it all or none of it.
+Multipass shaders allow you to draw the world multiple times in a single frame. It's where custom scene shaders can do the most work. Whether you're creating a minimap, adding lighting, wanting multiple cameras, and more, you'll want to use multipass shaders.
+
+## Creating a frame pass
+
+A frame pass can be created with `gfx_shader_create_frame_pass`. This function returns the frame pass index, which is anywhere from zero to the maximum number of frame passes. A frame pass may also be removed with `gfx_shader_remove_frame_pass`.
+
+Frame passes can be configured with their configuration functions.
+
+| Function | Description |
+| -------- | ----------- |
+| `gfx_shader_set_frame_pass_viewport` | Sets the viewport/resolution of the frame pass |
+| `gfx_shader_set_frame_pass_draw_world` | Configures whether the frame pass should redraw the world or use a quad (quad uses post process shader, redrawing the world uses the scene shader) |
+
+## Using frame passes
+
+In your shader hooks, you can access which frame pass you are currently on with the `gfx_shader_get_current_frame_pass`. This is needed if you need to change your shader depending on the current frame pass.
+
+Sometimes you may need to configure things before you redraw the world. For instance, on some shaders you may want to disable culling before you redraw the world. You can use `HOOK_BEFORE_DRAW_GEOMETRY` to achieve this. Check your current frame pass index using `gfx_shader_get_current_frame_pass`, and run code accordingly in this hook. This hook isn't unique to frame passes, it's called anytime the world geometry is about to be drawn.
+
+## A Note on Matrices
+
+The vertex position (`aVtxPos`) provided by C is in clip space. As shown in the [uniforms](#Uniforms) section, many matrices are provided by C. There are enough matrices to realistically get to any space you need.
 
 ## Limitations
 
-- No more than a single shader can be used at a time. This means that if 2 mods want to use their own shader, only one will be picked.
+- Realistically, no more than a single shader can be used at a time. This means that if 2 mods want to use their own shader, issues will occur.
 - There are only so many inputs. While many are provided, there may still be some missing for your own shaders.
 - DirectX is not supported.
 

@@ -2093,12 +2093,22 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
         gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
 
-        if (framePass->drawWorldGeometry) {
-            // bind pass tex if it exists
-            if (i > 0) {
-                gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
+        // bind pass tex if it exists
+        if (i > 0) {
+            int lastPassTex = -1;
+            for (int j = i - 1; j >= 0; j--) {
+                if (gFramePasses[j].active) {
+                    lastPassTex = gFramePasses[j].passTexture;
+                    break;
+                }
             }
 
+            if (lastPassTex != -1) {
+                gfx_rapi->bind_texture_raw(10, lastPassTex);
+            }
+        }
+
+        if (framePass->drawWorldGeometry) {
             // reset color combiner programs
             for (int j = 0; j < CC_MAX_SHADERS; j++) {
                 color_combiner_pool[j].prg = NULL;
@@ -2110,11 +2120,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
-            // if there is a pass texture, render new pass in a fullscreen quad, otherwise don't render
-            if (i > 0) {
-                gfx_rapi->bind_texture_raw(10, gFramePasses[i - 1].passTexture);
-                gfx_draw_fullscreen_quad();
-            }
+            gfx_draw_fullscreen_quad();
         }
     }
 }

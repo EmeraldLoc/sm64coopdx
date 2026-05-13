@@ -260,5 +260,3 @@ end
 
 hook_event(HOOK_ON_VERTEX_SHADER_CREATE, on_vertex_shader_create)
 hook_event(HOOK_ON_FRAGMENT_SHADER_CREATE, on_fragment_shader_create)
-
-gfx_reload_shaders()
