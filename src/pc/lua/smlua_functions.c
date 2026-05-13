@@ -821,8 +821,11 @@ int smlua_func_add_scroll_target(lua_State* L) {
     }
 
     // add_scroll_target used to require offset and size of the vertex buffer to be used
-    if (!smlua_functions_valid_param_range(L, 2, 4)) { return 0; }
     int paramCount = lua_gettop(L);
+    if (paramCount < 2 || paramCount > 4) {
+        LOG_LUA_LINE("Improper param count: Expected (2 - 4), Received %u", paramCount);
+        return 0;
+    }
 
     u32 index = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("add_scroll_target: Failed to convert parameter 1 for function"); return 0; }
@@ -897,6 +900,7 @@ static GraphNodeLot graphNodeLots[] = {
     { GRAPH_NODE_TYPE_ROOT, LOT_GRAPHNODE },
     { GRAPH_NODE_TYPE_ROTATION, LOT_GRAPHNODEROTATION },
     { GRAPH_NODE_TYPE_SCALE, LOT_GRAPHNODESCALE },
+    { GRAPH_NODE_TYPE_SCALE_XYZ, LOT_GRAPHNODESCALEXYZ },
     { GRAPH_NODE_TYPE_SHADOW, LOT_GRAPHNODESHADOW },
     { GRAPH_NODE_TYPE_START, LOT_GRAPHNODESTART },
     { GRAPH_NODE_TYPE_SWITCH_CASE, LOT_GRAPHNODESWITCHCASE },
@@ -1068,6 +1072,14 @@ int smlua_func_djui_hud_print_text_interpolated(lua_State* L) {
     return 1;
 }
 
+// compatibility band-aid
+int smlua_func_return_self(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
+
+    lua_pushvalue(L, 1);
+    return 1;
+}
+
   //////////
  // bind //
 //////////
@@ -1101,4 +1113,5 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "gfx_set_command", smlua_func_gfx_set_command);
     smlua_bind_function(L, "djui_hud_print_text", smlua_func_djui_hud_print_text);
     smlua_bind_function(L, "djui_hud_print_text_interpolated", smlua_func_djui_hud_print_text_interpolated);
+    smlua_bind_function(L, "return_self", smlua_func_return_self); // compatibility band-aid
 }

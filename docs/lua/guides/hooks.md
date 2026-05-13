@@ -158,9 +158,15 @@ The lua functions sent to `hook_event()` will be automatically called by SM64 wh
 | HOOK_ON_FIND_POISON_GAS_LEVEL | Called after poison gas level detection completes. Return a number to override the gas level | `number` x, `number` z, `number` gasLevel |
 | HOOK_ON_FIND_SURFACE_ON_RAY | Called after ray-surface intersection completes. Return `surface` to override the hit surface, or `surface, hitPos` to override both | `Vec3f` orig, `Vec3f` dir, [Surface](../structs.md#Surface) hitSurface, `Vec3f` hitPos |
 | HOOK_ON_DYNOS_PACK_TOGGLED | Called after a DynOS pack is toggled | `string` dynosPackName, `boolean` enabled |
+| HOOK_BEFORE_PLAY_MODE_UPDATE | Called before the play mode is ran. Return a number to override the play mode to be ran. | `number` playMode |
+| HOOK_ON_PLAY_MODE_UPDATE | Called after the play mode is ran. Return a number to override the change level. | `number` playMode |
 | HOOK_ON_REFRESH_SHADERS | Called when a shader is refreshed | |
 | HOOK_ON_VERTEX_SHADER_CREATE | Called when a vertex shader is created. Return a string to override the shader | [ColorCombiner](../structs.md#ColorCombiner) cc, `integer` shaderIndex |
 | HOOK_ON_FRAGMENT_SHADER_CREATE | Called when a fragment shader is created. Return a string to override the shader | [ColorCombiner](../structs.md#ColorCombiner) cc, `integer` shaderIndex |
+| HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE | Called when a post process vertex shader is created. Return a `string` to override the shader | |
+| HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE | Called when a post process fragment shader is created. Return a `string` to override the shader | |
+| HOOK_BEFORE_DRAW_WORLD | Called before the entire world is drawn | |
+| HOOK_BEFORE_ON_WORLD | Called after the entire world is drawn | |
 
 ### Parameters
 

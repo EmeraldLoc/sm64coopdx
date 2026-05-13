@@ -65,6 +65,8 @@ SMLUA_EVENT_HOOK(HOOK_ON_FIND_WATER_LEVEL, _, f32 x, f32 z, f32 *waterLevel) // 
 SMLUA_EVENT_HOOK(HOOK_ON_FIND_POISON_GAS_LEVEL, _, f32 x, f32 z, f32 *gasLevel) // Manually defined hook
 SMLUA_EVENT_HOOK(HOOK_ON_FIND_SURFACE_ON_RAY, _, Vec3f orig, Vec3f dir, struct Surface **hit_surface, Vec3f hit_pos) // Manually defined hook
 SMLUA_EVENT_HOOK(HOOK_ON_DYNOS_PACK_TOGGLED, HOOK_RETURN_NEVER, const char *dynosPackName, bool enabled)
+SMLUA_EVENT_HOOK(HOOK_BEFORE_PLAY_MODE_UPDATE, HOOK_RETURN_NEVER, s16 playmode, OUTPUT s16 *overridePlaymode)
+SMLUA_EVENT_HOOK(HOOK_ON_PLAY_MODE_UPDATE, HOOK_RETURN_NEVER, s16 playmode, OUTPUT s32 *changeLevel)
 SMLUA_EVENT_HOOK(HOOK_ON_REFRESH_SHADERS, HOOK_RETURN_NEVER)
 SMLUA_EVENT_HOOK(HOOK_ON_VERTEX_SHADER_CREATE, HOOK_RETURN_ON_OUTPUT_SET, struct ColorCombiner *cc, u8 shaderIndex, OUTPUT const char **vertexShader)
 SMLUA_EVENT_HOOK(HOOK_ON_FRAGMENT_SHADER_CREATE, HOOK_RETURN_ON_OUTPUT_SET, struct ColorCombiner *cc, u8 shaderIndex, OUTPUT const char **fragmentShader)

@@ -717,6 +717,7 @@ static struct LuaObjectField sCombineModeFields[LUA_COMBINE_MODE_FIELD_COUNT] = 
 //  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
 //  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
 //  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
     { "all_values", LVT_U8,  offsetof(struct CombineMode, all_values), false, LOT_NONE, 16, sizeof(u8) },
     { "alpha1",     LVT_U32, offsetof(struct CombineMode, alpha1),     false, LOT_NONE                 },
     { "alpha2",     LVT_U32, offsetof(struct CombineMode, alpha2),     false, LOT_NONE                 },
@@ -1535,16 +1536,19 @@ static struct LuaObjectField sModFields[LUA_MOD_FIELD_COUNT] = {
     { "size",                 LVT_U64,      offsetof(struct Mod, size),                 true, LOT_NONE },
 };
 
-#define LUA_MOD_AUDIO_FIELD_COUNT 8
+#define LUA_MOD_AUDIO_FIELD_COUNT 11
 static struct LuaObjectField sModAudioFields[LUA_MOD_AUDIO_FIELD_COUNT] = {
-    { "baseVolume", LVT_F32,      offsetof(struct ModAudio, baseVolume), false, LOT_NONE },
-    { "filepath",   LVT_STRING_P, offsetof(struct ModAudio, filepath),   true,  LOT_NONE },
-    { "frequency",  LVT_PROPERTY, .get = "audio_stream_get_frequency",   .set = "audio_stream_set_frequency" },
-    { "isStream",   LVT_BOOL,     offsetof(struct ModAudio, isStream),   true,  LOT_NONE },
-    { "loaded",     LVT_BOOL,     offsetof(struct ModAudio, loaded),     true,  LOT_NONE },
-    { "looping",    LVT_PROPERTY, .get = "audio_stream_get_looping",     .set = "audio_stream_set_looping" },
-    { "position",   LVT_PROPERTY, .get = "audio_stream_get_position",    .set = "audio_stream_set_position" },
-    { "volume",     LVT_PROPERTY, .get = "audio_stream_get_volume",      .set = "audio_stream_set_volume" },
+    { "baseVolume",   LVT_F32,      offsetof(struct ModAudio, baseVolume),    false, LOT_NONE },
+    { "channel",      LVT_PROPERTY, .get = "audio_stream_get_volume_channel", .set = "audio_stream_set_volume_channel" },
+    { "file",         LVT_PROPERTY, .get = "return_self"                                      },
+    { "filepath",     LVT_STRING_P, offsetof(struct ModAudio, filepath),      true,  LOT_NONE },
+    { "frequency",    LVT_PROPERTY, .get = "audio_stream_get_frequency",      .set = "audio_stream_set_frequency" },
+    { "isStream",     LVT_BOOL,     offsetof(struct ModAudio, isStream),      true,  LOT_NONE },
+    { "loaded",       LVT_BOOL,     offsetof(struct ModAudio, loaded),        true,  LOT_NONE },
+    { "looping",      LVT_PROPERTY, .get = "audio_stream_get_looping",        .set = "audio_stream_set_looping" },
+    { "position",     LVT_PROPERTY, .get = "audio_stream_get_position",       .set = "audio_stream_set_position" },
+    { "relativePath", LVT_STRING_P, offsetof(struct ModAudio, relativePath),  true,  LOT_NONE },
+    { "volume",       LVT_PROPERTY, .get = "audio_stream_get_volume",         .set = "audio_stream_set_volume" },
 };
 
 #define LUA_MOD_FS_FIELD_COUNT 15
@@ -2560,19 +2564,20 @@ static struct LuaObjectField sServerSettingsFields[LUA_SERVER_SETTINGS_FIELD_COU
     { "stayInLevelAfterStar",        LVT_S32, offsetof(struct ServerSettings, stayInLevelAfterStar),        false, LOT_NONE },
 };
 
-#define LUA_SHADER_PROGRAM_FIELD_COUNT 11
+#define LUA_SHADER_PROGRAM_FIELD_COUNT 4
 static struct LuaObjectField sShaderProgramFields[LUA_SHADER_PROGRAM_FIELD_COUNT] = {
-    { "attrib_locations",  LVT_U32,  offsetof(struct ShaderProgram, attrib_locations),  false, LOT_NONE, MAX_SHADER_ATTRIBUTES, sizeof(u32)  },
-    { "attrib_sizes",      LVT_U8,   offsetof(struct ShaderProgram, attrib_sizes),      false, LOT_NONE, MAX_SHADER_ATTRIBUTES, sizeof(u8)   },
-    { "hash",              LVT_U64,  offsetof(struct ShaderProgram, hash),              false, LOT_NONE                                      },
-    { "num_attribs",       LVT_U8,   offsetof(struct ShaderProgram, num_attribs),       false, LOT_NONE                                      },
-    { "num_floats",        LVT_U8,   offsetof(struct ShaderProgram, num_floats),        false, LOT_NONE                                      },
-    { "num_inputs",        LVT_U8,   offsetof(struct ShaderProgram, num_inputs),        false, LOT_NONE                                      },
-    { "opengl_program_id", LVT_U32,  offsetof(struct ShaderProgram, opengl_program_id), false, LOT_NONE                                      },
-    { "uniform_locations", LVT_U32,  offsetof(struct ShaderProgram, uniform_locations), false, LOT_NONE, MAX_SHADER_UNIFORMS,   sizeof(u32)  },
-    { "used_lightmap",     LVT_BOOL, offsetof(struct ShaderProgram, used_lightmap),     false, LOT_NONE                                      },
-    { "used_noise",        LVT_BOOL, offsetof(struct ShaderProgram, used_noise),        false, LOT_NONE                                      },
-    { "used_textures",     LVT_BOOL, offsetof(struct ShaderProgram, used_textures),     false, LOT_NONE, MAX_SHADER_TEXTURES,   sizeof(bool) },
+//  { "attrib_locations",  LVT_???,  offsetof(struct ShaderProgram, attrib_locations),  false, LOT_???,  MAX_SHADER_ATTRIBUTES, sizeof(GLint)   }, <--- UNIMPLEMENTED
+//  { "attrib_sizes",      LVT_???,  offsetof(struct ShaderProgram, attrib_sizes),      false, LOT_???,  MAX_SHADER_ATTRIBUTES, sizeof(uint8_t) }, <--- UNIMPLEMENTED
+//  { "hash",              LVT_???,  offsetof(struct ShaderProgram, hash),              false, LOT_???                                          }, <--- UNIMPLEMENTED
+//  { "num_attribs",       LVT_???,  offsetof(struct ShaderProgram, num_attribs),       false, LOT_???                                          }, <--- UNIMPLEMENTED
+//  { "num_floats",        LVT_???,  offsetof(struct ShaderProgram, num_floats),        false, LOT_???                                          }, <--- UNIMPLEMENTED
+//  { "num_inputs",        LVT_???,  offsetof(struct ShaderProgram, num_inputs),        false, LOT_???                                          }, <--- UNIMPLEMENTED
+//  { "opengl_program_id", LVT_???,  offsetof(struct ShaderProgram, opengl_program_id), false, LOT_???                                          }, <--- UNIMPLEMENTED
+//  { "uniform_locations", LVT_???,  offsetof(struct ShaderProgram, uniform_locations), false, LOT_???,  MAX_SHADER_UNIFORMS,   sizeof(GLint)   }, <--- UNIMPLEMENTED
+    { "used_lightmap",     LVT_BOOL, offsetof(struct ShaderProgram, used_lightmap),     false, LOT_NONE                                         },
+    { "used_noise",        LVT_BOOL, offsetof(struct ShaderProgram, used_noise),        false, LOT_NONE                                         },
+    { "used_textures",     LVT_BOOL, offsetof(struct ShaderProgram, used_textures),     false, LOT_NONE, MAX_SHADER_TEXTURES,   sizeof(bool)    },
+    { "world_geometry",    LVT_BOOL, offsetof(struct ShaderProgram, world_geometry),    false, LOT_NONE                                         },
 };
 
 #define LUA_SPAWN_INFO_FIELD_COUNT 8
@@ -2650,7 +2655,7 @@ static struct LuaObjectField sStaticObjectCollisionFields[LUA_STATIC_OBJECT_COLL
     { "length", LVT_U16, offsetof(struct StaticObjectCollision, length), true, LOT_NONE },
 };
 
-#define LUA_SURFACE_FIELD_COUNT 16
+#define LUA_SURFACE_FIELD_COUNT 18
 static struct LuaObjectField sSurfaceFields[LUA_SURFACE_FIELD_COUNT] = {
     { "flags",             LVT_S8,        offsetof(struct Surface, flags),             false, LOT_NONE   },
     { "force",             LVT_S16,       offsetof(struct Surface, force),             false, LOT_NONE   },
@@ -2659,10 +2664,12 @@ static struct LuaObjectField sSurfaceFields[LUA_SURFACE_FIELD_COUNT] = {
     { "normal",            LVT_COBJECT,   offsetof(struct Surface, normal),            true,  LOT_VEC3F  },
     { "object",            LVT_COBJECT_P, offsetof(struct Surface, object),            false, LOT_OBJECT },
     { "originOffset",      LVT_F32,       offsetof(struct Surface, originOffset),      false, LOT_NONE   },
+    { "poolType",          LVT_S8,        offsetof(struct Surface, poolType),          true,  LOT_NONE   },
     { "prevVertex1",       LVT_COBJECT,   offsetof(struct Surface, prevVertex1),       true,  LOT_VEC3S  },
     { "prevVertex2",       LVT_COBJECT,   offsetof(struct Surface, prevVertex2),       true,  LOT_VEC3S  },
     { "prevVertex3",       LVT_COBJECT,   offsetof(struct Surface, prevVertex3),       true,  LOT_VEC3S  },
     { "room",              LVT_S8,        offsetof(struct Surface, room),              false, LOT_NONE   },
+    { "socId",             LVT_U32,       offsetof(struct Surface, socId),             true,  LOT_NONE   },
     { "type",              LVT_S16,       offsetof(struct Surface, type),              false, LOT_NONE   },
     { "upperY",            LVT_S16,       offsetof(struct Surface, upperY),            false, LOT_NONE   },
     { "vertex1",           LVT_COBJECT,   offsetof(struct Surface, vertex1),           true,  LOT_VEC3S  },

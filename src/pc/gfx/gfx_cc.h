@@ -82,12 +82,13 @@ struct CombineMode {
     };
     union {
         struct {
-            u8 use_alpha    : 1;
-            u8 use_fog      : 1;
-            u8 texture_edge : 1;
-            u8 use_dither   : 1;
-            u8 use_2cycle   : 1;
-            u8 light_map    : 1;
+            uint8_t use_alpha      : 1;
+            uint8_t use_fog        : 1;
+            uint8_t texture_edge   : 1;
+            uint8_t use_dither     : 1;
+            uint8_t use_2cycle     : 1;
+            uint8_t light_map      : 1;
+            uint8_t world_geometry : 1;
         };
         u32 flags;
     };

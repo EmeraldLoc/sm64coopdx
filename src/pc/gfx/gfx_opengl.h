@@ -19,6 +19,7 @@ struct ShaderProgram {
     u8 num_attribs;
     bool used_noise;
     bool used_lightmap;
+    bool world_geometry;
 };
 
 extern struct GfxRenderingAPI gfx_opengl_api;

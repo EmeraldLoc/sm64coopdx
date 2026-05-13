@@ -26,6 +26,42 @@
 #include "game/skybox.h"
 #include "geo_commands.h"
 
+bool get_shader_flag_enabled(enum ShaderFlag flag) {
+    if (flag < 0 || flag >= SHADER_FLAG_MAX) { return false; }
+    return gShaderFlags[flag];
+}
+
+void set_shader_flag_enabled(enum ShaderFlag flag, bool enabled) {
+    if (flag < 0 || flag >= SHADER_FLAG_MAX) { return; }
+    gShaderFlags[flag] = enabled ? 1 : 0;
+}
+
+f32 get_shader_flag_value(enum ShaderFlag flag) {
+    if (flag < 0 || flag >= SHADER_FLAG_MAX) { return 0.0f; }
+    return gShaderFlagValues[flag];
+}
+
+void set_shader_flag_value(enum ShaderFlag flag, f32 value) {
+    if (flag < 0 || flag >= SHADER_FLAG_MAX) { return; }
+    gShaderFlagValues[flag] = value;
+}
+
+bool get_global_shader_flags_enabled(void) {
+    return gShaderFlagsEnabled;
+}
+
+void set_global_shader_flags_enabled(bool enabled) {
+    gShaderFlagsEnabled = enabled;
+}
+
+AT_STARTUP void clear_all_shader_flags(void) {
+    gShaderFlagsEnabled = true;
+    memset(gShaderFlags, 0, sizeof(s32) * SHADER_FLAG_MAX);
+    memcpy(gShaderFlagValues, gDefaultShaderFlagValues, sizeof(f32) * SHADER_FLAG_MAX);
+}
+
+///
+
 void set_override_fov(f32 fov) {
     gOverrideFOV = fov;
 }
@@ -393,7 +429,7 @@ bool gfx_is_culling_enabled() {
 void gfx_reload_shaders() {
 #ifdef RAPI_GL
     gfx_remove_all_color_combiners();
-    RAPI.remove_shaders();
+    gfx_get_current_rendering_api.remove_shaders();
     smlua_call_event_hooks(HOOK_ON_REFRESH_SHADERS);
 #endif
 }
@@ -407,7 +443,7 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
 
 u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex) {
 #ifdef RAPI_GL
-    struct ShaderProgram *program = RAPI.lookup_shader_using_index(shaderIndex, framePassIndex);
+    struct ShaderProgram *program = gfx_get_current_rendering_api()->lookup_shader_using_index(shaderIndex, framePassIndex);
     if (!program) return 0;
     return program->opengl_program_id;
 #else

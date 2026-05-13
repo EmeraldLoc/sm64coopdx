@@ -1849,6 +1849,8 @@
    - [audio_stream_set_frequency](functions-6.md#audio_stream_set_frequency)
    - [audio_stream_get_volume](functions-6.md#audio_stream_get_volume)
    - [audio_stream_set_volume](functions-6.md#audio_stream_set_volume)
+   - [audio_stream_get_volume_channel](functions-6.md#audio_stream_get_volume_channel)
+   - [audio_stream_set_volume_channel](functions-6.md#audio_stream_set_volume_channel)
    - [audio_sample_load](functions-6.md#audio_sample_load)
    - [audio_sample_destroy](functions-6.md#audio_sample_destroy)
    - [audio_sample_stop](functions-6.md#audio_sample_stop)
@@ -1921,6 +1923,9 @@
    - [smlua_collision_util_get_current_terrain_collision](functions-6.md#smlua_collision_util_get_current_terrain_collision)
    - [smlua_collision_util_get_level_collision](functions-6.md#smlua_collision_util_get_level_collision)
    - [smlua_collision_util_find_surface_types](functions-6.md#smlua_collision_util_find_surface_types)
+   - [smlua_collision_add_surface](functions-6.md#smlua_collision_add_surface)
+   - [smlua_collision_move_surface](functions-6.md#smlua_collision_move_surface)
+   - [smlua_collision_delete_surface](functions-6.md#smlua_collision_delete_surface)
    - [surface_is_quicksand](functions-6.md#surface_is_quicksand)
    - [surface_is_not_hard](functions-6.md#surface_is_not_hard)
    - [surface_is_painting_warp](functions-6.md#surface_is_painting_warp)
@@ -1932,6 +1937,13 @@
 <br />
 
 - smlua_gfx_utils.h
+   - [get_shader_flag_enabled](functions-7.md#get_shader_flag_enabled)
+   - [set_shader_flag_enabled](functions-7.md#set_shader_flag_enabled)
+   - [get_shader_flag_value](functions-7.md#get_shader_flag_value)
+   - [set_shader_flag_value](functions-7.md#set_shader_flag_value)
+   - [get_global_shader_flags_enabled](functions-7.md#get_global_shader_flags_enabled)
+   - [set_global_shader_flags_enabled](functions-7.md#set_global_shader_flags_enabled)
+   - [clear_all_shader_flags](functions-7.md#clear_all_shader_flags)
    - [set_override_fov](functions-7.md#set_override_fov)
    - [set_override_near](functions-7.md#set_override_near)
    - [set_override_far](functions-7.md#set_override_far)
@@ -2250,6 +2262,7 @@
    - [load_static_object_collision](functions-7.md#load_static_object_collision)
    - [toggle_static_object_collision](functions-7.md#toggle_static_object_collision)
    - [get_static_object_surface](functions-7.md#get_static_object_surface)
+   - [remove_static_object_collision](functions-7.md#remove_static_object_collision)
    - [obj_get_surface_from_index](functions-7.md#obj_get_surface_from_index)
    - [surface_has_force](functions-7.md#surface_has_force)
 

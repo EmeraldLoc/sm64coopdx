@@ -33,6 +33,8 @@
     - [enum ColorCombinerSource](#enum-ColorCombinerSource)
     - [enum ShaderInput](#enum-ShaderInput)
     - [enum CombineModeFlags](#enum-CombineModeFlags)
+- [gfx_pc.h](#gfx_pch)
+    - [enum ShaderFlag](#enum-ShaderFlag)
 - [graph_node.h](#graph_nodeh)
 - [interaction.c](#interactionc)
 - [interaction.h](#interactionh)
@@ -83,6 +85,7 @@
 - [seq_ids.h](#seq_idsh)
     - [enum SeqId](#enum-SeqId)
 - [sm64.h](#sm64h)
+- [smlua_audio_utils.h](#smlua_audio_utilsh)
 - [smlua_hooks.h](#smlua_hooksh)
     - [enum LuaHookedEventType](#enum-LuaHookedEventType)
     - [enum LuaHookedEventReturn](#enum-LuaHookedEventReturn)
@@ -95,6 +98,7 @@
 - [smlua_model_utils.h](#smlua_model_utilsh)
     - [enum ModelExtendedId](#enum-ModelExtendedId)
 - [sounds.h](#soundsh)
+- [surface_load.h](#surface_loadh)
 - [surface_terrains.h](#surface_terrainsh)
 - [types.h](#typesh)
     - [enum SpTaskState](#enum-SpTaskState)
@@ -1318,6 +1322,7 @@
 - G_VTX_EXT
 - G_SETENVRGB
 - G_PPARTTOCOLOR
+- G_STATE_EXT
 
 [:arrow_up_small:](#)
 
@@ -1404,6 +1409,27 @@
 - SHADER_CMD_LENGTH
 - CC_MAX_SHADERS
 - CC_MAX_INPUTS
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_pc.h](#gfx_pc.h)
+
+### [enum ShaderFlag](#ShaderFlag)
+| Identifier | Value |
+| :--------- | :---- |
+| SHADER_FLAG_HUE | 0 |
+| SHADER_FLAG_SATURATION | 1 |
+| SHADER_FLAG_BRIGHTNESS | 2 |
+| SHADER_FLAG_CONTRAST | 3 |
+| SHADER_FLAG_EXPOSURE | 4 |
+| SHADER_FLAG_DITHERING | 5 |
+| SHADER_FLAG_POSTERIZATION | 6 |
+| SHADER_FLAG_SCANLINES | 7 |
+| SHADER_FLAG_MAX | 8 |
+- MAX_CUSTOM_FRAME_PASSES
+- MAX_FRAME_PASSES
 
 [:arrow_up_small:](#)
 
@@ -3554,6 +3580,16 @@
 
 <br />
 
+## [smlua_audio_utils.h](#smlua_audio_utils.h)
+- MOD_AUDIO_CHANNEL_MASTER
+- MOD_AUDIO_CHANNEL_MUSIC
+- MOD_AUDIO_CHANNEL_SFX
+- MOD_AUDIO_CHANNEL_ENV
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [smlua_hooks.h](#smlua_hooks.h)
 
 ### [enum LuaHookedEventType](#LuaHookedEventType)
@@ -3626,14 +3662,16 @@
 | HOOK_ON_FIND_POISON_GAS_LEVEL | 64 |
 | HOOK_ON_FIND_SURFACE_ON_RAY | 65 |
 | HOOK_ON_DYNOS_PACK_TOGGLED | 66 |
-| HOOK_ON_REFRESH_SHADERS | 67 |
-| HOOK_ON_VERTEX_SHADER_CREATE | 68 |
-| HOOK_ON_FRAGMENT_SHADER_CREATE | 69 |
-| HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE | 70 |
-| HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE | 71 |
-| HOOK_BEFORE_DRAW_GEOMETRY | 72 |
-| HOOK_ON_DRAW_GEOMETRY | 73 |
-| HOOK_MAX | 74 |
+| HOOK_BEFORE_PLAY_MODE_UPDATE | 67 |
+| HOOK_ON_PLAY_MODE_UPDATE | 68 |
+| HOOK_ON_REFRESH_SHADERS | 69 |
+| HOOK_ON_VERTEX_SHADER_CREATE | 70 |
+| HOOK_ON_FRAGMENT_SHADER_CREATE | 71 |
+| HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE | 72 |
+| HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE | 73 |
+| HOOK_BEFORE_DRAW_GEOMETRY | 74 |
+| HOOK_ON_DRAW_GEOMETRY | 75 |
+| HOOK_MAX | 76 |
 - MAX_HOOKED_BEHAVIORS
 
 [:arrow_up_small:](#)
@@ -4579,6 +4617,15 @@
 
 <br />
 
+## [surface_load.h](#surface_load.h)
+- SURFACE_POOL_STATIC
+- SURFACE_POOL_DYNAMIC
+- SURFACE_POOL_SOC
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [surface_terrains.h](#surface_terrains.h)
 - SURFACE_DEFAULT
 - SURFACE_BURNING
@@ -4785,6 +4832,7 @@
 - ANIM_FLAG_6
 - ANIM_FLAG_7
 - ANIM_FLAG_BONE_TRANS
+- ANIM_FLAG_BONE_SCALE
 - OBJECT_MAX_BHV_STACK
 - OBJECT_NUM_REGULAR_FIELDS
 - OBJECT_NUM_CUSTOM_FIELDS

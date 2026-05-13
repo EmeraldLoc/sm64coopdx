@@ -3031,6 +3031,9 @@ G_SETENVRGB = 0xd1
 --- @type integer
 G_PPARTTOCOLOR = 0xd3
 
+--- @type integer
+G_STATE_EXT = 0x10
+
 BACKGROUND_OCEAN_SKY       =  0 --- @type SkyBackgroundParams
 BACKGROUND_FLAMING_SKY     =  1 --- @type SkyBackgroundParams
 BACKGROUND_UNDERWATER_CITY =  2 --- @type SkyBackgroundParams
@@ -3165,6 +3168,33 @@ CC_MAX_SHADERS = 64
 
 --- @type integer
 CC_MAX_INPUTS = 8
+
+SHADER_FLAG_HUE           = 0 --- @type ShaderFlag
+SHADER_FLAG_SATURATION    = 1 --- @type ShaderFlag
+SHADER_FLAG_BRIGHTNESS    = 2 --- @type ShaderFlag
+SHADER_FLAG_CONTRAST      = 3 --- @type ShaderFlag
+SHADER_FLAG_EXPOSURE      = 4 --- @type ShaderFlag
+SHADER_FLAG_DITHERING     = 5 --- @type ShaderFlag
+SHADER_FLAG_POSTERIZATION = 6 --- @type ShaderFlag
+SHADER_FLAG_SCANLINES     = 7 --- @type ShaderFlag
+SHADER_FLAG_MAX           = 8 --- @type ShaderFlag
+
+--- @alias ShaderFlag
+--- | `SHADER_FLAG_HUE`
+--- | `SHADER_FLAG_SATURATION`
+--- | `SHADER_FLAG_BRIGHTNESS`
+--- | `SHADER_FLAG_CONTRAST`
+--- | `SHADER_FLAG_EXPOSURE`
+--- | `SHADER_FLAG_DITHERING`
+--- | `SHADER_FLAG_POSTERIZATION`
+--- | `SHADER_FLAG_SCANLINES`
+--- | `SHADER_FLAG_MAX`
+
+--- @type integer
+MAX_CUSTOM_FRAME_PASSES = 8
+
+--- @type integer
+MAX_FRAME_PASSES = MAX_CUSTOM_FRAME_PASSES + 1
 
 --- @type integer
 GRAPH_RENDER_ACTIVE = (1 << 0)
@@ -8281,6 +8311,18 @@ VALID_BUTTONS = (A_BUTTON | B_BUTTON | Z_TRIG | START_BUTTON | U_JPAD | D_JPAD |
 --- @type integer
 C_BUTTONS = (U_CBUTTONS | D_CBUTTONS | L_CBUTTONS | R_CBUTTONS )
 
+--- @type integer
+MOD_AUDIO_CHANNEL_MASTER = 0
+
+--- @type integer
+MOD_AUDIO_CHANNEL_MUSIC = 1
+
+--- @type integer
+MOD_AUDIO_CHANNEL_SFX = 2
+
+--- @type integer
+MOD_AUDIO_CHANNEL_ENV = 3
+
 HOOK_UPDATE                                 =  0 --- @type LuaHookedEventType
 HOOK_MARIO_UPDATE                           =  1 --- @type LuaHookedEventType
 HOOK_BEFORE_MARIO_UPDATE                    =  2 --- @type LuaHookedEventType
@@ -8348,14 +8390,16 @@ HOOK_ON_FIND_WATER_LEVEL                    = 63 --- @type LuaHookedEventType
 HOOK_ON_FIND_POISON_GAS_LEVEL               = 64 --- @type LuaHookedEventType
 HOOK_ON_FIND_SURFACE_ON_RAY                 = 65 --- @type LuaHookedEventType
 HOOK_ON_DYNOS_PACK_TOGGLED                  = 66 --- @type LuaHookedEventType
-HOOK_ON_REFRESH_SHADERS                     = 67 --- @type LuaHookedEventType
-HOOK_ON_VERTEX_SHADER_CREATE                = 68 --- @type LuaHookedEventType
-HOOK_ON_FRAGMENT_SHADER_CREATE              = 69 --- @type LuaHookedEventType
-HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE   = 70 --- @type LuaHookedEventType
-HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE = 71 --- @type LuaHookedEventType
-HOOK_BEFORE_DRAW_GEOMETRY                   = 72 --- @type LuaHookedEventType
-HOOK_ON_DRAW_GEOMETRY                       = 73 --- @type LuaHookedEventType
-HOOK_MAX                                    = 74 --- @type LuaHookedEventType
+HOOK_BEFORE_PLAY_MODE_UPDATE                = 67 --- @type LuaHookedEventType
+HOOK_ON_PLAY_MODE_UPDATE                    = 68 --- @type LuaHookedEventType
+HOOK_ON_REFRESH_SHADERS                     = 69 --- @type LuaHookedEventType
+HOOK_ON_VERTEX_SHADER_CREATE                = 70 --- @type LuaHookedEventType
+HOOK_ON_FRAGMENT_SHADER_CREATE              = 71 --- @type LuaHookedEventType
+HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE   = 72 --- @type LuaHookedEventType
+HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE = 73 --- @type LuaHookedEventType
+HOOK_BEFORE_DRAW_GEOMETRY                   = 74 --- @type LuaHookedEventType
+HOOK_ON_DRAW_GEOMETRY                       = 75 --- @type LuaHookedEventType
+HOOK_MAX                                    = 76 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8425,6 +8469,8 @@ HOOK_MAX                                    = 74 --- @type LuaHookedEventType
 --- | `HOOK_ON_FIND_POISON_GAS_LEVEL`
 --- | `HOOK_ON_FIND_SURFACE_ON_RAY`
 --- | `HOOK_ON_DYNOS_PACK_TOGGLED`
+--- | `HOOK_BEFORE_PLAY_MODE_UPDATE`
+--- | `HOOK_ON_PLAY_MODE_UPDATE`
 --- | `HOOK_ON_REFRESH_SHADERS`
 --- | `HOOK_ON_VERTEX_SHADER_CREATE`
 --- | `HOOK_ON_FRAGMENT_SHADER_CREATE`
@@ -10753,6 +10799,15 @@ SOUND_OBJ2_BOSS_DIALOG_GRUNT = SOUND_ARG_LOAD(SOUND_BANK_OBJ2, 0x69, 0x40, SOUND
 SOUND_OBJ2_MRI_SPINNING = SOUND_ARG_LOAD(SOUND_BANK_OBJ2, 0x6B, 0x00, SOUND_DISCRETE)
 
 --- @type integer
+SURFACE_POOL_STATIC = 0
+
+--- @type integer
+SURFACE_POOL_DYNAMIC = 1
+
+--- @type integer
+SURFACE_POOL_SOC = 2
+
+--- @type integer
 SURFACE_DEFAULT = 0x0000
 
 --- @type integer
@@ -11322,6 +11377,9 @@ ANIM_FLAG_7 = (1 << 7)
 
 --- @type integer
 ANIM_FLAG_BONE_TRANS = (1 << 8)
+
+--- @type integer
+ANIM_FLAG_BONE_SCALE = (1 << 9)
 
 --- @type integer
 OBJECT_MAX_BHV_STACK = 16

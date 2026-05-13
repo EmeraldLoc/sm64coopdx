@@ -105,7 +105,7 @@ override_allowed_functions = {
 
 override_disallowed_functions = {
     "src/audio/external.h":                     [ " func_" ],
-    "src/engine/surface_load.h":                [ "load_area_terrain", "alloc_surface_pools", "clear_dynamic_surfaces", "get_area_terrain_size" ],
+    "src/engine/surface_load.h":                [ "load_area_terrain", "alloc_surface_pools", "clear_dynamic_surfaces", "get_area_terrain_size", "alloc_surface", "add_surface", "remove_surface_from_partition", "delete_surface", "swap_and_pop_surface_pool", "add_surface_without_hook" ],
     "src/engine/surface_collision.h":           [ " debug_", "f32_find_wall_collision" ],
     "src/game/mario_actions_airborne.c":        [ "^[us]32 act_.*" ],
     "src/game/mario_actions_automatic.c":       [ "^[us]32 act_.*" ],
@@ -142,7 +142,7 @@ override_disallowed_functions = {
     "src/engine/behavior_script.h":             [ "stub_behavior_script_2", "cur_obj_update" ],
     "src/pc/mods/mod_storage.h":                [ "mod_storage_shutdown" ],
     "src/pc/mods/mod_fs.h":                     [ "mod_fs_read_file_from_uri", "mod_fs_shutdown" ],
-    "src/pc/utils/misc.h":                      [ "str_.*", "file_get_line", "delta_interpolate_(normal|rgba|mtx)", "detect_and_skip_mtx_interpolation", "precise_delay_f64" ],
+    "src/pc/utils/misc.h":                      [ "str_.*", "file_get_line", "delta_interpolate_(normal|rgba|mtx)", "detect_and_skip_mtx_interpolation", "precise_delay_f64", "can_update_game", "update_game" ],
     "src/engine/lighting_engine.h":             [ "le_calculate_vertex_lighting", "le_clear", "le_shutdown" ],
 }
 

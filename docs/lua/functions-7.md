@@ -11,6 +11,165 @@
 <br />
 
 
+## [get_shader_flag_enabled](#get_shader_flag_enabled)
+
+### Description
+Gets if a custom shader flag (`SHADER_FLAG_*`) is enabled or not
+
+### Lua Example
+`local booleanValue = get_shader_flag_enabled(flag)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| flag | [enum ShaderFlag](constants.md#enum-ShaderFlag) |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool get_shader_flag_enabled(enum ShaderFlag flag);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [set_shader_flag_enabled](#set_shader_flag_enabled)
+
+### Description
+Enables a custom shader flag (`SHADER_FLAG_*`) for the renderer
+
+### Lua Example
+`set_shader_flag_enabled(flag, enabled)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| flag | [enum ShaderFlag](constants.md#enum-ShaderFlag) |
+| enabled | `boolean` |
+
+### Returns
+- None
+
+### C Prototype
+`void set_shader_flag_enabled(enum ShaderFlag flag, bool enabled);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_shader_flag_value](#get_shader_flag_value)
+
+### Description
+Gets a value for one of the custom shader flags (`SHADER_FLAG_*`)
+
+### Lua Example
+`local numberValue = get_shader_flag_value(flag)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| flag | [enum ShaderFlag](constants.md#enum-ShaderFlag) |
+
+### Returns
+- `number`
+
+### C Prototype
+`f32 get_shader_flag_value(enum ShaderFlag flag);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [set_shader_flag_value](#set_shader_flag_value)
+
+### Description
+Sets a value for one of the custom shader flags (`SHADER_FLAG_*`) for the renderer
+
+### Lua Example
+`set_shader_flag_value(flag, value)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| flag | [enum ShaderFlag](constants.md#enum-ShaderFlag) |
+| value | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void set_shader_flag_value(enum ShaderFlag flag, f32 value);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_global_shader_flags_enabled](#get_global_shader_flags_enabled)
+
+### Description
+Gets if custom shader flags are enabled globally
+
+### Lua Example
+`local booleanValue = get_global_shader_flags_enabled()`
+
+### Parameters
+- None
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool get_global_shader_flags_enabled(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [set_global_shader_flags_enabled](#set_global_shader_flags_enabled)
+
+### Description
+Enables custom shader flags as a global toggle, useful for disabling without manually going through every effect
+
+### Lua Example
+`set_global_shader_flags_enabled(enabled)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| enabled | `boolean` |
+
+### Returns
+- None
+
+### C Prototype
+`void set_global_shader_flags_enabled(bool enabled);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [clear_all_shader_flags](#clear_all_shader_flags)
+
+### Description
+Clears all custom shader flags (`SHADER_FLAG_*`) for the renderer
+
+### Lua Example
+`clear_all_shader_flags()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void clear_all_shader_flags(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [set_override_fov](#set_override_fov)
 
 ### Description
@@ -1273,7 +1432,7 @@ Gets the current active frame pass index. If there is no active frame pass, it r
 ## [vtx_get_from_name](#vtx_get_from_name)
 
 ### Description
-Gets a vertex buffer of the current mod from its name. Returns a pointer to the vertex buffering and its vertex count
+Gets a vertex buffer of the current mod from its name. Returns a pointer to the vertex buffer and its vertex count
 
 ### Lua Example
 `local pointerValue, count = vtx_get_from_name(name)`
@@ -6556,6 +6715,29 @@ Gets a surface corresponding to `index` from the static object collision
 
 ### C Prototype
 `struct Surface *get_static_object_surface(struct StaticObjectCollision *col, u32 index);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [remove_static_object_collision](#remove_static_object_collision)
+
+### Description
+Removes all surfaces belonging to a static object collision and reclaims the SOC metadata
+
+### Lua Example
+`remove_static_object_collision(col)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| col | [StaticObjectCollision](structs.md#StaticObjectCollision) |
+
+### Returns
+- None
+
+### C Prototype
+`void remove_static_object_collision(struct StaticObjectCollision *col);`
 
 [:arrow_up_small:](#)
 
