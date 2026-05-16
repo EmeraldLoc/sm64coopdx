@@ -50,7 +50,7 @@ static void djui_panel_dynos_add_packs(struct DjuiBase* base) {
         // filter results
         if (sSearchInputbox != NULL &&
             sSearchInputbox->buffer != NULL &&
-            !strstr_lowercased(djui_text_get_uncolored_string(NULL, strlen(pack) + 1, pack), sSearchInputbox->buffer)
+            !sys_strcasecmp(djui_text_get_uncolored_string(NULL, strlen(pack) + 1, pack), sSearchInputbox->buffer)
         ) {
             continue;
         }

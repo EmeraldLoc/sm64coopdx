@@ -602,31 +602,6 @@ void str_seperator_concat(char *output_buffer, int buffer_size, char** strings, 
     }
 }
 
-const char *strstr_lowercased(const char *haystack, const char *needle) {
-    // sanity check
-    if (!*needle) {
-        return haystack;
-    }
-
-    while (*haystack) {
-        const char *h = haystack;
-        const char *n = needle;
-
-        while (*h && *n && tolower((unsigned char)*h) == tolower((unsigned char)*n)) {
-            ++h;
-            ++n;
-        }
-
-        if (!*n) {
-            return haystack;
-        }
-
-        ++haystack;
-    }
-
-    return NULL;
-}
-
 static char *get_update_path(void) {
 #ifdef _WIN32
     char updateExecFilename[] = "coopdx_updater.exe";
