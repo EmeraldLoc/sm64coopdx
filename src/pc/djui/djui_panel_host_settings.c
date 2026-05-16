@@ -35,8 +35,9 @@ static bool djui_panel_host_limit_valid(void) {
 static void djui_panel_host_player_text_change(struct DjuiBase* caller) {
     struct DjuiInputbox* inputbox1 = (struct DjuiInputbox*)caller;
     struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
     if (djui_panel_host_limit_valid()) {
-        djui_inputbox_set_text_color(inputbox1, theme->interactables.textColor.r, theme->interactables.textColor.g, theme->interactables.textColor.b, theme->interactables.textColor.a);
+        djui_inputbox_set_text_color(inputbox1, textColor->r, textColor->g, textColor->b, textColor->a);
     } else {
         djui_inputbox_set_text_color(inputbox1, 255, 0, 0, 255);
         return;

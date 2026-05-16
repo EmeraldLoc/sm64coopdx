@@ -161,8 +161,9 @@ static char* djui_panel_player_edit_palette_preset_name_get_text(void) {
 static void djui_panel_player_edit_palette_preset_name_text_change(struct DjuiBase* caller) {
     struct DjuiInputbox* inputbox1 = (struct DjuiInputbox*)caller;
     struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
     if (djui_panel_player_edit_palette_preset_name_valid(inputbox1->buffer)) {
-        djui_inputbox_set_text_color(inputbox1, theme->interactables.textColor.r, theme->interactables.textColor.g, theme->interactables.textColor.b, theme->interactables.textColor.a);
+        djui_inputbox_set_text_color(inputbox1, textColor->r, textColor->g, textColor->b, textColor->a);
     } else {
         djui_inputbox_set_text_color(inputbox1, 255, 0, 0, 255);
     }
@@ -171,10 +172,11 @@ static void djui_panel_player_edit_palette_preset_name_text_change(struct DjuiBa
 static void djui_panel_player_edit_palette_preset_name_on_focus_end(struct DjuiBase* caller) {
     struct DjuiInputbox* inputbox1 = (struct DjuiInputbox*)caller;
     struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
     if (!djui_panel_player_edit_palette_preset_name_valid(inputbox1->buffer)) {
         djui_inputbox_set_text(inputbox1, djui_panel_player_edit_palette_preset_name_get_text());
     }
-    djui_inputbox_set_text_color(inputbox1, theme->interactables.textColor.r, theme->interactables.textColor.g, theme->interactables.textColor.b, theme->interactables.textColor.a);
+    djui_inputbox_set_text_color(inputbox1, textColor->r, textColor->g, textColor->b, textColor->a);
 
     djui_inputbox_on_focus_end(&inputbox1->base);
 }
@@ -406,8 +408,9 @@ static char *djui_panel_player_name_default_get(void) {
 static void djui_panel_player_name_text_change(struct DjuiBase* caller) {
     struct DjuiInputbox* inputbox1 = (struct DjuiInputbox*)caller;
     struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
     if (network_player_name_valid(inputbox1->buffer)) {
-        djui_inputbox_set_text_color(inputbox1, theme->interactables.textColor.r, theme->interactables.textColor.g, theme->interactables.textColor.b, theme->interactables.textColor.a);
+        djui_inputbox_set_text_color(inputbox1, textColor->r, textColor->g, textColor->b, textColor->a);
     } else {
         djui_inputbox_set_text_color(inputbox1, 255, 0, 0, 255);
     }
@@ -416,11 +419,12 @@ static void djui_panel_player_name_text_change(struct DjuiBase* caller) {
 static void djui_panel_player_name_on_focus_end(struct DjuiBase* caller) {
     struct DjuiInputbox* inputbox1 = (struct DjuiInputbox*)caller;
     struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
     if (!network_player_name_valid(inputbox1->buffer)) {
         djui_inputbox_set_text(inputbox1, djui_panel_player_name_default_get());
     }
     snprintf(configPlayerName, MAX_CONFIG_STRING, "%s", inputbox1->buffer);
-    djui_inputbox_set_text_color(inputbox1, theme->interactables.textColor.r, theme->interactables.textColor.g, theme->interactables.textColor.b, theme->interactables.textColor.a);
+    djui_inputbox_set_text_color(inputbox1, textColor->r, textColor->g, textColor->b, textColor->a);
 
     if (gNetworkType != NT_NONE) {
         network_send_player_settings();
