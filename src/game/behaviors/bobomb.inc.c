@@ -92,8 +92,9 @@ void bobomb_act_chase_mario(void) {
 
     s16 collisionFlags = object_step();
 
-    if (animFrame == 5 || animFrame == 16)
+    if (animFrame == 5 || animFrame == 16) {
         cur_obj_play_sound_2(SOUND_OBJ_BOBOMB_WALK);
+    }
 
     struct Object* player = nearest_player_to_object(o);
     if (player) {
@@ -457,7 +458,9 @@ void bobomb_buddy_act_turn_to_talk(void) {
         network_send_object(o);
     }
 
-    cur_obj_play_sound_2(SOUND_ACTION_READ_SIGN);
+    if (o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex && o->oTimer <= 0) {
+        cur_obj_play_sound_2(SOUND_ACTION_READ_SIGN);
+    }
 }
 
 void bobomb_buddy_actions(void) {
