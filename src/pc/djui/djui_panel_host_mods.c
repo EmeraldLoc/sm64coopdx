@@ -169,7 +169,7 @@ void djui_panel_host_mods_add_mods(struct DjuiBase* layoutBase) {
         // filter results
         if (sSearchInputbox != NULL &&
             sSearchInputbox->buffer != NULL &&
-            !sys_strcasecmp(djui_text_get_uncolored_string(NULL, strlen(mod->name) + 1, mod->name), sSearchInputbox->buffer)
+            !strstr_lowercased(djui_text_get_uncolored_string(NULL, strlen(mod->name) + 1, mod->name), sSearchInputbox->buffer)
         ) {
             continue;
         }
