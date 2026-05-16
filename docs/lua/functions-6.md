@@ -4795,27 +4795,6 @@ Gets the level number's corresponding course number
 
 <br />
 
-## [save_file_get_filename_at_index](#save_file_get_filename_at_index)
-
-### Lua Example
-`save_file_get_filename_at_index(fileIndex, outFilename[MAX_SAVE_NAME_STRING])`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| fileIndex | `integer` |
-| outFilename[MAX_SAVE_NAME_STRING] | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void save_file_get_filename_at_index(int fileIndex, char outFilename[MAX_SAVE_NAME_STRING]);`
-
-[:arrow_up_small:](#)
-
-<br />
-
 ## [save_file_do_save](#save_file_do_save)
 
 ### Description
