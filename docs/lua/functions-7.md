@@ -105,50 +105,6 @@ Sets a value for one of the custom shader flags (`SHADER_FLAG_*`) for the render
 
 <br />
 
-## [get_global_shader_flags_enabled](#get_global_shader_flags_enabled)
-
-### Description
-Gets if custom shader flags are enabled globally
-
-### Lua Example
-`local booleanValue = get_global_shader_flags_enabled()`
-
-### Parameters
-- None
-
-### Returns
-- `boolean`
-
-### C Prototype
-`bool get_global_shader_flags_enabled(void);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [set_global_shader_flags_enabled](#set_global_shader_flags_enabled)
-
-### Description
-Enables custom shader flags as a global toggle, useful for disabling without manually going through every effect
-
-### Lua Example
-`set_global_shader_flags_enabled(enabled)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| enabled | `boolean` |
-
-### Returns
-- None
-
-### C Prototype
-`void set_global_shader_flags_enabled(bool enabled);`
-
-[:arrow_up_small:](#)
-
-<br />
-
 ## [clear_all_shader_flags](#clear_all_shader_flags)
 
 ### Description

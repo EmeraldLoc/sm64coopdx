@@ -21,10 +21,6 @@ void set_shader_flag_enabled(enum ShaderFlag flag, bool enabled);
 f32 get_shader_flag_value(enum ShaderFlag flag);
 /* |description|Sets a value for one of the custom shader flags (`SHADER_FLAG_*`) for the renderer|descriptionEnd| */
 void set_shader_flag_value(enum ShaderFlag flag, f32 value);
-/* |description|Gets if custom shader flags are enabled globally|descriptionEnd| */
-bool get_global_shader_flags_enabled(void);
-/* |description|Enables custom shader flags as a global toggle, useful for disabling without manually going through every effect|descriptionEnd| */
-void set_global_shader_flags_enabled(bool enabled);
 /* |description|Clears all custom shader flags (`SHADER_FLAG_*`) for the renderer|descriptionEnd| */
 void clear_all_shader_flags(void);
 

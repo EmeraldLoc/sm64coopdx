@@ -128,7 +128,6 @@ f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX] = {
     [SHADER_FLAG_SCANLINES] = 1.0f
 };
 f32 gShaderFlagValues[SHADER_FLAG_MAX] = { 0 };
-bool gShaderFlagsEnabled = true;
 
 // need inverse camera matrix to compute world space for lighting engine
 static Mat4 sInverseCameraMatrix;
@@ -1114,7 +1113,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     cm->use_2cycle     = (rdp.other_mode_h & (3U << G_MDSFT_CYCLETYPE)) == G_CYC_2CYCLE;
     cm->use_fog        = (rdp.other_mode_l >> 30)                       == G_BL_CLR_FOG;
     cm->light_map      = (rsp.geometry_mode & G_LIGHT_MAP_EXT)          == G_LIGHT_MAP_EXT;
-    cm->world_geometry = gShaderFlagsEnabled && (v1->world_geometry && v2->world_geometry && v3->world_geometry);
+    cm->world_geometry = (v1->world_geometry && v2->world_geometry && v3->world_geometry);
 
     if (cm->texture_edge) {
         cm->use_alpha = true;

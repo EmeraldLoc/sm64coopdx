@@ -10818,18 +10818,6 @@ function set_shader_flag_value(flag, value)
     -- ...
 end
 
---- @return boolean
---- Gets if custom shader flags are enabled globally
-function get_global_shader_flags_enabled()
-    -- ...
-end
-
---- @param enabled boolean
---- Enables custom shader flags as a global toggle, useful for disabling without manually going through every effect
-function set_global_shader_flags_enabled(enabled)
-    -- ...
-end
-
 --- Clears all custom shader flags (`SHADER_FLAG_*`) for the renderer
 function clear_all_shader_flags()
     -- ...

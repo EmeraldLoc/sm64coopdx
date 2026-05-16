@@ -40,16 +40,7 @@ void set_shader_flag_value(enum ShaderFlag flag, f32 value) {
     gShaderFlagValues[flag] = value;
 }
 
-bool get_global_shader_flags_enabled(void) {
-    return gShaderFlagsEnabled;
-}
-
-void set_global_shader_flags_enabled(bool enabled) {
-    gShaderFlagsEnabled = enabled;
-}
-
 AT_STARTUP void clear_all_shader_flags(void) {
-    gShaderFlagsEnabled = true;
     memset(gShaderFlags, 0, sizeof(s32) * SHADER_FLAG_MAX);
     memcpy(gShaderFlagValues, gDefaultShaderFlagValues, sizeof(f32) * SHADER_FLAG_MAX);
 }

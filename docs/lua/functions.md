@@ -1941,8 +1941,6 @@
    - [set_shader_flag_enabled](functions-7.md#set_shader_flag_enabled)
    - [get_shader_flag_value](functions-7.md#get_shader_flag_value)
    - [set_shader_flag_value](functions-7.md#set_shader_flag_value)
-   - [get_global_shader_flags_enabled](functions-7.md#get_global_shader_flags_enabled)
-   - [set_global_shader_flags_enabled](functions-7.md#set_global_shader_flags_enabled)
    - [clear_all_shader_flags](functions-7.md#clear_all_shader_flags)
    - [set_override_fov](functions-7.md#set_override_fov)
    - [set_override_near](functions-7.md#set_override_near)
