@@ -162,14 +162,7 @@ struct DjuiTheme* gDjuiThemes[MAX_DJUI_THEMES] = {
     &gDjuiThemeDark,
 };
 
-struct DjuiColor djui_theme_shade_color(struct DjuiColor color, f32 mult) {
-    color.r *= mult;
-    color.g *= mult;
-    color.b *= mult;
-    return color;
-}
-
-int djui_theme_get_next_available_index() {
+static int djui_theme_get_next_available_index() {
     for (int i = 0; i < MAX_DJUI_THEMES; i++) {
         if (!gDjuiThemes[i]) return i;
     }
@@ -205,18 +198,49 @@ static bool theme_ini_init(const char* themeFile) {
     return sTheme != NULL;
 }
 
-void djui_themes_save_current(bool setThemeArray) {
-    struct DjuiTheme* theme = calloc(1, sizeof(struct DjuiTheme));
-    if (!theme) return;
-    memcpy(theme, &configDjuiTheme, sizeof(struct DjuiTheme));
-    djui_themes_save(theme, setThemeArray);
+struct DjuiColor djui_theme_shade_color(struct DjuiColor color, f32 mult) {
+    color.r *= mult;
+    color.g *= mult;
+    color.b *= mult;
+    return color;
 }
 
-void djui_themes_save(struct DjuiTheme* theme, bool setThemeArray) {
+bool djui_theme_compare_theme_elements(struct DjuiTheme *themeOne, struct DjuiTheme *themeTwo) {
+    if (themeOne->headerFont != themeTwo->headerFont) {
+        return false;
+    }
+
+    if (themeOne->useRainbowColor != themeTwo->useRainbowColor) {
+        return false;
+    }
+
+    if (themeOne->gradients != themeTwo->gradients) {
+        return false;
+    }
+
+    if (memcmp(themeOne->elements, themeTwo->elements, sizeof(themeOne->elements)) != 0) {
+        return false;
+    }
+
+    return true;
+}
+
+bool djui_themes_save_current(bool setThemeArray) {
+    struct DjuiTheme* theme = calloc(1, sizeof(struct DjuiTheme));
+    if (!theme) return false;
+    memcpy(theme, &configDjuiTheme, sizeof(struct DjuiTheme));
+    if (!djui_themes_save(theme, setThemeArray)) {
+        free(theme);
+        return false;
+    }
+    return true;
+}
+
+bool djui_themes_save(struct DjuiTheme* theme, bool setThemeArray) {
     int nextAvailableIndex = djui_theme_get_next_available_index();
     if (nextAvailableIndex < 0) {
         LOG_ERROR("Failed to save theme %s. Full on themes!", theme->name);
-        return;
+        return false;
     }
     const char* themesPath = fs_get_write_path(THEMES_DIRECTORY);
     char ppath[SYS_MAX_PATH] = "";
@@ -227,7 +251,7 @@ void djui_themes_save(struct DjuiTheme* theme, bool setThemeArray) {
     FILE* file = fopen(ppath, "w");
     if (!file) {
         LOG_ERROR("Failed to save theme %s", theme->name);
-        return;
+        return false;
     }
     fprintf(file, "[THEME]\n");
     for (int i = 0; i < DJUI_THEME_ELEMENT_COUNT; i++) {
@@ -241,7 +265,8 @@ void djui_themes_save(struct DjuiTheme* theme, bool setThemeArray) {
     fprintf(file, "theme_gradients = %u\n", theme->gradients ? 1 : 0);
     fclose(file);
 
-    if (setThemeArray) gDjuiThemes[djui_theme_get_next_available_index()] = theme;
+    if (setThemeArray) { gDjuiThemes[djui_theme_get_next_available_index()] = theme; }
+    return true;
 }
 
 void djui_themes_load() {
@@ -304,6 +329,7 @@ void djui_theme_delete(struct DjuiTheme* theme) {
     // start iterating after the builtin themes
     for (int i = DJUI_THEME_COUNT; i < MAX_DJUI_THEMES; i++) {
         if (!gDjuiThemes[i]) return;
+        // do a direct compare rather than comparing elements
         if (memcmp(theme, gDjuiThemes[i], sizeof(struct DjuiTheme)) != 0) continue;
         if (memcmp(theme, &configDjuiTheme, sizeof(struct DjuiTheme)) == 0) {
             // this will always hit a valid index because builtin themes exist

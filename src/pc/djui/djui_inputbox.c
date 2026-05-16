@@ -502,8 +502,7 @@ static void djui_inputbox_render_selection(struct DjuiInputbox* inputbox) {
         if (sCursorBlink < DJUI_INPUTBOX_MID_BLINK && djui_interactable_is_input_focus(&inputbox->base)) {
             create_dl_translation_matrix(DJUI_MTX_PUSH, renderX - DJUI_INPUTBOX_CURSOR_WIDTH / 2.0f, -0.1f, 0);
             create_dl_scale_matrix(DJUI_MTX_NOPUSH, DJUI_INPUTBOX_CURSOR_WIDTH, 0.8f, 1.0f);
-            struct DjuiColor textColor = configDjuiTheme.elements[DJUI_THEME_ELEMENT_INPUTBOX_TEXT];
-            gDPSetEnvColor(gDisplayListHead++, textColor.r, textColor.g, textColor.b, textColor.a);
+            gDPSetEnvColor(gDisplayListHead++, inputbox->textColor.r, inputbox->textColor.g, inputbox->textColor.b, inputbox->textColor.a);
             gSPDisplayList(gDisplayListHead++, dl_djui_simple_rect);
             gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
         }

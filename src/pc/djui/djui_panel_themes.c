@@ -333,7 +333,7 @@ static char* djui_panel_theme_edit_theme_name_get_text(void) {
     for (int i = 0; i < MAX_DJUI_THEMES; i++) {
         if (gDjuiThemes[i]) {
             if (memcmp(&configDjuiTheme, gDjuiThemes[i], sizeof(struct DjuiTheme)) == 0) {
-                name = gPresetPalettes[i].name;
+                name = gDjuiThemes[i]->name;
             }
         }
     }
@@ -370,7 +370,7 @@ static void djui_panel_theme_reset_theme_selectionbox() {
             sDjuiThemeSelected = themeChoicesCount - 1;
         }
     }
-    if (sDjuiThemeSelected <= 0 || !gDjuiThemes[sDjuiThemeSelected - 1]) sDjuiThemeSelected = 0;
+    if (sDjuiThemeSelected <= 0 || !gDjuiThemes[sDjuiThemeSelected - 1]) { sDjuiThemeSelected = 0; }
     for (int i = 0; i < sThemeSelectionbox->choiceCount; i++) {
         free(sThemeSelectionbox->choices[i]);
     }
@@ -393,7 +393,7 @@ static void djui_panel_theme_edit_theme_delete(UNUSED struct DjuiBase* caller) {
 }
 
 static void djui_panel_theme_edit_theme_delete_confirm(UNUSED struct DjuiBase* caller) {
-    if (sDjuiThemeSelected <= DJUI_THEME_COUNT || sDjuiThemeSelected >= MAX_DJUI_THEMES || !gDjuiThemes[sDjuiThemeSelected - 1]) return;
+    if (sDjuiThemeSelected <= DJUI_THEME_COUNT || sDjuiThemeSelected >= MAX_DJUI_THEMES || !gDjuiThemes[sDjuiThemeSelected - 1]) { return; }
     djui_panel_confirm_create(NULL, DLANG(DJUI_THEMES, DELETE_THEME_TITLE), DLANG(DJUI_THEMES, WARN_DELETE_THEME), djui_panel_theme_edit_theme_delete);
 }
 
@@ -512,8 +512,11 @@ void djui_panel_themes_create(struct DjuiBase* caller) {
         for (int i = 0; i < MAX_DJUI_THEMES; i++) {
             if (!gDjuiThemes[i]) continue;
             themeChoices[themeChoicesCount++] = i < DJUI_THEME_COUNT ? djui_language_get("DJUI_THEMES", gDjuiThemes[i]->name) : gDjuiThemes[i]->name;
-            if (memcmp(&configDjuiTheme, gDjuiThemes[i], sizeof(struct DjuiTheme)) == 0) {
+            if (djui_theme_compare_theme_elements(gDjuiThemes[i], &configDjuiTheme)) {
                 sDjuiThemeSelected = themeChoicesCount - 1;
+                // because it's possible names don't line up due to config not saving spaces
+                // set config djui theme to found theme
+                memcpy(&configDjuiTheme, gDjuiThemes[i], sizeof(struct DjuiTheme));
             }
         }
         sThemeSelectionbox = djui_selectionbox_create(body, DLANG(DJUI_THEMES, DJUI_THEME), themeChoices, themeChoicesCount, &sDjuiThemeSelected, djui_panel_theme_theme_changed);

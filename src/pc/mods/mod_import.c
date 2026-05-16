@@ -159,6 +159,7 @@ static bool mod_import_theme(char* src) {
 
 static bool mod_import_ini(char* src) {
     struct ini_t* importIni = ini_load(src);
+    if (!importIni) { return false; }
     bool ret = false;
 
     char msg[SYS_MAX_PATH] = { 0 };

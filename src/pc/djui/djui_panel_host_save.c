@@ -124,7 +124,7 @@ void djui_panel_host_save_create(struct DjuiBase* caller) {
             }
         }
 
-        djui_button_create(body, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_PRIMARY, djui_panel_menu_back);
+        djui_button_create(body, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_SECONDARY, djui_panel_menu_back);
     }
 
     djui_panel_add(caller, panel, NULL);

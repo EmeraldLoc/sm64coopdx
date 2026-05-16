@@ -366,8 +366,6 @@ static const struct ConfigOption options[] = {
     {.name = "coopnet_password",               .type = CONFIG_TYPE_STRING, .stringValue = (char*)&configPassword, .maxStringLength = MAX_CONFIG_STRING},
     {.name = "coopnet_dest",                   .type = CONFIG_TYPE_STRING, .stringValue = (char*)&configDestId, .maxStringLength = MAX_CONFIG_STRING},
     // DJUI Themes
-    {.name = "djui_theme_name",                        .type = CONFIG_TYPE_STRING, .stringValue = (char*)&configDjuiTheme.name, .maxStringLength = MAX_DJUI_THEME_NAME_LEN },
-
     {.name = "djui_theme_primary",                     .type = CONFIG_TYPE_DJUI_COLOR, .djuiColorValue = &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY] },
     {.name = "djui_theme_primary_hover",               .type = CONFIG_TYPE_DJUI_COLOR, .djuiColorValue = &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_HOVER] },
     {.name = "djui_theme_primary_down",                .type = CONFIG_TYPE_DJUI_COLOR, .djuiColorValue = &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_DOWN] },
@@ -891,7 +889,9 @@ NEXT_OPTION:
 
     if (configDjuiScale >= 5) { configDjuiScale = 0; }
 
-    if (configDjuiThemeFont == FONT_MENU) configDjuiThemeFont = FONT_NORMAL;
+    if (configDjuiThemeFont == FONT_MENU) { configDjuiThemeFont = FONT_NORMAL; }
+    if (configDjuiThemeFont >= FONT_COUNT) { configDjuiThemeFont = FONT_NORMAL; }
+    if (configDjuiTheme.headerFont >= FONT_COUNT) { configDjuiTheme.headerFont = FONT_NORMAL; }
 
     if (gCLIOpts.fullscreen == 1) {
         configWindow.fullscreen = true;

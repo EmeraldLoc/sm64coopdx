@@ -96,7 +96,8 @@ extern struct DjuiTheme* gDjuiThemes[MAX_DJUI_THEMES];
 extern struct DjuiTheme gDjuiThemeDark;
 
 struct DjuiColor djui_theme_shade_color(struct DjuiColor color, f32 mult);
-void djui_themes_save_current(bool setThemeArray);
-void djui_themes_save(struct DjuiTheme* theme, bool setThemeArray);
+bool djui_theme_compare_theme_elements(struct DjuiTheme *themeOne, struct DjuiTheme *themeTwo);
+bool djui_themes_save_current(bool setThemeArray);
+bool djui_themes_save(struct DjuiTheme* theme, bool setThemeArray);
 void djui_themes_load(void);
 void djui_theme_delete(struct DjuiTheme* theme);
