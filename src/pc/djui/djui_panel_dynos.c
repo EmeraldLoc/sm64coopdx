@@ -44,7 +44,7 @@ static void djui_panel_dynos_destroy(UNUSED struct DjuiBase* caller) {
 static void djui_panel_dynos_add_packs(struct DjuiBase* base) {
     int packCount = dynos_pack_get_count();
     for (int i = 0; i < packCount; i++) {
-        if (!dynos_pack_get_exists(i)) continue;
+        if (!dynos_pack_get_exists(i)) { continue; }
         bool tmp = dynos_pack_get_enabled(i);
         const char* pack = dynos_pack_get_name(i);
         // filter results
