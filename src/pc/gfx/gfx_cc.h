@@ -61,12 +61,13 @@ struct CCFeatures {
 };
 
 enum CombineModeFlags {
-    USE_ALPHA    = 1 << 0,
-    USE_FOG      = 1 << 1,
-    TEXTURE_EDGE = 1 << 2,
-    USE_DITHER   = 1 << 3,
-    USE_2CYCLE   = 1 << 4,
-    LIGHT_MAP    = 1 << 5
+    USE_ALPHA      = 1 << 0,
+    USE_FOG        = 1 << 1,
+    TEXTURE_EDGE   = 1 << 2,
+    USE_DITHER     = 1 << 3,
+    USE_2CYCLE     = 1 << 4,
+    LIGHT_MAP      = 1 << 5,
+    WORLD_GEOMETRY = 1 << 6
 };
 
 #pragma pack(1)

@@ -3145,12 +3145,13 @@ SHADER_OPT_TEXTURE_EDGE = (1 << 26)
 --- @type integer
 SHADER_OPT_NOISE = (1 << 27)
 
-USE_ALPHA    = 1 << 0 --- @type CombineModeFlags
-USE_FOG      = 1 << 1 --- @type CombineModeFlags
-TEXTURE_EDGE = 1 << 2 --- @type CombineModeFlags
-USE_DITHER   = 1 << 3 --- @type CombineModeFlags
-USE_2CYCLE   = 1 << 4 --- @type CombineModeFlags
-LIGHT_MAP    = 1 << 5 --- @type CombineModeFlags
+USE_ALPHA      = 1 << 0 --- @type CombineModeFlags
+USE_FOG        = 1 << 1 --- @type CombineModeFlags
+TEXTURE_EDGE   = 1 << 2 --- @type CombineModeFlags
+USE_DITHER     = 1 << 3 --- @type CombineModeFlags
+USE_2CYCLE     = 1 << 4 --- @type CombineModeFlags
+LIGHT_MAP      = 1 << 5 --- @type CombineModeFlags
+WORLD_GEOMETRY = 1 << 6 --- @type CombineModeFlags
 
 --- @alias CombineModeFlags
 --- | `USE_ALPHA`
@@ -3159,6 +3160,7 @@ LIGHT_MAP    = 1 << 5 --- @type CombineModeFlags
 --- | `USE_DITHER`
 --- | `USE_2CYCLE`
 --- | `LIGHT_MAP`
+--- | `WORLD_GEOMETRY`
 
 --- @type integer
 SHADER_CMD_LENGTH = 16
