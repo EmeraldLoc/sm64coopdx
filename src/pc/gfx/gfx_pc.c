@@ -2120,17 +2120,20 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
         sHasInverseCameraMatrix = false;
 
         // bind pass tex if it exists
+        int lastPassTex = -1;
         if (i > 0) {
-            int lastPassTex = -1;
             for (int j = i - 1; j >= 0; j--) {
                 if (gFramePasses[j].active) {
                     lastPassTex = gFramePasses[j].passTexture;
                     break;
                 }
             }
+        }
 
-            if (lastPassTex != -1) {
-                gfx_rapi->bind_texture_raw(10, lastPassTex);
+        if (lastPassTex != -1) {
+            gfx_rapi->bind_texture_raw(10, lastPassTex);
+            if (framePass->drawWorldGeometry) {
+                gfx_draw_fullscreen_quad(false, false);
             }
         }
 
@@ -2223,12 +2226,12 @@ void gfx_run(Gfx *commands) {
     int lastPassTex = -1;
     int backgroundPassTex = -1;
     int overlayPassTex = -1;
+    int lastActive = -1;
+    int prevActive = -1;
 
     if (gDefaultGeoFramePass.active) {
         lastPassTex = gDefaultGeoFramePass.passTexture;
     } else {
-        int lastActive = -1;
-        int prevActive = -1;
         for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
             if (!gFramePasses[i].active) continue;
             if (lastActive == -1) {
@@ -2251,12 +2254,17 @@ void gfx_run(Gfx *commands) {
 
     bool postProcess = !isLuaPassesActive || gPostProcessAllFramePasses;
     if (backgroundPassTex != -1 && overlayPassTex != -1) {
-        gfx_rapi->bind_texture_raw(10, backgroundPassTex);
-        gfx_draw_fullscreen_quad(false, postProcess);
-        gfx_rapi->bind_texture_raw(10, overlayPassTex);
-        gfx_draw_fullscreen_quad(true, postProcess);
-        gfx_rapi->set_use_alpha(false);
-        rendering_state.alpha_blend = false;
+        if (gFramePasses[lastActive].drawWorldGeometry) {
+            gfx_rapi->bind_texture_raw(10, overlayPassTex);
+            gfx_draw_fullscreen_quad(false, postProcess);
+        } else {
+            gfx_rapi->bind_texture_raw(10, backgroundPassTex);
+            gfx_draw_fullscreen_quad(false, postProcess);
+            gfx_rapi->bind_texture_raw(10, overlayPassTex);
+            gfx_draw_fullscreen_quad(true, postProcess);
+            gfx_rapi->set_use_alpha(false);
+            rendering_state.alpha_blend = false;
+        }
     } else if (lastPassTex != -1) {
         gfx_rapi->bind_texture_raw(10, lastPassTex);
         gfx_draw_fullscreen_quad(false, postProcess);  // draw final quad
