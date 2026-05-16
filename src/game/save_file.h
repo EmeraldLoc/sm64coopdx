@@ -167,7 +167,7 @@ s32 save_file_get_amount_of_available_indexes();
 
 s32 save_file_get_first_active_index();
 
-bool save_file_rename_file(s32 fileIndex, char* name);
+void save_file_rename_file(s32 fileIndex, char* name);
 
 /* |description|
 Saves the current state of the game into a specified save file. Includes data verification and backup management.

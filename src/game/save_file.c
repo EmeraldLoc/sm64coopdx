@@ -391,7 +391,7 @@ s32 save_file_get_amount_of_available_indexes() {
 /**
  * Renames a specific save file. Returns false on failure
 */
-bool save_file_rename_file(s32 fileIndex, char* name) {
+void save_file_rename_file(s32 fileIndex, char* name) {
     if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) return false;
     if (strstr(name, ".")) return false;
 
