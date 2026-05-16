@@ -221,6 +221,11 @@ static void select_graphics_backend(void) {
         return;
     }
 
+#if defined(_WIN32)
+    if (configGraphicsBackend == GAPI_GL && !gfx_sdl_check_opengl_compatibility()) {
+        configGraphicsBackend = GAPI_D3D11;
+    }
+#endif
     int backend = configGraphicsBackend;
 #if defined(_WIN32)
     if (gCLIOpts.backend != -1) { backend = gCLIOpts.backend; }
@@ -576,6 +581,10 @@ int main(int argc, char *argv[]) {
     djui_console_message_dequeue();
 
     show_update_popup();
+
+    if (can_update_game()) {
+        djui_open_update_panel();
+    }
 
     // initialize network
     if (gCLIOpts.network == NT_CLIENT) {
