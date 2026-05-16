@@ -1668,7 +1668,7 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     }
 }
 
-static void gfx_draw_fullscreen_quad(bool isPostProcessingPass) {
+static void gfx_draw_fullscreen_quad(bool useAlpha, bool isPostProcessingPass) {
     static float quadVertices[] = {
         -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 1.0f,   0.0f, 0.0f,
@@ -1681,8 +1681,8 @@ static void gfx_draw_fullscreen_quad(bool isPostProcessingPass) {
 
     gfx_rapi->create_or_load_post_process_shader(isPostProcessingPass);
 
-    gfx_rapi->set_use_alpha(false);
-    rendering_state.alpha_blend = false;
+    gfx_rapi->set_use_alpha(useAlpha);
+    rendering_state.alpha_blend = useAlpha;
     gfx_rapi->set_depth_test(false);
     rendering_state.depth_test = false;
     gfx_rapi->draw_triangles(quadVertices, sizeof(quadVertices) / sizeof(float), 2);
@@ -2146,7 +2146,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
-            gfx_draw_fullscreen_quad(true);
+            gfx_draw_fullscreen_quad(false, true);
         }
     }
 }
@@ -2221,20 +2221,45 @@ void gfx_run(Gfx *commands) {
     sHasInverseCameraMatrix = false;
 
     int lastPassTex = -1;
+    int backgroundPassTex = -1;
+    int overlayPassTex = -1;
+
     if (gDefaultGeoFramePass.active) {
         lastPassTex = gDefaultGeoFramePass.passTexture;
     } else {
+        int lastActive = -1;
+        int prevActive = -1;
         for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
-            if (gFramePasses[i].active) {
-                lastPassTex = gFramePasses[i].passTexture;
+            if (!gFramePasses[i].active) continue;
+            if (lastActive == -1) {
+                lastActive = i;
+            } else if (prevActive == -1) {
+                prevActive = i;
                 break;
+            }
+        }
+
+        if (lastActive != -1) {
+            if (prevActive != -1 && gFramePasses[lastActive].drawWorldGeometry && !gFramePasses[prevActive].drawWorldGeometry) {
+                backgroundPassTex = gFramePasses[prevActive].passTexture;
+                overlayPassTex = gFramePasses[lastActive].passTexture;
+            } else {
+                lastPassTex = gFramePasses[lastActive].passTexture;
             }
         }
     }
 
-    if (lastPassTex != -1) {
+    bool postProcess = !isLuaPassesActive || gPostProcessAllFramePasses;
+    if (backgroundPassTex != -1 && overlayPassTex != -1) {
+        gfx_rapi->bind_texture_raw(10, backgroundPassTex);
+        gfx_draw_fullscreen_quad(false, postProcess);
+        gfx_rapi->bind_texture_raw(10, overlayPassTex);
+        gfx_draw_fullscreen_quad(true, postProcess);
+        gfx_rapi->set_use_alpha(false);
+        rendering_state.alpha_blend = false;
+    } else if (lastPassTex != -1) {
         gfx_rapi->bind_texture_raw(10, lastPassTex);
-        gfx_draw_fullscreen_quad(!isLuaPassesActive || gPostProcessAllFramePasses);  // draw final quad
+        gfx_draw_fullscreen_quad(false, postProcess);  // draw final quad
     }
 }
 
