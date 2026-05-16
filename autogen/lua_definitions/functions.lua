@@ -10285,6 +10285,12 @@ function get_level_course_num(levelNum)
 end
 
 --- @param fileIndex integer
+--- @param outFilename[MAX_SAVE_NAME_STRING] integer
+function save_file_get_filename_at_index(fileIndex, outFilename[MAX_SAVE_NAME_STRING])
+    -- ...
+end
+
+--- @param fileIndex integer
 --- @param forceSave integer
 --- Saves the current state of the game into a specified save file. Includes data verification and backup management.<br>
 --- Useful for maintaining game progress during play or when saving manually

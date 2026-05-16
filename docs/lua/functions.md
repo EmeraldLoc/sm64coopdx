@@ -1789,6 +1789,7 @@
 - save_file.h
    - [get_level_num_from_course_num](functions-6.md#get_level_num_from_course_num)
    - [get_level_course_num](functions-6.md#get_level_course_num)
+   - [save_file_get_filename_at_index](functions-6.md#save_file_get_filename_at_index)
    - [save_file_do_save](functions-6.md#save_file_do_save)
    - [save_file_erase](functions-6.md#save_file_erase)
    - [save_file_erase_current_backup_save](functions-6.md#save_file_erase_current_backup_save)
