@@ -2919,7 +2919,15 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
+| hash | `integer` |  |
+| opengl_program_id | `integer` |  |
+| num_inputs | `integer` |  |
 | used_textures | `Array` <`boolean`> |  |
+| num_floats | `integer` |  |
+| attrib_locations | `Array` <`integer`> |  |
+| uniform_locations | `Array` <`integer`> |  |
+| attrib_sizes | `Array` <`integer`> |  |
+| num_attribs | `integer` |  |
 | used_noise | `boolean` |  |
 | used_lightmap | `boolean` |  |
 | world_geometry | `boolean` |  |

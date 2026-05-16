@@ -2063,6 +2063,7 @@ void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, co
     gfx_wapi->init(window_title);
     gfx_rapi->init();
 
+    gfx_init_shaders();
     gfx_cc_precomp();
 
     gGfxInited = true;

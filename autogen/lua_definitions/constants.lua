@@ -3096,25 +3096,25 @@ CC_ENUM_MAX  = 16 --- @type ColorCombinerSource
 --- | `CC_NOISE`
 --- | `CC_ENUM_MAX`
 
-SHADER_0         =  0 --- @type ShaderInput
-SHADER_INPUT_1   =  1 --- @type ShaderInput
-SHADER_INPUT_2   =  2 --- @type ShaderInput
-SHADER_INPUT_3   =  3 --- @type ShaderInput
-SHADER_INPUT_4   =  4 --- @type ShaderInput
-SHADER_INPUT_5   =  5 --- @type ShaderInput
-SHADER_INPUT_6   =  6 --- @type ShaderInput
-SHADER_INPUT_7   =  7 --- @type ShaderInput
-SHADER_INPUT_8   =  8 --- @type ShaderInput
-SHADER_TEXEL0    =  9 --- @type ShaderInput
-SHADER_TEXEL0A   = 10 --- @type ShaderInput
-SHADER_TEXEL1    = 11 --- @type ShaderInput
-SHADER_TEXEL1A   = 12 --- @type ShaderInput
-SHADER_1         = 13 --- @type ShaderInput
-SHADER_COMBINED  = 14 --- @type ShaderInput
-SHADER_COMBINEDA = 15 --- @type ShaderInput
-SHADER_NOISE     = 16 --- @type ShaderInput
+SHADER_0         =  0 --- @type CcShaderInput
+SHADER_INPUT_1   =  1 --- @type CcShaderInput
+SHADER_INPUT_2   =  2 --- @type CcShaderInput
+SHADER_INPUT_3   =  3 --- @type CcShaderInput
+SHADER_INPUT_4   =  4 --- @type CcShaderInput
+SHADER_INPUT_5   =  5 --- @type CcShaderInput
+SHADER_INPUT_6   =  6 --- @type CcShaderInput
+SHADER_INPUT_7   =  7 --- @type CcShaderInput
+SHADER_INPUT_8   =  8 --- @type CcShaderInput
+SHADER_TEXEL0    =  9 --- @type CcShaderInput
+SHADER_TEXEL0A   = 10 --- @type CcShaderInput
+SHADER_TEXEL1    = 11 --- @type CcShaderInput
+SHADER_TEXEL1A   = 12 --- @type CcShaderInput
+SHADER_1         = 13 --- @type CcShaderInput
+SHADER_COMBINED  = 14 --- @type CcShaderInput
+SHADER_COMBINEDA = 15 --- @type CcShaderInput
+SHADER_NOISE     = 16 --- @type CcShaderInput
 
---- @alias ShaderInput
+--- @alias CcShaderInput
 --- | `SHADER_0`
 --- | `SHADER_INPUT_1`
 --- | `SHADER_INPUT_2`

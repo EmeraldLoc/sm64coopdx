@@ -25,7 +25,7 @@ enum ColorCombinerSource {
     CC_ENUM_MAX,
 };
 
-enum ShaderInput {
+enum CcShaderInput {
     SHADER_0,
     SHADER_INPUT_1,
     SHADER_INPUT_2,

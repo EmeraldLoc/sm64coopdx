@@ -31,7 +31,7 @@
     - [enum SkyBackgroundParams](#enum-SkyBackgroundParams)
 - [gfx_cc.h](#gfx_cch)
     - [enum ColorCombinerSource](#enum-ColorCombinerSource)
-    - [enum ShaderInput](#enum-ShaderInput)
+    - [enum CcShaderInput](#enum-CcShaderInput)
     - [enum CombineModeFlags](#enum-CombineModeFlags)
 - [gfx_pc.h](#gfx_pch)
     - [enum ShaderFlag](#enum-ShaderFlag)
@@ -1372,7 +1372,7 @@
 | CC_NOISE | 15 |
 | CC_ENUM_MAX | 16 |
 
-### [enum ShaderInput](#ShaderInput)
+### [enum CcShaderInput](#CcShaderInput)
 | Identifier | Value |
 | :--------- | :---- |
 | SHADER_0 | 0 |

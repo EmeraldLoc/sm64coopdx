@@ -30,6 +30,7 @@
 #include "../configfile.h"
 #include "gfx_cc.h"
 #include "gfx_rendering_api.h"
+#include "gfx_shader.h"
 #include "gfx_pc.h"
 #include "gfx_opengl.h"
 #include "pc/lua/smlua.h"
@@ -70,7 +71,7 @@ static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
     size_t num_floats = prg->num_floats;
     size_t pos = 0;
 
-    for (int i = 0; i < MAX_SHADER_ATTRIBUTES; i++) {
+    for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
         glDisableVertexAttribArray(i);
     }
 
@@ -281,38 +282,30 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     char fs_buf[8192];
     size_t vs_len = 0;
     size_t fs_len = 0;
-    size_t num_floats = 0;
 
     // Vertex shader
 #ifdef USE_GLES
     append_line(vs_buf, &vs_len, "#version 300 es");
 #else
-    append_line(vs_buf, &vs_len, "#version 150");
+    append_line(vs_buf, &vs_len, "#version 410 core");
 #endif
     append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
-    num_floats += 4;
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "in vec2 aTexCoord%d;\n", t);
         vs_len += sprintf(vs_buf + vs_len, "out vec2 vTexCoord%d;\n", t);
-        num_floats += 2;
     }
     append_line(vs_buf, &vs_len, "in vec4 aFog;");
     append_line(vs_buf, &vs_len, "out vec4 vFog;");
-    num_floats += 4;
     append_line(vs_buf, &vs_len, "in vec2 aLightMap;");
     append_line(vs_buf, &vs_len, "out vec2 vLightMap;");
-    num_floats += 2;
     for (int i = 0; i < CC_MAX_INPUTS; i++) {
         vs_len += sprintf(vs_buf + vs_len, "in vec4 aInput%d;\n", i + 1);
         vs_len += sprintf(vs_buf + vs_len, "out vec4 vInput%d;\n", i + 1);
-        num_floats += 4;
     }
     append_line(vs_buf, &vs_len, "in vec3 aNormal;");
     append_line(vs_buf, &vs_len, "out vec3 vNormal;");
-    num_floats += 3;
     append_line(vs_buf, &vs_len, "in vec3 aBarycentric;");
     append_line(vs_buf, &vs_len, "out vec3 vBarycentric;");
-    num_floats += 3;
     append_line(vs_buf, &vs_len, "void main() {");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "vTexCoord%d = aTexCoord%d;\n", t, t);
@@ -332,7 +325,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     append_line(fs_buf, &fs_len, "#version 100");
     append_line(fs_buf, &fs_len, "precision mediump float;");
 #else
-    append_line(fs_buf, &fs_len, "#version 150");
+    append_line(fs_buf, &fs_len, "#version 410 core");
 #endif
 
     append_line(fs_buf, &fs_len, "out vec4 fragColor;");
@@ -565,21 +558,33 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     puts(fs_buf);
     puts("End");*/
 
-    const char *vertexShader = vs_buf;
+    char *vsShaderCode = vs_buf;
     bool usingCustomVertexShader = false;
-    const char *fragmentShader = fs_buf;
+    char *fsShaderCode = fs_buf;
     bool usingCustomFragmentShader = false;
 
     int framePassIndex = gCurrentFramePassIndex + 1;
 
-    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], &vertexShader);
-    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], &fragmentShader);
+    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], (const char **)&vsShaderCode);
+    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], (const char **)&fsShaderCode);
 
-    if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
-    if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
+    if (strcmp(vsShaderCode, vs_buf) != 0) usingCustomVertexShader = true;
+    if (strcmp(fsShaderCode, fs_buf) != 0) usingCustomFragmentShader = true;
 
-    const GLchar *sources[2] = { vertexShader, fragmentShader };
-    GLint lengths[2] = { strlen(vertexShader), strlen(fragmentShader) };
+    struct Shader vertexShader = { 0 };
+    vertexShader.stage = GLSLANG_STAGE_VERTEX;
+
+    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
+    gfx_sanitize_vertex_shader(&vertexShader, gPostProcessShaderInputs, gPostProcessShaderBindings, &vsShaderCode);
+
+    struct Shader fragmentShader = { 0 };
+    fragmentShader.stage = GLSLANG_STAGE_FRAGMENT;
+
+    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
+    gfx_sanitize_fragment_shader(&fragmentShader, vertexShader.shaderOutputs, gPostProcessShaderBindings, &fsShaderCode);
+
+    const GLchar *sources[2] = { vsShaderCode, fsShaderCode };
+    GLint lengths[2] = { strlen(vsShaderCode), strlen(fsShaderCode) };
     GLint success;
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -647,47 +652,20 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
-    size_t cnt = 0;
-
     struct ShaderProgram *prg = &shader_program_pool[framePassIndex][shader_program_pool_index[framePassIndex]];
     shader_program_pool_index[framePassIndex] = (shader_program_pool_index[framePassIndex] + 1) % CC_MAX_SHADERS;
     if (shader_program_pool_size[framePassIndex] < CC_MAX_SHADERS) { shader_program_pool_size[framePassIndex]++; }
 
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aVtxPos");
-    prg->attrib_sizes[cnt] = 4;
-    ++cnt;
+    size_t cnt = 0;
+    size_t num_floats = 0;
 
-    for (int t = 0; t < 2; t++) {
-        char name[16];
-        sprintf(name, "aTexCoord%d", t);
-        prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, name);
-        prg->attrib_sizes[cnt] = 2;
-        ++cnt;
+    for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
+        if (gShaderInputs[i].size == 0) continue;
+        prg->attrib_locations[i] = gShaderInputs[i].location;
+        prg->attrib_sizes[i] = gShaderInputs[i].size;
+        num_floats += gShaderInputs[i].size;
+        cnt++;
     }
-
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aFog");
-    prg->attrib_sizes[cnt] = 4;
-    ++cnt;
-
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aLightMap");
-    prg->attrib_sizes[cnt] = 2;
-    ++cnt;
-
-    for (int i = 0; i < CC_MAX_INPUTS; i++) {
-        char name[16];
-        sprintf(name, "aInput%d", i + 1);
-        prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, name);
-        prg->attrib_sizes[cnt] = 4;
-        ++cnt;
-    }
-
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aNormal");
-    prg->attrib_sizes[cnt] = 3;
-    ++cnt;
-
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aBarycentric");
-    prg->attrib_sizes[cnt] = 3;
-    ++cnt;
 
     prg->hash = cc->hash;
     prg->opengl_program_id = shader_program;
@@ -752,36 +730,71 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     }
 
     // default vertex and fragment shader
-    char vs_buf[] = "#version 150\n"
-    "in vec4 aVtxPos;"
-    "in vec2 aTexCoord;"
-    "out vec2 vTexCoord;"
-    "void main() {"
-    "    vTexCoord = aTexCoord;"
-    "    gl_Position = aVtxPos;"
-    "}";
+    char *vs_buf = strdup(gfx_get_default_post_process_vertex_shader());
+    if (!vs_buf) {
+        sys_fatal("Ran out of memory allocating post process vertex shader!");
+    }
+    char *fs_buf = strdup(gfx_get_default_post_process_fragment_shader());
+    if (!fs_buf) {
+        sys_fatal("Ran out of memory allocating post process fragment shader!");
+    }
 
-    char fs_buf[] = "#version 150\n"
-    "uniform sampler2D uPassTex;"
-    "in vec2 vTexCoord;"
-    "out vec4 fragColor;"
-    "void main() {"
-    "    fragColor = texture(uPassTex, vTexCoord);"
-    "}";
-
-    const char *vertexShader = vs_buf;
+    char *vsShaderCode = vs_buf;
     bool usingCustomVertexShader = false;
-    const char *fragmentShader = fs_buf;
+    char *fsShaderCode = fs_buf;
     bool usingCustomFragmentShader = false;
 
     // let lua override the shader
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, &vertexShader);
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, &fragmentShader);
-    if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
-    if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, (const char **)&vsShaderCode);
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
+    if (strcmp(vsShaderCode, vs_buf) != 0) {
+        usingCustomVertexShader = true;
+    }
+    if (strcmp(fsShaderCode, fs_buf) != 0) {
+        usingCustomFragmentShader = true;
+    }
 
-    const GLchar *sources[2] = { vertexShader, fragmentShader };
-    GLint lengths[2] = { strlen(vertexShader), strlen(fragmentShader) };
+    usingCustomVertexShader = true;
+    usingCustomFragmentShader = true;
+
+    struct Shader vertexShader = { 0 };
+    vertexShader.stage = GLSLANG_STAGE_VERTEX;
+
+    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
+    gfx_sanitize_vertex_shader(&vertexShader, gPostProcessShaderInputs, gPostProcessShaderBindings, &vsShaderCode);
+
+    struct Shader fragmentShader = { 0 };
+    fragmentShader.stage = GLSLANG_STAGE_FRAGMENT;
+
+    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
+    gfx_sanitize_fragment_shader(&fragmentShader, vertexShader.shaderOutputs, gPostProcessShaderBindings, &fsShaderCode);
+
+    /*printf("Fragment shader is \n\n%s\n\n", fsShaderCode);
+
+    if (usingCustomVertexShader) {
+        // make sure it compiles with glslang first
+        if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, &vertexShader)) {
+            LOG_ERROR("Failed to compile post process vertex shader!");
+            usingCustomVertexShader = false;
+            vsShaderCode = vs_buf;
+        } else {
+            gfx_convert_spirv_to_hlsl(&vertexShader);
+        }
+    }
+
+    if (usingCustomFragmentShader) {
+        // make sure it compiles with glslang first
+        if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, &fragmentShader)) {
+            LOG_ERROR("Failed to compile post process fragment shader!");
+            usingCustomFragmentShader = false;
+            fsShaderCode = fs_buf;
+        } else {
+            gfx_convert_spirv_to_hlsl(&fragmentShader);
+        }
+    }*/
+
+    const GLchar *sources[2] = { vsShaderCode, fsShaderCode };
+    GLint lengths[2] = { strlen(vsShaderCode), strlen(fsShaderCode) };
     GLint success;
 
     GLuint vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -850,20 +863,21 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     glLinkProgram(shader_program);
 
     size_t cnt = 0;
+    size_t num_floats = 0;
 
     struct ShaderProgram *prg = &post_process_shader_program_pool[framePassIndex];
 
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aVtxPos");
-    prg->attrib_sizes[cnt] = 4;
-    ++cnt;
-
-    prg->attrib_locations[cnt] = glGetAttribLocation(shader_program, "aTexCoord");
-    prg->attrib_sizes[cnt] = 2;
-    ++cnt;
+    for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
+        if (gPostProcessShaderInputs[i].size == 0) continue;
+        prg->attrib_locations[i] = gPostProcessShaderInputs[i].location;
+        prg->attrib_sizes[i] = gPostProcessShaderInputs[i].size;
+        num_floats += gPostProcessShaderInputs[i].size;
+        cnt++;
+    }
 
     prg->hash = framePassIndex;
     prg->opengl_program_id = shader_program;
-    prg->num_floats = 6;
+    prg->num_floats = num_floats;
     prg->num_attribs = cnt;
 
     gfx_opengl_load_shader(prg);
@@ -893,6 +907,9 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     if (passTexLoc != -1) {
         glUniform1i(passTexLoc, 10);
     }
+
+    free(vs_buf);
+    free(fs_buf);
 
     return prg;
 }

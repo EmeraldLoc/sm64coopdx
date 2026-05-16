@@ -750,6 +750,30 @@ else
   BACKEND_LDFLAGS += `$(SDLCONFIG) --libs`
 endif
 
+# glslang
+GLSLANG_CFLAGS :=
+GLSLANG_LIBS :=
+ifeq ($(WINDOWS_BUILD),1)
+
+else
+  GLSLANG_LIBS := $(shell pkg-config --libs glslang SPIRV-Tools)
+  BACKEND_LDFLAGS += $(GLSLANG_LIBS) -lglslang-default-resource-limits
+endif
+
+# SPIR-V Cross
+SPIRV_CROSS_CFLAGS :=
+SPIRV_CROSS_LIBS :=
+
+ifeq ($(WINDOWS_BUILD),1)
+    SPIRV_CROSS_LIBS := -Llib -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-core
+else
+    SPIRV_CROSS_CFLAGS := $(shell pkg-config --cflags spirv-cross-c)
+    SPIRV_CROSS_LIBS := -lspirv-cross-c-shared
+endif
+
+BACKEND_CFLAGS += $(SPIRV_CROSS_CFLAGS)
+BACKEND_LDFLAGS += $(SPIRV_CROSS_LIBS)
+
 C_DEFINES += $(foreach d,$(DEFINES),-D$(d))
 DEF_INC_CFLAGS := $(foreach i,$(INCLUDE_DIRS),-I$(i)) $(C_DEFINES)
 
