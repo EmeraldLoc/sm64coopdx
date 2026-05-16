@@ -780,6 +780,7 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | textColor | [DjuiColor](structs.md#DjuiColor) | read-only |
+| disabledTextColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | defaultRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | cursorDownRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | hoveredRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |

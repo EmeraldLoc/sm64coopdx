@@ -623,6 +623,7 @@
    - [obj_update_gfx_pos_and_angle](functions-3.md#obj_update_gfx_pos_and_angle)
    - [position_based_random_u16](functions-3.md#position_based_random_u16)
    - [position_based_random_float_position](functions-3.md#position_based_random_float_position)
+   - [draw_distance_scalar_is_infinite](functions-3.md#draw_distance_scalar_is_infinite)
    - [draw_distance_scalar](functions-3.md#draw_distance_scalar)
 
 <br />
@@ -1966,6 +1967,13 @@
 <br />
 
 - smlua_gfx_utils.h
+   - [get_shader_flag_enabled](functions-7.md#get_shader_flag_enabled)
+   - [set_shader_flag_enabled](functions-7.md#set_shader_flag_enabled)
+   - [get_shader_flag_value](functions-7.md#get_shader_flag_value)
+   - [set_shader_flag_value](functions-7.md#set_shader_flag_value)
+   - [get_global_shader_flags_enabled](functions-7.md#get_global_shader_flags_enabled)
+   - [set_global_shader_flags_enabled](functions-7.md#set_global_shader_flags_enabled)
+   - [clear_all_shader_flags](functions-7.md#clear_all_shader_flags)
    - [set_override_fov](functions-7.md#set_override_fov)
    - [set_override_near](functions-7.md#set_override_near)
    - [set_override_far](functions-7.md#set_override_far)
@@ -2858,7 +2866,8 @@ Derives a `MARIO_SPAWN_*` constant from `o`
 ## [area_get_warp_node](#area_get_warp_node)
 
 ### Description
-Finds a warp node in the current area by its ID. The warp node must exist in the list of warp nodes for the current area. Useful for locating a specific warp point in the level, such as teleportation zones or connections to other areas
+Finds a warp node in the current area by its ID. The warp node must exist in the list of warp nodes for the current area.
+Useful for locating a specific warp point in the level, such as teleportation zones or connections to other areas
 
 ### Lua Example
 `local objectWarpNodeValue = area_get_warp_node(id)`
@@ -2902,7 +2911,8 @@ Gets the first warp node found in the area, otherwise returns nil
 ## [area_get_warp_node_from_params](#area_get_warp_node_from_params)
 
 ### Description
-Finds a warp node in the current area using parameters from the provided object. The object's behavior parameters are used to determine the warp node ID. Useful for associating an object (like a door or warp pipe) with its corresponding warp node in the area
+Finds a warp node in the current area using parameters from the provided object. The object's behavior parameters are used to determine the warp node ID.
+Useful for associating an object (like a door or warp pipe) with its corresponding warp node in the area
 
 ### Lua Example
 `local objectWarpNodeValue = area_get_warp_node_from_params(o)`

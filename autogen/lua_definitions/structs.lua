@@ -556,6 +556,7 @@
 
 --- @class DjuiInteractableTheme
 --- @field public textColor DjuiColor
+--- @field public disabledTextColor DjuiColor
 --- @field public defaultRectColor DjuiColor
 --- @field public cursorDownRectColor DjuiColor
 --- @field public hoveredRectColor DjuiColor
