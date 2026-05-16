@@ -443,7 +443,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     return (struct ShaderProgram *)(d3d.shader_program = prg);
 }
 
-static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) {
+static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(UNUSED bool isPostProcessingPass) {
     return NULL;
 }
 

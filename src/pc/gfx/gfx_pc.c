@@ -58,6 +58,7 @@ struct RSP rsp = { 0 };
 struct FramePass gDefaultGeoFramePass = { 0 };
 struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES] = { 0 };
 int gCurrentFramePassIndex = -1;
+bool gPostProcessAllFramePasses = false;
 
 struct RDP {
     const uint8_t *palette[2];
@@ -1667,8 +1668,8 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     }
 }
 
-static void gfx_draw_fullscreen_quad() {
-    float quadVerticies[] = {
+static void gfx_draw_fullscreen_quad(bool isPostProcessingPass) {
+    static float quadVertices[] = {
         -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 1.0f,   0.0f, 0.0f,
          1.0f, -1.0f, 0.0f, 1.0f,   1.0f, 0.0f,
@@ -1678,13 +1679,13 @@ static void gfx_draw_fullscreen_quad() {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
-    gfx_rapi->create_or_load_post_process_shader();
+    gfx_rapi->create_or_load_post_process_shader(isPostProcessingPass);
 
     gfx_rapi->set_use_alpha(false);
     rendering_state.alpha_blend = false;
     gfx_rapi->set_depth_test(false);
     rendering_state.depth_test = false;
-    gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
+    gfx_rapi->draw_triangles(quadVertices, sizeof(quadVertices) / sizeof(float), 2);
 }
 
 static void gfx_dp_texture_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lry, UNUSED uint8_t tile, int16_t uls, int16_t ult, int16_t dsdx, int16_t dtdy, bool flip) {
@@ -2145,7 +2146,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
-            gfx_draw_fullscreen_quad();
+            gfx_draw_fullscreen_quad(true);
         }
     }
 }
@@ -2233,7 +2234,7 @@ void gfx_run(Gfx *commands) {
 
     if (lastPassTex != -1) {
         gfx_rapi->bind_texture_raw(10, lastPassTex);
-        gfx_draw_fullscreen_quad();  // draw final quad
+        gfx_draw_fullscreen_quad(!isLuaPassesActive || gPostProcessAllFramePasses);  // draw final quad
     }
 }
 

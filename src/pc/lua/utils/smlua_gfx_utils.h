@@ -105,11 +105,11 @@ void gfx_delete(Gfx *gfx);
 /* |description|Sets culling for all triangles. Set to false to disable culling, set to true to use normal preset|descriptionEnd| */
 void gfx_set_culling_enabled(bool enable);
 /* |description|Get if culling is enabled or not|descriptionEnd| */
-bool gfx_is_culling_enabled();
+bool gfx_is_culling_enabled(void);
 /* |description|Deletes all display lists created by `gfx_create`|descriptionEnd| */
-void gfx_delete_all();
+void gfx_delete_all(void);
 /* |description|Reloads all shaders|descriptionEnd| */
-void gfx_reload_shaders();
+void gfx_reload_shaders(void);
 /* |description|Gets features from a color combiner|descriptionEnd| */
 struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc);
 /* |description|Gets a program id from the shader index. Specify a frame pass to get the program id for a specific pass|descriptionEnd| */
@@ -117,31 +117,33 @@ u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIn
 /* |description|Uses a specific program. Required for setting uniforms|descriptionEnd| */
 void gfx_use_program(u32 program);
 /* |description|Gets the location of a shader uniform in a program for modification|descriptionEnd| */
-int gfx_shader_get_uniform_location(u32 program, const char* name);
+s32 gfx_shader_get_uniform_location(u32 program, const char* name);
 /* |description|Sets the value of a shader uniform of type int|descriptionEnd| */
-void gfx_shader_set_int(int loc, int value);
+void gfx_shader_set_int(s32 loc, s32 value);
 /* |description|Sets the value of a shader uniform of type bool|descriptionEnd| */
-void gfx_shader_set_bool(int loc, bool value);
+void gfx_shader_set_bool(s32 loc, bool value);
 /* |description|Sets the value of a shader uniform of type float|descriptionEnd| */
-void gfx_shader_set_float(int loc, float value);
+void gfx_shader_set_float(s32 loc, f32 value);
 /* |description|Sets the value of a shader uniform of type vec2|descriptionEnd| */
-void gfx_shader_set_vec2(int loc, float x, float y);
+void gfx_shader_set_vec2(s32 loc, f32 x, f32 y);
 /* |description|Sets the value of a shader uniform of type vec3|descriptionEnd| */
-void gfx_shader_set_vec3(int loc, float x, float y, float z);
+void gfx_shader_set_vec3(s32 loc, f32 x, f32 y, f32 z);
 /* |description|Sets the value of a shader uniform of type vec4|descriptionEnd| */
-void gfx_shader_set_vec4(int loc, float w, float x, float y, float z);
+void gfx_shader_set_vec4(s32 loc, f32 w, f32 x, f32 y, f32 z);
 /* |description|Sets the value of a shader uniform of type mat4|descriptionEnd| */
-void gfx_shader_set_mat4(int loc, const Mat4 mat);
+void gfx_shader_set_mat4(s32 loc, const Mat4 mat);
 /* |description|Creates a frame pass to be used when rendering the game. Allows for multipass shaders. Returns the frame pass index|descriptionEnd| */
-int gfx_shader_create_frame_pass();
+u8 gfx_shader_create_frame_pass(void);
 /* |description|Deletes a frame pass using `framePassIndex`|descriptionEnd| */
-void gfx_shader_remove_frame_pass(int framePassIndex);
+void gfx_shader_remove_frame_pass(u8 framePassIndex);
 /* |description|Sets a frame passes viewport size|descriptionEnd| */
-void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height);
+void gfx_shader_set_frame_pass_viewport(u8 framePassIndex, u32 width, u32 height);
 /* |description|Configures whether a frame pass should redraw the whole scene or use a fullscreen quad|descriptionEnd| */
-void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry);
+void gfx_shader_set_frame_pass_draw_world(u8 framePassIndex, bool drawWorldGeometry);
+/* |description|Configures whether post processing should be applied to all frame passes or only the ones that use a fullscreen quad|descriptionEnd| */
+void gfx_shader_set_post_process_all_frame_passes(bool enabled);
 /* |description|Gets the current active frame pass index. If there is no active frame pass, it returns -1|descriptionEnd| */
-int gfx_shader_get_current_frame_pass();
+u8 gfx_shader_get_current_frame_pass(void);
 
 
 /* |description|

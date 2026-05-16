@@ -437,61 +437,61 @@ void gfx_use_program(u32 program) {
     glUseProgram(program);
 }
 
-int gfx_shader_get_uniform_location(u32 program, const char* name) {
+s32 gfx_shader_get_uniform_location(u32 program, const char* name) {
     if (gRenderApi != &gfx_opengl_api) { return 0; }
     return glGetUniformLocation(program, name);
 }
 
-void gfx_shader_set_int(int loc, int value) {
+void gfx_shader_set_int(s32 loc, s32 value) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform1i(loc, value);
     }
 }
 
-void gfx_shader_set_bool(int loc, bool value) {
+void gfx_shader_set_bool(s32 loc, bool value) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform1i(loc, (int)value);
     }
 }
 
-void gfx_shader_set_float(int loc, float value) {
+void gfx_shader_set_float(s32 loc, f32 value) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform1f(loc, value);
     }
 }
 
-void gfx_shader_set_vec2(int loc, float x, float y) {
+void gfx_shader_set_vec2(s32 loc, f32 x, f32 y) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform2f(loc, x, y);
     }
 }
 
-void gfx_shader_set_vec3(int loc, float x, float y, float z) {
+void gfx_shader_set_vec3(s32 loc, f32 x, f32 y, f32 z) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform3f(loc, x, y, z);
     }
 }
 
-void gfx_shader_set_vec4(int loc, float x, float y, float z, float w) {
+void gfx_shader_set_vec4(s32 loc, f32 x, f32 y, f32 z, f32 w) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniform4f(loc, x, y, z, w);
     }
 }
 
-void gfx_shader_set_mat4(int loc, const Mat4 mat) {
+void gfx_shader_set_mat4(s32 loc, const Mat4 mat) {
 if (gRenderApi != &gfx_opengl_api) { return; }
     if (loc != -1) {
         glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)mat);
     }
 }
 
-int gfx_shader_create_frame_pass() {
+u8 gfx_shader_create_frame_pass(void) {
     // iterates through frame passes until it finds one that's inactive
     for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
         struct FramePass *framePass = &gFramePasses[i];
@@ -510,8 +510,8 @@ int gfx_shader_create_frame_pass() {
     return -1;
 }
 
-void gfx_shader_remove_frame_pass(int framePassIndex) {
-    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
+void gfx_shader_remove_frame_pass(u8 framePassIndex) {
+    if (framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
 
     struct FramePass *framePass = &gFramePasses[framePassIndex];
     if (!framePass->active) return;
@@ -520,8 +520,8 @@ void gfx_shader_remove_frame_pass(int framePassIndex) {
     memset(framePass, 0, sizeof(struct FramePass));
 }
 
-void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height) {
-    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
+void gfx_shader_set_frame_pass_viewport(u8 framePassIndex, u32 width, u32 height) {
+    if (framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
 
     struct FramePass *framePass = &gFramePasses[framePassIndex];
     if (!framePass->active) return;
@@ -536,8 +536,8 @@ void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int heigh
     framePass->passTexture = 0;
 }
 
-void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry) {
-    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
+void gfx_shader_set_frame_pass_draw_world(u8 framePassIndex, bool drawWorldGeometry) {
+    if (framePassIndex >= MAX_CUSTOM_FRAME_PASSES) return;
 
     struct FramePass *framePass = &gFramePasses[framePassIndex];
     if (!framePass->active) return;
@@ -545,7 +545,11 @@ void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeom
     framePass->drawWorldGeometry = drawWorldGeometry;
 }
 
-int gfx_shader_get_current_frame_pass() {
+void gfx_shader_set_post_process_all_frame_passes(bool enabled) {
+    gPostProcessAllFramePasses = enabled;
+}
+
+u8 gfx_shader_get_current_frame_pass(void) {
     return gCurrentFramePassIndex;
 }
 

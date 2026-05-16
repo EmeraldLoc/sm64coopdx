@@ -743,7 +743,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     return prg;
 }
 
-static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void) {
+static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(bool isPostProcessingPass) {
     int framePassIndex = gCurrentFramePassIndex + 1;
     // if a shader already exists, use that instead
     if (post_process_shader_program_pool[framePassIndex].opengl_program_id != 0) {
@@ -775,10 +775,12 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     bool usingCustomFragmentShader = false;
 
     // let lua override the shader
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, &vertexShader);
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, &fragmentShader);
-    if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
-    if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
+    if (isPostProcessingPass) {
+        smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, &vertexShader);
+        smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, &fragmentShader);
+        if (strcmp(vertexShader, vs_buf) != 0) usingCustomVertexShader = true;
+        if (strcmp(fragmentShader, fs_buf) != 0) usingCustomFragmentShader = true;
+    }
 
     const GLchar *sources[2] = { vertexShader, fragmentShader };
     GLint lengths[2] = { strlen(vertexShader), strlen(fragmentShader) };
@@ -1116,7 +1118,7 @@ static void gfx_opengl_start_frame(void) {
 
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
 }

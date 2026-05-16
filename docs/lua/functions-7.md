@@ -955,7 +955,7 @@ Get if culling is enabled or not
 - `boolean`
 
 ### C Prototype
-`bool gfx_is_culling_enabled();`
+`bool gfx_is_culling_enabled(void);`
 
 [:arrow_up_small:](#)
 
@@ -976,7 +976,7 @@ Deletes all display lists created by `gfx_create`
 - None
 
 ### C Prototype
-`void gfx_delete_all();`
+`void gfx_delete_all(void);`
 
 [:arrow_up_small:](#)
 
@@ -997,7 +997,7 @@ Reloads all shaders
 - None
 
 ### C Prototype
-`void gfx_reload_shaders();`
+`void gfx_reload_shaders(void);`
 
 [:arrow_up_small:](#)
 
@@ -1091,7 +1091,7 @@ Gets the location of a shader uniform in a program for modification
 - `integer`
 
 ### C Prototype
-`int gfx_shader_get_uniform_location(u32 program, const char* name);`
+`s32 gfx_shader_get_uniform_location(u32 program, const char* name);`
 
 [:arrow_up_small:](#)
 
@@ -1115,7 +1115,7 @@ Sets the value of a shader uniform of type int
 - None
 
 ### C Prototype
-`void gfx_shader_set_int(int loc, int value);`
+`void gfx_shader_set_int(s32 loc, s32 value);`
 
 [:arrow_up_small:](#)
 
@@ -1139,7 +1139,7 @@ Sets the value of a shader uniform of type bool
 - None
 
 ### C Prototype
-`void gfx_shader_set_bool(int loc, bool value);`
+`void gfx_shader_set_bool(s32 loc, bool value);`
 
 [:arrow_up_small:](#)
 
@@ -1163,7 +1163,7 @@ Sets the value of a shader uniform of type float
 - None
 
 ### C Prototype
-`void gfx_shader_set_float(int loc, float value);`
+`void gfx_shader_set_float(s32 loc, f32 value);`
 
 [:arrow_up_small:](#)
 
@@ -1188,7 +1188,7 @@ Sets the value of a shader uniform of type vec2
 - None
 
 ### C Prototype
-`void gfx_shader_set_vec2(int loc, float x, float y);`
+`void gfx_shader_set_vec2(s32 loc, f32 x, f32 y);`
 
 [:arrow_up_small:](#)
 
@@ -1214,7 +1214,7 @@ Sets the value of a shader uniform of type vec3
 - None
 
 ### C Prototype
-`void gfx_shader_set_vec3(int loc, float x, float y, float z);`
+`void gfx_shader_set_vec3(s32 loc, f32 x, f32 y, f32 z);`
 
 [:arrow_up_small:](#)
 
@@ -1241,7 +1241,7 @@ Sets the value of a shader uniform of type vec4
 - None
 
 ### C Prototype
-`void gfx_shader_set_vec4(int loc, float w, float x, float y, float z);`
+`void gfx_shader_set_vec4(s32 loc, f32 w, f32 x, f32 y, f32 z);`
 
 [:arrow_up_small:](#)
 
@@ -1265,7 +1265,7 @@ Sets the value of a shader uniform of type mat4
 - None
 
 ### C Prototype
-`void gfx_shader_set_mat4(int loc, const Mat4 mat);`
+`void gfx_shader_set_mat4(s32 loc, const Mat4 mat);`
 
 [:arrow_up_small:](#)
 
@@ -1286,7 +1286,7 @@ Creates a frame pass to be used when rendering the game. Allows for multipass sh
 - `integer`
 
 ### C Prototype
-`int gfx_shader_create_frame_pass();`
+`u8 gfx_shader_create_frame_pass(void);`
 
 [:arrow_up_small:](#)
 
@@ -1309,7 +1309,7 @@ Deletes a frame pass using `framePassIndex`
 - None
 
 ### C Prototype
-`void gfx_shader_remove_frame_pass(int framePassIndex);`
+`void gfx_shader_remove_frame_pass(u8 framePassIndex);`
 
 [:arrow_up_small:](#)
 
@@ -1334,7 +1334,7 @@ Sets a frame passes viewport size
 - None
 
 ### C Prototype
-`void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height);`
+`void gfx_shader_set_frame_pass_viewport(u8 framePassIndex, u32 width, u32 height);`
 
 [:arrow_up_small:](#)
 
@@ -1358,7 +1358,30 @@ Configures whether a frame pass should redraw the whole scene or use a fullscree
 - None
 
 ### C Prototype
-`void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry);`
+`void gfx_shader_set_frame_pass_draw_world(u8 framePassIndex, bool drawWorldGeometry);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_post_process_all_frame_passes](#gfx_shader_set_post_process_all_frame_passes)
+
+### Description
+Configures whether post processing should be applied to all frame passes or only the ones that use a fullscreen quad
+
+### Lua Example
+`gfx_shader_set_post_process_all_frame_passes(enabled)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| enabled | `boolean` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_post_process_all_frame_passes(bool enabled);`
 
 [:arrow_up_small:](#)
 
@@ -1379,7 +1402,7 @@ Gets the current active frame pass index. If there is no active frame pass, it r
 - `integer`
 
 ### C Prototype
-`int gfx_shader_get_current_frame_pass();`
+`u8 gfx_shader_get_current_frame_pass(void);`
 
 [:arrow_up_small:](#)
 
