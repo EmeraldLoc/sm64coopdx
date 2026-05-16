@@ -171,10 +171,9 @@ static void djui_panel_player_edit_palette_preset_name_on_focus_end(struct DjuiB
     struct DjuiInputbox* inputbox1 = (struct DjuiInputbox*)caller;
     if (!djui_panel_player_edit_palette_preset_name_valid(inputbox1->buffer)) {
         djui_inputbox_set_text(inputbox1, djui_panel_player_edit_palette_preset_name_get_text());
-    } else {
-        djui_inputbox_reset_text_color(inputbox1);
     }
 
+    djui_inputbox_reset_text_color(inputbox1);
     djui_inputbox_on_focus_end(&inputbox1->base);
 }
 
