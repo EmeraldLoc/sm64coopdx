@@ -78,9 +78,7 @@ void network_receive_level(struct Packet* p) {
     s16 oldTTCSpeedSetting = gTTCSpeedSetting;
     packet_read(p, &gMarioStates[0].numCoins, sizeof(s16));
     packet_read(p, &gTTCSpeedSetting,         sizeof(s16));
-    if (gCurrCourseNum != COURSE_NONE) {
-        gHudDisplay.coins = gMarioStates[0].numCoins;
-    }
+    gHudDisplay.coins = gMarioStates[0].numCoins;
 
     // fix TTC objects by reinitializing values pertaining to speed
     if (levelNum == LEVEL_TTC) {

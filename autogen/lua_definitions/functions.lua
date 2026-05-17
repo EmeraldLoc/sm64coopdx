@@ -530,8 +530,18 @@ function bhv_ukiki_cage_loop()
     -- ...
 end
 
+--- Behavior init function for Bowser in the Fire Sea sinking platform
+function bhv_bitfs_sinking_platform_init()
+    -- ...
+end
+
 --- Behavior loop function for Bowser in the Fire Sea sinking platform
 function bhv_bitfs_sinking_platform_loop()
+    -- ...
+end
+
+--- Behavior init function for Bowser in the Fire Sea sinking cage platform
+function bhv_bitfs_sinking_cage_platform_init()
     -- ...
 end
 
@@ -552,6 +562,11 @@ end
 
 --- Behavior loop function for Lethal Lava Land and Bowser in the Fire Sea tilting inverted pyramid
 function bhv_tilting_inverted_pyramid_loop()
+    -- ...
+end
+
+--- Behavior init function for squishable platform
+function bhv_squishable_platform_init()
     -- ...
 end
 

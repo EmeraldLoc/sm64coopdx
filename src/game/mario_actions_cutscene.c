@@ -2191,12 +2191,6 @@ static s32 act_intro_cutscene(struct MarioState *m) {
     return FALSE;
 }
 
-UNUSED static void jumbo_star_offset(struct MarioState* m) {
-    if (!m) { return; }
-    m->pos[0] += 300.0f * sins(m->faceAngle[1] + 0x4000 * m->playerIndex);
-    m->pos[2] += 300.0f * coss(m->faceAngle[1] + 0x4000 * m->playerIndex);
-}
-
 // jumbo star cutscene: Mario lands after grabbing the jumbo star
 static void jumbo_star_cutscene_falling(struct MarioState *m) {
     if (!m) { return; }
