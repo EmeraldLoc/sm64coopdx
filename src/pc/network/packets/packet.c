@@ -153,7 +153,7 @@ void packet_receive(struct Packet* p) {
     network_send_ack(p);
 
     // refuse packets from banned players
-    if (gNetworkType == NT_SERVER) {
+    if (gNetworkType == NT_SERVER && p->localIndex != UNKNOWN_LOCAL_INDEX) {
         if (moderation_list_contains(MODERATION_LIST_TYPE_BAN, gNetworkSystem->get_id_str(p->localIndex))) {
             char* reason = NULL;
             struct ModerationList* list = moderation_list_get_list_by_type(MODERATION_LIST_TYPE_BAN);

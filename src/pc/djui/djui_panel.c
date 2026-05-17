@@ -145,7 +145,6 @@ void djui_panel_back_by(int amount) {
     sPanelBackQueue = amount - 1;
 
     if (sPanelRemoving == NULL) {
-        sPanelRemoving--;
         djui_panel_back();
     }
 }

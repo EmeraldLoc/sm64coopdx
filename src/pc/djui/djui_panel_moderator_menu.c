@@ -80,7 +80,7 @@ static void djui_panel_moderator_menu_destroy(struct DjuiBase* base) {
 }
 
 void djui_panel_moderator_menu_reload(UNUSED struct DjuiBase* caller) {
-    if (!sLayout || !sPaginated) return;
+    if (!sLayout || !sPaginated) { return; }
     djui_base_destroy_children(&sLayout->base);
     djui_panel_moderator_add_players(&sLayout->base);
     djui_paginated_calculate_height(sPaginated);

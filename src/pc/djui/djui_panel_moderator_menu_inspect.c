@@ -27,15 +27,21 @@ static void djui_panel_moderator_menu_inspector_destroy(struct DjuiBase* base) {
 
 static void djui_panel_moderator_inspector_validate_and_reload(UNUSED struct DjuiBase* caller) {
     djui_panel_moderator_menu_reload(caller);
-    if (sSelectedIndex >= MAX_PLAYERS) djui_panel_back_by(2);
+    if (sSelectedIndex >= MAX_PLAYERS) {
+        djui_panel_back_by(2);
+        return;
+    }
     struct NetworkPlayer* np = &gNetworkPlayers[sSelectedIndex];
-    if (!np->connected) djui_panel_back_by(2);
+    if (!np->connected) {
+        djui_panel_back_by(2);
+        return;
+    }
     djui_panel_moderator_inspector_reload(NULL);
 }
 
 void djui_panel_moderator_inspector_reload(UNUSED struct DjuiBase* caller) {
-    if (!sModButton) return;
-    if (sSelectedIndex >= MAX_PLAYERS) return;
+    if (!sModButton) { return; }
+    if (sSelectedIndex >= MAX_PLAYERS) { return; }
     struct NetworkPlayer* np = &gNetworkPlayers[sSelectedIndex];
 
     djui_text_set_text(sModButton->text, np->moderator ? DLANG(MODERATION, UNMOD) : DLANG(MODERATION, MOD));
@@ -43,9 +49,9 @@ void djui_panel_moderator_inspector_reload(UNUSED struct DjuiBase* caller) {
 }
 
 void djui_panel_moderator_menu_inspector_create(struct DjuiBase* caller) {
-    if (caller->tag <= 0 || caller->tag >= MAX_PLAYERS) return;
+    if (caller->tag <= 0 || caller->tag >= MAX_PLAYERS) { return; }
     struct NetworkPlayer* np = &gNetworkPlayers[caller->tag];
-    if (!np->connected) return;
+    if (!np->connected) { return; }
     sSelectedIndex = caller->tag;
     struct DjuiThreePanel* panel = djui_panel_menu_create(DLANG(MODERATION, MODERATOR_MENU_TITLE), true);
 

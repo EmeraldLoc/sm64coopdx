@@ -34,9 +34,9 @@ static void djui_panel_moderation_list_inspect_destroy(struct DjuiBase* base) {
 
 void djui_panel_moderation_list_inspect_create(struct DjuiBase* caller) {
     struct ModerationList* list = moderation_list_get_list_by_type(caller->tag);
-    if (!list) return;
+    if (!list) { return; }
     struct ModerationEntry* entry = list->list[caller->uTag];
-    if (!entry) return;
+    if (!entry) { return; }
     struct tm* localTime = localtime(&entry->time);
 
     sListType = caller->tag;

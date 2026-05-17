@@ -50,7 +50,7 @@ static void djui_panel_moderation_list_populate_list(struct DjuiBase* layoutBase
 }
 
 void djui_panel_moderation_list_reload(UNUSED struct DjuiBase* caller) {
-    if (!sLayout || !sPaginated) return;
+    if (!sLayout || !sPaginated) { return; }
     djui_base_destroy_children(&sLayout->base);
     djui_panel_moderation_list_populate_list(&sLayout->base);
     djui_paginated_calculate_height(sPaginated);

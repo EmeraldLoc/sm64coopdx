@@ -130,9 +130,9 @@ void djui_panel_moderation_confirm_create_body(struct DjuiBase* caller, char* ti
 }
 
 void djui_panel_moderation_confirm_create(struct DjuiBase* caller, u8 action, u8 localIndex, bool permanent, void (*on_yes_click)(struct DjuiBase*)) {
-    if (localIndex >= MAX_PLAYERS) return;
+    if (localIndex >= MAX_PLAYERS) { return; }
     struct NetworkPlayer* np = &gNetworkPlayers[localIndex];
-    if (!np->connected) return;
+    if (!np->connected) { return; }
     char* title = NULL;
     char message[256] = { 0 };
     djui_panel_moderation_confirm_set_title_and_message(action, &title, message, (char*)network_get_complete_player_name(localIndex));

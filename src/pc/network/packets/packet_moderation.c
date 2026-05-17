@@ -55,16 +55,19 @@ void network_receive_moderation_action(struct Packet* p) {
     bool permanent = false;
 
     packet_read(p, &action, sizeof(u8));
-    if (!sValidActions[action]) {
+    if (action >= MODERATION_ACTION_COUNT || !sValidActions[action]) {
         LOG_ERROR("Received an invalid moderation action from a moderator!");
         return;
     }
 
     packet_read(p, &globalIndex, sizeof(u8));
-    if (globalIndex >= MAX_PLAYERS) {
-        LOG_ERROR("Received an out of range global index from a moderator!");
+
+    // anti-spoof
+    if (packet_spoofed(p, globalIndex)) {
+        LOG_ERROR("rx spoofed moderation action");
         return;
     }
+
     struct NetworkPlayer* np = network_player_from_global_index(globalIndex);
     if (!np->connected) {
         LOG_ERROR("Network player received from moderator is not connected!");

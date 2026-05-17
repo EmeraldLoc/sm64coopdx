@@ -6,7 +6,7 @@
 #include "pc/debuglog.h"
 
 void network_send_chat_command(u8 globalIndex, enum ChatConfirmCommand ccc, char* reason) {
-    if (!gNetworkPlayers[0].moderator) return;
+    if (!gNetworkPlayers[0].moderator) { return; }
 
     u8 cccType = ccc; struct Packet p = { 0 };
     LOG_INFO("sending chat command to host with type: %d", cccType);
@@ -75,7 +75,7 @@ void network_send_moderator(u8 localIndex) {
 }
 
 void network_receive_moderator(struct Packet *p) {
-    if (network_player_any_connected() && gNetworkPlayers[p->localIndex].type != NPT_SERVER) return;
+    if (network_player_any_connected() && gNetworkPlayers[p->localIndex].type != NPT_SERVER) { return; }
     bool moderator;
     packet_read(p, &moderator, sizeof(bool));
     if (gNetworkPlayers[0].moderator == moderator) {
