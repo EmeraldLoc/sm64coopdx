@@ -29,7 +29,6 @@ extern "C" {
     #include "pc/rom_checker.h"
     #include "pc/network/version.h"
     #include "pc/configfile.h"
-    #include "pc/lua/smlua.h"
     #include "pc/controller/controller_keyboard.h"
 }
 
@@ -536,8 +535,6 @@ static void gfx_dxgi_on_text_input(wchar_t code_unit) {
             utf8_buffer[0] = (char)code_unit;
             utf8_buffer[1] = '\0';
         }
-
-        smlua_call_event_hooks(HOOK_ON_TEXT_INPUT, utf8_buffer);
         dxgi.on_text_input(utf8_buffer);
     }
 }
@@ -1015,6 +1012,7 @@ void gfx_dxgi_shutdown(void) {
 
 void gfx_dxgi_start_text_input(void) { inTextInput = TRUE; }
 void gfx_dxgi_stop_text_input(void) { inTextInput = FALSE; }
+bool gfx_dxgi_is_text_input_active(void) { return inTextInput; }
 
 static char* gfx_dxgi_get_clipboard_text(void) {
     static char clipboard_buf[WAPI_CLIPBOARD_BUFSIZ];
@@ -1086,6 +1084,7 @@ struct GfxWindowManagerAPI gfx_dxgi = {
     gfx_dxgi_shutdown,
     gfx_dxgi_start_text_input,
     gfx_dxgi_stop_text_input,
+    gfx_dxgi_is_text_input_active,
     gfx_dxgi_get_clipboard_text,
     gfx_dxgi_set_clipboard_text,
     gfx_dxgi_set_cursor_visible,

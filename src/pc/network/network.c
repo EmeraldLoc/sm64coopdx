@@ -145,6 +145,8 @@ bool network_init(enum NetworkType inNetworkType, bool reconnecting) {
 
     gPauseMenuHidden = false;
 
+    gModHasInputFocus = false;
+
     // initialize the network system
     gNetworkSentJoin = false;
     int rc = gNetworkSystem->initialize(inNetworkType, reconnecting);
@@ -774,6 +776,7 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     vec3f_set(gFirstPersonCamera.offset, 0, 0, 0);
     first_person_reset();
 
+    gModHasInputFocus = false;
     clear_gamepad_input_data();
 
     le_shutdown();

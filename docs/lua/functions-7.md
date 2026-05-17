@@ -1289,6 +1289,69 @@ Sets the clipboard text
 
 <br />
 
+## [start_text_input](#start_text_input)
+
+### Description
+Starts text input and grabs input focus
+
+### Lua Example
+`start_text_input()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void start_text_input(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [stop_text_input](#stop_text_input)
+
+### Description
+Stops text input and loses input focus
+
+### Lua Example
+`stop_text_input()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void stop_text_input(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [is_text_input_active](#is_text_input_active)
+
+### Description
+Checks if text input is active and if you have input focus
+
+### Lua Example
+`local booleanValue = is_text_input_active()`
+
+### Parameters
+- None
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool is_text_input_active(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ---
 # functions from smlua_level_utils.h
 

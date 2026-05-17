@@ -8,6 +8,8 @@
 #include "pc/mods/mods.h"
 #include "pc/mods/mods_utils.h"
 
+bool gModHasInputFocus = false;
+
 struct Gamepad gGamepads[MAX_GAMEPADS];
 struct Key gKeyboard[SDL_NUM_SCANCODES];
 
@@ -16,11 +18,24 @@ u32 get_current_gamepad_index(void) {
 }
 
 const char* get_clipboard_text(void) {
-    return wm_api->get_clipboard_text();
+    return gWindowApi->get_clipboard_text();
 }
 
 void set_clipboard_text(const char* text) {
-    wm_api->set_clipboard_text(text);
+    gWindowApi->set_clipboard_text(text);
+}
+
+void start_text_input(void) {
+    gModHasInputFocus = true;
+    gWindowApi->start_text_input();
+}
+
+void stop_text_input(void) {
+    gModHasInputFocus = false;
+}
+
+bool is_text_input_active(void) {
+    return gWindowApi->is_text_input_active() && gModHasInputFocus;
 }
 
 void clear_gamepad_input_data(void) {

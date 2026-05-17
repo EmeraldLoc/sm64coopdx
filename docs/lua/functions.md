@@ -1997,6 +1997,9 @@
    - [get_current_gamepad_index](functions-7.md#get_current_gamepad_index)
    - [get_clipboard_text](functions-7.md#get_clipboard_text)
    - [set_clipboard_text](functions-7.md#set_clipboard_text)
+   - [start_text_input](functions-7.md#start_text_input)
+   - [stop_text_input](functions-7.md#stop_text_input)
+   - [is_text_input_active](functions-7.md#is_text_input_active)
 
 <br />
 

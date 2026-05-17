@@ -42,8 +42,6 @@
 #include "pc/utils/misc.h"
 #include "pc/mods/mod_import.h"
 #include "pc/rom_checker.h"
-#include "pc/lua/smlua.h"
-#include "pc/lua/utils/smlua_input_utils.h"
 
 #ifndef GL_MAX_SAMPLES
 #define GL_MAX_SAMPLES 0x8D57
@@ -252,11 +250,9 @@ static void gfx_sdl_handle_events(void) {
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
             case SDL_TEXTINPUT:
-                smlua_call_event_hooks(HOOK_ON_TEXT_INPUT, event.text.text);
                 kb_text_input(event.text.text);
                 break;
             case SDL_TEXTEDITING: //IME composition
-                smlua_call_event_hooks(HOOK_ON_TEXT_EDITING, event.edit.text, event.edit.start);
                 kb_text_editing(event.edit.text,event.edit.start);
                 break;
             case SDL_KEYDOWN:
@@ -362,6 +358,7 @@ static bool gfx_sdl_has_focus(void) {
 
 static void gfx_sdl_start_text_input(void) { SDL_StartTextInput(); }
 static void gfx_sdl_stop_text_input(void) { SDL_StopTextInput(); }
+static bool gfx_sdl_is_text_input_active(void) { return SDL_IsTextInputActive(); }
 
 static char* gfx_sdl_get_clipboard_text(void) {
     static char clipboard_buf[WAPI_CLIPBOARD_BUFSIZ];
@@ -391,6 +388,7 @@ struct GfxWindowManagerAPI gfx_sdl = {
     gfx_sdl_shutdown,
     gfx_sdl_start_text_input,
     gfx_sdl_stop_text_input,
+    gfx_sdl_is_text_input_active,
     gfx_sdl_get_clipboard_text,
     gfx_sdl_set_clipboard_text,
     gfx_sdl_set_cursor_visible,

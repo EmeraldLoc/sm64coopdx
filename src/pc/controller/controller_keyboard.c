@@ -14,6 +14,7 @@
 #include "menu/file_select.h"
 #include "pc/djui/djui.h"
 #include "pc/djui/djui_panel_pause.h"
+#include "pc/lua/smlua.h"
 #include "pc/lua/utils/smlua_input_utils.h"
 
 static int keyboard_buttons_down;
@@ -72,10 +73,16 @@ void keyboard_on_all_keys_up(void) {
 
 void keyboard_on_text_input(char* text) {
     djui_interactable_on_text_input(text);
+    if (gModHasInputFocus) {
+        smlua_call_event_hooks(HOOK_ON_TEXT_INPUT, text);
+    }
 }
 
 void keyboard_on_text_editing(char* text, int cursorPos) {
     djui_interactable_on_text_editing(text, cursorPos);
+    if (gModHasInputFocus) {
+        smlua_call_event_hooks(HOOK_ON_TEXT_EDITING, text, cursorPos);
+    }
 }
 
 static void keyboard_add_binds(int mask, unsigned int *scancode) {

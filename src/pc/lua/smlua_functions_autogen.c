@@ -33109,6 +33109,51 @@ int smlua_func_set_clipboard_text(lua_State* L) {
     return 1;
 }
 
+int smlua_func_start_text_input(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "start_text_input", 0, top);
+        return 0;
+    }
+
+
+    start_text_input();
+
+    return 1;
+}
+
+int smlua_func_stop_text_input(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "stop_text_input", 0, top);
+        return 0;
+    }
+
+
+    stop_text_input();
+
+    return 1;
+}
+
+int smlua_func_is_text_input_active(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "is_text_input_active", 0, top);
+        return 0;
+    }
+
+
+    lua_pushboolean(L, is_text_input_active());
+
+    return 1;
+}
+
   /////////////////////////
  // smlua_level_utils.h //
 /////////////////////////
@@ -39046,6 +39091,9 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "get_current_gamepad_index", smlua_func_get_current_gamepad_index);
     smlua_bind_function(L, "get_clipboard_text", smlua_func_get_clipboard_text);
     smlua_bind_function(L, "set_clipboard_text", smlua_func_set_clipboard_text);
+    smlua_bind_function(L, "start_text_input", smlua_func_start_text_input);
+    smlua_bind_function(L, "stop_text_input", smlua_func_stop_text_input);
+    smlua_bind_function(L, "is_text_input_active", smlua_func_is_text_input_active);
 
     // smlua_level_utils.h
     smlua_bind_function(L, "smlua_level_util_change_area", smlua_func_smlua_level_util_change_area);

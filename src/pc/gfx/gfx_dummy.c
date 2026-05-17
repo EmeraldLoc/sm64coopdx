@@ -109,6 +109,10 @@ static void gfx_dummy_wm_start_text_input(void) {
 static void gfx_dummy_wm_stop_text_input(void) {
 }
 
+static bool gfx_dummy_wm_is_text_input_active(void) {
+    return false;
+}
+
 static void gfx_dummy_wm_set_clipboard_text(UNUSED const char* text) {
 }
 
@@ -213,6 +217,7 @@ struct GfxWindowManagerAPI gfx_dummy_wm_api = {
     gfx_dummy_wm_shutdown,
     gfx_dummy_wm_start_text_input,
     gfx_dummy_wm_stop_text_input,
+    gfx_dummy_wm_is_text_input_active,
     gfx_dummy_wm_get_clipboard_text,
     gfx_dummy_wm_set_clipboard_text,
     gfx_dummy_wm_set_cursor_visible,

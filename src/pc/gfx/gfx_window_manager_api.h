@@ -26,6 +26,7 @@ struct GfxWindowManagerAPI {
     void (*shutdown)(void);
     void (*start_text_input)(void);
     void (*stop_text_input)(void);
+    bool (*is_text_input_active)(void);
     char* (*get_clipboard_text)(void);
     void (*set_clipboard_text)(const char*);
     void (*set_cursor_visible)(bool);

@@ -11478,6 +11478,22 @@ function set_clipboard_text(text)
     -- ...
 end
 
+--- Starts text input and grabs input focus
+function start_text_input()
+    -- ...
+end
+
+--- Stops text input and loses input focus
+function stop_text_input()
+    -- ...
+end
+
+--- @return boolean
+--- Checks if text input is active and if you have input focus
+function is_text_input_active()
+    -- ...
+end
+
 --- @param areaIndex integer
 --- Instantly changes the current area to `areaIndex`
 function smlua_level_util_change_area(areaIndex)
