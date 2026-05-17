@@ -76,7 +76,6 @@ void bhv_racing_penguin_init(void) {
         sync_object_init_field(o, o->oForwardVel);
         sync_object_init_field(o, o->oMoveAngleYaw);
         sync_object_init_field(o, o->oRacingPenguinWeightedNewTargetSpeed);
-        sync_object_init_field(o, o->oRacingPenguinMarioWon);
         sync_object_init_field(o, o->oRacingPenguinReachedBottom);
         sync_object_init_field(o, o->areaTimer);
         sync_object_init_field(o, o->globalPlayerIndex);
@@ -323,17 +322,14 @@ void bhv_racing_penguin_update(void) {
 }
 
 void bhv_penguin_race_finish_line_update(void) {
-    struct Object *player = nearest_player_to_object(o);
-    s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
-    if (!o->parentObj) {
-        return;
-    }
+    if (!o->parentObj) { return; }
+    if (!gMarioStates[0].visibleToEnemies) { return; }
+    struct Object *player = gMarioStates[0].marioObj;
+    s32 distanceToPlayer = dist_between_objects(o, player);
 
-    if (o->parentObj->oRacingPenguinReachedBottom
-        || (player && distanceToPlayer < 1000.0f && player->oPosZ - o->oPosZ < 0.0f)) {
+    if (o->parentObj->oRacingPenguinReachedBottom || (distanceToPlayer < 1000.0f && player->oPosZ - o->oPosZ < 0.0f)) {
         if (!o->parentObj->oRacingPenguinReachedBottom && !o->parentObj->oRacingPenguinMarioWon) {
             o->parentObj->oRacingPenguinMarioWon = TRUE;
-            network_send_object(o->parentObj);
         }
     }
 }
