@@ -58,7 +58,6 @@ struct RSP rsp = { 0 };
 struct FramePass gDefaultGeoFramePass = { 0 };
 struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES] = { 0 };
 int gCurrentFramePassIndex = -1;
-bool gPostProcessAllFramePasses = false;
 
 struct RDP {
     const uint8_t *palette[2];
@@ -1668,7 +1667,7 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     }
 }
 
-static void gfx_draw_fullscreen_quad(bool useAlpha, bool isPostProcessingPass) {
+static void gfx_draw_fullscreen_quad(bool useAlpha) {
     static float quadVertices[] = {
         -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 1.0f,   0.0f, 0.0f,
@@ -1679,7 +1678,7 @@ static void gfx_draw_fullscreen_quad(bool useAlpha, bool isPostProcessingPass) {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
-    gfx_rapi->create_or_load_post_process_shader(isPostProcessingPass);
+    gfx_rapi->create_or_load_post_process_shader();
 
     gfx_rapi->set_use_alpha(useAlpha);
     rendering_state.alpha_blend = useAlpha;
@@ -2133,7 +2132,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
         if (lastPassTex != -1) {
             gfx_rapi->bind_texture_raw(10, lastPassTex);
             if (framePass->drawWorldGeometry) {
-                gfx_draw_fullscreen_quad(false, false);
+                gfx_draw_fullscreen_quad(false);
             }
         }
 
@@ -2149,7 +2148,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
-            gfx_draw_fullscreen_quad(false, true);
+            gfx_draw_fullscreen_quad(false);
         }
     }
 }
@@ -2252,22 +2251,21 @@ void gfx_run(Gfx *commands) {
         }
     }
 
-    bool postProcess = !isLuaPassesActive || gPostProcessAllFramePasses;
     if (backgroundPassTex != -1 && overlayPassTex != -1) {
         if (gFramePasses[lastActive].drawWorldGeometry) {
             gfx_rapi->bind_texture_raw(10, overlayPassTex);
-            gfx_draw_fullscreen_quad(false, postProcess);
+            gfx_draw_fullscreen_quad(false);
         } else {
             gfx_rapi->bind_texture_raw(10, backgroundPassTex);
-            gfx_draw_fullscreen_quad(false, postProcess);
+            gfx_draw_fullscreen_quad(false);
             gfx_rapi->bind_texture_raw(10, overlayPassTex);
-            gfx_draw_fullscreen_quad(true, postProcess);
+            gfx_draw_fullscreen_quad(true);
             gfx_rapi->set_use_alpha(false);
             rendering_state.alpha_blend = false;
         }
     } else if (lastPassTex != -1) {
         gfx_rapi->bind_texture_raw(10, lastPassTex);
-        gfx_draw_fullscreen_quad(false, postProcess);  // draw final quad
+        gfx_draw_fullscreen_quad(false);  // draw final quad
     }
 }
 

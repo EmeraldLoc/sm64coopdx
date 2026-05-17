@@ -754,7 +754,6 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     gLuaVolumeSfx = 127;
     gLuaVolumeEnv = 127;
     gCullingEnabled = true;
-    gPostProcessAllFramePasses = false;
 
     struct Controller* cnt = gPlayer1Controller;
     cnt->rawStickX = 0;

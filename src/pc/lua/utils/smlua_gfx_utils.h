@@ -142,8 +142,6 @@ void gfx_shader_remove_frame_pass(u8 framePassIndex);
 void gfx_shader_set_frame_pass_viewport(u8 framePassIndex, u32 width, u32 height);
 /* |description|Configures whether a frame pass should redraw the whole scene or use a fullscreen quad|descriptionEnd| */
 void gfx_shader_set_frame_pass_draw_world(u8 framePassIndex, bool drawWorldGeometry);
-/* |description|Configures whether post processing should be applied to all frame passes or only the ones that use a fullscreen quad|descriptionEnd| */
-void gfx_shader_set_post_process_all_frame_passes(bool enabled);
 /* |description|Gets the current active frame pass index. If there is no active frame pass, it returns -1|descriptionEnd| */
 u8 gfx_shader_get_current_frame_pass(void);
 

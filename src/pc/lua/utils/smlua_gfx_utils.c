@@ -552,10 +552,6 @@ void gfx_shader_set_frame_pass_draw_world(u8 framePassIndex, bool drawWorldGeome
     framePass->drawWorldGeometry = drawWorldGeometry;
 }
 
-void gfx_shader_set_post_process_all_frame_passes(bool enabled) {
-    gPostProcessAllFramePasses = enabled;
-}
-
 u8 gfx_shader_get_current_frame_pass(void) {
     return gCurrentFramePassIndex;
 }

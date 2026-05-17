@@ -15,7 +15,7 @@ struct GfxRenderingAPI {
     void (*load_shader)(struct ShaderProgram *new_prg);
     void (*remove_shaders)(void);
     struct ShaderProgram *(*create_and_load_new_shader)(struct ColorCombiner* cc);
-    struct ShaderProgram *(*create_or_load_post_process_shader)(bool isPostProcessingPass);
+    struct ShaderProgram *(*create_or_load_post_process_shader)(void);
     struct ShaderProgram *(*lookup_shader)(struct ColorCombiner* cc);
     struct ShaderProgram *(*lookup_shader_using_index)(uint8_t shaderIndex, uint8_t framePassIndex);
     struct ShaderProgram *(*lookup_post_process_shader_using_index)(uint8_t framePassIndex);

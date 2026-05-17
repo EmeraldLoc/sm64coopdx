@@ -59,7 +59,6 @@ struct FramePass {
 extern struct RSP rsp;
 extern struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES];
 extern int gCurrentFramePassIndex;
-extern bool gPostProcessAllFramePasses;
 
 extern Vec3f gLightingDir;
 extern Color gLightingColor[2];

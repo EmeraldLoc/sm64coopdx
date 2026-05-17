@@ -11197,12 +11197,6 @@ function gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry)
     -- ...
 end
 
---- @param enabled boolean
---- Configures whether post processing should be applied to all frame passes or only the ones that use a fullscreen quad
-function gfx_shader_set_post_process_all_frame_passes(enabled)
-    -- ...
-end
-
 --- @return integer
 --- Gets the current active frame pass index. If there is no active frame pass, it returns -1
 function gfx_shader_get_current_frame_pass()

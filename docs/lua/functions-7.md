@@ -1387,29 +1387,6 @@ Configures whether a frame pass should redraw the whole scene or use a fullscree
 
 <br />
 
-## [gfx_shader_set_post_process_all_frame_passes](#gfx_shader_set_post_process_all_frame_passes)
-
-### Description
-Configures whether post processing should be applied to all frame passes or only the ones that use a fullscreen quad
-
-### Lua Example
-`gfx_shader_set_post_process_all_frame_passes(enabled)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| enabled | `boolean` |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_shader_set_post_process_all_frame_passes(bool enabled);`
-
-[:arrow_up_small:](#)
-
-<br />
-
 ## [gfx_shader_get_current_frame_pass](#gfx_shader_get_current_frame_pass)
 
 ### Description

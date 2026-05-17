@@ -136,7 +136,7 @@ static struct ShaderProgram *gfx_dummy_renderer_create_and_load_new_shader(UNUSE
     return NULL;
 }
 
-static struct ShaderProgram *gfx_dummy_renderer_create_or_load_post_process_shader(UNUSED bool isPostProcessingPass) {
+static struct ShaderProgram *gfx_dummy_renderer_create_or_load_post_process_shader(void) {
     return NULL;
 }
 
