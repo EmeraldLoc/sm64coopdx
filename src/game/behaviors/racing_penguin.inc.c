@@ -102,7 +102,7 @@ u8 racing_penguin_act_show_init_text_continue_dialog(void) { return o->oAction =
 
 static void racing_penguin_act_show_init_text(void) {
     if (!BHV_ARR_CHECK(sRacingPenguinData, o->oBehParams2ndByte, struct RacingPenguinData)) { return; }
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead

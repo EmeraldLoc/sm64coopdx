@@ -64,7 +64,7 @@ void king_bobomb_act_0(void) {
             seq_player_lower_volume(SEQ_PLAYER_LEVEL, 60, 40);
         }
     } else {
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
             // use player with the smallest global index instead
@@ -240,7 +240,7 @@ u8 king_bobomb_act_7_continue_dialog(void) { return o->oAction == 7; }
 void king_bobomb_act_7(void) {
     cur_obj_init_animation_with_sound(2);
 
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     // update dialog if we are within king bobomb's area
     bool canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f && is_player_active(marioState) && marioState->visibleToEnemies);
@@ -259,7 +259,7 @@ void king_bobomb_act_7(void) {
         }
 
         // if we still can't update the dialog don't continue, wait until a player comes up
-        if (!canUpdateDialog) return;
+        if (!canUpdateDialog) { return; }
     }
 
     if (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 2, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombDefeatDialog, king_bobomb_act_7_continue_dialog)) {
@@ -376,7 +376,7 @@ void king_bobomb_act_5(void) { // bobomb returns home
             }
             break;
         case 4:
-            if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+            if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
             marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
             if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
                 // go back to sub action 3 and look for a new player
@@ -434,7 +434,7 @@ void bhv_king_bobomb_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
     }
 
     if (o->oAction == 0 || o->oAction == 5 || o->oAction == 7) { // dialog actions
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         *shouldOverride = TRUE;
         *shouldOwn = (marioState->playerIndex == 0);

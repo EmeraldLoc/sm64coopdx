@@ -1047,7 +1047,7 @@ s32 bowser_dead_not_bits_end(void) {
             o->oBowserUnkF8++;
             network_send_object(o);
         }
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
             marioState = NULL; // this ensures dialog is skipped
@@ -1086,7 +1086,7 @@ s32 bowser_dead_bits_end(void) {
             o->oBowserUnkF8++;
             network_send_object(o);
         }
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
             marioState = NULL;
@@ -1495,7 +1495,7 @@ void bhv_bowser_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
     if (o->oHeldState == HELD_THROWN || o->oHeldState == HELD_DROPPED || o->oAction == BOWSER_ACT_THROWN) {
         // use the previously set global player index here
         struct NetworkPlayer *np = network_player_from_global_index(o->globalPlayerIndex);
-        if (!np) return;
+        if (!np) { return; }
         struct MarioState *marioState = &gMarioStates[np->localIndex];
         if (is_player_active(marioState)) {
             *shouldOverride = TRUE;

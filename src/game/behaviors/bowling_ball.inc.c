@@ -194,13 +194,13 @@ void bhv_generic_bowling_ball_spawner_loop(void) {
         return;
     }
 
-    if ((o->oTimer & o->oBBallSpawnerPeriodMinus1) != 0) return; /* Modulus */
-    if (!is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, o->oBBallSpawnerMaxSpawnDist)) return;
-    if ((s32)(random_float() * o->oBBallSpawnerSpawnOdds) != 0) return;
-    if (!sync_object_is_owned_locally(o->oSyncID)) return;
+    if ((o->oTimer & o->oBBallSpawnerPeriodMinus1) != 0) { return; } /* Modulus */
+    if (!is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, o->oBBallSpawnerMaxSpawnDist)) { return; }
+    if ((s32)(random_float() * o->oBBallSpawnerSpawnOdds) != 0) { return; }
+    if (!sync_object_is_owned_locally(o->oSyncID)) { return; }
 
     bowlingBall = spawn_object(o, MODEL_BOWLING_BALL, bhvBowlingBall);
-    if (bowlingBall == NULL) return;
+    if (bowlingBall == NULL) { return; }
     bowlingBall->oBehParams2ndByte = o->oBehParams2ndByte;
 
     // send out the bowlingBall object
@@ -226,13 +226,13 @@ void bhv_thi_bowling_ball_spawner_loop(void) {
         return;
     }
 
-    if ((o->oTimer % 64) != 0) return;
-    if (!is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 12000)) return;
-    if ((s32)(random_float() * 1.5) != 0) return;
-    if (sync_object_is_owned_locally(o->oSyncID)) return;
+    if ((o->oTimer % 64) != 0) { return; }
+    if (!is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 12000)) { return; }
+    if ((s32)(random_float() * 1.5) != 0) { return; }
+    if (sync_object_is_owned_locally(o->oSyncID)) { return; }
 
     bowlingBall = spawn_object(o, MODEL_BOWLING_BALL, bhvBowlingBall);
-    if (bowlingBall == NULL) return;
+    if (bowlingBall == NULL) { return; }
     bowlingBall->oBehParams2ndByte = o->oBehParams2ndByte;
 
     // send out the bowlingBall object

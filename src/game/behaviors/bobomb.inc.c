@@ -241,7 +241,7 @@ void curr_obj_random_blink(s32 *blinkTimer) {
 
 void bhv_bobomb_loop(void) {
     s8 dustPeriodMinus1;
-    if (is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 4000) == 0) return;
+    if (is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 4000) == 0) { return; }
     switch (o->oHeldState) {
         case HELD_FREE:
             bobomb_free_loop();
@@ -441,7 +441,7 @@ void bobomb_buddy_act_turn_to_talk(void) {
         cur_obj_play_sound_2(SOUND_OBJ_BOBOMB_WALK);
     }
 
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (is_player_active(marioState)) {
         struct Object *player = marioState->marioObj;

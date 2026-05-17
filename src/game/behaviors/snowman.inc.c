@@ -15,7 +15,7 @@ static struct ObjectHitbox sRollingSphereHitbox = {
 static void bhv_snowmans_bottom_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
     if (o->oAction != 0 || o->oSubAction != 0) {
         *shouldOverride = TRUE;
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
             // use player with the smallest global index instead
@@ -78,7 +78,7 @@ void adjust_rolling_face_pitch(f32 f12) {
 }
 
 void snowmans_bottom_act_1(void) {
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead
@@ -165,7 +165,7 @@ static void bhv_snowmans_bottom_handle_dialog() {
             network_send_object(o);
         }
     } else {
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
             // use player with the smallest global index instead

@@ -23,7 +23,7 @@ void whomp_act_0(void) {
     if (o->oBehParams2ndByte == 0) {
         marioState = nearest_mario_state_to_object(o);
     } else if (o->oSubAction != 0) {
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState)) {
             marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
@@ -275,7 +275,7 @@ u8 whomp_act_8_continue_dialog(void) {
 
 void whomp_act_8(void) {
     if (o->oBehParams2ndByte != 0) {
-        if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+        if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
         if (!is_player_active(marioState)) {
             marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];

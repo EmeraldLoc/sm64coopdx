@@ -265,7 +265,7 @@ static void chain_chomp_released_trigger_cutscene(void) {
     //! Can delay this if we get into a cutscene-unfriendly action after the
     //  last post ground pound and before this
 
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (&gMarioStates[0] == marioState && dynos_level_is_vanilla_level(gCurrLevelNum)) {
         if (set_mario_npc_dialog(&gMarioStates[0], 2, chain_chomp_released_trigger_cutscene_continue_dialog) == 2

@@ -213,7 +213,7 @@ static void wiggler_act_walk_subact_talk(void) {
         o->oWigglerTextStatus = WIGGLER_TEXT_STATUS_SHOWING_DIALOG;
     }
 
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     u8 prevGlobalIndex = o->globalPlayerIndex;
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (!is_player_active(marioState) || marioState->pos[1] < o->oPosY - 300) { // 300 is roughly the maximum y difference for mario to be covered in the arena
@@ -233,7 +233,7 @@ static void wiggler_act_walk_subact_talk(void) {
         }
     }
 
-    if (!marioState || marioState->playerIndex != 0) return;
+    if (!marioState || marioState->playerIndex != 0) { return; }
     if (cur_obj_update_dialog_with_cutscene(marioState, 2, 0, CUTSCENE_DIALOG, gBehaviorValues.dialogs.WigglerDialog, wiggler_act_walk_continue_dialog) != 0) {
         o->oWigglerTextStatus = WIGGLER_TEXT_STATUS_COMPLETED_DIALOG;
         o->oWigglerFinishedTalking = 1;
@@ -330,7 +330,7 @@ u8 wiggler_act_jumped_on_continue_dialog(void) { return o->oAction == WIGGLER_AC
  * action.
  */
 static void wiggler_act_jumped_on(void) {
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (!is_player_active(marioState)) {
         // use player with the smallest global index instead

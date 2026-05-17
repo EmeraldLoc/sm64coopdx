@@ -513,7 +513,7 @@ static void boo_act_4(void) {
         dialogID = gBehaviorValues.dialogs.GhostHuntDialog;
     }
 
-    if (o->globalPlayerIndex >= MAX_PLAYERS) o->globalPlayerIndex = 0;
+    if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead
