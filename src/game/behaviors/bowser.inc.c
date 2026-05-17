@@ -1506,8 +1506,7 @@ void bhv_bowser_override_ownership(u8 *shouldOverride, u8 *shouldOwn) {
 
 static u8 bhv_bowser_ignore_if_true(void) {
     if (bowserIsDying) { return TRUE; }
-    if (o->oAction == BOWSER_ACT_TILT_LAVA_PLATFORM) { return TRUE; } // let the platform get to a stable state
-    if (bowserIsCutscenePlayer && (o->oAction == BOWSER_ACT_WAIT || o->oAction == BOWSER_ACT_INTRO_WALK)) { return TRUE; } // Ignore updates till our cutscene is done.
+    if (bowserIsCutscenePlayer && (o->oAction == BOWSER_ACT_WAIT || o->oAction == BOWSER_ACT_INTRO_WALK)) { return TRUE; } // ignore updates till our cutscene is done.
     return FALSE;
 }
 
