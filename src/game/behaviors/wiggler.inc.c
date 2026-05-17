@@ -416,7 +416,7 @@ static void wiggler_act_shrink(void) {
             f32 *starPos = gLevelValues.starPositions.WigglerStarPos;
             struct Object *star = spawn_default_star(starPos[0], starPos[1], starPos[2]);
 
-            if (star != NULL && o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex) {
+            if (star != NULL && o->globalPlayerIndex != gNetworkPlayerLocal->globalIndex) {
                 star->oStarSpawnExtCutsceneFlags = 0;
             }
 
