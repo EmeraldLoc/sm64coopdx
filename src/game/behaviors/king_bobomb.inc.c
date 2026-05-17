@@ -330,6 +330,7 @@ u8 king_bobomb_act_5_continue_dialog(void) { return o->oAction == 5 && o->oSubAc
 
 void king_bobomb_act_5(void) { // bobomb returns home
     struct MarioState *marioState = nearest_mario_state_to_object(o);
+    cur_obj_become_intangible();
     switch (o->oSubAction) {
         case 0:
             if (o->oTimer == 0) {
@@ -381,6 +382,7 @@ void king_bobomb_act_5(void) { // bobomb returns home
             if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
                 // go back to sub action 3 and look for a new player
                 o->oSubAction = 3;
+                marioState = NULL;
             }
             if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 1, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombCheatDialog, king_bobomb_act_5_continue_dialog)) {
                 o->oAction = 2;
