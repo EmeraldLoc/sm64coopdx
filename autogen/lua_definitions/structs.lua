@@ -195,6 +195,7 @@
 --- @field public RespawnShellBoxes integer
 --- @field public MultipleCapCollection integer
 --- @field public InfiniteRenderDistance integer
+--- @field public ProcessLODs integer
 --- @field public CourtyardBoosRequirement integer
 --- @field public starsNeededForDialog StarsNeededForDialog
 --- @field public dialogs BehaviorDialogs
@@ -557,6 +558,7 @@
 
 --- @class DjuiInteractableTheme
 --- @field public textColor DjuiColor
+--- @field public disabledTextColor DjuiColor
 --- @field public defaultRectColor DjuiColor
 --- @field public cursorDownRectColor DjuiColor
 --- @field public hoveredRectColor DjuiColor
@@ -980,13 +982,14 @@
 --- @field public translation Vec3s
 --- @field public rotation Vec3s
 
---- @class HudUtilsRotation
---- @field public rotation number
---- @field public rotationDiff number
---- @field public prevPivotX number
---- @field public prevPivotY number
---- @field public pivotX number
---- @field public pivotY number
+--- @class HudDisplay
+--- @field public lives integer
+--- @field public coins integer
+--- @field public stars integer
+--- @field public wedges integer
+--- @field public keys integer
+--- @field public flags integer
+--- @field public timer integer
 
 --- @class InstantWarp
 --- @field public id integer
@@ -1116,6 +1119,7 @@
 --- @field public torsoPos Vec3f
 --- @field public heldObjLastPosition Vec3f
 --- @field public animPartsPos Vec3f[]
+--- @field public animPartsRot Vec3s[]
 --- @field public currAnimPart integer
 --- @field public updateTorsoTime integer
 --- @field public updateHeadPosTime integer
@@ -1236,6 +1240,11 @@
 --- @field public isStream boolean
 --- @field public baseVolume number
 --- @field public loaded boolean
+--- @field public position number
+--- @field public looping boolean
+--- @field public frequency number
+--- @field public volume number
+--- @field public channel integer
 
 --- @class ModFs
 --- @field public mod Mod
@@ -1259,6 +1268,7 @@
 --- @field public filepath string
 --- @field public size integer
 --- @field public offset integer
+--- @field public compressionLevel integer
 --- @field public isText boolean
 --- @field public isPublic boolean
 --- @field public read_bool fun(file: ModFsFile): boolean
@@ -1280,6 +1290,7 @@
 --- @field public erase fun(file: ModFsFile, length: integer): boolean
 --- @field public set_text_mode fun(file: ModFsFile, text: boolean): boolean
 --- @field public set_public fun(file: ModFsFile, pub: boolean): boolean
+--- @field public set_compression fun(file: ModFsFile, level: integer): boolean
 
 --- @class NametagsSettings
 --- @field public showHealth boolean
@@ -1315,9 +1326,6 @@
 --- @field public overrideLocation string
 --- @field public overrideModelIndex integer
 --- @field public overridePalette PlayerPalette
---- @field public paletteIndex integer
---- @field public overridePaletteIndex integer
---- @field public overridePaletteIndexLp integer
 
 --- @class Object
 --- @field public header ObjectNode
@@ -1759,7 +1767,7 @@
 --- @field public oCameraLakituSpeed number
 --- @field public oCameraLakituCircleRadius number
 --- @field public oCameraLakituFinishedDialog integer
---- @field public oCameraLakituUnk104 integer
+--- @field public oCameraLakituMusicPlayed integer
 --- @field public oCameraLakituPitchVel integer
 --- @field public oCameraLakituYawVel integer
 --- @field public oEnemyLakituNumSpinies integer
@@ -2193,8 +2201,8 @@
 --- @field public playerInteractions PlayerInteractions
 --- @field public bouncyLevelBounds BouncyLevelBounds
 --- @field public pvpType PvpType
+--- @field public stayInLevelAfterStar StarExitType
 --- @field public playerKnockbackStrength integer
---- @field public stayInLevelAfterStar integer
 --- @field public skipIntro integer
 --- @field public bubbleDeath integer
 --- @field public enablePlayersInLevelDisplay integer
@@ -2265,13 +2273,13 @@
 --- @field public dialog6 integer
 
 --- @class StaticObjectCollision
---- @field public index integer
 --- @field public length integer
 
 --- @class Surface
 --- @field public type integer
 --- @field public flags integer
 --- @field public room integer
+--- @field public poolType integer
 --- @field public force integer
 --- @field public lowerY integer
 --- @field public upperY integer
@@ -2284,6 +2292,7 @@
 --- @field public normal Vec3f
 --- @field public originOffset number
 --- @field public modifiedTimestamp integer
+--- @field public socId integer
 --- @field public object Object
 
 --- @class TextureInfo

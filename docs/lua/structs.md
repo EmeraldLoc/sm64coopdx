@@ -55,7 +55,7 @@
 - [GraphNodeSwitchCase](#GraphNodeSwitchCase)
 - [GraphNodeTranslation](#GraphNodeTranslation)
 - [GraphNodeTranslationRotation](#GraphNodeTranslationRotation)
-- [HudUtilsRotation](#HudUtilsRotation)
+- [HudDisplay](#HudDisplay)
 - [InstantWarp](#InstantWarp)
 - [Key](#Key)
 - [LakituState](#LakituState)
@@ -339,6 +339,7 @@
 | RespawnShellBoxes | `integer` |  |
 | MultipleCapCollection | `integer` |  |
 | InfiniteRenderDistance | `integer` |  |
+| ProcessLODs | `integer` |  |
 | CourtyardBoosRequirement | `integer` |  |
 | starsNeededForDialog | [StarsNeededForDialog](structs.md#StarsNeededForDialog) | read-only |
 | dialogs | [BehaviorDialogs](structs.md#BehaviorDialogs) | read-only |
@@ -783,6 +784,7 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | textColor | [DjuiColor](structs.md#DjuiColor) | read-only |
+| disabledTextColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | defaultRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | cursorDownRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
 | hoveredRectColor | [DjuiColor](structs.md#DjuiColor) | read-only |
@@ -1469,16 +1471,17 @@
 
 <br />
 
-## [HudUtilsRotation](#HudUtilsRotation)
+## [HudDisplay](#HudDisplay)
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| rotation | `number` |  |
-| rotationDiff | `number` |  |
-| prevPivotX | `number` |  |
-| prevPivotY | `number` |  |
-| pivotX | `number` |  |
-| pivotY | `number` |  |
+| lives | `integer` |  |
+| coins | `integer` |  |
+| stars | `integer` |  |
+| wedges | `integer` |  |
+| keys | `integer` |  |
+| flags | `integer` |  |
+| timer | `integer` |  |
 
 [:arrow_up_small:](#)
 
@@ -1650,6 +1653,7 @@
 | torsoPos | [Vec3f](structs.md#Vec3f) | read-only |
 | heldObjLastPosition | [Vec3f](structs.md#Vec3f) | read-only |
 | animPartsPos | `Array` <`Vec3f`> | read-only |
+| animPartsRot | `Array` <`Vec3s`> | read-only |
 | currAnimPart | `integer` | read-only |
 | updateTorsoTime | `integer` | read-only |
 | updateHeadPosTime | `integer` | read-only |
@@ -1816,6 +1820,11 @@
 | isStream | `boolean` | read-only |
 | baseVolume | `number` |  |
 | loaded | `boolean` | read-only |
+| position | `number` |  |
+| looping | `boolean` |  |
+| frequency | `number` |  |
+| volume | `number` |  |
+| channel | `integer` |  |
 
 [:arrow_up_small:](#)
 
@@ -1858,6 +1867,7 @@
 | filepath | `string` | read-only |
 | size | `integer` | read-only |
 | offset | `integer` | read-only |
+| compressionLevel | `integer` | read-only |
 | isText | `boolean` | read-only |
 | isPublic | `boolean` | read-only |
 
@@ -1884,6 +1894,7 @@
 | erase | [`mod_fs_file_erase`](functions-5.md#mod_fs_file_erase) |
 | set_text_mode | [`mod_fs_file_set_text_mode`](functions-5.md#mod_fs_file_set_text_mode) |
 | set_public | [`mod_fs_file_set_public`](functions-5.md#mod_fs_file_set_public) |
+| set_compression | [`mod_fs_file_set_compression`](functions-5.md#mod_fs_file_set_compression) |
 
 [:arrow_up_small:](#)
 
@@ -2389,7 +2400,7 @@
 | oCameraLakituSpeed | `number` |  |
 | oCameraLakituCircleRadius | `number` |  |
 | oCameraLakituFinishedDialog | `integer` |  |
-| oCameraLakituUnk104 | `integer` |  |
+| oCameraLakituMusicPlayed | `integer` |  |
 | oCameraLakituPitchVel | `integer` |  |
 | oCameraLakituYawVel | `integer` |  |
 | oEnemyLakituNumSpinies | `integer` |  |
@@ -2893,8 +2904,8 @@
 | playerInteractions | [enum PlayerInteractions](constants.md#enum-PlayerInteractions) |  |
 | bouncyLevelBounds | [enum BouncyLevelBounds](constants.md#enum-BouncyLevelBounds) |  |
 | pvpType | [enum PvpType](constants.md#enum-PvpType) |  |
+| stayInLevelAfterStar | [enum StarExitType](constants.md#enum-StarExitType) |  |
 | playerKnockbackStrength | `integer` |  |
-| stayInLevelAfterStar | `integer` |  |
 | skipIntro | `integer` |  |
 | bubbleDeath | `integer` |  |
 | enablePlayersInLevelDisplay | `integer` |  |
@@ -3000,7 +3011,6 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| index | `integer` | read-only |
 | length | `integer` | read-only |
 
 [:arrow_up_small:](#)
@@ -3014,6 +3024,7 @@
 | type | `integer` |  |
 | flags | `integer` |  |
 | room | `integer` |  |
+| poolType | `integer` | read-only |
 | force | `integer` |  |
 | lowerY | `integer` |  |
 | upperY | `integer` |  |
@@ -3026,6 +3037,7 @@
 | normal | [Vec3f](structs.md#Vec3f) | read-only |
 | originOffset | `number` |  |
 | modifiedTimestamp | `integer` |  |
+| socId | `integer` | read-only |
 | object | [Object](structs.md#Object) |  |
 
 [:arrow_up_small:](#)

@@ -68,6 +68,7 @@ void smlua_cache_module_result(lua_State* L, struct Mod* mod, struct ModFile* fi
 static struct ModFile* smlua_find_mod_file(const char* moduleName) {
     char basePath[SYS_MAX_PATH] = "";
     char absolutePath[SYS_MAX_PATH] = "";
+    char normalizedRelative[SYS_MAX_PATH] = "";
 
     if (!gLuaActiveMod) {
         return NULL;
@@ -100,8 +101,10 @@ static struct ModFile* smlua_find_mod_file(const char* moduleName) {
             continue;
         }
 
-        // check for match
-        if (!strcmp(file->relativePath, luaName) || !strcmp(file->relativePath, luacName)) {
+        // check for match, normalizing to system separators
+        strcpy(normalizedRelative, file->relativePath);
+        normalize_path(normalizedRelative);
+        if (!strcmp(normalizedRelative, luaName) || !strcmp(normalizedRelative, luacName)) {
             return file;
         }
     }
@@ -118,7 +121,7 @@ static int smlua_custom_require(lua_State* L) {
         return 0;
     }
 
-    if (path_ends_with(moduleName, "/") || path_ends_with(moduleName, "\\")) {
+    if (path_ends_with(moduleName, PATH_SEPARATOR) || path_ends_with(moduleName, PATH_SEPARATOR_ALT)) {
         LOG_LUA_LINE("cannot require a directory");
         return 0;
     }

@@ -8,12 +8,12 @@
 #include "pc/utils/misc.h"
 #include "pc/configfile.h"
 #include "game/hardcoded.h"
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 #include <windows.h>
 #endif
 
 static void djui_panel_options_open_user_folder(UNUSED struct DjuiBase* caller) {
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
     // Windows
     ShellExecuteA(NULL, "open", fs_get_write_path(""), NULL, NULL, SW_SHOWNORMAL);
 #elif __linux__
@@ -42,7 +42,7 @@ void djui_panel_options_debug_create(struct DjuiBase* caller) {
         djui_checkbox_create(body, DLANG(MISC, DEBUG_ERRORS), &configDebugError, NULL);
 
 #ifndef HANDHELD
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
         djui_button_create(body, DLANG(OPTIONS, APPDATA), DJUI_BUTTON_STYLE_NORMAL, djui_panel_options_open_user_folder);
 #elif __linux__ || __APPLE__ || __MACH__
         djui_button_create(body, DLANG(OPTIONS, USER_FOLDER), DJUI_BUTTON_STYLE_NORMAL, djui_panel_options_open_user_folder);
@@ -59,6 +59,7 @@ void djui_panel_misc_create(struct DjuiBase* caller) {
     struct DjuiThreePanel* panel = djui_panel_menu_create(DLANG(MISC, MISC_TITLE), false);
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
+        djui_checkbox_create(body, DLANG(DISPLAY, SHOW_PING), &configShowPing, NULL);
         djui_checkbox_create(body, DLANG(MISC, DISABLE_POPUPS), &configDisablePopups, NULL);
 #ifndef DEVELOPMENT
         djui_checkbox_create(body, DLANG(MISC, LUA_PROFILER), &configLuaProfiler, NULL);
@@ -73,7 +74,7 @@ void djui_panel_misc_create(struct DjuiBase* caller) {
 
 #ifndef DEVELOPMENT
 #ifndef HANDHELD
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
         djui_button_create(body, DLANG(OPTIONS, APPDATA), DJUI_BUTTON_STYLE_NORMAL, djui_panel_options_open_user_folder);
 #elif __linux__ || __APPLE__ || __MACH__
         djui_button_create(body, DLANG(OPTIONS, USER_FOLDER), DJUI_BUTTON_STYLE_NORMAL, djui_panel_options_open_user_folder);
