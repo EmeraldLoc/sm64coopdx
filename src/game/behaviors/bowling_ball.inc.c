@@ -184,10 +184,11 @@ void bhv_generic_bowling_ball_spawner_loop(void) {
 
     struct Object *bowlingBall;
 
-    if (o->oTimer == 256)
+    if (o->oTimer == 256) {
         o->oTimer = 0;
+    }
 
-    struct Object* player = nearest_player_to_object(o);
+    struct Object *player = nearest_player_to_object(o);
     if (!player) { return; }
 
     if (is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 1000) || (o->oPosY < player->header.gfx.pos[1])) {
@@ -210,12 +211,13 @@ void bhv_generic_bowling_ball_spawner_loop(void) {
 }
 
 void bhv_thi_bowling_ball_spawner_loop(void) {
+    // this is a spawner sync object, which means only the owner of the spawner actually does the spawning
     if (!sync_object_is_initialized(o->oSyncID)) {
         sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS);
     }
 
     struct Object *bowlingBall;
-    struct Object* player = nearest_player_to_object(o);
+    struct Object *player = nearest_player_to_object(o);
     if (!player) { return; }
 
     if (o->oTimer == 256) {
@@ -229,7 +231,7 @@ void bhv_thi_bowling_ball_spawner_loop(void) {
     if ((o->oTimer % 64) != 0) { return; }
     if (!is_point_within_radius_of_mario(o->oPosX, o->oPosY, o->oPosZ, 12000)) { return; }
     if ((s32)(random_float() * 1.5) != 0) { return; }
-    if (sync_object_is_owned_locally(o->oSyncID)) { return; }
+    if (!sync_object_is_owned_locally(o->oSyncID)) { return; }
 
     bowlingBall = spawn_object(o, MODEL_BOWLING_BALL, bhvBowlingBall);
     if (bowlingBall == NULL) { return; }
