@@ -114,6 +114,8 @@ void gfx_reload_shaders(void);
 struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc);
 /* |description|Gets a program id from the shader index. Specify a frame pass to get the program id for a specific pass|descriptionEnd| */
 u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex);
+/* |description|Gets a program id from a post-processing shader for a given frame pass index|descriptionEnd| */
+u32 gfx_get_program_id_from_post_processing_shader_index(u8 framePassIndex);
 /* |description|Uses a specific program. Required for setting uniforms|descriptionEnd| */
 void gfx_use_program(u32 program);
 /* |description|Gets the location of a shader uniform in a program for modification|descriptionEnd| */
@@ -168,6 +170,6 @@ void vtx_resize(Vtx *vtx, u32 newCount);
 /* |description|Deletes a vertex buffer created by `vtx_create`|descriptionEnd| */
 void vtx_delete(Vtx *vtx);
 /* |description|Deletes all vertex buffers created by `vtx_create`|descriptionEnd| */
-void vtx_delete_all();
+void vtx_delete_all(void);
 
 #endif

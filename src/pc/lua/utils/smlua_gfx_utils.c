@@ -399,7 +399,7 @@ void gfx_delete(Gfx *gfx) {
     }
 }
 
-void gfx_delete_all() {
+void gfx_delete_all(void) {
     dynos_gfx_delete_all();
 }
 
@@ -407,11 +407,11 @@ void gfx_set_culling_enabled(bool enable) {
     gCullingEnabled = enable;
 }
 
-bool gfx_is_culling_enabled() {
+bool gfx_is_culling_enabled(void) {
     return gCullingEnabled;
 }
 
-void gfx_reload_shaders() {
+void gfx_reload_shaders(void) {
     if (gRenderApi != &gfx_opengl_api) { return; }
     gfx_remove_all_color_combiners();
     gfx_get_current_rendering_api()->remove_shaders();
@@ -428,6 +428,13 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
 u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex) {
     if (gRenderApi != &gfx_opengl_api) { return 0; }
     struct ShaderProgram *program = gfx_get_current_rendering_api()->lookup_shader_using_index(shaderIndex, framePassIndex);
+    if (!program) return 0;
+    return program->opengl_program_id;
+}
+
+u32 gfx_get_program_id_from_post_processing_shader_index(u8 framePassIndex) {
+    if (gRenderApi != &gfx_opengl_api) { return 0; }
+    struct ShaderProgram *program = gfx_get_current_rendering_api()->lookup_post_process_shader_using_index(framePassIndex);
     if (!program) return 0;
     return program->opengl_program_id;
 }
@@ -662,6 +669,6 @@ void vtx_delete(Vtx *vtx) {
     }
 }
 
-void vtx_delete_all() {
+void vtx_delete_all(void) {
     dynos_vtx_delete_all();
 }

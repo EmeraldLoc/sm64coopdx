@@ -148,6 +148,10 @@ static struct ShaderProgram *gfx_dummy_renderer_lookup_shader_using_index(UNUSED
     return NULL;
 }
 
+static struct ShaderProgram *gfx_dummy_renderer_lookup_post_process_shader_using_index(UNUSED u8 framePassIndex) {
+    return NULL;
+}
+
 static void gfx_dummy_renderer_shader_get_info(UNUSED struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
     *num_inputs = 0;
     used_textures[0] = false;
@@ -258,6 +262,7 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_create_or_load_post_process_shader,
     gfx_dummy_renderer_lookup_shader,
     gfx_dummy_renderer_lookup_shader_using_index,
+    gfx_dummy_renderer_lookup_post_process_shader_using_index,
     gfx_dummy_renderer_shader_get_info,
     gfx_dummy_renderer_create_framebuffer,
     gfx_dummy_renderer_delete_framebuffer,

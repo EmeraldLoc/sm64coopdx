@@ -1050,6 +1050,29 @@ Gets a program id from the shader index. Specify a frame pass to get the program
 
 <br />
 
+## [gfx_get_program_id_from_post_processing_shader_index](#gfx_get_program_id_from_post_processing_shader_index)
+
+### Description
+Gets a program id from a post-processing shader for a given frame pass index
+
+### Lua Example
+`local integerValue = gfx_get_program_id_from_post_processing_shader_index(framePassIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`u32 gfx_get_program_id_from_post_processing_shader_index(u8 framePassIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_use_program](#gfx_use_program)
 
 ### Description
@@ -1636,7 +1659,7 @@ Deletes all vertex buffers created by `vtx_create`
 - None
 
 ### C Prototype
-`void vtx_delete_all();`
+`void vtx_delete_all(void);`
 
 [:arrow_up_small:](#)
 

@@ -32914,6 +32914,23 @@ int smlua_func_gfx_get_program_id_from_shader_index(lua_State* L) {
     return 1;
 }
 
+int smlua_func_gfx_get_program_id_from_post_processing_shader_index(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_get_program_id_from_post_processing_shader_index", 1, top);
+        return 0;
+    }
+
+    u8 framePassIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_get_program_id_from_post_processing_shader_index"); return 0; }
+
+    lua_pushinteger(L, gfx_get_program_id_from_post_processing_shader_index(framePassIndex));
+
+    return 1;
+}
+
 int smlua_func_gfx_use_program(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -39307,6 +39324,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_reload_shaders", smlua_func_gfx_reload_shaders);
     smlua_bind_function(L, "gfx_color_combiner_get_features", smlua_func_gfx_color_combiner_get_features);
     smlua_bind_function(L, "gfx_get_program_id_from_shader_index", smlua_func_gfx_get_program_id_from_shader_index);
+    smlua_bind_function(L, "gfx_get_program_id_from_post_processing_shader_index", smlua_func_gfx_get_program_id_from_post_processing_shader_index);
     smlua_bind_function(L, "gfx_use_program", smlua_func_gfx_use_program);
     smlua_bind_function(L, "gfx_shader_get_uniform_location", smlua_func_gfx_shader_get_uniform_location);
     smlua_bind_function(L, "gfx_shader_set_int", smlua_func_gfx_shader_set_int);

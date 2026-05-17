@@ -461,6 +461,10 @@ static struct ShaderProgram *gfx_d3d11_lookup_shader_using_index(u8 shaderIndex,
     return (struct ShaderProgram *)&d3d.shader_program_pool[shaderIndex];
 }
 
+static struct ShaderProgram *gfx_d3d11_lookup_post_process_shader_using_index(UNUSED u8 framePassIndex) {
+    return NULL;
+}
+
 static void gfx_d3d11_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
     struct ShaderProgramD3D11 *p = (struct ShaderProgramD3D11 *)prg;
 
@@ -798,6 +802,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_create_or_load_post_process_shader,
     gfx_d3d11_lookup_shader,
     gfx_d3d11_lookup_shader_using_index,
+    gfx_d3d11_lookup_post_process_shader_using_index,
     gfx_d3d11_shader_get_info,
     gfx_d3d11_create_framebuffer,
     gfx_d3d11_delete_framebuffer,

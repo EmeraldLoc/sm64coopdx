@@ -1982,6 +1982,7 @@
    - [gfx_reload_shaders](functions-7.md#gfx_reload_shaders)
    - [gfx_color_combiner_get_features](functions-7.md#gfx_color_combiner_get_features)
    - [gfx_get_program_id_from_shader_index](functions-7.md#gfx_get_program_id_from_shader_index)
+   - [gfx_get_program_id_from_post_processing_shader_index](functions-7.md#gfx_get_program_id_from_post_processing_shader_index)
    - [gfx_use_program](functions-7.md#gfx_use_program)
    - [gfx_shader_get_uniform_location](functions-7.md#gfx_shader_get_uniform_location)
    - [gfx_shader_set_int](functions-7.md#gfx_shader_set_int)

@@ -916,6 +916,13 @@ static struct ShaderProgram* gfx_opengl_lookup_shader_using_index(uint8_t shader
     return &shader_program_pool[framePassIndex][shaderIndex];
 }
 
+static struct ShaderProgram* gfx_opengl_lookup_post_process_shader_using_index(uint8_t framePassIndex) {
+    framePassIndex++;
+    if (framePassIndex >= MAX_FRAME_PASSES) return NULL;
+    if (post_process_shader_program_pool[framePassIndex].opengl_program_id == 0) return NULL;
+    return &post_process_shader_program_pool[framePassIndex];
+}
+
 static void gfx_opengl_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
     *num_inputs = prg->num_inputs;
     used_textures[0] = prg->used_textures[0];
@@ -1145,6 +1152,7 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_create_or_load_post_process_shader,
     gfx_opengl_lookup_shader,
     gfx_opengl_lookup_shader_using_index,
+    gfx_opengl_lookup_post_process_shader_using_index,
     gfx_opengl_shader_get_info,
     gfx_opengl_create_framebuffer,
     gfx_opengl_delete_framebuffer,

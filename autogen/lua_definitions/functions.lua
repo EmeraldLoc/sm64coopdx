@@ -11094,6 +11094,13 @@ function gfx_get_program_id_from_shader_index(shaderIndex, framePassIndex)
     -- ...
 end
 
+--- @param framePassIndex integer
+--- @return integer
+--- Gets a program id from a post-processing shader for a given frame pass index
+function gfx_get_program_id_from_post_processing_shader_index(framePassIndex)
+    -- ...
+end
+
 --- @param program integer
 --- Uses a specific program. Required for setting uniforms
 function gfx_use_program(program)
