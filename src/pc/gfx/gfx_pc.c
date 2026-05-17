@@ -2228,9 +2228,12 @@ void gfx_run(Gfx *commands) {
     int lastActive = -1;
     int prevActive = -1;
 
+    // if the default geometry frame pass is active, use its texture for the final draw
     if (gDefaultGeoFramePass.active) {
         lastPassTex = gDefaultGeoFramePass.passTexture;
     } else {
+        // find the two most recent active custom frame passes.
+        // lastActive is the newest active pass, prevActive is the next one before it
         for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
             if (!gFramePasses[i].active) continue;
             if (lastActive == -1) {
@@ -2242,20 +2245,26 @@ void gfx_run(Gfx *commands) {
         }
 
         if (lastActive != -1) {
+            // if the latest pass draws world geometry and the previous pass does not,
+            // treat them as a background/overlay combination
             if (prevActive != -1 && gFramePasses[lastActive].drawWorldGeometry && !gFramePasses[prevActive].drawWorldGeometry) {
                 backgroundPassTex = gFramePasses[prevActive].passTexture;
                 overlayPassTex = gFramePasses[lastActive].passTexture;
             } else {
+                // otherwise, just use the newest active pass as the final texture
                 lastPassTex = gFramePasses[lastActive].passTexture;
             }
         }
     }
 
+    // render the final fullscreen quad based on the selected pass textures
     if (backgroundPassTex != -1 && overlayPassTex != -1) {
         if (gFramePasses[lastActive].drawWorldGeometry) {
+            // if the final pass itself draws world geometry, only draw the overlay texture
             gfx_rapi->bind_texture_raw(10, overlayPassTex);
             gfx_draw_fullscreen_quad(false);
         } else {
+            // otherwise draw the background texture first, then overlay it with the last pass
             gfx_rapi->bind_texture_raw(10, backgroundPassTex);
             gfx_draw_fullscreen_quad(false);
             gfx_rapi->bind_texture_raw(10, overlayPassTex);
@@ -2264,6 +2273,7 @@ void gfx_run(Gfx *commands) {
             rendering_state.alpha_blend = false;
         }
     } else if (lastPassTex != -1) {
+        // single final pass: just draw its texture fullscreen
         gfx_rapi->bind_texture_raw(10, lastPassTex);
         gfx_draw_fullscreen_quad(false);  // draw final quad
     }
