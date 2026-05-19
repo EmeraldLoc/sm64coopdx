@@ -51,9 +51,7 @@ void bhv_thi_tiny_island_top_loop(void) {
             }
         }
     } else {
-        if (o->oTimer == 0) {
-            if (gEnvironmentRegions && gEnvironmentRegionsLength > 18) { gEnvironmentRegions[18] = 700; }
-        }
+        if (gEnvironmentRegions && gEnvironmentRegionsLength > 18) { gEnvironmentRegions[18] = 700; }
         cur_obj_hide();
     }
 }
