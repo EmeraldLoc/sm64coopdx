@@ -758,6 +758,7 @@
 #define /*0x104*/ oSmallPenguinUnk104 OBJECT_FIELD_F32(0x1F)
 #define /*0x108*/ oSmallPenguinUnk108 OBJECT_FIELD_F32(0x20)
 #define /*0x110*/ oSmallPenguinUnk110 OBJECT_FIELD_S32(0x22)
+#define /*0x1AC*/ oSmallPenguinFound  OBJECT_FIELD_U32(0x49)
 
 /* SL Walking Penguin */
 #define /*0x100*/ oSLWalkingPenguinWindCollisionXPos OBJECT_FIELD_F32(0x1E)

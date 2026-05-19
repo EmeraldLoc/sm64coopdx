@@ -1602,7 +1602,7 @@ static struct LuaObjectField sNetworkPlayerFields[LUA_NETWORK_PLAYER_FIELD_COUNT
     { "type",                   LVT_U8,      offsetof(struct NetworkPlayer, type),                   true,  LOT_NONE          },
 };
 
-#define LUA_OBJECT_FIELD_COUNT 767
+#define LUA_OBJECT_FIELD_COUNT 768
 static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "activeFlags",                                LVT_S16,                 offsetof(struct Object, activeFlags),                                false, LOT_NONE                                                     },
     { "allowRemoteInteractions",                    LVT_U8,                  offsetof(struct Object, allowRemoteInteractions),                    false, LOT_NONE                                                     },
@@ -2172,6 +2172,7 @@ static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "oSkeeterUnkFC",                              LVT_F32,                 offsetof(struct Object, oSkeeterUnkFC),                              false, LOT_NONE                                                     },
     { "oSkeeterWaitTime",                           LVT_S32,                 offsetof(struct Object, oSkeeterWaitTime),                           false, LOT_NONE                                                     },
     { "oSmallBompInitX",                            LVT_F32,                 offsetof(struct Object, oSmallBompInitX),                            false, LOT_NONE                                                     },
+    { "oSmallPenguinFound",                         LVT_U32,                 offsetof(struct Object, oSmallPenguinFound),                         false, LOT_NONE                                                     },
     { "oSmallPenguinUnk100",                        LVT_S32,                 offsetof(struct Object, oSmallPenguinUnk100),                        false, LOT_NONE                                                     },
     { "oSmallPenguinUnk104",                        LVT_F32,                 offsetof(struct Object, oSmallPenguinUnk104),                        false, LOT_NONE                                                     },
     { "oSmallPenguinUnk108",                        LVT_F32,                 offsetof(struct Object, oSmallPenguinUnk108),                        false, LOT_NONE                                                     },

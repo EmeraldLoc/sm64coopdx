@@ -2422,6 +2422,7 @@
 | oSmallPenguinUnk104 | `number` |  |
 | oSmallPenguinUnk108 | `number` |  |
 | oSmallPenguinUnk110 | `integer` |  |
+| oSmallPenguinFound | `integer` |  |
 | oSLWalkingPenguinWindCollisionXPos | `number` |  |
 | oSLWalkingPenguinWindCollisionZPos | `number` |  |
 | oSLWalkingPenguinCurStep | `integer` |  |

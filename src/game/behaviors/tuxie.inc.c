@@ -29,31 +29,61 @@ static bool another_mario_talking_to_tuxie_mother(void) {
     return false;
 }
 
-void tuxies_mother_act_2(void) {
-    struct Object *player = gMarioStates[0].marioObj;
-    s32 angleToPlayer = obj_angle_to_object(o, player);
+static struct Object *get_found_baby_penguin(f32 maxDist) {
+    const BehaviorScript *behavior = smlua_override_behavior(bhvSmallPenguin);
+    const BehaviorScript *behaviorAddr = segmented_to_virtual(behavior);
+    struct ObjectNode *listHead;
+    struct Object *obj;
+    struct Object *foundObj;
 
+    listHead = &gObjectLists[OBJ_LIST_GENACTOR];
+    obj = (struct Object *) listHead->next;
+    foundObj = NULL;
+
+    while ((struct Object *) listHead != obj) {
+        if (obj->behavior == behaviorAddr && obj->activeFlags != ACTIVE_FLAG_DEACTIVATED) {
+            if (obj->oHeldState != HELD_FREE && dist_between_objects(o, obj) < maxDist) {
+                if (obj->oSmallPenguinFound) {
+                    foundObj = obj;
+                    break;
+                }
+            }
+        }
+
+        obj = (struct Object *) obj->header.next;
+    }
+
+    return foundObj;
+}
+
+void tuxies_mother_act_2(void) {
     f32 distToSmallPenguin = 1000.0f;
     struct Object *smallPenguinObj = gMarioStates[0].heldObj;
-    if (smallPenguinObj && smallPenguinObj->behavior != bhvSmallPenguin) {
+    if (smallPenguinObj && (smallPenguinObj->behavior != bhvSmallPenguin || smallPenguinObj->oSmallPenguinFound == TRUE)) {
         smallPenguinObj = NULL;
     }
     if (smallPenguinObj) {
         distToSmallPenguin = dist_between_objects(o, smallPenguinObj);
     }
 
-    if (cur_obj_find_nearby_held_actor(bhvUnused20E0, 1000.0f) != NULL) {
+    struct Object *foundBabyPenguin = get_found_baby_penguin(1000.0f);
+    if (foundBabyPenguin != NULL) {
         if (o->oSubAction == 0) {
             cur_obj_init_animation_with_sound(0);
             o->oForwardVel = 10.0f;
-            if (800.0f < cur_obj_lateral_dist_from_obj_to_home(player)) {
+            if (800.0f < cur_obj_lateral_dist_from_obj_to_home(foundBabyPenguin)) {
                 o->oSubAction = 1;
+                if (smallPenguinObj == foundBabyPenguin) {
+                    // sends position of tuxie mother to everyone else if we are the one
+                    // holding the baby penguin
+                    network_send_object(o);
+                }
             }
-            cur_obj_rotate_yaw_toward(angleToPlayer, 0x400);
+            cur_obj_rotate_yaw_toward(obj_angle_to_object(o, foundBabyPenguin), 0x400);
         } else {
             o->oForwardVel = 0.0f;
             cur_obj_init_animation_with_sound(3);
-            if (cur_obj_lateral_dist_from_obj_to_home(player) < 700.0f) {
+            if (cur_obj_lateral_dist_from_obj_to_home(foundBabyPenguin) < 700.0f) {
                 o->oSubAction = 0;
             }
         }
@@ -61,7 +91,8 @@ void tuxies_mother_act_2(void) {
         o->oForwardVel = 0.0f;
         cur_obj_init_animation_with_sound(3);
     }
-    if (smallPenguinObj != NULL && distToSmallPenguin < 300.0f && smallPenguinObj->oHeldState != HELD_FREE) {
+
+    if (smallPenguinObj && distToSmallPenguin < 300.0f && smallPenguinObj->oHeldState != HELD_FREE && !another_mario_talking_to_tuxie_mother()) {
         o->oAction = 1;
         smallPenguinObj->oSmallPenguinUnk88 = 1;
         o->prevObj = smallPenguinObj;
@@ -109,7 +140,7 @@ void tuxies_mother_act_1(void) {
                 // which has no effect as o->prevObj->oUnknownUnk88 is always 0
                 // or 1, which is not affected by the bitwise AND.
                 o->prevObj->OBJECT_FIELD_S32(o->oInteractionSubtype) &= ~INT_SUBTYPE_DROP_IMMEDIATELY;
-                obj_set_behavior(o->prevObj, bhvUnused20E0);
+                o->prevObj->oSmallPenguinFound = TRUE;
 
                 f32 *starPos = gLevelValues.starPositions.TuxieMotherStarPos;
 #ifndef VERSION_JP
@@ -119,13 +150,14 @@ void tuxies_mother_act_1(void) {
 #endif
                 o->oAction = 2;
                 network_send_object(o);
+                network_send_object(o->prevObj);
             }
             break;
         case 2:
-            if (o->prevObj && o->prevObj->oHeldState == HELD_FREE && another_mario_talking_to_tuxie_mother()) {
+            if (o->prevObj && o->prevObj->oHeldState == HELD_FREE) {
                 //! Same bug as above
                 o->prevObj->OBJECT_FIELD_S32(o->oInteractionSubtype) &= ~INT_SUBTYPE_DROP_IMMEDIATELY;
-                obj_set_behavior(o->prevObj, bhvPenguinBaby);
+                o->prevObj->oSmallPenguinFound = FALSE;
                 o->oAction = 2;
             }
             break;
@@ -187,11 +219,16 @@ void (*sTuxiesMotherActions[])(void) = { tuxies_mother_act_0, tuxies_mother_act_
                                          tuxies_mother_act_2 };
 
 void bhv_tuxies_mother_loop(void) {
-    // uses event based syncing and syncs action changes
+    // uses distance based syncing and mainly syncs action changes along with positions and
+    // move angles for other certain actions
     if (!sync_object_is_initialized(o->oSyncID)) {
         sync_object_init(o, SYNC_DISTANCE_ONLY_EVENTS);
         sync_object_init_field(o, o->oAction);
         sync_object_init_field(o, o->oSubAction);
+        sync_object_init_field(o, o->oPosX);
+        sync_object_init_field(o, o->oPosY);
+        sync_object_init_field(o, o->oPosZ);
+        sync_object_init_field(o, o->oMoveAngleYaw);
     }
     o->activeFlags |= ACTIVE_FLAG_UNK10;
     cur_obj_update_floor_and_walls();
@@ -346,6 +383,7 @@ void bhv_small_penguin_loop(void) {
     // uses standard distance-based syncing
     if (!sync_object_is_initialized(o->oSyncID)) {
         sync_object_init(o, 4000.0f);
+        sync_object_init_field(o, o->oSmallPenguinFound);
     }
     switch (o->oHeldState) {
         case HELD_FREE:
@@ -353,9 +391,6 @@ void bhv_small_penguin_loop(void) {
             break;
         case HELD_HELD:
             cur_obj_unrender_and_reset_state(0, 0);
-            if (cur_obj_has_behavior(bhvPenguinBaby)) {
-                obj_set_behavior(o, bhvSmallPenguin);
-            }
             if (o->heldByPlayerIndex < MAX_PLAYERS) {
                 obj_copy_pos(o, gMarioStates[o->heldByPlayerIndex].marioObj);
                 if (gGlobalTimer % 30 == 0) {

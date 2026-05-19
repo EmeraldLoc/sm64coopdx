@@ -1813,6 +1813,7 @@
 --- @field public oSmallPenguinUnk104 number
 --- @field public oSmallPenguinUnk108 number
 --- @field public oSmallPenguinUnk110 integer
+--- @field public oSmallPenguinFound integer
 --- @field public oSLWalkingPenguinWindCollisionXPos number
 --- @field public oSLWalkingPenguinWindCollisionZPos number
 --- @field public oSLWalkingPenguinCurStep integer
