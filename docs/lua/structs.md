@@ -354,13 +354,13 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| used_textures | `Array` <`boolean`> |  |
-| num_inputs | `integer` |  |
-| do_single | `Array` <`boolean`> |  |
-| do_multiply | `Array` <`boolean`> |  |
-| do_mix | `Array` <`boolean`> |  |
-| color_alpha_same | `Array` <`boolean`> |  |
-| do_noise | `boolean` |  |
+| used_textures | `Array` <`boolean`> | read-only |
+| num_inputs | `integer` | read-only |
+| do_single | `Array` <`boolean`> | read-only |
+| do_multiply | `Array` <`boolean`> | read-only |
+| do_mix | `Array` <`boolean`> | read-only |
+| color_alpha_same | `Array` <`boolean`> | read-only |
+| do_noise | `boolean` | read-only |
 
 [:arrow_up_small:](#)
 
@@ -2919,10 +2919,18 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| used_textures | `Array` <`boolean`> |  |
-| used_noise | `boolean` |  |
-| used_lightmap | `boolean` |  |
-| world_geometry | `boolean` |  |
+| hash | `integer` | read-only |
+| opengl_program_id | `integer` | read-only |
+| num_inputs | `integer` | read-only |
+| used_textures | `Array` <`boolean`> | read-only |
+| num_floats | `integer` | read-only |
+| attrib_locations | `Array` <`integer`> | read-only |
+| uniform_locations | `Array` <`integer`> | read-only |
+| attrib_sizes | `Array` <`integer`> | read-only |
+| num_attribs | `integer` | read-only |
+| used_noise | `boolean` | read-only |
+| used_lightmap | `boolean` | read-only |
+| world_geometry | `boolean` | read-only |
 
 [:arrow_up_small:](#)
 

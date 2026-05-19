@@ -2208,7 +2208,15 @@
 --- @field public pauseAnywhere integer
 
 --- @class ShaderProgram
+--- @field public hash integer
+--- @field public opengl_program_id integer
+--- @field public num_inputs integer
 --- @field public used_textures boolean[]
+--- @field public num_floats integer
+--- @field public attrib_locations integer[]
+--- @field public uniform_locations integer[]
+--- @field public attrib_sizes integer[]
+--- @field public num_attribs integer
 --- @field public used_noise boolean
 --- @field public used_lightmap boolean
 --- @field public world_geometry boolean

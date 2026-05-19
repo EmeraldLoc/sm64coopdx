@@ -151,6 +151,8 @@ override_field_immutable = {
     "ModFsFile": [ "*" ],
     "ModFs": [ "*" ],
     "StaticObjectCollision": [ "*" ],
+    "ShaderProgram": [ "*" ],
+    "CCFeatures": [ "*" ],
 }
 
 override_field_version_excludes = {

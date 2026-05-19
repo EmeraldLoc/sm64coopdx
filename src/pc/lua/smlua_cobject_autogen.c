@@ -382,13 +382,13 @@ static struct LuaObjectField sBehaviorValuesFields[LUA_BEHAVIOR_VALUES_FIELD_COU
 
 #define LUA_CCFEATURES_FIELD_COUNT 7
 static struct LuaObjectField sCCFeaturesFields[LUA_CCFEATURES_FIELD_COUNT] = {
-    { "color_alpha_same", LVT_BOOL, offsetof(struct CCFeatures, color_alpha_same), false, LOT_NONE, 2, sizeof(bool) },
-    { "do_mix",           LVT_BOOL, offsetof(struct CCFeatures, do_mix),           false, LOT_NONE, 4, sizeof(bool) },
-    { "do_multiply",      LVT_BOOL, offsetof(struct CCFeatures, do_multiply),      false, LOT_NONE, 4, sizeof(bool) },
-    { "do_noise",         LVT_BOOL, offsetof(struct CCFeatures, do_noise),         false, LOT_NONE                  },
-    { "do_single",        LVT_BOOL, offsetof(struct CCFeatures, do_single),        false, LOT_NONE, 4, sizeof(bool) },
-    { "num_inputs",       LVT_S32,  offsetof(struct CCFeatures, num_inputs),       false, LOT_NONE                  },
-    { "used_textures",    LVT_BOOL, offsetof(struct CCFeatures, used_textures),    false, LOT_NONE, 2, sizeof(bool) },
+    { "color_alpha_same", LVT_BOOL, offsetof(struct CCFeatures, color_alpha_same), true, LOT_NONE, 2, sizeof(bool) },
+    { "do_mix",           LVT_BOOL, offsetof(struct CCFeatures, do_mix),           true, LOT_NONE, 4, sizeof(bool) },
+    { "do_multiply",      LVT_BOOL, offsetof(struct CCFeatures, do_multiply),      true, LOT_NONE, 4, sizeof(bool) },
+    { "do_noise",         LVT_BOOL, offsetof(struct CCFeatures, do_noise),         true, LOT_NONE                  },
+    { "do_single",        LVT_BOOL, offsetof(struct CCFeatures, do_single),        true, LOT_NONE, 4, sizeof(bool) },
+    { "num_inputs",       LVT_S32,  offsetof(struct CCFeatures, num_inputs),       true, LOT_NONE                  },
+    { "used_textures",    LVT_BOOL, offsetof(struct CCFeatures, used_textures),    true, LOT_NONE, 2, sizeof(bool) },
 };
 
 #define LUA_CAMERA_FIELD_COUNT 15
@@ -2564,20 +2564,20 @@ static struct LuaObjectField sServerSettingsFields[LUA_SERVER_SETTINGS_FIELD_COU
     { "stayInLevelAfterStar",        LVT_S32, offsetof(struct ServerSettings, stayInLevelAfterStar),        false, LOT_NONE },
 };
 
-#define LUA_SHADER_PROGRAM_FIELD_COUNT 4
+#define LUA_SHADER_PROGRAM_FIELD_COUNT 12
 static struct LuaObjectField sShaderProgramFields[LUA_SHADER_PROGRAM_FIELD_COUNT] = {
-//  { "attrib_locations",  LVT_???,  offsetof(struct ShaderProgram, attrib_locations),  false, LOT_???,  MAX_SHADER_ATTRIBUTES, sizeof(GLint)   }, <--- UNIMPLEMENTED
-//  { "attrib_sizes",      LVT_???,  offsetof(struct ShaderProgram, attrib_sizes),      false, LOT_???,  MAX_SHADER_ATTRIBUTES, sizeof(uint8_t) }, <--- UNIMPLEMENTED
-//  { "hash",              LVT_???,  offsetof(struct ShaderProgram, hash),              false, LOT_???                                          }, <--- UNIMPLEMENTED
-//  { "num_attribs",       LVT_???,  offsetof(struct ShaderProgram, num_attribs),       false, LOT_???                                          }, <--- UNIMPLEMENTED
-//  { "num_floats",        LVT_???,  offsetof(struct ShaderProgram, num_floats),        false, LOT_???                                          }, <--- UNIMPLEMENTED
-//  { "num_inputs",        LVT_???,  offsetof(struct ShaderProgram, num_inputs),        false, LOT_???                                          }, <--- UNIMPLEMENTED
-//  { "opengl_program_id", LVT_???,  offsetof(struct ShaderProgram, opengl_program_id), false, LOT_???                                          }, <--- UNIMPLEMENTED
-//  { "uniform_locations", LVT_???,  offsetof(struct ShaderProgram, uniform_locations), false, LOT_???,  MAX_SHADER_UNIFORMS,   sizeof(GLint)   }, <--- UNIMPLEMENTED
-    { "used_lightmap",     LVT_BOOL, offsetof(struct ShaderProgram, used_lightmap),     false, LOT_NONE                                         },
-    { "used_noise",        LVT_BOOL, offsetof(struct ShaderProgram, used_noise),        false, LOT_NONE                                         },
-    { "used_textures",     LVT_BOOL, offsetof(struct ShaderProgram, used_textures),     false, LOT_NONE, MAX_SHADER_TEXTURES,   sizeof(bool)    },
-    { "world_geometry",    LVT_BOOL, offsetof(struct ShaderProgram, world_geometry),    false, LOT_NONE                                         },
+    { "attrib_locations",  LVT_U32,  offsetof(struct ShaderProgram, attrib_locations),  true, LOT_NONE, MAX_SHADER_ATTRIBUTES, sizeof(u32)  },
+    { "attrib_sizes",      LVT_U8,   offsetof(struct ShaderProgram, attrib_sizes),      true, LOT_NONE, MAX_SHADER_ATTRIBUTES, sizeof(u8)   },
+    { "hash",              LVT_U64,  offsetof(struct ShaderProgram, hash),              true, LOT_NONE                                      },
+    { "num_attribs",       LVT_U8,   offsetof(struct ShaderProgram, num_attribs),       true, LOT_NONE                                      },
+    { "num_floats",        LVT_U8,   offsetof(struct ShaderProgram, num_floats),        true, LOT_NONE                                      },
+    { "num_inputs",        LVT_U8,   offsetof(struct ShaderProgram, num_inputs),        true, LOT_NONE                                      },
+    { "opengl_program_id", LVT_U32,  offsetof(struct ShaderProgram, opengl_program_id), true, LOT_NONE                                      },
+    { "uniform_locations", LVT_U32,  offsetof(struct ShaderProgram, uniform_locations), true, LOT_NONE, MAX_SHADER_UNIFORMS,   sizeof(u32)  },
+    { "used_lightmap",     LVT_BOOL, offsetof(struct ShaderProgram, used_lightmap),     true, LOT_NONE                                      },
+    { "used_noise",        LVT_BOOL, offsetof(struct ShaderProgram, used_noise),        true, LOT_NONE                                      },
+    { "used_textures",     LVT_BOOL, offsetof(struct ShaderProgram, used_textures),     true, LOT_NONE, MAX_SHADER_TEXTURES,   sizeof(bool) },
+    { "world_geometry",    LVT_BOOL, offsetof(struct ShaderProgram, world_geometry),    true, LOT_NONE                                      },
 };
 
 #define LUA_SPAWN_INFO_FIELD_COUNT 8
