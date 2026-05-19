@@ -640,7 +640,7 @@ u8 koopa_the_quick_act_show_init_text_continue_dialog(void) { return o->oAction 
 static void koopa_the_quick_act_show_init_text(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState)) {
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         o->oAction = KOOPA_THE_QUICK_ACT_WAIT_BEFORE_RACE;
         o->oKoopaTheQuickInitTextboxCooldown = 60;
         network_send_object(o); // force send

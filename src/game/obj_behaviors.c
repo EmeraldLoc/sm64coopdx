@@ -859,9 +859,9 @@ s16 trigger_obj_dialog_when_facing(struct MarioState *m, s32 *inDialog, s32 dial
     for (int i = 0; i < MAX_PLAYERS; i++) {
         // make sure no other mario is reading the dialog
         struct MarioState *marioState = &gMarioStates[i];
-        if (marioState == m) continue;
-        if (!is_player_active(marioState)) continue;
-        if (marioState->dialogId != dialogID) continue;
+        if (marioState == m) { continue; }
+        if (!is_player_active(marioState)) { continue; }
+        if (marioState->dialogId != dialogID) { continue; }
         return 0;
     }
 

@@ -244,25 +244,9 @@ void king_bobomb_act_7(void) {
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
     // update dialog if we are within king bobomb's area
     bool canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f && is_player_active(marioState) && marioState->visibleToEnemies);
-    if (!canUpdateDialog) {
-        // iterate through players via global index until we find someone who can
-        for (int i = 0; i < MAX_PLAYERS; i++) {
-            struct NetworkPlayer *np = network_player_from_global_index(i);
-            if (!np) continue;
-            marioState = &gMarioStates[np->localIndex];
 
-            canUpdateDialog = (marioState->pos[1] >= o->oPosY - 100.0f && is_player_active(marioState) && marioState->visibleToEnemies);
-            if (!canUpdateDialog) continue;
-            o->globalPlayerIndex = np->globalIndex;
-            network_send_object(o);
-            break;
-        }
-
-        // if we still can't update the dialog don't continue, wait until a player comes up
-        if (!canUpdateDialog) { return; }
-    }
-
-    if (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 2, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombDefeatDialog, king_bobomb_act_7_continue_dialog)) {
+    if (!canUpdateDialog || (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 2, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombDefeatDialog, king_bobomb_act_7_continue_dialog))) {
+        // skip directly to spawning the star
         o->oAction = 8;
         network_send_object(o);
     }
@@ -380,9 +364,9 @@ void king_bobomb_act_5(void) { // bobomb returns home
             if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
             marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
             if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
-                // go back to sub action 3 and look for a new player
-                o->oSubAction = 3;
-                marioState = NULL;
+                // player bailed, start fight back up
+                o->oAction = 2;
+                network_send_object(o); // force send
             }
             if (marioState && should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog_with_cutscene(marioState, 2, 1, CUTSCENE_DIALOG, gBehaviorValues.dialogs.KingBobombCheatDialog, king_bobomb_act_5_continue_dialog)) {
                 o->oAction = 2;

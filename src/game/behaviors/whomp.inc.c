@@ -25,8 +25,8 @@ void whomp_act_0(void) {
     } else if (o->oSubAction != 0) {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState)) {
-            marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+            marioState = NULL;
         }
     } else {
         marioState = gMarioStates[0].visibleToEnemies ? &gMarioStates[0] : NULL;
@@ -49,10 +49,10 @@ void whomp_act_0(void) {
                 cur_obj_set_pos_to_home();
                 o->oHealth = gBehaviorValues.KingWhompHealth;
             }
-        } else if (marioState && should_start_or_continue_dialog(marioState, o)
+        } else if (!marioState || (should_start_or_continue_dialog(marioState, o)
                    && cur_obj_update_dialog_with_cutscene(marioState, 2, 1, CUTSCENE_DIALOG,
                                                           gBehaviorValues.dialogs.KingWhompDialog,
-                                                          whomp_act_0_continue_dialog)) {
+                                                          whomp_act_0_continue_dialog))) {
             o->oAction = 2;
             network_send_object(o);
         }
@@ -277,13 +277,13 @@ void whomp_act_8(void) {
     if (o->oBehParams2ndByte != 0) {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState)) {
-            marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+            marioState = NULL;
         }
-        if (marioState && should_start_or_continue_dialog(marioState, o)
+        if (!marioState || (should_start_or_continue_dialog(marioState, o)
             && cur_obj_update_dialog_with_cutscene(marioState, 2, 2, CUTSCENE_DIALOG,
                                                    gBehaviorValues.dialogs.KingWhompDefeatDialog,
-                                                   whomp_act_8_continue_dialog)) {
+                                                   whomp_act_8_continue_dialog))) {
             obj_set_angle(o, 0, 0, 0);
             cur_obj_hide();
             cur_obj_become_intangible();

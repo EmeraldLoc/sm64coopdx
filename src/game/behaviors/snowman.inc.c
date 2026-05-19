@@ -297,13 +297,13 @@ void bhv_snowmans_body_checkpoint_loop(void) {
 
     if (o->parentObj->globalPlayerIndex >= MAX_PLAYERS) o->parentObj->globalPlayerIndex = 0;
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->parentObj->globalPlayerIndex)];
-    if (!is_player_active(marioState)) {
-        // use player with the smallest global index instead
-        marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        marioState = NULL;
     }
-    struct Object *player = marioState->visibleToEnemies ? marioState->marioObj : NULL;
+    struct Object *player = marioState ? marioState->marioObj : NULL;
+    int distBetweenObjects = player ? dist_between_objects(player, o) : 1000;
 
-    if (dist_between_objects(player, o) <= 800) {
+    if (distBetweenObjects <= 800) {
         o->parentObj->oSnowmansBottomUnk1AC++;
         o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }

@@ -2311,9 +2311,9 @@ u32 interact_text(struct MarioState *m, UNUSED u32 interactType, struct Object *
     // make sure no other mario is reading the object's dialog
     for (int i = 0; i < MAX_PLAYERS; i++) {
         struct MarioState *marioState = &gMarioStates[i];
-        if (!is_player_active(marioState)) continue;
-        if (marioState->action != ACT_READING_SIGN && marioState->action != ACT_READING_NPC_DIALOG) continue;
-        if (marioState->interactObj != o) continue;
+        if (!is_player_active(marioState)) { continue; }
+        if (marioState->action != ACT_READING_SIGN && marioState->action != ACT_READING_NPC_DIALOG) { continue; }
+        if (marioState->interactObj != o) { continue; }
 
         // another mario is interacting with this object's dialog, push out of object
         if (o->oInteractionSubtype & INT_SUBTYPE_SIGN) {
