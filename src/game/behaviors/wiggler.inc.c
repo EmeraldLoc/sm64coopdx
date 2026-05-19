@@ -113,7 +113,7 @@ void bhv_wiggler_body_part_update(void) {
         cur_obj_reverse_animation();
     }
 
-    if (parent->oAction == WIGGLER_ACT_SHRINK) {
+    if (parent->oAction == WIGGLER_ACT_SHRINK || parent->oAction == WIGGLER_ACT_FALL_THROUGH_FLOOR) {
         cur_obj_become_intangible();
     } else {
         cur_obj_become_tangible();
@@ -332,9 +332,12 @@ u8 wiggler_act_jumped_on_continue_dialog(void) { return o->oAction == WIGGLER_AC
 static void wiggler_act_jumped_on(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState)) {
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
         // use player with the smallest global index instead
-        marioState = &gMarioStates[get_network_player_smallest_global()->localIndex];
+        struct NetworkPlayer *np = get_network_player_smallest_global();
+        marioState = &gMarioStates[np->localIndex];
+        o->globalPlayerIndex = np->globalIndex;
+        network_send_object(o);
     }
 
     // Text to show on first, second, and third attack.
@@ -406,6 +409,11 @@ static void wiggler_act_knockback(void) {
  * Shrink, then spawn the star and enter the fall through floor action.
  */
 static void wiggler_act_shrink(void) {
+    struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
+    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        marioState = NULL;
+    }
+
     if (o->oTimer >= 20) {
         if (o->oTimer == 20) {
             cur_obj_play_sound_2(SOUND_OBJ_ENEMY_DEFEAT_SHRINK);
@@ -413,11 +421,9 @@ static void wiggler_act_shrink(void) {
 
         // 4 is the default scale, so shrink to 1/4 of regular size
         if (approach_f32_ptr(&o->header.gfx.scale[0], 1.0f, 0.1f)) {
-            f32 *starPos = gLevelValues.starPositions.WigglerStarPos;
-            struct Object *star = spawn_default_star(starPos[0], starPos[1], starPos[2]);
-
-            if (star != NULL && o->globalPlayerIndex != gNetworkPlayerLocal->globalIndex) {
-                star->oStarSpawnExtCutsceneFlags = 0;
+            if (!marioState || marioState->playerIndex == 0) {
+                f32 *starPos = gLevelValues.starPositions.WigglerStarPos;
+                spawn_default_star(starPos[0], starPos[1], starPos[2]);
             }
 
             o->oAction = WIGGLER_ACT_FALL_THROUGH_FLOOR;
