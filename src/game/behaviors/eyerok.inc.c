@@ -32,7 +32,7 @@ static struct Object *eyerok_nearest_targetable_player_to_object(s32 zDist) {
         struct MarioState *m = &gMarioStates[i];
         if (!m->marioObj) { continue; }
         if (m->marioObj == o) { continue; }
-        if (!m->visibleToEnemies) { continue; }
+        if (!m->visibleToObjects) { continue; }
         if (!is_player_active(m)) { continue; }
         f32 dist = dist_between_objects(o, m->marioObj);
         if (m->marioObj->oPosZ - o->oHomeZ < zDist) {
@@ -167,7 +167,7 @@ UNUSED static u8 eyerok_boss_act_show_intro_text_continue_dialog(void) {
 static void eyerok_boss_act_show_intro_text(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // use player with the smallest global index instead
         struct NetworkPlayer *np = get_network_player_smallest_global();
         marioState = &gMarioStates[np->localIndex];
@@ -237,7 +237,7 @@ u8 eyerok_boss_act_die_continue_dialog(void) { return o->oAction == EYEROK_BOSS_
 static void eyerok_boss_act_die(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // use player with the smallest global index instead
         struct NetworkPlayer *np = get_network_player_smallest_global();
         marioState = &gMarioStates[np->localIndex];

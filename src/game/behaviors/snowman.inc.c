@@ -17,7 +17,7 @@ static void bhv_snowmans_bottom_override_ownership(u8 *shouldOverride, u8 *shoul
         *shouldOverride = TRUE;
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             // use player with the smallest global index instead
             struct NetworkPlayer *np = get_network_player_smallest_global();
             marioState = &gMarioStates[np->localIndex];
@@ -80,14 +80,14 @@ void adjust_rolling_face_pitch(f32 f12) {
 void snowmans_bottom_act_1(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // use player with the smallest global index instead
         struct NetworkPlayer *np = get_network_player_smallest_global();
         marioState = &gMarioStates[np->localIndex];
         o->globalPlayerIndex = np->globalIndex;
         network_send_object(o);
     }
-    struct Object *player = marioState->visibleToEnemies ? marioState->marioObj : NULL;
+    struct Object *player = marioState->visibleToObjects ? marioState->marioObj : NULL;
     s32 angleToPlayer = player ? obj_angle_to_object(o, player) : 0;
 
     o->oPathedStartWaypoint = segmented_to_virtual(gBehaviorValues.trajectories.SnowmanHeadTrajectory);
@@ -167,7 +167,7 @@ static void bhv_snowmans_bottom_handle_dialog() {
     } else {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             // use player with the smallest global index instead
             struct NetworkPlayer *np = get_network_player_smallest_global();
             marioState = &gMarioStates[np->localIndex];
@@ -297,7 +297,7 @@ void bhv_snowmans_body_checkpoint_loop(void) {
 
     if (o->parentObj->globalPlayerIndex >= MAX_PLAYERS) o->parentObj->globalPlayerIndex = 0;
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->parentObj->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         marioState = NULL;
     }
     struct Object *player = marioState ? marioState->marioObj : NULL;

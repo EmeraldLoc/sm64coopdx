@@ -122,7 +122,7 @@ void bhv_lll_bowser_puzzle_spawn_pieces(f32 pieceWidth) {
  * Does the initial spawn of the puzzle pieces and then waits to spawn 5 coins.
  */
 void bhv_lll_bowser_puzzle_loop(void) {
-    struct Object *player = gMarioStates[0].visibleToEnemies ? gMarioStates[0].marioObj : NULL;
+    struct Object *player = gMarioStates[0].visibleToObjects ? gMarioStates[0].marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
 
     // does an event based sync. Specifically the action for spawning coins is what is synced

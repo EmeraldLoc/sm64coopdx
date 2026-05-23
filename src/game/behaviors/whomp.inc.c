@@ -25,11 +25,11 @@ void whomp_act_0(void) {
     } else if (o->oSubAction != 0) {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             marioState = NULL;
         }
     } else {
-        marioState = gMarioStates[0].visibleToEnemies ? &gMarioStates[0] : NULL;
+        marioState = gMarioStates[0].visibleToObjects ? &gMarioStates[0] : NULL;
     }
     struct Object *player = marioState ? marioState->marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
@@ -277,7 +277,7 @@ void whomp_act_8(void) {
     if (o->oBehParams2ndByte != 0) {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             marioState = NULL;
         }
         if (!marioState || (should_start_or_continue_dialog(marioState, o)

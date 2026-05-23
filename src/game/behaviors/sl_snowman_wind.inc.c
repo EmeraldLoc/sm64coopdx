@@ -44,7 +44,7 @@ void bhv_sl_snowman_wind_loop(void) {
     } else if (o->oSubAction == SL_SNOWMAN_WIND_ACT_TALKING) {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (is_player_active(marioState) && marioState->visibleToEnemies && cur_obj_update_dialog(marioState, 2, 2, gBehaviorValues.dialogs.SnowmanWindDialog, 0, bhv_sl_snowman_wind_loop_continue_dialog)) {
+        if (is_player_active(marioState) && marioState->visibleToObjects && cur_obj_update_dialog(marioState, 2, 2, gBehaviorValues.dialogs.SnowmanWindDialog, 0, bhv_sl_snowman_wind_loop_continue_dialog)) {
             o->oSubAction++;
             network_send_object(o);
         }

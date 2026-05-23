@@ -147,7 +147,7 @@ void yoshi_talk_loop(void) {
         return;
     }
     struct MarioState *marioState = &gMarioStates[np->localIndex];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // go back to idle action as the player is no longer active
         o->oAction = YOSHI_ACT_IDLE;
         o->oInteractStatus = 0;
@@ -234,7 +234,7 @@ void yoshi_give_present_loop(void) {
         return;
     }
     struct MarioState *marioState = &gMarioStates[np->localIndex];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // go back to idle action as the player is no longer active
         o->oAction = YOSHI_ACT_IDLE;
         return;

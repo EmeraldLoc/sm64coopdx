@@ -87,7 +87,7 @@ static void camera_lakitu_intro_act_trigger_cutscene(void) {
 static void camera_lakitu_intro_act_spawn_cloud(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // mario who activated lakitu is no longer active, delete lakitu
         obj_mark_for_deletion(o);
         return;
@@ -117,7 +117,7 @@ static void camera_lakitu_intro_act_spawn_cloud(void) {
 static void camera_lakitu_intro_act_show_dialog(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // cancel sequence early, mario who activated lakitu is no longer active
         obj_mark_for_deletion(o);
         return;

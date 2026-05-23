@@ -70,7 +70,7 @@ void bhv_big_boulder_generator_loop(void) {
     for (int i = 0; i < MAX_PLAYERS; i++) {
         struct MarioState *marioState = &gMarioStates[i];
         if (!is_player_active(marioState)) { continue; }
-        if (!marioState->visibleToEnemies) { continue; }
+        if (!marioState->visibleToObjects) { continue; }
         if (marioState->currentRoom != 4) { continue;}
         anyMarioInProperRoom = true;
     }

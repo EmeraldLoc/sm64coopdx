@@ -103,14 +103,14 @@ static void racing_penguin_act_show_init_text(void) {
     if (!BHV_ARR_CHECK(sRacingPenguinData, o->oBehParams2ndByte, struct RacingPenguinData)) { return; }
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // use player with the smallest global index instead
         struct NetworkPlayer *np = get_network_player_smallest_global();
         marioState = &gMarioStates[np->localIndex];
         o->globalPlayerIndex = np->globalIndex;
 
         // double check that we are actually active and visible this time
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             o->oAction = RACING_PENGUIN_ACT_WAIT_FOR_MARIO;
             o->oRacingPenguinInitTextCooldown = 60;
             o->globalPlayerIndex = 0;
@@ -323,7 +323,7 @@ void bhv_racing_penguin_update(void) {
 
 void bhv_penguin_race_finish_line_update(void) {
     if (!o->parentObj) { return; }
-    if (!gMarioStates[0].visibleToEnemies) { return; }
+    if (!gMarioStates[0].visibleToObjects) { return; }
     struct Object *player = gMarioStates[0].marioObj;
     s32 distanceToPlayer = dist_between_objects(o, player);
 
@@ -335,7 +335,7 @@ void bhv_penguin_race_finish_line_update(void) {
 }
 
 void bhv_penguin_race_shortcut_check_update(void) {
-    struct Object *player = gMarioStates[0].visibleToEnemies ? gMarioStates[0].marioObj : NULL;
+    struct Object *player = gMarioStates[0].visibleToObjects ? gMarioStates[0].marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
     if (distanceToPlayer < 500.0f && o->parentObj && !o->parentObj->oRacingPenguinMarioCheated) {
         o->parentObj->oRacingPenguinMarioCheated = TRUE;

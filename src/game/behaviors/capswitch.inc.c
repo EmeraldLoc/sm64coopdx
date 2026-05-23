@@ -48,7 +48,7 @@ void cap_switch_act_2(void) {
     } else {
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (is_player_active(marioState) && marioState->visibleToEnemies && should_start_or_continue_dialog(marioState, o)) {
+        if (is_player_active(marioState) && marioState->visibleToObjects && should_start_or_continue_dialog(marioState, o)) {
             s32 dialogResponse = cur_obj_update_dialog_with_cutscene(&gMarioStates[0], 1, 0x0C, CUTSCENE_CAP_SWITCH_PRESS, 0, cap_switch_act_2_continue_dialog);
             if (dialogResponse) { o->oAction = 3; }
         }

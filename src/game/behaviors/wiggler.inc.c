@@ -332,7 +332,7 @@ u8 wiggler_act_jumped_on_continue_dialog(void) { return o->oAction == WIGGLER_AC
 static void wiggler_act_jumped_on(void) {
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         // use player with the smallest global index instead
         struct NetworkPlayer *np = get_network_player_smallest_global();
         marioState = &gMarioStates[np->localIndex];
@@ -410,7 +410,7 @@ static void wiggler_act_knockback(void) {
  */
 static void wiggler_act_shrink(void) {
     struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-    if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+    if (!is_player_active(marioState) || !marioState->visibleToObjects) {
         marioState = NULL;
     }
 

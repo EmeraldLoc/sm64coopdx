@@ -1049,7 +1049,7 @@ s32 bowser_dead_not_bits_end(void) {
         }
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             marioState = NULL; // this ensures dialog is skipped
         }
         if (!marioState || (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, *sBowserDefeatedDialogText[o->oBehParams2ndByte], 0, bowser_dead_not_bits_end_continue_dialog))) {
@@ -1063,7 +1063,7 @@ s32 bowser_dead_not_bits_end(void) {
         bowser_dead_hide();
         spawn_triangle_break_particles(20, 116, 1.0f, 0);
         bowser_spawn_grand_star_key();
-        if (gMarioStates[0].visibleToEnemies) {
+        if (gMarioStates[0].visibleToObjects) {
             set_mario_npc_dialog(&gMarioStates[0], 0, NULL);
         }
         return 1;
@@ -1088,7 +1088,7 @@ s32 bowser_dead_bits_end(void) {
         }
         if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
         struct MarioState *marioState = &gMarioStates[network_local_index_from_global(o->globalPlayerIndex)];
-        if (!is_player_active(marioState) || !marioState->visibleToEnemies) {
+        if (!is_player_active(marioState) || !marioState->visibleToObjects) {
             marioState = NULL;
         }
         if (!marioState || (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, dialogID, 0, bowser_dead_bits_end_continue_dialog))) {
