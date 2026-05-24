@@ -388,6 +388,8 @@ static void djui_panel_theme_reset_theme_selectionbox() {
 static void djui_panel_theme_edit_theme_delete(UNUSED struct DjuiBase* caller) {
     djui_theme_delete(&configDjuiTheme);
     djui_panel_theme_reset_theme_selectionbox();
+    snprintf(sThemeNameTextBox->buffer, sThemeNameTextBox->bufferSize, "%s", configDjuiTheme.name);
+    djui_panel_theme_header_font_set_selected(configDjuiTheme.headerFont);
     djui_panel_themes_reload(NULL);
     djui_panel_menu_back(caller);
 }
