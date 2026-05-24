@@ -110,10 +110,14 @@ static void init_loading_screen(void) {
         djui_base_set_location_type(&splashDjuiText->base, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
         djui_base_set_location(&splashDjuiText->base, 0, 0);
         djui_text_set_font(splashDjuiText, gDjuiFonts[configDjuiTheme.headerFont]);
-        djui_text_set_font_scale(splashDjuiText, gDjuiFonts[configDjuiTheme.headerFont]->defaultFontScale);
+        // don't use header font scale here, keep font scale consistent, so use what
+        // ex-coop expects
+        djui_text_set_font_scale(splashDjuiText, gDjuiFonts[1]->defaultFontScale);
         djui_text_set_alignment(splashDjuiText, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
         djui_base_set_size_type(&splashDjuiText->base, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
-        djui_base_set_size(&splashDjuiText->base, 1.0f, gDjuiFonts[configDjuiTheme.headerFont]->defaultFontScale * 3.0f);
+        // don't use header font scale here, keep font scale consistent, so use what
+        // ex-coop expects
+        djui_base_set_size(&splashDjuiText->base, 1.0f, gDjuiFonts[1]->defaultFontScale * 3.0f);
 
         load->splashText = splashDjuiText;
 
