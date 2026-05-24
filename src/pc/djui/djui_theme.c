@@ -227,12 +227,13 @@ bool djui_theme_compare_theme_elements(struct DjuiTheme *themeOne, struct DjuiTh
 
 bool djui_themes_save_current(bool setThemeArray) {
     struct DjuiTheme* theme = calloc(1, sizeof(struct DjuiTheme));
-    if (!theme) return false;
+    if (!theme) { return false; }
     memcpy(theme, &configDjuiTheme, sizeof(struct DjuiTheme));
     if (!djui_themes_save(theme, setThemeArray)) {
         free(theme);
         return false;
     }
+    if (!setThemeArray) { free(theme); }
     return true;
 }
 
