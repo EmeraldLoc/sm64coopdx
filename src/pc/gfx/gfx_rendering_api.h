@@ -5,6 +5,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include "gfx_shader.h"
+
 struct ShaderProgram;
 struct ColorCombiner;
 struct FramePass;
@@ -23,6 +25,7 @@ struct GfxRenderingAPI {
     void (*delete_framebuffer)(uint32_t fbo, uint32_t depthBuffer, uint32_t tex);
     void (*set_framebuffer)(uint32_t fbo, uint32_t width, uint32_t height);
     void (*reset_framebuffer)(void);
+    void (*set_uniform)(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements);
     uint32_t (*new_texture)(void);
     void (*select_texture)(int tile, uint32_t texture_id);
     void (*bind_texture_raw)(int tile, uint32_t texture_id);

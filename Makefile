@@ -751,27 +751,22 @@ else
 endif
 
 # glslang
-GLSLANG_CFLAGS :=
 GLSLANG_LIBS :=
 ifeq ($(WINDOWS_BUILD),1)
-
+  GLSLANG_LIBS := -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
+  BACKEND_LDFLAGS += $(GLSLANG_LIBS)
 else
   GLSLANG_LIBS := $(shell pkg-config --libs glslang SPIRV-Tools)
   BACKEND_LDFLAGS += $(GLSLANG_LIBS) -lglslang-default-resource-limits
 endif
 
 # SPIR-V Cross
-SPIRV_CROSS_CFLAGS :=
-SPIRV_CROSS_LIBS :=
-
 ifeq ($(WINDOWS_BUILD),1)
-    SPIRV_CROSS_LIBS := -Llib -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-core
+  SPIRV_CROSS_LIBS := -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-msl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-core -lSPIRV-Tools-opt -lSPIRV-Tools
 else
-    SPIRV_CROSS_CFLAGS := $(shell pkg-config --cflags spirv-cross-c)
-    SPIRV_CROSS_LIBS := -lspirv-cross-c-shared
+  SPIRV_CROSS_LIBS := -lspirv-cross-c-shared
 endif
 
-BACKEND_CFLAGS += $(SPIRV_CROSS_CFLAGS)
 BACKEND_LDFLAGS += $(SPIRV_CROSS_LIBS)
 
 C_DEFINES += $(foreach d,$(DEFINES),-D$(d))

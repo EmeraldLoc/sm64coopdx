@@ -1,18 +1,3 @@
-#if defined(__MINGW32__) || defined(OSX_BUILD)
-# define GLEW_STATIC
-# include <GL/glew.h>
-#endif
-
-#define GL_GLEXT_PROTOTYPES 1
-
-#include <SDL2/SDL.h>
-
-#ifdef USE_GLES
-#include <SDL2/SDL_opengles2.h>
-#else
-#include <SDL2/SDL_opengl.h>
-#endif
-
 #include "smlua_gfx_utils.h"
 #include "pc/pc_main.h"
 #include "pc/gfx/gfx_pc.h"
@@ -421,7 +406,6 @@ bool gfx_is_culling_enabled() {
 }
 
 void gfx_reload_shaders() {
-    if (gRenderApi != &gfx_opengl_api) { return; }
     gfx_remove_all_color_combiners();
     gfx_get_current_rendering_api()->remove_shaders();
     smlua_call_event_hooks(HOOK_ON_REFRESH_SHADERS);
@@ -433,71 +417,36 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
     return &sCcf;
 }
 
-
-u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex) {
-    if (gRenderApi != &gfx_opengl_api) { return 0; }
-    struct ShaderProgram *program = gfx_get_current_rendering_api()->lookup_shader_using_index(shaderIndex, framePassIndex);
-    if (!program) return 0;
-    return program->opengl_program_id;
+void gfx_shader_set_bool(const char *name, bool value) {
+    int valAsInt = value ? 1 : 0;
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_BOOL, &valAsInt, 1);
 }
 
-void gfx_use_program(u32 program) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    glUseProgram(program);
+void gfx_shader_set_int(const char *name, int value) {
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_INT, &value, 1);
 }
 
-int gfx_shader_get_uniform_location(u32 program, const char* name) {
-    if (gRenderApi != &gfx_opengl_api) { return 0; }
-    return glGetUniformLocation(program, name);
+void gfx_shader_set_float(const char *name, f32 value) {
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_FLOAT, &value, 1);
 }
 
-void gfx_shader_set_int(int loc, int value) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniform1i(loc, value);
-    }
+void gfx_shader_set_vec2(const char *name, f32 x, f32 y) {
+    f32 vec[2] = { x, y };
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_VEC2, vec, 1);
 }
 
-void gfx_shader_set_bool(int loc, bool value) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniform1i(loc, (int)value);
-    }
+void gfx_shader_set_vec3(const char *name, f32 x, f32 y, f32 z) {
+    f32 vec[3] = { x, y, z };
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_VEC3, vec, 1);
 }
 
-void gfx_shader_set_float(int loc, float value) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniform1f(loc, value);
-    }
+void gfx_shader_set_vec4(const char *name, f32 x, f32 y, f32 z, f32 w) {
+    f32 vec[4] = { x, y, z, w };
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_VEC4, vec, 1);
 }
 
-void gfx_shader_set_vec2(int loc, float x, float y) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniform2f(loc, x, y);
-    }
-}
-
-void gfx_shader_set_vec3(int loc, float x, float y, float z) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniform3f(loc, x, y, z);
-    }
-}
-
-void gfx_shader_set_vec4(int loc, float x, float y, float z, float w) {
-    if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniform4f(loc, x, y, z, w);
-    }
-}
-
-void gfx_shader_set_mat4(int loc, const Mat4 mat) {
-if (gRenderApi != &gfx_opengl_api) { return; }
-    if (loc != -1) {
-        glUniformMatrix4fv(loc, 1, GL_FALSE, (const GLfloat*)mat);
-    }
+void gfx_shader_set_mat4(const char *name, const Mat4 mat4) {
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_MAT4, mat4, 1);
 }
 
 int gfx_shader_create_frame_pass() {

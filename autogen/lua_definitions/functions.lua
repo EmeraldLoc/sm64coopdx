@@ -11098,80 +11098,58 @@ function gfx_color_combiner_get_features(cc)
     -- ...
 end
 
---- @param shaderIndex integer
---- @param framePassIndex? integer
---- @return integer
---- Gets a program id from the shader index. Specify a frame pass to get the program id for a specific pass
-function gfx_get_program_id_from_shader_index(shaderIndex, framePassIndex)
-    -- ...
-end
-
---- @param program integer
---- Uses a specific program. Required for setting uniforms
-function gfx_use_program(program)
-    -- ...
-end
-
---- @param program integer
 --- @param name string
---- @return integer
---- Gets the location of a shader uniform in a program for modification
-function gfx_shader_get_uniform_location(program, name)
-    -- ...
-end
-
---- @param loc integer
---- @param value integer
---- Sets the value of a shader uniform of type int
-function gfx_shader_set_int(loc, value)
-    -- ...
-end
-
---- @param loc integer
 --- @param value boolean
 --- Sets the value of a shader uniform of type bool
-function gfx_shader_set_bool(loc, value)
+function gfx_shader_set_bool(name, value)
     -- ...
 end
 
---- @param loc integer
+--- @param name string
+--- @param value integer
+--- Sets the value of a shader uniform of type int
+function gfx_shader_set_int(name, value)
+    -- ...
+end
+
+--- @param name string
 --- @param value number
 --- Sets the value of a shader uniform of type float
-function gfx_shader_set_float(loc, value)
+function gfx_shader_set_float(name, value)
     -- ...
 end
 
---- @param loc integer
+--- @param name string
 --- @param x number
 --- @param y number
 --- Sets the value of a shader uniform of type vec2
-function gfx_shader_set_vec2(loc, x, y)
+function gfx_shader_set_vec2(name, x, y)
     -- ...
 end
 
---- @param loc integer
+--- @param name string
 --- @param x number
 --- @param y number
 --- @param z number
 --- Sets the value of a shader uniform of type vec3
-function gfx_shader_set_vec3(loc, x, y, z)
+function gfx_shader_set_vec3(name, x, y, z)
     -- ...
 end
 
---- @param loc integer
---- @param w number
+--- @param name string
 --- @param x number
 --- @param y number
 --- @param z number
+--- @param w number
 --- Sets the value of a shader uniform of type vec4
-function gfx_shader_set_vec4(loc, w, x, y, z)
+function gfx_shader_set_vec4(name, x, y, z, w)
     -- ...
 end
 
---- @param loc integer
---- @param mat Mat4
+--- @param name string
+--- @param mat4 Mat4
 --- Sets the value of a shader uniform of type mat4
-function gfx_shader_set_mat4(loc, mat)
+function gfx_shader_set_mat4(name, mat4)
     -- ...
 end
 

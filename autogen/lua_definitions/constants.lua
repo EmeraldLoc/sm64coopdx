@@ -8399,7 +8399,8 @@ HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE   = 72 --- @type LuaHookedEventType
 HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE = 73 --- @type LuaHookedEventType
 HOOK_BEFORE_DRAW_GEOMETRY                   = 74 --- @type LuaHookedEventType
 HOOK_ON_DRAW_GEOMETRY                       = 75 --- @type LuaHookedEventType
-HOOK_MAX                                    = 76 --- @type LuaHookedEventType
+HOOK_ON_SET_SHADER_UNIFORMS                 = 76 --- @type LuaHookedEventType
+HOOK_MAX                                    = 77 --- @type LuaHookedEventType
 
 --- @alias LuaHookedEventType
 --- | `HOOK_UPDATE`
@@ -8478,6 +8479,7 @@ HOOK_MAX                                    = 76 --- @type LuaHookedEventType
 --- | `HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE`
 --- | `HOOK_BEFORE_DRAW_GEOMETRY`
 --- | `HOOK_ON_DRAW_GEOMETRY`
+--- | `HOOK_ON_SET_SHADER_UNIFORMS`
 --- | `HOOK_MAX`
 
 --- @type integer

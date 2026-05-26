@@ -1070,72 +1070,25 @@ Gets features from a color combiner
 
 <br />
 
-## [gfx_get_program_id_from_shader_index](#gfx_get_program_id_from_shader_index)
+## [gfx_shader_set_bool](#gfx_shader_set_bool)
 
 ### Description
-Gets a program id from the shader index. Specify a frame pass to get the program id for a specific pass
+Sets the value of a shader uniform of type bool
 
 ### Lua Example
-`local integerValue = gfx_get_program_id_from_shader_index(shaderIndex, framePassIndex)`
+`gfx_shader_set_bool(name, value)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| shaderIndex | `integer` |
-| framePassIndex | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`u32 gfx_get_program_id_from_shader_index(u8 shaderIndex, OPTIONAL u8 framePassIndex);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_use_program](#gfx_use_program)
-
-### Description
-Uses a specific program. Required for setting uniforms
-
-### Lua Example
-`gfx_use_program(program)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| program | `integer` |
+| name | `string` |
+| value | `boolean` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void gfx_use_program(u32 program);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_get_uniform_location](#gfx_shader_get_uniform_location)
-
-### Description
-Gets the location of a shader uniform in a program for modification
-
-### Lua Example
-`local integerValue = gfx_shader_get_uniform_location(program, name)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| program | `integer` |
-| name | `string` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`int gfx_shader_get_uniform_location(u32 program, const char* name);`
+`void gfx_shader_set_bool(const char *name, bool value);`
 
 [:arrow_up_small:](#)
 
@@ -1147,43 +1100,19 @@ Gets the location of a shader uniform in a program for modification
 Sets the value of a shader uniform of type int
 
 ### Lua Example
-`gfx_shader_set_int(loc, value)`
+`gfx_shader_set_int(name, value)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| loc | `integer` |
+| name | `string` |
 | value | `integer` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void gfx_shader_set_int(int loc, int value);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_set_bool](#gfx_shader_set_bool)
-
-### Description
-Sets the value of a shader uniform of type bool
-
-### Lua Example
-`gfx_shader_set_bool(loc, value)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| loc | `integer` |
-| value | `boolean` |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_shader_set_bool(int loc, bool value);`
+`void gfx_shader_set_int(const char *name, int value);`
 
 [:arrow_up_small:](#)
 
@@ -1195,19 +1124,19 @@ Sets the value of a shader uniform of type bool
 Sets the value of a shader uniform of type float
 
 ### Lua Example
-`gfx_shader_set_float(loc, value)`
+`gfx_shader_set_float(name, value)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| loc | `integer` |
+| name | `string` |
 | value | `number` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void gfx_shader_set_float(int loc, float value);`
+`void gfx_shader_set_float(const char *name, f32 value);`
 
 [:arrow_up_small:](#)
 
@@ -1219,12 +1148,12 @@ Sets the value of a shader uniform of type float
 Sets the value of a shader uniform of type vec2
 
 ### Lua Example
-`gfx_shader_set_vec2(loc, x, y)`
+`gfx_shader_set_vec2(name, x, y)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| loc | `integer` |
+| name | `string` |
 | x | `number` |
 | y | `number` |
 
@@ -1232,7 +1161,7 @@ Sets the value of a shader uniform of type vec2
 - None
 
 ### C Prototype
-`void gfx_shader_set_vec2(int loc, float x, float y);`
+`void gfx_shader_set_vec2(const char *name, f32 x, f32 y);`
 
 [:arrow_up_small:](#)
 
@@ -1244,12 +1173,12 @@ Sets the value of a shader uniform of type vec2
 Sets the value of a shader uniform of type vec3
 
 ### Lua Example
-`gfx_shader_set_vec3(loc, x, y, z)`
+`gfx_shader_set_vec3(name, x, y, z)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| loc | `integer` |
+| name | `string` |
 | x | `number` |
 | y | `number` |
 | z | `number` |
@@ -1258,7 +1187,7 @@ Sets the value of a shader uniform of type vec3
 - None
 
 ### C Prototype
-`void gfx_shader_set_vec3(int loc, float x, float y, float z);`
+`void gfx_shader_set_vec3(const char *name, f32 x, f32 y, f32 z);`
 
 [:arrow_up_small:](#)
 
@@ -1270,22 +1199,22 @@ Sets the value of a shader uniform of type vec3
 Sets the value of a shader uniform of type vec4
 
 ### Lua Example
-`gfx_shader_set_vec4(loc, w, x, y, z)`
+`gfx_shader_set_vec4(name, x, y, z, w)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| loc | `integer` |
-| w | `number` |
+| name | `string` |
 | x | `number` |
 | y | `number` |
 | z | `number` |
+| w | `number` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void gfx_shader_set_vec4(int loc, float w, float x, float y, float z);`
+`void gfx_shader_set_vec4(const char *name, f32 x, f32 y, f32 z, f32 w);`
 
 [:arrow_up_small:](#)
 
@@ -1297,19 +1226,19 @@ Sets the value of a shader uniform of type vec4
 Sets the value of a shader uniform of type mat4
 
 ### Lua Example
-`gfx_shader_set_mat4(loc, mat)`
+`gfx_shader_set_mat4(name, mat4)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| loc | `integer` |
-| mat | [Mat4](structs.md#Mat4) |
+| name | `string` |
+| mat4 | [Mat4](structs.md#Mat4) |
 
 ### Returns
 - None
 
 ### C Prototype
-`void gfx_shader_set_mat4(int loc, const Mat4 mat);`
+`void gfx_shader_set_mat4(const char *name, const Mat4 mat4);`
 
 [:arrow_up_small:](#)
 

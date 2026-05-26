@@ -15,6 +15,9 @@
 #include "engine/level_script.h"
 #include "pc/djui/djui_hud_utils.h"
 #include "pc/utils/misc.h"
+#include "pc/gfx/gfx_rendering_api.h"
+#include "pc/gfx/gfx_pc.h"
+#include "pc/gfx/gfx_shader.h"
 #include "include/level_misc_macros.h"
 #include "include/macro_presets.h"
 #include "utils/smlua_anim_utils.h"
@@ -961,9 +964,9 @@ int smlua_func_get_uncolored_string(lua_State* L) {
     return 1;
 }
 
-  //////////////////
- // display list //
-//////////////////
+  /////////
+ // gfx //
+/////////
 
 static int get_gfx_command_specifiers_count(const char *command) {
     int count = 0;
@@ -1009,10 +1012,180 @@ int smlua_func_gfx_set_command(lua_State* L) {
     return 1;
 }
 
+#define MAX_LUA_UNIFORMS 4096
+
+int smlua_func_gfx_shader_set_bool_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_bool_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    int values[MAX_LUA_UNIFORMS];
+    u32 count = 0;
+    u32 tableLength = (u32)lua_rawlen(L, 2);
+    if (tableLength > MAX_LUA_UNIFORMS) tableLength = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= tableLength; i++) {
+        lua_rawgeti(L, 2, i);
+        if (lua_isboolean(L, -1)) {
+            values[count++] = lua_toboolean(L, -1) ? 1 : 0;
+        } else {
+            values[count++] = (lua_tointeger(L, -1) != 0) ? 1 : 0;
+        }
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_BOOL, values, count);
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_int_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_int_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    int values[MAX_LUA_UNIFORMS];
+    u32 count = 0;
+    u32 tableLength = (u32)lua_rawlen(L, 2);
+    if (tableLength > MAX_LUA_UNIFORMS) tableLength = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= tableLength; i++) {
+        lua_rawgeti(L, 2, i);
+        values[count++] = (int)lua_tointeger(L, -1);
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_INT, values, count);
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_float_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_float_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    static f32 buffer[MAX_LUA_UNIFORMS];
+    u32 tableLength = (u32)lua_rawlen(L, 2);
+    if (tableLength > MAX_LUA_UNIFORMS) tableLength = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= tableLength; i++) {
+        lua_rawgeti(L, 2, i);
+        buffer[i - 1] = (f32)lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_FLOAT, buffer, tableLength);
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_vec2_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_vec2_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    static f32 buffer[MAX_LUA_UNIFORMS];
+    u32 total_floats = (u32)lua_rawlen(L, 2);
+    if (total_floats > MAX_LUA_UNIFORMS) total_floats = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= total_floats; i++) {
+        lua_rawgeti(L, 2, i);
+        buffer[i - 1] = (f32)lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_VEC2, buffer, total_floats / 2);
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_vec3_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_vec3_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    static f32 buffer[MAX_LUA_UNIFORMS];
+    u32 total_floats = (u32)lua_rawlen(L, 2);
+    if (total_floats > MAX_LUA_UNIFORMS) total_floats = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= total_floats; i++) {
+        lua_rawgeti(L, 2, i);
+        buffer[i - 1] = (f32)lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_VEC3, buffer, total_floats / 3);
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_vec4_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_vec4_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    static f32 buffer[MAX_LUA_UNIFORMS];
+    u32 total_floats = (u32)lua_rawlen(L, 2);
+    if (total_floats > MAX_LUA_UNIFORMS) total_floats = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= total_floats; i++) {
+        lua_rawgeti(L, 2, i);
+        buffer[i - 1] = (f32)lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_VEC4, buffer, total_floats / 4);
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_mat4_array(lua_State* L) {
+    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
+
+    const char *name = smlua_to_string(L, 1);
+    if (lua_type(L, 2) != LUA_TTABLE) {
+        LOG_LUA_LINE("Invalid type passed to gfx_shader_set_mat4_array(): %s", luaL_typename(L, 2));
+        return 0;
+    }
+
+    static f32 buffer[MAX_LUA_UNIFORMS];
+    u32 total_floats = (u32)lua_rawlen(L, 2);
+    if (total_floats > MAX_LUA_UNIFORMS) total_floats = MAX_LUA_UNIFORMS;
+
+    for (u32 i = 1; i <= total_floats; i++) {
+        lua_rawgeti(L, 2, i);
+        buffer[i - 1] = (f32)lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+
+    gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_MAT4, buffer, total_floats / 16);
+    return 1;
+}
+
+#undef MAX_LUA_UNIFORMS
+
   /////////
  // hud //
 /////////
-
 
 int smlua_func_djui_hud_print_text(lua_State* L) {
     if (L == NULL) { return 0; }
@@ -1111,6 +1284,13 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "cast_graph_node", smlua_func_cast_graph_node);
     smlua_bind_function(L, "get_uncolored_string", smlua_func_get_uncolored_string);
     smlua_bind_function(L, "gfx_set_command", smlua_func_gfx_set_command);
+    smlua_bind_function(L, "gfx_shader_set_bool_array", smlua_func_gfx_shader_set_bool_array);
+    smlua_bind_function(L, "gfx_shader_set_int_array", smlua_func_gfx_shader_set_int_array);
+    smlua_bind_function(L, "gfx_shader_set_float_array", smlua_func_gfx_shader_set_float_array);
+    smlua_bind_function(L, "gfx_shader_set_vec2_array", smlua_func_gfx_shader_set_vec2_array);
+    smlua_bind_function(L, "gfx_shader_set_vec3_array", smlua_func_gfx_shader_set_vec3_array);
+    smlua_bind_function(L, "gfx_shader_set_vec4_array", smlua_func_gfx_shader_set_vec4_array);
+    smlua_bind_function(L, "gfx_shader_set_mat4_array", smlua_func_gfx_shader_set_mat4_array);
     smlua_bind_function(L, "djui_hud_print_text", smlua_func_djui_hud_print_text);
     smlua_bind_function(L, "djui_hud_print_text_interpolated", smlua_func_djui_hud_print_text_interpolated);
     smlua_bind_function(L, "return_self", smlua_func_return_self); // compatibility band-aid

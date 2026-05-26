@@ -25,6 +25,13 @@
    - [cast_graph_node](#cast_graph_node)
    - [get_uncolored_string](#get_uncolored_string)
    - [gfx_set_command](#gfx_set_command)
+   - [gfx_shader_set_bool_array](#gfx_shader_set_bool_array)
+   - [gfx_shader_set_int_array](#gfx_shader_set_int_array)
+   - [gfx_shader_set_float_array](#gfx_shader_set_float_array)
+   - [gfx_shader_set_vec2_array](#gfx_shader_set_vec2_array)
+   - [gfx_shader_set_vec3_array](#gfx_shader_set_vec3_array)
+   - [gfx_shader_set_vec4_array](#gfx_shader_set_vec4_array)
+   - [gfx_shader_set_mat4_array](#gfx_shader_set_mat4_array)
    - [djui_hud_print_text](#djui_hud_print_text)
    - [djui_hud_print_text_interpolated](#djui_hud_print_text_interpolated)
 
@@ -1983,11 +1990,8 @@
    - [gfx_delete_all](functions-7.md#gfx_delete_all)
    - [gfx_reload_shaders](functions-7.md#gfx_reload_shaders)
    - [gfx_color_combiner_get_features](functions-7.md#gfx_color_combiner_get_features)
-   - [gfx_get_program_id_from_shader_index](functions-7.md#gfx_get_program_id_from_shader_index)
-   - [gfx_use_program](functions-7.md#gfx_use_program)
-   - [gfx_shader_get_uniform_location](functions-7.md#gfx_shader_get_uniform_location)
-   - [gfx_shader_set_int](functions-7.md#gfx_shader_set_int)
    - [gfx_shader_set_bool](functions-7.md#gfx_shader_set_bool)
+   - [gfx_shader_set_int](functions-7.md#gfx_shader_set_int)
    - [gfx_shader_set_float](functions-7.md#gfx_shader_set_float)
    - [gfx_shader_set_vec2](functions-7.md#gfx_shader_set_vec2)
    - [gfx_shader_set_vec3](functions-7.md#gfx_shader_set_vec3)
@@ -2759,6 +2763,190 @@ gfx_set_command(gfx, "gsDPSetEnvColor(%i, %i, %i, %i)", r, g, b, a)
 
 ### C Prototype
 N/A
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_bool_array](#gfx_shader_set_bool_array)
+
+### Description
+Passes an array of booleans to a custom uniform shader location.
+
+### Lua Example
+local toggles = { true, false, true, true }
+gfx_shader_set_bool_array("uBools", toggles)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `boolean[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_bool_array(const char* name, bool* values, s32 count);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_int_array](#gfx_shader_set_int_array)
+
+### Description
+Passes an array of integers to a custom uniform shader location.
+
+### Lua Example
+local indices = { 0, 4, 8, 12 }
+gfx_shader_set_int_array("uIndices", indices)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `integer[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_int_array(const char* name, s32* values, s32 count);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_float_array](#gfx_shader_set_float_array)
+
+### Description
+Passes an array of floating-point numbers to a custom uniform shader location.
+
+### Lua Example
+local weights = { 0.1, 0.5, 1.25, 0.0 }
+gfx_shader_set_float_array("uWeights", weights)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `number[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_float_array(const char* name, f32* values, s32 count);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_vec2_array](#gfx_shader_set_vec2_array)
+
+### Description
+Passes an array of 2D vectors (vec2) to a custom uniform shader location using a flat number array.
+
+### Lua Example
+-- Represents two vec2 elements: (1.0, 2.0) and (3.0, 4.0)
+local positions = { 1.0, 2.0, 3.0, 4.0 }
+gfx_shader_set_vec2_array("uPositions", positions)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `number[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_vec2_array(const char* name, f32* values, s32 count);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_vec3_array](#gfx_shader_set_vec3_array)
+
+### Description
+Passes an array of 3D vectors (vec3) to a custom uniform shader location using a flat number array.
+
+### Lua Example
+-- Represents two vec3 colors: RGB(1, 0, 0) and RGB(0, 1, 0)
+local colors = { 1.0, 0.0, 0.0, 0.0, 1.0, 0.0 }
+gfx_shader_set_vec3_array("uColors", colors)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `number[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_vec3_array(const char* name, f32* values, s32 count);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_vec4_array](#gfx_shader_set_vec4_array)
+
+### Description
+Passes an array of 4D vectors (vec4) to a custom uniform shader location using a flat number array.
+
+### Lua Example
+-- Represents two vec4 points: (x, y, z, w)
+local points = { 0.0, 0.0, 0.0, 1.0, 10.0, 5.0, 2.0, 1.0 }
+gfx_shader_set_vec4_array("uPoints", points)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `number[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_vec4_array(const char* name, f32* values, s32 count);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_mat4_array](#gfx_shader_set_mat4_array)
+
+### Description
+Passes an array of 4x4 matrices (mat4) to a custom uniform shader location using a flat array of 16 numbers per matrix.
+
+### Lua Example
+-- Flat array containing 16 elements for a single matrix
+local matrix = {
+    1, 0, 0, 0,
+    0, 1, 0, 0,
+    0, 0, 1, 0,
+    0, 0, 0, 1
+}
+gfx_shader_set_mat4_array("uBoneMatrices", matrix)
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+| values | `number[]` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_mat4_array(const char* name, f32* values, s32 count);`
 
 [:arrow_up_small:](#)
 

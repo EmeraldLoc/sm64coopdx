@@ -166,6 +166,9 @@ static void gfx_dummy_renderer_set_framebuffer(UNUSED u32 fbo, UNUSED u32 width,
 static void gfx_dummy_renderer_reset_framebuffer(void) {
 }
 
+static void gfx_dummy_renderer_set_uniform(UNUSED struct ShaderProgram *prg, UNUSED const char *name, UNUSED ShaderUniformType type, UNUSED UNUSED const void *data, UNUSED u32 numElements) {
+}
+
 static uint32_t gfx_dummy_renderer_new_texture(void) {
     return 0;
 }
@@ -263,6 +266,7 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_delete_framebuffer,
     gfx_dummy_renderer_set_framebuffer,
     gfx_dummy_renderer_reset_framebuffer,
+    gfx_dummy_renderer_set_uniform,
     gfx_dummy_renderer_new_texture,
     gfx_dummy_renderer_select_texture,
     gfx_dummy_renderer_bind_texture_raw,

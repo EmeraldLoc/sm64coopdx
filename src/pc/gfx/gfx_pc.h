@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "pc/gfx/gfx.h"
+#include "pc/gfx/gfx_cc.h"
 
 enum ShaderFlag {
     SHADER_FLAG_HUE,
@@ -59,6 +60,10 @@ struct FramePass {
 extern struct RSP rsp;
 extern struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES];
 extern int gCurrentFramePassIndex;
+
+extern f32 gFogDepthZAdd;
+extern f32 gFogDepthZMult;
+extern f32 gFogDepthZSub;
 
 extern Vec3f gLightingDir;
 extern Color gLightingColor[2];

@@ -17,6 +17,10 @@
 
 #define SYS_MAX_PATH 4096
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // crossplatform impls of misc stuff
 char *sys_strdup(const char *src);
 char *sys_strlwr(char *src);
@@ -37,5 +41,9 @@ void sys_swap_backslashes(char* buffer);
 
 // shows an error message in some way and terminates the game
 void sys_fatal(const char *fmt, ...) __attribute__ ((noreturn));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // _SM64_PLATFORM_H_

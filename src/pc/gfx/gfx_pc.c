@@ -2167,6 +2167,10 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
+    if (gRenderApi == &gfx_direct3d11_api) {
+        gfx_run_basic(commands);
+        return;
+    }
     if (!gfx_wapi->start_frame()) {
         dropped_frame = true;
         return;

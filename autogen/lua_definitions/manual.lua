@@ -428,6 +428,55 @@ function gfx_set_command(gfx, command, ...)
     -- ...
 end
 
+--- Pass an array of booleans to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values boolean[] An array of boolean values
+function gfx_shader_set_bool_array(name, values)
+    -- ...
+end
+
+--- Pass an array of integers to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values integer[] An array of integer values
+function gfx_shader_set_int_array(name, values)
+    -- ...
+end
+
+--- Pass an array of floats to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values number[] An array of floating-point numbers
+function gfx_shader_set_float_array(name, values)
+    -- ...
+end
+
+--- Pass an array of vec2 vectors to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values number[] A flat array of numbers grouped as pairs [x1, y1, x2, y2, ...]
+function gfx_shader_set_vec2_array(name, values)
+    -- ...
+end
+
+--- Pass an array of vec3 vectors to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values number[] A flat array of numbers grouped as triplets [x1, y1, z1, x2, ...]
+function gfx_shader_set_vec3_array(name, values)
+    -- ...
+end
+
+--- Pass an array of vec4 vectors to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values number[] A flat array of numbers grouped as quads [x1, y1, z1, w1, ...]
+function gfx_shader_set_vec4_array(name, values)
+    -- ...
+end
+
+--- Pass an array of mat4 matrices to a custom uniform shader location
+--- @param name string The name of the uniform array in the shader
+--- @param values number[] A flat array containing sets of 16 numbers representing mat4 elements
+function gfx_shader_set_mat4_array(name, values)
+    -- ...
+end
+
 --- @param name string
 --- @return Pointer_Gfx
 --- @return integer
