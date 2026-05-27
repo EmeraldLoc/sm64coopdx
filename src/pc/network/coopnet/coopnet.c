@@ -172,19 +172,6 @@ bool ns_coopnet_is_connected(void) {
     return coopnet_is_connected();
 }
 
-static char* get_size_string(size_t size) {
-    static char buffer[32];
-    char* sizeUnits[3] = { "B", "KB", "MB" };
-    f64 convertedSize = (f64)size;
-    u8 sizeType = 0;
-    while (convertedSize >= 1024 && sizeType < 2) {
-        convertedSize /= 1024;
-        sizeType++;
-    }
-    snprintf(buffer, sizeof(buffer), "%.2f %s", convertedSize, sizeUnits[sizeType]);
-    return buffer;
-}
-
 static void coopnet_populate_description(void) {
     char* buffer = sCoopNetDescription;
     int bufferLength = COOPNET_MAX_DESCRIPTION_LEN;
