@@ -392,27 +392,29 @@ s32 save_file_get_amount_of_available_indexes() {
  * Renames a specific save file. Returns false on failure
 */
 void save_file_rename_file(s32 fileIndex, char* name) {
-    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) return;
-    if (strstr(name, ".")) return;
+    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) { return; }
+    if (strstr(name, ".")) { return; }
+    if (strstr(name, "/")) { return; }
+    if (strstr(name, "\\")) { return; }
 
     char filePath[SYS_MAX_PATH];
-    save_file_get_dir(fileIndex, filePath, 256, NULL);
+    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
     char newFilePath[SYS_MAX_PATH];
-    save_file_get_dir(fileIndex, newFilePath, 256, name);
+    save_file_get_dir(fileIndex, newFilePath, SYS_MAX_PATH, name);
 
-    if (strcmp(filePath, newFilePath) == 0) return;
-    if (!fs_sys_file_exists(fs_get_write_path(filePath))) return;
+    if (strcmp(filePath, newFilePath) == 0) { return; }
+    if (!fs_sys_file_exists(fs_get_write_path(filePath))) { return; }
 
     // write the save data of the file to a variable
     u8 content[EEPROM_SIZE] = { 0 };
     fs_file_t* oldFile = fs_open(filePath);
-    if (oldFile == NULL) return;
+    if (oldFile == NULL) { return; }
     fs_read(oldFile, content, EEPROM_SIZE);
     fs_close(oldFile);
 
     // create a new file with the data
     FILE* fp = fopen(fs_get_write_path(newFilePath), "wb");
-    if (fp == NULL) return;
+    if (fp == NULL) { return; }
     bool success = fwrite(content, 1, EEPROM_SIZE, fp) == EEPROM_SIZE;
     fclose(fp);
     if (success) {
