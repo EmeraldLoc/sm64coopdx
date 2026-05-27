@@ -30,6 +30,17 @@ static void djui_panel_host_save_update_save_name() {
     djui_panel_host_reload_saves();
 }
 
+static bool is_save_name_input_valid() {
+    if (sSaveName[0] == '\0'
+        || strstr(sSaveName, ".")
+        || strstr(sSaveName, "/")
+        || strstr(sSaveName, "\\")) {
+        return false;
+    }
+
+    return true;
+}
+
 static void djui_panel_host_save_save_name_change(UNUSED struct DjuiBase* caller) {
     snprintf(sSaveName, MAX_SAVE_NAME_STRING, "%s", sSaveNameInputBox->buffer);
     if (strlen(sSaveNameInputBox->buffer) >= 64) {
@@ -39,7 +50,7 @@ static void djui_panel_host_save_save_name_change(UNUSED struct DjuiBase* caller
     struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
     struct DjuiColor* textColor = &theme->interactables.textColor;
 
-    if (strstr(sSaveName, ".")) {
+    if (sSaveName[0] != '\0' && !is_save_name_input_valid()) {
         djui_inputbox_set_text_color(sSaveNameInputBox, 255, 0, 0, 255);
     } else {
         djui_inputbox_set_text_color(sSaveNameInputBox, textColor->r, textColor->g, textColor->b, textColor->a);
@@ -47,7 +58,7 @@ static void djui_panel_host_save_save_name_change(UNUSED struct DjuiBase* caller
 }
 
 static void djui_panel_create_create(struct DjuiBase* caller) {
-    if (sSaveName[0] == '\0' || strstr(sSaveName, ".")) {
+    if (is_save_name_input_valid()) {
         djui_inputbox_set_text(sSaveNameInputBox, sSaveName);
         return;
     }
@@ -67,7 +78,7 @@ static void djui_panel_create_create(struct DjuiBase* caller) {
 }
 
 static void djui_panel_edit_save(UNUSED struct DjuiBase* caller) {
-    if (sSaveName[0] == '\0' || strstr(sSaveName, ".")) {
+    if (is_save_name_input_valid()) {
         snprintf(sSaveName, MAX_SAVE_NAME_STRING, "SM64");
         djui_panel_menu_back(caller);
         return;
