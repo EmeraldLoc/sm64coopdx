@@ -295,7 +295,7 @@ void djui_panel_join_lobbies_value_changed(UNUSED struct DjuiBase* caller) {
 
 void djui_panel_join_lobbies_create(struct DjuiBase* caller, const char* password) {
     if (configCoopNetSortSelected >= numSortOptions) {
-        configCoopNetSortSelected = numSortOptions;
+        configCoopNetSortSelected = numSortOptions - 1;
     }
     if (sPassword) { free(sPassword); sPassword = NULL; }
     sPassword = strdup(password);
