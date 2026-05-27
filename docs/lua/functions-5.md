@@ -3175,8 +3175,7 @@ Used for boulders, falling pillars, and the rolling snowman body
 ## [obj_move_xyz_using_fvel_and_yaw](#obj_move_xyz_using_fvel_and_yaw)
 
 ### Description
-Don't use this function outside of of a context where the current object and `obj` are the same.
-Moves `obj` based on a seemingly random mix of using either the current obj or `obj`'s fields
+Updates the object `obj` horizontal velocity using its forward vel and move angle yaw, then moves it
 
 ### Lua Example
 `obj_move_xyz_using_fvel_and_yaw(obj)`
@@ -3199,7 +3198,7 @@ Moves `obj` based on a seemingly random mix of using either the current obj or `
 ## [is_point_within_radius_of_mario](#is_point_within_radius_of_mario)
 
 ### Description
-Checks if a point is within distance from any active Mario visible to enemies' graphical position
+Checks if a point is within distance from any active Mario visible to objects' graphical position
 
 ### Lua Example
 `local integerValue = is_point_within_radius_of_mario(x, y, z, dist)`
