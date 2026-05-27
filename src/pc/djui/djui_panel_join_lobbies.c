@@ -94,9 +94,9 @@ static int sort_coopnet_lobby_comp(const void* a, const void* b) {
     } else if (sortBy == LOBBY_SORTING_PLAYERS) {
         retValue = lobbyB->playerCount - lobbyA->playerCount;
     } else if (sortBy == LOBBY_SORTING_TIME) {
-        retValue = lobbyA->timestamp > lobbyB->timestamp ? 1 : -1;
+        retValue = (lobbyA->timestamp > lobbyB->timestamp) - (lobbyA->timestamp < lobbyB->timestamp);
     } else if (sortBy == LOBBY_SORTING_SIZE) {
-        retValue = lobbyA->modSize > lobbyB->modSize ? 1 : -1;
+        retValue = (lobbyA->modSize > lobbyB->modSize) - (lobbyA->modSize < lobbyB->modSize);
     } else if (sortBy == LOBBY_SORTING_NONE) {
         retValue = lobbyA->lobbyId > lobbyB->lobbyId ? 1 : -1;
     }
