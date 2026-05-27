@@ -40,7 +40,7 @@ static void coopnet_on_connected(uint64_t userId) {
 }
 
 static void coopnet_on_disconnected(bool intentional) {
-    LOG_INFO("Coopnet shutdown!");
+    LOG_INFO("coopnet_on_disconnected: Coopnet shutdown!");
     if (!intentional) {
         djui_popup_create(DLANG(NOTIF, COOPNET_DISCONNECTED), 2);
     }
@@ -323,7 +323,7 @@ static void ns_coopnet_get_lobby_secret(UNUSED char* destination, UNUSED u32 des
 
 static void ns_coopnet_shutdown(bool reconnecting) {
     if (reconnecting) { return; }
-    LOG_INFO("Coopnet shutdown!");
+    LOG_INFO("ns_coopnet_shutdown: Coopnet shutdown!");
     coopnet_shutdown();
     gCoopNetCallbacks.OnLobbyListGot = NULL;
     gCoopNetCallbacks.OnLobbyListFinish = NULL;
