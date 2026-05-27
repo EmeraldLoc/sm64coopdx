@@ -6,6 +6,7 @@
 #include "game/level_update.h"
 #include "game/save_file.h"
 #include "pc/configfile.h"
+#include "pc/utils/misc.h"
 
 static struct DjuiFlowLayout* sSaveLayout = NULL;
 static struct DjuiPaginated* sSavePaginated = NULL;
@@ -142,13 +143,17 @@ static void djui_panel_host_save_edit(struct DjuiBase* caller) {
     djui_panel_edit_create(caller);
 }
 
-static void djui_panel_host_save_update_button(struct DjuiButton* button, int slot) {
-    if (!button || !button->text) return;
-    char starString[64] = { 0 };
+static char *get_save_name(int slot) {
+    static char sStarString[64] = { 0 };
     char name[MAX_SAVE_NAME_STRING] = { 0 };
     save_file_get_filename_at_index(slot, name);
-    snprintf(starString, 64, "%c x%d - %s", '~' + 1, save_file_get_total_star_count(slot, 0, 24), name);
-    djui_text_set_text(button->text, starString);
+    snprintf(sStarString, 64, "%c x%d - %s", '~' + 1, save_file_get_total_star_count(slot, 0, 24), name);
+    return sStarString;
+}
+
+static void djui_panel_host_save_update_button(struct DjuiButton* button, int slot) {
+    if (!button || !button->text) { return; }
+    djui_text_set_text(button->text, get_save_name(slot));
 }
 
 static bool djui_panel_host_save_back(UNUSED struct DjuiBase* caller) {
@@ -182,10 +187,12 @@ void djui_panel_host_save_add_saves(struct DjuiBase* base) {
         save_file_get_dir(i, filepath, SYS_MAX_PATH, NULL);
         if (!fs_sys_file_exists(fs_get_write_path(filepath))) { continue; }
 
+        char *saveName = get_save_name(i);
+
         // filter results
         if (sSearchInputbox != NULL &&
             sSearchInputbox->buffer != NULL &&
-            !strstr_lowercased(djui_text_get_uncolored_string(NULL, strlen(mod->name) + 1, mod->name), sSearchInputbox->buffer)
+            !strstr_lowercased(djui_text_get_uncolored_string(NULL, strlen(saveName) + 1, saveName), sSearchInputbox->buffer)
         ) {
             continue;
         }
@@ -213,12 +220,21 @@ void djui_panel_host_save_add_saves(struct DjuiBase* base) {
     }
 }
 
+static void djui_panel_host_save_rebuild_save_list(UNUSED struct DjuiBase* caller) {
+    djui_base_destroy_children(&sSaveLayout->base);
+    djui_panel_host_save_add_saves(&sSaveLayout->base);
+    djui_paginated_calculate_height(sSavePaginated);
+}
+
 void djui_panel_host_save_create(struct DjuiBase* caller) {
     sSaveButtonCaller = caller;
 
     struct DjuiThreePanel* panel = djui_panel_menu_create(DLANG(HOST_SAVE, SAVE_TITLE), false);
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
+        struct DjuiSearchbox* searchbox = djui_searchbox_create(body, djui_panel_host_save_rebuild_save_list);
+        sSearchInputbox = searchbox->inputbox;
+
         struct DjuiPaginated* paginated = djui_paginated_create(body, 8);
         paginated->showMaxCount = true;
         sSaveLayout = paginated->layout;
