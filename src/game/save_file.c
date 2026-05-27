@@ -291,9 +291,9 @@ static void save_file_convert_old_to_new() {
 */
 void save_file_get_all_filenames(char filenames[NUM_SAVE_FILES][MAX_SAVE_NAME_STRING]) {
     char* directory = (char*)fs_get_write_path(SAVE_DIRECTORY);
-    if (!directory) return;
+    if (!directory) { return; }
 
-    if (!fs_sys_dir_exists(directory)) return;
+    if (!fs_sys_dir_exists(directory)) { return; }
     struct dirent* dir = NULL;
 
     DIR* d = opendir(directory);
@@ -303,19 +303,19 @@ void save_file_get_all_filenames(char filenames[NUM_SAVE_FILES][MAX_SAVE_NAME_ST
     char path[SYS_MAX_PATH] = { 0 };
     while ((dir = readdir(d)) != NULL) {
         // sanity check
-        if (!directory_sanity_check(dir, directory, path)) continue;
+        if (!directory_sanity_check(dir, directory, path)) { continue; }
         snprintf(path, SYS_MAX_PATH, "%s", dir->d_name);
-        if (strlen(path) == 0 || strlen(path) >= 256) continue;
+        if (strlen(path) == 0 || strlen(path) >= 256) { continue; }
 
         // verify filename follows format (index)_(name)(SAVE_EXTENSION)
         int index = 0;
         char name[MAX_SAVE_NAME_STRING];
         char extension[12];
         if (sscanf(path, "%d_%31[^.]%11s", &index, name, extension) == 3) {
-            if (index < 0 || index >= NUM_SAVE_FILES) continue;
-            if (strlen(name) == 0) continue;
-            if (strcmp(extension, SAVE_EXTENSION) != 0) continue;
-            snprintf(filenames[index], 256, "%s", name);
+            if (index < 0 || index >= NUM_SAVE_FILES) { continue; }
+            if (strlen(name) == 0) { continue; }
+            if (strcmp(extension, SAVE_EXTENSION) != 0) { continue; }
+            snprintf(filenames[index], MAX_SAVE_NAME_STRING, "%s", name);
         }
     }
 

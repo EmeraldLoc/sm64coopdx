@@ -6,6 +6,7 @@
 
 extern u8* gOverrideEeprom[NUM_SAVE_FILES];
 static u8 eeprom[NUM_SAVE_FILES][EEPROM_SIZE] = { 0 };
+static bool sReceivedSaveFile[NUM_SAVE_FILES] = { 0 };
 static int filledEepromData = 0;
 static int chunks = (NUM_SAVE_FILES * EEPROM_SIZE + (PACKET_LENGTH - 8) - 1) / (PACKET_LENGTH - 8);
 
@@ -13,6 +14,7 @@ void network_send_download_save_files_request(void) {
     SOFT_ASSERT(gNetworkType == NT_CLIENT);
 
     filledEepromData = 0;
+    memset(sReceivedSaveFile, 0, sizeof(sReceivedSaveFile));
 
     struct Packet p = { 0 };
     packet_init(&p, PACKET_DOWNLOAD_SAVE_REQUEST, true, PLMT_NONE);
@@ -61,11 +63,18 @@ void network_send_download_save(int chunk) {
 void network_receive_download_save(struct Packet* p) {
     SOFT_ASSERT(gNetworkType == NT_CLIENT);
 
+    // make sure it was sent by the server
     if (p->localIndex != UNKNOWN_LOCAL_INDEX) {
         if (gNetworkPlayerServer == NULL || gNetworkPlayerServer->localIndex != p->localIndex) {
             LOG_ERROR("Received download from known local index '%d'", p->localIndex);
             return;
         }
+    }
+
+    if (startingSaveFile < 0 || endSaveFile < startingSaveFile || endSaveFile > NUM_SAVE_FILES) {
+        LOG_ERROR("Received invalid start and end file");
+        djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
+        network_shutdown(false, false, false, false);
     }
 
     if (filledEepromData >= NUM_SAVE_FILES * EEPROM_SIZE) {
@@ -82,7 +91,10 @@ void network_receive_download_save(struct Packet* p) {
 
     for (int i = startingSaveFile; i < endSaveFile; i++) {
         packet_read(p, &eeprom[i], sizeof(eeprom[i]));
-        filledEepromData += EEPROM_SIZE;
+        if (!sReceivedSaveFile[i]) {
+            sReceivedSaveFile[i] = true;
+            filledEepromData += EEPROM_SIZE;
+        }
     }
 
     if (filledEepromData == NUM_SAVE_FILES * EEPROM_SIZE) {

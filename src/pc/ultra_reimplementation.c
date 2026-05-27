@@ -144,6 +144,7 @@ s32 osEepromLongRead(UNUSED OSMesgQueue *mq, u8 address, u8 *buffer, int nbytes,
 }
 
 s32 osEepromLongReadFile(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *buffer, int nbytes) {
+    if (fileIndex >= NUM_SAVE_FILES) { return -1; }
     if (gOverrideEeprom[fileIndex] != NULL) {
         memcpy(buffer, gOverrideEeprom[fileIndex] + address * 8, nbytes);
         return 0;
@@ -152,8 +153,8 @@ s32 osEepromLongReadFile(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *b
     u8 content[EEPROM_SIZE];
     s32 ret = -1;
 
-    char filePath[256];
-    save_file_get_dir(fileIndex, filePath, 256, NULL);
+    char filePath[SYS_MAX_PATH];
+    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
     fs_file_t *fp = fs_open(filePath);
     if (fp == NULL) {
         return -1;
@@ -168,6 +169,7 @@ s32 osEepromLongReadFile(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *b
 }
 
 s32 osEepromLongWrite(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *buffer, int nbytes) {
+    if (fileIndex >= NUM_SAVE_FILES) { return -1; }
     if (gOverrideEeprom[fileIndex] != NULL) {
         memcpy(gOverrideEeprom[fileIndex] + address * 8, buffer, nbytes);
         return 0;
@@ -183,8 +185,8 @@ s32 osEepromLongWrite(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *buff
         fs_sys_mkdir(fs_get_write_path(SAVE_DIRECTORY));
     }
 
-    char filePath[256];
-    save_file_get_dir(fileIndex, filePath, 256, NULL);
+    char filePath[SYS_MAX_PATH];
+    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
     FILE *fp = fopen(fs_get_write_path(filePath), "wb");
     if (fp == NULL) {
         return -1;

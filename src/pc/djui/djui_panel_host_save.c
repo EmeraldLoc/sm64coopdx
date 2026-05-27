@@ -44,14 +44,20 @@ static void djui_panel_host_save_save_name_change(UNUSED struct DjuiBase* caller
 }
 
 static void djui_panel_create_create(struct DjuiBase* caller) {
-    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY)))
+    if (sSaveName[0] == '\0' || strstr(sSaveName, ".")) {
+        snprintf(sSaveName, MAX_SAVE_NAME_STRING, "SM64");
+        djui_inputbox_set_text(sSaveNameInputBox, sSaveName);
+        return;
+    }
+    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) {
         fs_sys_mkdir(fs_get_write_path(SAVE_DIRECTORY));
-    char filePath[256];
-    save_file_get_dir(sButtonTag, filePath, 256, sSaveName);
-    if (fs_sys_file_exists(fs_get_write_path(filePath))) return;
+    }
+    char filePath[SYS_MAX_PATH];
+    save_file_get_dir(sButtonTag, filePath, SYS_MAX_PATH, sSaveName);
+    if (fs_sys_file_exists(fs_get_write_path(filePath))) { return; }
     u8 content[EEPROM_SIZE] = { 0 };
     FILE *fp = fopen(fs_get_write_path(filePath), "wb");
-    if (fp == NULL) return;
+    if (fp == NULL) { return; }
     fwrite(content, 1, EEPROM_SIZE, fp);
     fclose(fp);
     djui_panel_host_reload_saves();
