@@ -36,16 +36,18 @@ static void djui_panel_host_save_save_name_change(UNUSED struct DjuiBase* caller
         djui_inputbox_set_text(sSaveNameInputBox, sSaveName);
     }
 
+    struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
+
     if (strstr(sSaveName, ".")) {
         djui_inputbox_set_text_color(sSaveNameInputBox, 255, 0, 0, 255);
     } else {
-        djui_inputbox_set_text_color(sSaveNameInputBox, 0, 0, 0, 255);
+        djui_inputbox_set_text_color(sSaveNameInputBox, textColor->r, textColor->g, textColor->b, textColor->a);
     }
 }
 
 static void djui_panel_create_create(struct DjuiBase* caller) {
     if (sSaveName[0] == '\0' || strstr(sSaveName, ".")) {
-        snprintf(sSaveName, MAX_SAVE_NAME_STRING, "SM64");
         djui_inputbox_set_text(sSaveNameInputBox, sSaveName);
         return;
     }
