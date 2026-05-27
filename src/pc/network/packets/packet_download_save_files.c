@@ -71,12 +71,6 @@ void network_receive_download_save(struct Packet* p) {
         }
     }
 
-    if (startingSaveFile < 0 || endSaveFile < startingSaveFile || endSaveFile > NUM_SAVE_FILES) {
-        LOG_ERROR("Received invalid start and end file");
-        djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
-        network_shutdown(false, false, false, false);
-    }
-
     if (filledEepromData >= NUM_SAVE_FILES * EEPROM_SIZE) {
         LOG_ERROR("Received eeprom data after eeprom was filled");
         djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
@@ -88,6 +82,12 @@ void network_receive_download_save(struct Packet* p) {
     int endSaveFile = 0;
     packet_read(p, &startingSaveFile, sizeof(startingSaveFile));
     packet_read(p, &endSaveFile, sizeof(endSaveFile));
+
+    if (startingSaveFile < 0 || endSaveFile < startingSaveFile || endSaveFile > NUM_SAVE_FILES) {
+        LOG_ERROR("Received invalid start and end file");
+        djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
+        network_shutdown(false, false, false, false);
+    }
 
     for (int i = startingSaveFile; i < endSaveFile; i++) {
         packet_read(p, &eeprom[i], sizeof(eeprom[i]));
