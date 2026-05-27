@@ -208,21 +208,25 @@ static void coopnet_populate_description(void) {
         for (int j = 0; j < gActiveMods.entryCount; j++) {
             struct Mod* mod = gActiveMods.entries[j];
             char* modCategory = mod->category != NULL ? mod->category : mod->incompatible;
-            if (modCategory && strcasestr(modCategory, sCategories[i].category)) {
+            if (modCategory && strstr_lowercased(modCategory, sCategories[i].category)) {
                 strings[strIndex++] = mod->name;
             }
         }
 
         if (strIndex == 0) { continue; }
         int s = snprintf(buffer, bufferLength, "\n%s:\n", djui_language_get("HOST_MOD_CATEGORIES", category.langKey));
+        if (s < 0 || s >= bufferLength) {
+            LOG_ERROR("CoopNet description too long, description has been cut off");
+            return;
+        }
         buffer += s;
         bufferLength -= s;
 
         for (int j = 0; j < strIndex; j++) {
             int s = snprintf(buffer, bufferLength, "%s\\#dcdcdc\\\n", strings[j]);
             if (s < 0 || s >= bufferLength) {
-                LOG_ERROR("CoopNet description too long, some mods were not listed");
-                break;
+                LOG_ERROR("CoopNet description too long, description has been cut off");
+                return;
             }
             buffer += s;
             bufferLength -= s;
@@ -238,7 +242,7 @@ static void coopnet_populate_description(void) {
         bool doContinue = false;
         if (modCategory) {
             for (size_t i = 0; i < sizeof(sCategories) / sizeof(sCategories[0]); i++) {
-                if (strstr(modCategory, sCategories[i].category)) {
+                if (strstr_lowercased(modCategory, sCategories[i].category)) {
                     doContinue = true;
                     break;
                 }
@@ -250,14 +254,18 @@ static void coopnet_populate_description(void) {
 
     if (strIndex == 0) { return; }
     int s = snprintf(buffer, bufferLength, "\n%s:\n", djui_language_get("HOST_MOD_CATEGORIES", "MISC"));
+    if (s < 0 || s >= bufferLength) {
+        LOG_ERROR("CoopNet description too long, description has been cut off");
+        return;
+    }
     buffer += s;
     bufferLength -= s;
 
     for (int j = 0; j < strIndex; j++) {
         int s = snprintf(buffer, bufferLength, "%s\\#dcdcdc\\\n", strings[j]);
         if (s < 0 || s >= bufferLength) {
-            LOG_ERROR("CoopNet description too long, some mods were not listed");
-            break;
+            LOG_ERROR("CoopNet description too long, description has been cut off");
+            return;
         }
         buffer += s;
         bufferLength -= s;

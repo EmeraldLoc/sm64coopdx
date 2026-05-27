@@ -40,6 +40,7 @@ void mods_get_main_mod_name(char* destination, u32 maxSize) {
         if ((mod->category && strcmp(mod->category, "gamemode") == 0)
         || (mod->incompatible && strcmp(mod->incompatible, "gamemode") == 0)) {
             picked = mod;
+            selectedRomhack = NULL;
             break;
         }
         // prioritize romhacks

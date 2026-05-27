@@ -246,6 +246,9 @@ void djui_panel_join_query_finish(void) {
     djui_text_set_text(sRefreshButton->text, DLANG(LOBBIES, REFRESH));
     djui_base_set_enabled(&sRefreshButton->base, true);
 
+    sLobbyPaginated->startIndex = sSavedLobbyStartCount;
+    djui_paginated_update_page_buttons(sLobbyPaginated);
+    djui_panel_join_on_sorting_change(NULL);
     if (sLobbyLayout->base.child == NULL) {
         struct DjuiText* text = djui_text_create(&sLobbyLayout->base, DLANG(LOBBIES, NO_LOBBIES_FOUND));
         djui_base_set_size_type(&text->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
@@ -253,9 +256,6 @@ void djui_panel_join_query_finish(void) {
         djui_text_set_alignment(text, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
         djui_text_set_drop_shadow(text, 64, 64, 64, 100);
     }
-    sLobbyPaginated->startIndex = sSavedLobbyStartCount;
-    djui_paginated_update_page_buttons(sLobbyPaginated);
-    djui_panel_join_on_sorting_change(NULL);
 }
 
 void djui_panel_join_lobbies_on_destroy(UNUSED struct DjuiBase* caller) {
@@ -294,7 +294,7 @@ void djui_panel_join_lobbies_value_changed(UNUSED struct DjuiBase* caller) {
 }
 
 void djui_panel_join_lobbies_create(struct DjuiBase* caller, const char* password) {
-    if (configCoopNetSortSelected > numSortOptions) {
+    if (configCoopNetSortSelected >= numSortOptions) {
         configCoopNetSortSelected = numSortOptions;
     }
     if (sPassword) { free(sPassword); sPassword = NULL; }
