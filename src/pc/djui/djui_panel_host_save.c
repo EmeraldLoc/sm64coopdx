@@ -12,6 +12,7 @@ static struct DjuiPaginated* sSavePaginated = NULL;
 static struct DjuiInputbox* sSaveNameInputBox = NULL;
 static struct DjuiBase* sSaveButtonCaller = NULL;
 static struct DjuiButton* sSaveButtons[NUM_SAVE_FILES] = { NULL };
+static struct DjuiInputbox* sSearchInputbox = NULL;
 static char sSaveName[MAX_SAVE_NAME_STRING] = { 0 };
 static s32 sButtonTag = 0;
 static bool sEditing = true;
@@ -175,11 +176,20 @@ static void djui_panel_host_save_erase(struct DjuiBase* caller) {
 }
 
 void djui_panel_host_save_add_saves(struct DjuiBase* base) {
-    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) return;
+    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) { return; }
     for (int i = 0; i < NUM_SAVE_FILES; i++) {
-        char filepath[256];
-        save_file_get_dir(i, filepath, 256, NULL);
-        if (!fs_sys_file_exists(fs_get_write_path(filepath))) continue;
+        char filepath[SYS_MAX_PATH];
+        save_file_get_dir(i, filepath, SYS_MAX_PATH, NULL);
+        if (!fs_sys_file_exists(fs_get_write_path(filepath))) { continue; }
+
+        // filter results
+        if (sSearchInputbox != NULL &&
+            sSearchInputbox->buffer != NULL &&
+            !strstr_lowercased(djui_text_get_uncolored_string(NULL, strlen(mod->name) + 1, mod->name), sSearchInputbox->buffer)
+        ) {
+            continue;
+        }
+
         struct DjuiRect* rect1 = djui_rect_container_create(base, 32);
         {
             struct DjuiButton* button1 = djui_button_create(&rect1->base, "", DJUI_BUTTON_STYLE_NORMAL, djui_panel_host_save_button_click);
