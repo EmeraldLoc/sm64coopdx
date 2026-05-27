@@ -1124,6 +1124,7 @@
 --- @field public doubleJumpTimer integer
 --- @field public specialTripleJump integer
 --- @field public fadeWarpOpacity integer
+--- @field public visibleToObjects boolean
 --- @field public wasNetworkVisible integer
 --- @field public dialogId integer
 --- @field public prevNumStarsForDialog integer
@@ -1303,6 +1304,7 @@
 --- @field public collidedObjs Object[]
 --- @field public collisionData Pointer_Collision
 --- @field public behavior Pointer_BehaviorScript
+--- @field public initBhvCommand Pointer_BehaviorScript
 --- @field public curBhvCommand Pointer_BehaviorScript
 --- @field public bhvStack integer[]
 --- @field public bhvStackIndex integer
@@ -2158,10 +2160,10 @@
 
 --- @class RomhackCameraSettings
 --- @field public enable RomhackCameraOverride
---- @field public centering integer
+--- @field public switchable integer
 --- @field public dpad integer
 --- @field public collisions integer
---- @field public slowFall integer
+--- @field public following integer
 --- @field public zoomedInDist integer
 --- @field public zoomedOutDist integer
 --- @field public zoomedInHeight integer
