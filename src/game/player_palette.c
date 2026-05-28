@@ -4,6 +4,7 @@
 #include "pc/debuglog.h"
 #include "pc/mods/mods.h"
 #include "pc/mods/mods_utils.h"
+#include "pc/debuglog.h"
 #include "player_palette.h"
 
 const struct PlayerPalette DEFAULT_MARIO_PALETTE =
@@ -119,7 +120,7 @@ void player_palettes_read(const char* palettesPath, bool appendPalettes) {
 
         if (!player_palette_init(palettesPath, path, appendPalettes)) {
 #ifdef DEVELOPMENT
-            LOG_ERROR("Failed to load palette '%s.ini'\n", path);
+            LOG_ERROR("Failed to load palette '%s.ini'", path);
 #endif
             continue;
         }
@@ -141,7 +142,7 @@ void player_palettes_read(const char* palettesPath, bool appendPalettes) {
         gPresetPalettes[gPresetPaletteCount].palette = palette;
         gPresetPaletteCount++;
 #ifdef DEVELOPMENT
-        LOG_INFO("Loaded palette '%s.ini'\n", path);
+        LOG_INFO("Loaded palette '%s.ini'", path);
 #endif
         if (gPresetPaletteCount >= MAX_PRESET_PALETTES) { break; }
     }
@@ -161,8 +162,12 @@ void player_palette_export(char* name) {
     snprintf(ppath, SYS_MAX_PATH, "%s/%s.ini", palettesPath, name);
     fs_sys_mkdir(palettesPath);
 
-    LOG_INFO("Saving palette as '%s.ini'\n", name);
     FILE* file = fopen(ppath, "w");
+    if (!file) {
+        LOG_ERROR("Unable to create file '%s.ini'!", name);
+        return;
+    }
+
     fprintf(file, "[PALETTE]\n\
 PANTS_R = %d\n\
 PANTS_G = %d\n\
@@ -213,6 +218,8 @@ EMBLEM_B = %d\n",
     configPlayerPalette.parts[EMBLEM][1],
     configPlayerPalette.parts[EMBLEM][2]);
     fclose(file);
+
+    LOG_INFO("Saving palette as '%s.ini'", name);
 }
 
 bool player_palette_delete(const char* palettesPath, char* name, bool appendPalettes) {
@@ -225,7 +232,7 @@ bool player_palette_delete(const char* palettesPath, char* name, bool appendPale
     }
 
     if (remove(ppath) == 0) {
-        LOG_INFO("Deleting palette '%s.ini'\n", name);
+        LOG_INFO("Deleting palette '%s.ini'", name);
         return true;
     }
     return false;

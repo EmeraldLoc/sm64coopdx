@@ -541,7 +541,7 @@ struct DjuiChatBox* djui_chat_box_create(void) {
     struct DjuiBase* cfBase = &chatFlow->base;
     djui_base_set_location(cfBase, 0, 0);
     djui_base_set_size_type(cfBase, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
-    djui_base_set_size(cfBase, 1.0f, 2);
+    djui_base_set_size(cfBase, 1.0f, 0);
     djui_base_set_color(cfBase, 0, 0, 0, 128);
     djui_base_set_padding(cfBase, 2, 2, 2, 2);
     djui_flow_layout_set_margin(chatFlow, 2);

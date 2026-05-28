@@ -223,6 +223,11 @@ static void select_graphics_backend(void) {
         return;
     }
 
+#if defined(_WIN32)
+    if (configGraphicsBackend == GAPI_GL && !gfx_sdl_check_opengl_compatibility()) {
+        configGraphicsBackend = GAPI_D3D11;
+    }
+#endif
     int backend = configGraphicsBackend;
 #if defined(_WIN32)
     if (gCLIOpts.backend != -1) { backend = gCLIOpts.backend; }
@@ -278,6 +283,7 @@ void produce_interpolation_frames_and_delay(void) {
     // make sure to draw at least one frame to prevent the game from freezing completely
     // (including inputs and window events) if the game update duration is greater than 33ms
     do {
+        curTime = clock_elapsed_f64();
         ++framesDrawn;
 
         // when we know how many frames to draw, use a precise delta
@@ -290,6 +296,7 @@ void produce_interpolation_frames_and_delay(void) {
         if (!gSkipInterpolationTitleScreen) { patch_interpolations(delta); }
         send_display_list(gGfxSPTask);
         gfx_end_frame_render();
+        gfx_display_frame();
 
         // delay if our framerate is capped
         if (shouldDelay) {
@@ -302,8 +309,6 @@ void produce_interpolation_frames_and_delay(void) {
             }
         }
 
-        // send the frame to the screen (should be directly after the delay for good frame pacing)
-        gfx_display_frame();
         sDrawnFrames++;
         if (shouldDelay) { numFramesToDraw--; }
     } while ((curTime = clock_elapsed_f64()) < targetTime && numFramesToDraw > 0);
@@ -439,7 +444,6 @@ void produce_one_dummy_frame(void (*callback)(), u8 clearColorR, u8 clearColorG,
 }
 
 void audio_shutdown(void) {
-    audio_custom_shutdown();
     if (gAudioApi) {
         if (gAudioApi->shutdown) gAudioApi->shutdown();
         gAudioApi = NULL;
@@ -449,12 +453,10 @@ void audio_shutdown(void) {
 void game_deinit(void) {
     if (gGameInited) { configfile_save(configfile_name()); }
     controller_shutdown();
-    audio_custom_shutdown();
     audio_shutdown();
     network_shutdown(true, true, false, false);
     smlua_text_utils_shutdown();
     smlua_shutdown();
-    smlua_audio_custom_deinit();
     mods_shutdown();
     djui_shutdown();
     gfx_shutdown();
@@ -578,6 +580,10 @@ int main(int argc, char *argv[]) {
     djui_console_message_dequeue();
 
     show_update_popup();
+
+    if (can_update_game()) {
+        djui_open_update_panel();
+    }
 
     // initialize network
     if (gCLIOpts.network == NT_CLIENT) {

@@ -20,15 +20,27 @@ static u8 sCursorBlink = 0;
 
 static void djui_inputbox_update_style(struct DjuiBase* base) {
     struct DjuiInputbox* inputbox = (struct DjuiInputbox*)base;
+    struct DjuiTheme* theme = gDjuiThemes[configDjuiTheme];
     if (!inputbox->base.enabled) {
-        djui_base_set_border_color(base, 90, 90, 90, 255);
-        djui_base_set_color(&inputbox->base, 140, 140, 140, 255);
+        struct DjuiColor bc = djui_theme_shade_color(theme->interactables.defaultBorderColor, 0.6f);
+        struct DjuiColor rc = djui_theme_shade_color(theme->interactables.defaultRectColor, 0.6f);
+        djui_base_set_border_color(base, bc.r, bc.g, bc.b, bc.a);
+        djui_base_set_color(&inputbox->base, rc.r, rc.g, rc.b, rc.a);
+    } else if (gDjuiCursorDownOn == base) {
+        struct DjuiColor bc = theme->interactables.cursorDownBorderColor;
+        struct DjuiColor rc = theme->interactables.cursorDownRectColor;
+        djui_base_set_border_color(base, bc.r, bc.g, bc.b, bc.a);
+        djui_base_set_color(&inputbox->base, rc.r, rc.g, rc.b, rc.a);
     } else if (gDjuiHovered == base) {
-        djui_base_set_border_color(base, 0, 120, 215, 255);
-        djui_base_set_color(&inputbox->base, 255, 255, 255, 255);
+        struct DjuiColor bc = theme->interactables.hoveredBorderColor;
+        struct DjuiColor rc = theme->interactables.hoveredRectColor;
+        djui_base_set_border_color(base, bc.r, bc.g, bc.b, bc.a);
+        djui_base_set_color(&inputbox->base, rc.r, rc.g, rc.b, rc.a);
     } else {
-        djui_base_set_border_color(base, 150, 150, 150, 255);
-        djui_base_set_color(&inputbox->base, 240, 240, 240, 255);
+        struct DjuiColor bc = theme->interactables.defaultBorderColor;
+        struct DjuiColor rc = theme->interactables.defaultRectColor;
+        djui_base_set_border_color(base, bc.r, bc.g, bc.b, bc.a);
+        djui_base_set_color(&inputbox->base, rc.r, rc.g, rc.b, rc.a);
     }
 }
 
@@ -486,7 +498,9 @@ static void djui_inputbox_render_selection(struct DjuiInputbox* inputbox) {
         if (sCursorBlink < DJUI_INPUTBOX_MID_BLINK && djui_interactable_is_input_focus(&inputbox->base)) {
             create_dl_translation_matrix(DJUI_MTX_PUSH, renderX - DJUI_INPUTBOX_CURSOR_WIDTH / 2.0f, -0.1f, 0);
             create_dl_scale_matrix(DJUI_MTX_NOPUSH, DJUI_INPUTBOX_CURSOR_WIDTH, 0.8f, 1.0f);
-            gDPSetEnvColor(gDisplayListHead++, inputbox->textColor.r, inputbox->textColor.g, inputbox->textColor.b, inputbox->textColor.a);
+
+            struct DjuiColor *textColor = &inputbox->textColor;
+            gDPSetEnvColor(gDisplayListHead++, textColor->r, textColor->g, textColor->b, textColor->a);
             gSPDisplayList(gDisplayListHead++, dl_djui_simple_rect);
             gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
         }
@@ -636,6 +650,8 @@ static void djui_inputbox_destroy(struct DjuiBase* base) {
 struct DjuiInputbox* djui_inputbox_create(struct DjuiBase* parent, u16 bufferSize) {
     struct DjuiInputbox* inputbox = calloc(1, sizeof(struct DjuiInputbox));
     struct DjuiBase* base         = &inputbox->base;
+    struct DjuiTheme* theme       = gDjuiThemes[configDjuiTheme];
+    struct DjuiColor* textColor = &theme->interactables.textColor;
     inputbox->bufferSize = bufferSize;
     inputbox->buffer = calloc(bufferSize, sizeof(char));
     inputbox->yOffset = DJUI_INPUTBOX_YOFF;
@@ -643,8 +659,7 @@ struct DjuiInputbox* djui_inputbox_create(struct DjuiBase* parent, u16 bufferSiz
     djui_base_init(parent, base, djui_inputbox_render, djui_inputbox_destroy);
     djui_base_set_size(base, 200, 32);
     djui_base_set_border_width(base, 2);
-    djui_base_set_gradient(base, false);
-    djui_inputbox_set_text_color(inputbox, 0, 0, 0, 255);
+    djui_inputbox_set_text_color(inputbox, textColor->r, textColor->g, textColor->b, textColor->a);
     djui_interactable_create(base, djui_inputbox_update_style);
     djui_interactable_hook_cursor_down(base, djui_inputbox_on_cursor_down_begin, djui_inputbox_on_cursor_down, NULL);
     djui_interactable_hook_key(base, djui_inputbox_on_key_down, djui_inputbox_on_key_up);

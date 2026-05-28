@@ -22,6 +22,11 @@ DEBUG ?= 0
 # Enable development/testing flags
 DEVELOPMENT ?= 0
 
+# Enable this if you want to use some very unsafe and potentially harmful code from the Lua standard libs
+# that is normally disabled to prevent catastrophic accidents.
+# Only enable this if you know exactly why you need it and will take measures to mitigate the risks.
+LUA_UNSAFE ?= 0
+
 # Build for the N64 (turn this off for ports)
 TARGET_N64 = 0
 
@@ -46,6 +51,8 @@ ENHANCE_LEVEL_TEXTURES ?= 1
 DISCORD_SDK ?= 1
 # Enable CoopNet SDK (used for CoopNet server hosting)
 COOPNET ?= 1
+# Enable Updater (used for automatic updates)
+UPDATER ?= 1
 # Enable docker build workarounds
 DOCKERBUILD ?= 0
 # Sets your optimization level for building.
@@ -928,6 +935,22 @@ else
   endif
 endif
 
+# Updater
+UPDATER_EXEC :=
+ifeq ($(UPDATER),1)
+  ifeq ($(WINDOWS_BUILD),1)
+    UPDATER_EXEC += ./updater/win64/coopdx_updater.exe
+  else ifeq ($(OSX_BUILD),1)
+    ifeq ($(shell uname -m),arm64)
+      UPDATER_EXEC += ./updater/mac_arm/coopdx_updater
+    else
+      UPDATER_EXEC += ./updater/mac_intel/coopdx_updater
+    endif
+  else ifeq ($(TARGET_RPI),0)
+    UPDATER_EXEC += ./updater/linux/coopdx_updater
+  endif
+endif
+
 IS_DEV_OR_DEBUG := $(or $(filter 1,$(DEVELOPMENT)),$(filter 1,$(DEBUG)),0)
 ifeq ($(IS_DEV_OR_DEBUG),0)
   CFLAGS += -fno-ident -fno-common -ffile-prefix-map="$(PWD)"=. -D__DATE__="\"\"" -D__TIME__="\"\"" -Wno-builtin-macro-redefined
@@ -992,6 +1015,16 @@ endif
 ifeq ($(DEVELOPMENT),1)
   CC_CHECK_CFLAGS += -DDEVELOPMENT
   CFLAGS += -DDEVELOPMENT
+endif
+
+# Check for unsafe mode option
+ifeq ($(LUA_UNSAFE),1)
+  ifeq ($(DEVELOPMENT),1)
+    CC_CHECK_CFLAGS += -DLUA_UNSAFE
+    CFLAGS += -DLUA_UNSAFE
+  else
+    $(error LUA_UNSAFE cannot be enabled outside of development mode)
+  endif
 endif
 
 # Check for rpi option
@@ -1096,9 +1129,9 @@ MAPFILE = $(BUILD_DIR)/coop.map
 exemap: $(EXE)
 	@$(PRINT) "$(GREEN)Creating map file: $(BLUE)$(MAPFILE) $(NO_COL)\n"
 	$(V)$(OBJDUMP) -t $(EXE) > $(MAPFILE)
+ifeq ($(IS_DEV_OR_DEBUG),0)
 	@cp $(EXE) $(EXE).bak && cp $(MAPFILE) $(MAPFILE).bak
 	$(V)$(PYTHON) $(TOOLS_DIR)/clean_mapfile.py $(EXE) $(MAPFILE)
-ifeq ($(IS_DEV_OR_DEBUG),0)
 	$(V)$(OBJCOPY) -p --strip-unneeded $(EXE)
 endif
 all: exemap
@@ -1129,6 +1162,9 @@ $(BUILD_DIR)/$(DISCORD_SDK_LIBS):
 
 $(BUILD_DIR)/$(COOPNET_LIBS):
 	@$(CP) -f $(COOPNET_LIBS) $(BUILD_DIR)
+
+$(BUILD_DIR)/$(UPDATER_EXEC):
+	@$(CP) -f $(UPDATER_EXEC) $(BUILD_DIR)
 
 $(BUILD_DIR)/$(LANG_DIR):
 	@$(CP) -f -r $(LANG_DIR) $(BUILD_DIR)
@@ -1478,7 +1514,7 @@ ifeq ($(TARGET_N64),1)
   $(BUILD_DIR)/$(TARGET).objdump: $(ELF)
 	$(OBJDUMP) -D $< > $@
 else
-  $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(COOPNET_LIBS) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
+  $(EXE): $(O_FILES) $(MIO0_FILES:.mio0=.o) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(BUILD_DIR)/$(RPC_LIBS) $(BUILD_DIR)/$(DISCORD_SDK_LIBS) $(BUILD_DIR)/$(COOPNET_LIBS) $(BUILD_DIR)/$(UPDATER_EXEC) $(BUILD_DIR)/$(LANG_DIR) $(BUILD_DIR)/$(MOD_DIR) $(BUILD_DIR)/$(PALETTES_DIR)
 	@$(PRINT) "$(GREEN)Linking executable: $(BLUE)$@ $(NO_COL)\n"
 	$(V)$(LD) $(PROF_FLAGS) -L $(BUILD_DIR) -o $@ $(O_FILES) $(ULTRA_O_FILES) $(GODDARD_O_FILES) $(LDFLAGS)
 endif
@@ -1516,6 +1552,7 @@ all:
 		cp build/us_pc/discord_game_sdk.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libdiscord_game_sdk.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libcoopnet.dylib $(APP_MACOS_DIR); \
+    cp build/us_pc/coopdx_updater $(APP_MACOS_DIR); \
     cp build/us_pc/libjuice.1.6.2.dylib $(APP_MACOS_DIR); \
     cp $(SDL2_LIB) $(APP_MACOS_DIR)/libSDL2.dylib; \
     install_name_tool -change $(BREW_PREFIX)/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
