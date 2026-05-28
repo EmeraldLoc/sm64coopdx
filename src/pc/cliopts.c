@@ -37,7 +37,7 @@ static void print_help(void) {
     log_to_terminal("--enable-mod MODNAME      Enables a mod.\n");
     log_to_terminal("--headless                Enable Headless mode.\n");
 #if defined(_WIN32)
-    log_to_terminal("--backend                 Sets the backend to either 'opengl' or 'directx'.");
+    log_to_terminal("--backend                 Sets the backend to either 'opengl' or 'directx'.\n");
 #endif
 }
 

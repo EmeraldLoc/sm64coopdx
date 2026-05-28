@@ -116,7 +116,7 @@ static void djui_console_enter() {
     char* buffer = gDjuiConsole->inputbox->buffer;
     if (strcmp(buffer, "") == 0) return;
     if (buffer[0] == '/') buffer++;
-    run_command(buffer);
+    run_command(buffer, true);
     sClearConsoleInput = true;
 }
 

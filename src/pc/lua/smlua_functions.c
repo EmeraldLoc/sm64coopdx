@@ -54,6 +54,7 @@ int smlua_func_print(lua_State *L) {
         luaL_tolstring(L, i, &len);
         totalLen += len;
         if (i > 1) totalLen += 1;
+        lua_pop(L, 1);
     }
 
     // allocate string
@@ -74,6 +75,7 @@ int smlua_func_print(lua_State *L) {
 
         memcpy(completeString + pos, str, len);
         pos += len;
+        lua_pop(L, 1);
     }
 
     completeString[pos] = '\0';

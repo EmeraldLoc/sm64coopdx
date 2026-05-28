@@ -83,7 +83,7 @@ void terminal_update() {
         terminal_stop();
 
         if (input[0] != '\0') {
-            run_command(input[0] == '/' ? input + 1 : input);
+            run_command(input[0] == '/' ? input + 1 : input, true);
             linenoiseHistoryAdd(input);
         }
 

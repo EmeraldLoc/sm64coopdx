@@ -55,7 +55,7 @@ id_bhvExample = hook_behavior(nil, OBJ_LIST_DEFAULT, true, bhv_example_init, bhv
 <br />
 
 ## [hook_chat_command](#hook_chat_command)
-`hook_chat_command()` allows Lua mods to react and respond to chat commands. Chat commands start with the `/` character. The function the mod passes to the hook should return `true` when the command was valid and `false` otherwise. Use `command_message_create` to show any message to the user. Chat commands appear in the chat, console, and terminal.
+`hook_chat_command()` allows Lua mods to react and respond to chat commands. Chat commands start with the `/` character. The function the mod passes to the hook should return `true` when the command was valid and `false` otherwise. Use `command_message_create` to show any message to the user. Chat commands appear in the chat, console, and terminal (Note: Terminal input is exclusive to Linux and macOS).
 
 ### Parameters
 

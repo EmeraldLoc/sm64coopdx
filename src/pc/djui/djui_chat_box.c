@@ -139,7 +139,7 @@ static void djui_chat_box_input_enter(struct DjuiInputbox* chatInput) {
     if (strlen(chatInput->buffer) != 0) {
         sent_history_add_message(&sentHistory, chatInput->buffer);
         if (chatInput->buffer[0] == '/') {
-            run_command(chatInput->buffer + 1);
+            run_command(chatInput->buffer + 1, false);
         } else {
             djui_chat_message_create_from(gNetworkPlayerLocal->globalIndex, chatInput->buffer);
             network_send_chat(chatInput->buffer, gNetworkPlayerLocal->globalIndex);

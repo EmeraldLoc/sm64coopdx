@@ -1205,17 +1205,17 @@ int smlua_update_console_command_description(lua_State* L) {
     return 0;
 }
 
-bool smlua_call_chat_command_hook(char* command) {
+bool smlua_call_chat_command_hook(char* command, bool onConsole) {
     lua_State* L = gLuaState;
     if (L == NULL) { return false; }
     for (int i = 0; i < sHookedChatCommandsCount; i++) {
         struct LuaHookedCommand* hook = &sHookedChatCommands[i];
         // compare strings
         size_t commandLength = strlen(hook->command);
-        if (strncmp(hook->command, command, commandLength) != 0) goto NEXT_HOOK;
+        if (strncmp(hook->command, command, commandLength) != 0) { goto NEXT_HOOK; }
 
-        // make sure we aren't running a console command
-        if (hook->isConsoleCommand && !gDjuiConsoleFocus) goto NEXT_HOOK;
+        // make sure we aren't running a console command if we are in chat
+        if (hook->isConsoleCommand && !onConsole) { goto NEXT_HOOK; }
 
         char* params = &command[commandLength];
         if (*params != '\0' && *params != ' ') {

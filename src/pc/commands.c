@@ -242,8 +242,7 @@ static bool command_ban(const char* message) {
 }
 
 static bool command_permaban(const char* message) {
-    struct NetworkPlayer* npl = &gNetworkPlayers[0];
-    if (gNetworkType != NT_SERVER && !npl->moderator) {
+    if (gNetworkType != NT_SERVER) {
         command_message_create(DLANG(CHAT, NO_PERMS), CONSOLE_MESSAGE_ERROR);
         return true;
     }
@@ -346,8 +345,10 @@ static bool command_confirm(UNUSED const char* message) {
 static bool command_nametags(const char* message) {
     if (strcmp("show-tag", message) == 0) {
         gNametagsSettings.showSelfTag = !gNametagsSettings.showSelfTag;
+        return true;
     } else if (strcmp("show-health", message) == 0) {
         gNametagsSettings.showHealth = !gNametagsSettings.showHealth;
+        return true;
     }
     command_message_create(DLANG(CHAT, NAMETAGS_MISSING_PARAMETERS), CONSOLE_MESSAGE_ERROR);
     return true;
@@ -433,7 +434,7 @@ void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLev
     }
 }
 
-void run_command(char* command) {
+void run_command(char* command, bool onConsole) {
     // directly set active state of certain commands
     set_command_active("nametags", gServerSettings.nametags);
     set_command_active("host", gDjuiInMainMenu);
@@ -450,31 +451,31 @@ void run_command(char* command) {
     // loop through builtin commands first
     for (unsigned int i = 0; i < sCommandCount; i++) {
         // sanity checks
-        if (sCommands[i].command[0] == '\0') continue;
-        if (!sCommands[i].action) continue;
-        if (!sCommands[i].active) continue;
-        if (!sCommands[i].isChatCommand && gDjuiChatBoxFocus) continue;
+        if (sCommands[i].command[0] == '\0') { continue; }
+        if (!sCommands[i].action) { continue; }
+        if (!sCommands[i].active) { continue; }
+        if (!sCommands[i].isChatCommand && !onConsole) { continue; }
 
         // compare strings
         size_t commandLength = strlen(sCommands[i].command);
-        if (!str_starts_with(command, sCommands[i].command)) continue;
-        if (command[commandLength] != '\0' && command[commandLength] != ' ') continue;
+        if (!str_starts_with(command, sCommands[i].command)) { continue; }
+        if (command[commandLength] != '\0' && command[commandLength] != ' ') { continue; }
 
         // get args
         char* arguments = command + commandLength;
         if (*arguments != '\0') arguments++;
 
         // run action
-        if (sCommands[i].action(arguments)) return;
+        if (sCommands[i].action(arguments)) { return; }
     }
 
 #ifdef DEVELOPMENT
     // check development commands
-    if (exec_dev_chat_command(command)) return;
+    if (exec_dev_chat_command(command)) { return; }
 #endif
 
     // check lua commands
-    if (smlua_call_chat_command_hook(command)) return;
+    if (smlua_call_chat_command_hook(command, onConsole)) { return; }
 
     // no command exists, alert the user
     char extendedUnknownCommandMessage[MAX_CONSOLE_INPUT_LENGTH];
