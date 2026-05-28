@@ -58,7 +58,11 @@ void terminal_init() {
         return;
     }
 
-    linenoiseEditStart(&sLinenoiseState, -1, -1, sTerminalInput, sizeof(sTerminalInput), "> ");
+    if (linenoiseEditStart(&sLinenoiseState, -1, -1, sTerminalInput, sizeof(sTerminalInput), "> ") == -1) {
+        sTerminalInitialized = false;
+        sTerminalActive = false;
+        return;
+    }
     sTerminalInitialized = true;
     sTerminalActive = true;
 #endif
