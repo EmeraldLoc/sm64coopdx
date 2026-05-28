@@ -5,6 +5,7 @@
 #include "djui_panel_main.h"
 #include "djui_panel_pause.h"
 #include "djui_panel_options.h"
+#include "djui_panel_characters.h"
 #include "pc/network/network_player.h"
 #include "pc/platform.h"
 #include "game/level_update.h"
@@ -447,20 +448,6 @@ static void djui_panel_player_update_camera_cutscene(void) {
     }
 }
 
-static void djui_panel_player_value_changed(UNUSED struct DjuiBase* caller) {
-    djui_panel_player_edit_palette_update_palette_display();
-
-    if (configPlayerModel >= MAX_CHARACTERS) { configPlayerModel = CT_MARIO; }
-    if (gNetworkPlayers[0].overrideModelIndex == gNetworkPlayers[0].modelIndex) { gNetworkPlayers[0].overrideModelIndex = configPlayerModel; }
-
-    gNetworkPlayers[0].modelIndex = configPlayerModel;
-    network_player_update_model(0);
-
-    if (gNetworkType != NT_NONE) {
-        network_send_player_settings();
-    }
-}
-
 static void djui_panel_player_update_preset_palette(UNUSED struct DjuiBase* caller) {
     if (sPalettePresetIndex < 1) { return; }
     configPlayerPalette = gPresetPalettes[sPalettePresetIndex - 1].palette;
@@ -505,16 +492,6 @@ void djui_panel_player_create(struct DjuiBase* caller) {
             djui_interactable_hook_focus(&inputbox1->base, djui_inputbox_on_focus_begin, NULL, djui_panel_player_name_on_focus_end);
         }
 
-        char* characterChoices[MAX_CHARACTERS] = { 0 };
-        int characterChoicesCount = 0;
-        for (int i = 0; i < MAX_CHARACTERS; i++) {
-            if (gCharacters[i].type != CT_UNALLOCATED) {
-                characterChoices[i] = gCharacters[i].name;
-                characterChoicesCount++;
-            }
-        }
-        djui_selectionbox_create(body, DLANG(PLAYER, MODEL), characterChoices, characterChoicesCount, &configPlayerModel, djui_panel_player_value_changed);
-
         player_palettes_reset();
         player_palettes_read(sys_resource_path(), true);
         player_palettes_read(fs_get_write_path(PALETTES_DIRECTORY), false);
@@ -536,6 +513,7 @@ void djui_panel_player_create(struct DjuiBase* caller) {
         }
         sPalettePresetSelection = djui_selectionbox_create(body, DLANG(PLAYER, PALETTE_PRESET), palettePresets, gPresetPaletteCount + 1, &sPalettePresetIndex, djui_panel_player_update_preset_palette);
 
+        djui_button_create(body, DLANG(PLAYER, CHARACTERS), DJUI_BUTTON_STYLE_NORMAL, djui_panel_characters_create);
         djui_button_create(body, DLANG(PLAYER, EDIT_PALETTE), DJUI_BUTTON_STYLE_NORMAL, djui_panel_player_edit_palette_create);
         djui_button_create(body, DLANG(PLAYER, ACTIVE_PALETTE), DJUI_BUTTON_STYLE_NORMAL, djui_panel_player_name_active_palette);
         djui_button_create(body, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_BACK, djui_panel_menu_back);

@@ -529,13 +529,14 @@ static struct ModAudio* get_mod_audio_character_sound(struct MarioState* m, enum
     if (selectedAudioIndex == -1) { return NULL; }
     int modFileIndex = character->modAudioSounds[characterSound][selectedAudioIndex];
     int modIndex = character->modIndexForAudio[characterSound][selectedAudioIndex];
-    if (modIndex < 0 || modIndex > gActiveMods.entryCount) {
+    if (modIndex < 0 || modIndex >= gActiveMods.entryCount) {
         LOG_ERROR("get_mod_audio_character_sound: Could not find sound file, mod index is invalid. It is %d", modIndex);
         return NULL;
     }
     struct Mod* mod = gActiveMods.entries[modIndex];
     if (!mod) {
         LOG_ERROR("get_mod_audio_character_sound: Could not find sound file, mod is null");
+        return NULL;
     }
 
     return audio_sample_load_from_mod(mod, mod->files[modFileIndex].relativePath);
@@ -666,17 +667,17 @@ void character_set_hud_head_texture(struct Character* character, struct TextureI
 
 void character_set_cap_enemy_gfx_name(struct Character* character, const char* gfxName) {
     if (character == NULL) { return; }
-    character->capEnemyGfx = strdup(gfxName);
+    snprintf(character->capEnemyGfx, sizeof(character->capEnemyGfx), "%s", gfxName);
 }
 
 void character_set_cap_enemy_decal_gfx_name(struct Character* character, const char* gfxName) {
     if (character == NULL) { return; }
-    character->capEnemyDecalGfx = strdup(gfxName);
+    snprintf(character->capEnemyDecalGfx, sizeof(character->capEnemyDecalGfx), "%s", gfxName);
 }
 
 void character_add_sound(struct Character* character, enum CharacterSound characterSound, const char* audioName) {
-    if (!character) return;
-    if (!audioName) return;
+    if (!character) { return; }
+    if (!audioName) { return; }
     if (characterSound < 0 || characterSound >= CHAR_SOUND_MAX) return;
 
     bool validFileType = false;

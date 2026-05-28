@@ -121,6 +121,7 @@ static s16 mario_set_modded_animation_internal(struct MarioState *m, const char*
     if (!currentAnimName || strcmp(currentAnimName, moddedCharAnim) != 0) {
         smlua_anim_util_set_animation(o, moddedCharAnim);
         struct Animation* curAnim = o->header.gfx.animInfo.curAnim;
+        if (curAnim == NULL) { return 0; }
         if (curAnim->flags & ANIM_FLAG_2) {
             o->header.gfx.animInfo.animFrameAccelAssist = (curAnim->startFrame << 0x10);
         } else {

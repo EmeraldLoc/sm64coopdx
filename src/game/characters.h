@@ -10,6 +10,7 @@
 #define MAX_CHARACTERS 256
 #define MAX_CHARACTER_NAME_LEN 128
 #define MAX_CHARACTER_AUDIOS_PER_SOUND 8
+#define MAX_CHARACTER_GFX_NAME_LEN 512
 
 enum CharacterType {
     CT_UNALLOCATED = -1,
@@ -81,8 +82,8 @@ struct Character {
     u32 capWingModelId;
     u32 capMetalWingModelId;
     u8 capEnemyLayer;
-    char* capEnemyGfx;
-    char* capEnemyDecalGfx;
+    char capEnemyGfx[MAX_CHARACTER_GFX_NAME_LEN];
+    char capEnemyDecalGfx[MAX_CHARACTER_GFX_NAME_LEN];
     f32 torsoRotMult;
     // anim
     u8 animOffsetEnabled;

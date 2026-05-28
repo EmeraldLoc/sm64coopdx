@@ -12027,7 +12027,7 @@ int smlua_func_center_rom_hack_camera(lua_State* L) {
  // characters.h //
 //////////////////
 
-int smlua_func_character_get_first_allocated_index(UNUSED lua_State* L) {
+int smlua_func_character_get_first_allocated_index(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -12042,7 +12042,7 @@ int smlua_func_character_get_first_allocated_index(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_character_get_first_unallocated_index(UNUSED lua_State* L) {
+int smlua_func_character_get_first_unallocated_index(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -12057,7 +12057,7 @@ int smlua_func_character_get_first_unallocated_index(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_character_get_first_allocated(UNUSED lua_State* L) {
+int smlua_func_character_get_first_allocated(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -12072,7 +12072,7 @@ int smlua_func_character_get_first_allocated(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_character_get_first_unallocated(UNUSED lua_State* L) {
+int smlua_func_character_get_first_unallocated(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -34539,7 +34539,7 @@ int smlua_func_is_transition_playing(lua_State* L) {
     return 1;
 }
 
-int smlua_func_get_current_play_mode(UNUSED lua_State* L) {
+int smlua_func_get_current_play_mode(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -34554,7 +34554,7 @@ int smlua_func_get_current_play_mode(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_get_delayed_warp_op(UNUSED lua_State* L) {
+int smlua_func_get_delayed_warp_op(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);

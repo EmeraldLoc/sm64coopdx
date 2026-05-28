@@ -416,7 +416,10 @@ void bhv_klepto_update(void) {
                 struct NetworkPlayer* np = network_player_from_global_index(o->globalPlayerIndex);
                 if (np == NULL) { np = gNetworkPlayerLocal; }
                 struct MarioState* remoteMarioState = &gMarioStates[np->localIndex];
-                u32 capModel = smlua_model_util_load(remoteMarioState->character->capModelId);
+                u32 capModel = smlua_model_util_load(E_MODEL_MARIOS_CAP);
+                if (remoteMarioState->character) {
+                    capModel = smlua_model_util_load(remoteMarioState->character->capModelId);
+                }
 
                 gMarioStates[0].cap &= ~SAVE_FLAG_CAP_ON_KLEPTO;
 

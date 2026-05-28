@@ -216,6 +216,7 @@ bool smlua_anim_util_animation_exists_using_index(int index) {
 }
 
 int smlua_anim_util_get_index_from_name(const char* name) {
+    if (!name) { return -1; }
     struct CustomAnimation *node = get_custom_animation_node(name);
     if (!node) {
         LOG_LUA_LINE("smlua_anim_util_get_index_from_name: Animation '%s' doesn't exist", name);

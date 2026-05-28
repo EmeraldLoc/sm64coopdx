@@ -40,9 +40,9 @@ void network_receive_character_request(struct Packet* p) {
     u8 globalIndex;
     packet_read(p, &globalIndex, sizeof(u8));
     struct NetworkPlayer* np = network_player_from_global_index(globalIndex);
-    if (!np->connected) { return; }
+    if (!np || !np->connected) { return; }
 
-    network_send_character_to(np->localIndex);
+    network_send_character_to(np->globalIndex);
 }
 
 void network_send_character_to(u8 sendToGlobalIndex) {
@@ -96,6 +96,10 @@ void network_send_character_to(u8 sendToGlobalIndex) {
 void network_receive_character(struct Packet* p) {
     u8 globalIndex;
     packet_read(p, &globalIndex, sizeof(u8));
+    if (globalIndex >= MAX_PLAYERS) {
+        LOG_CONSOLE("network_receive_character: Global index is an invalid index!");
+        return;
+    }
     struct Character* character = gMarioStates[network_local_index_from_global(globalIndex)].character;
     if (!character) {
         LOG_ERROR("network_receive_character: Character is NULL for globalIndex %d", globalIndex);
