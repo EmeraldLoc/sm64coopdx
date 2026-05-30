@@ -416,6 +416,8 @@ Gfx* geo_switch_mario_stand_run(s32 callContext, struct GraphNode* node, UNUSED 
  */
 Gfx* geo_switch_mario_eyes(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
     struct GraphNodeSwitchCase* switchCase = (struct GraphNodeSwitchCase*) node;
+    u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = geo_get_body_state();
     s16 blinkFrame;
 
@@ -442,6 +444,7 @@ Gfx* geo_switch_mario_eyes(s32 callContext, struct GraphNode* node, UNUSED Mat4*
 Gfx* geo_mario_tilt_torso(s32 callContext, struct GraphNode* node, Mat4* mtx) {
     Mat4 * curTransform = mtx;
     u8 plrIdx = geo_get_processing_object_index();
+    if (gMarioStates[plrIdx].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = &gBodyStates[plrIdx];
     s32 action = bodyState->action;
     bodyState->mirrorMario = gCurGraphNodeObject == &gMirrorMario[plrIdx];
@@ -472,6 +475,7 @@ Gfx* geo_mario_tilt_torso(s32 callContext, struct GraphNode* node, Mat4* mtx) {
  */
 Gfx* geo_mario_head_rotation(s32 callContext, struct GraphNode* node, Mat4* c) {
     u8 plrIdx = geo_get_processing_object_index();
+    if (gMarioStates[plrIdx].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = &gBodyStates[plrIdx];
     s32 action = bodyState->action;
     bodyState->mirrorMario = gCurGraphNodeObject == &gMirrorMario[plrIdx];
@@ -512,6 +516,8 @@ Gfx* geo_mario_head_rotation(s32 callContext, struct GraphNode* node, Mat4* c) {
  */
 Gfx* geo_switch_mario_hand(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
     struct GraphNodeSwitchCase* switchCase = (struct GraphNodeSwitchCase*) node;
+    u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = geo_get_body_state();
 
     if (callContext == GEO_CONTEXT_RENDER) {
@@ -546,6 +552,7 @@ Gfx* geo_mario_hand_foot_scaler(s32 callContext, struct GraphNode* node, UNUSED 
     struct GraphNodeGenerated* asGenerated = (struct GraphNodeGenerated*) node;
     struct GraphNodeScale* scaleNode = (struct GraphNodeScale*) node->next;
     u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = geo_get_body_state();
 
     if (callContext == GEO_CONTEXT_RENDER) {
@@ -568,6 +575,8 @@ Gfx* geo_mario_hand_foot_scaler(s32 callContext, struct GraphNode* node, UNUSED 
  */
 Gfx* geo_switch_mario_cap_effect(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
     struct GraphNodeSwitchCase* switchCase = (struct GraphNodeSwitchCase*) node;
+    u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = geo_get_body_state();
 
     if (callContext == GEO_CONTEXT_RENDER) {
@@ -584,6 +593,8 @@ Gfx* geo_switch_mario_cap_on_off(s32 callContext, struct GraphNode* node, UNUSED
     if (!node) { return NULL; }
     struct GraphNode* next = node->next;
     struct GraphNodeSwitchCase* switchCase = (struct GraphNodeSwitchCase*) node;
+    u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = geo_get_body_state();
 
     if (callContext == GEO_CONTEXT_RENDER) {
@@ -611,6 +622,8 @@ Gfx* geo_switch_mario_cap_on_off(s32 callContext, struct GraphNode* node, UNUSED
 Gfx* geo_mario_rotate_wing_cap_wings(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
     s16 rotX;
     struct GraphNodeGenerated* asGenerated = (struct GraphNodeGenerated*) node;
+    u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return NULL; }
     struct MarioBodyState* bodyState = geo_get_body_state();
 
     if (callContext == GEO_CONTEXT_RENDER) {
@@ -765,6 +778,7 @@ Gfx* geo_mirror_mario_backface_culling(s32 callContext, struct GraphNode* node, 
 static struct PlayerColor geo_mario_get_player_color(const struct PlayerPalette *palette) {
     struct PlayerColor color = { 0 };
     u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return color; }
     struct MarioBodyState* bodyState = &gBodyStates[index];
     for (s32 part = 0; part != PLAYER_PART_MAX; ++part) {
         color.parts[part] = (Lights1) gdSPDefLights1(
@@ -815,6 +829,7 @@ Gfx* geo_mario_set_player_colors(s32 callContext, struct GraphNode* node, UNUSED
     struct GraphNodeGenerated* asGenerated = (struct GraphNodeGenerated*) node;
     Gfx* gfx = NULL;
     u8 index = geo_get_processing_object_index();
+    if (gMarioStates[index].marioObj != gCurGraphNodeProcessingObject) { return gfx; }
 
     struct PlayerColor color = geo_mario_get_player_color(&gNetworkPlayers[index].overridePalette);
     gNetworkPlayerColors[index] = color;
@@ -842,16 +857,16 @@ Gfx* geo_mario_set_player_colors(s32 callContext, struct GraphNode* node, UNUSED
 
 Gfx* geo_mario_cap_display_list(s32 callContext, struct GraphNode* node, UNUSED Mat4* c) {
     if (callContext != GEO_CONTEXT_RENDER) { return NULL; }
-    u8 globalIndex = geo_get_processing_object_index();
+    u8 index = geo_get_processing_object_index();
 
-    struct PlayerColor color = geo_mario_get_player_color(&gNetworkPlayers[globalIndex].overridePalette);
-    gNetworkPlayerColors[globalIndex] = color;
+    struct PlayerColor color = geo_mario_get_player_color(&gNetworkPlayers[index].overridePalette);
+    gNetworkPlayerColors[index] = color;
 
-    u8 charIndex = gNetworkPlayers[globalIndex].overrideModelIndex;
+    u8 charIndex = gNetworkPlayers[index].overrideModelIndex;
     if (charIndex >= CT_MAX) { charIndex = 0; }
     struct Character* character = &gCharacters[charIndex];
 
-    Gfx *gfx = geo_mario_create_player_colors_dl(globalIndex, character->capEnemyGfx, character->capEnemyDecalGfx);
+    Gfx *gfx = geo_mario_create_player_colors_dl(index, character->capEnemyGfx, character->capEnemyDecalGfx);
     struct GraphNodeGenerated* asGenerated = (struct GraphNodeGenerated*)node;
     asGenerated->fnNode.node.flags = (asGenerated->fnNode.node.flags & 0xFF) | (character->capEnemyLayer << 8);
     return gfx;
