@@ -8104,30 +8104,34 @@ function mod_storage_save_bool(key, value)
 end
 
 --- @param key string
+--- @param defaultValue? string
 --- @return string
---- Loads a string `value` from a `key` in mod storage
-function mod_storage_load(key)
+--- Loads a string `value` from a `key` in mod storage. If the `key` is not found, returns `defaultValue` or `nil`
+function mod_storage_load(key, defaultValue)
     -- ...
 end
 
 --- @param key string
+--- @param defaultValue? integer
 --- @return integer
---- Loads an integer `value` from a `key` in mod storage
-function mod_storage_load_integer(key)
+--- Loads an integer `value` from a `key` in mod storage. If the `key` is not found, returns `defaultValue` or `0`
+function mod_storage_load_integer(key, defaultValue)
     -- ...
 end
 
 --- @param key string
+--- @param defaultValue? number
 --- @return number
---- Loads a number `value` from a `key` in mod storage
-function mod_storage_load_number(key)
+--- Loads a number `value` from a `key` in mod storage. If the `key` is not found, returns `defaultValue` or `0`
+function mod_storage_load_number(key, defaultValue)
     -- ...
 end
 
 --- @param key string
+--- @param defaultValue? boolean
 --- @return boolean
---- Loads a bool `value` from a `key` in mod storage
-function mod_storage_load_bool(key)
+--- Loads a bool `value` from a `key` in mod storage. If the `key` is not found, returns `defaultValue` or `false`
+function mod_storage_load_bool(key, defaultValue)
     -- ...
 end
 
@@ -11881,6 +11885,18 @@ end
 --- @return boolean
 --- Checks if a screen transition is playing
 function is_transition_playing()
+    -- ...
+end
+
+--- @return integer
+--- Gets the current play mode (`PLAY_MODE_*`)
+function get_current_play_mode()
+    -- ...
+end
+
+--- @return integer
+--- Gets the delayed warp operation type (`WARP_OP_*`)
+function get_delayed_warp_op()
     -- ...
 end
 
