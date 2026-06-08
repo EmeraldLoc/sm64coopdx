@@ -459,7 +459,7 @@ struct MarioAnimation
 struct MarioState
 {
     // Please try to keep this 32/64 bit aligned.
-    // Bit alignment can increase performance and
+    // Bit alignment can increase perforamance and
     // reduce the memory footprint.
     //
     // Structure size was reduced by 32 bytes and fields
@@ -494,6 +494,7 @@ struct MarioState
     u8 doubleJumpTimer;
     u8 specialTripleJump;
     u8 fadeWarpOpacity;
+
     bool visibleToObjects;
     u8 wasNetworkVisible;
     s32 dialogId;
