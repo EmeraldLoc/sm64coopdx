@@ -126,7 +126,7 @@ ifeq ($(HOST_OS),Linux)
     TARGET_RPI = 1
   endif
   ifneq (,$(findstring arm,$(machine)))
-    #Raspberry Pi zero, 2, 3, etc
+    #Rasberry Pi zero, 2, 3, etc
     TARGET_RPI = 1
   endif
 endif
