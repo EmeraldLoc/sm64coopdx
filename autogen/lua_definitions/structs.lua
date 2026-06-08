@@ -2249,6 +2249,7 @@
 --- @field public dialog6 integer
 
 --- @class StaticObjectCollision
+--- @field public index integer
 --- @field public length integer
 
 --- @class Surface
