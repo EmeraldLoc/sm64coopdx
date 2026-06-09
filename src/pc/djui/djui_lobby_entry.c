@@ -74,7 +74,8 @@ struct DjuiLobbyEntry* djui_lobby_entry_create(struct DjuiBase* parent, char* ho
         djui_base_set_size_type(&text->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
         djui_base_set_size(&text->base, width, 1.0f);
 
-        djui_base_set_color_with_color(&text->base, configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_TEXT]);
+        u8 textElement = disabled ? DJUI_THEME_ELEMENT_PRIMARY_TEXT_DISABLED : DJUI_THEME_ELEMENT_PRIMARY_TEXT;
+        djui_base_set_color_with_color(&text->base, configDjuiTheme.elements[textElement]);
         djui_text_set_alignment(text, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
         djui_text_set_drop_shadow(text, 64, 64, 64, 100);
         x += width;
