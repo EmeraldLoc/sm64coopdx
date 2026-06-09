@@ -17,8 +17,8 @@ jobs:
 
             - name: Install dependencies
               run: |
-                pacman -Syuu --noconfirm
-                pacman -S --noconfirm base-devel glibc linux-api-headers python glew zlib libglvnd libcurl-compat zip
+                sudo apt update
+                sudo apt install -y build-essential git python3 libglew-dev libz-dev libcurl4-openssl-dev zip
 
             - name: Build the game
               run: make -j$(nproc)
@@ -49,8 +49,8 @@ jobs:
 
             - name: Install dependencies
               run: |
-                pacman -Syuu --noconfirm
-                pacman -S --noconfirm base-devel glibc linux-api-headers python glew zlib libglvnd libcurl-compat zip
+                sudo apt update
+                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev zip
 
             - name: Build the game
               run: make -j$(nproc) HANDHELD=1
