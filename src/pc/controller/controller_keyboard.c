@@ -19,7 +19,7 @@
 
 static int keyboard_buttons_down;
 
-bool kb_keys_curr_down[512];
+bool kb_keys_curr_down[SDL_NUM_SCANCODES];
 
 #define MAX_KEYBINDS 64
 static int keyboard_mapping[MAX_KEYBINDS][2];
@@ -64,7 +64,8 @@ bool keyboard_on_key_up(int scancode) {
 
 void keyboard_on_all_keys_up(void) {
     keyboard_buttons_down = 0;
-    for (int scancode = 0; scancode < 512; ++scancode) {
+    for (int scancode = 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
+        kb_keys_curr_down[scancode] = false;
         gKeyboard[scancode].down = false;
         gKeyboard[scancode].pressed = false;
         gKeyboard[scancode].released = false;
@@ -118,7 +119,7 @@ static void keyboard_bindkeys(void) {
     keyboard_add_binds(U_JPAD,       configKeyDUp);
     keyboard_add_binds(D_JPAD,       configKeyDDown);
     keyboard_add_binds(L_JPAD,       configKeyDLeft);
-    keyboard_add_binds(R_JPAD,       configKeyDRight);    
+    keyboard_add_binds(R_JPAD,       configKeyDRight);
 }
 
 static void keyboard_init(void) {
@@ -127,7 +128,7 @@ static void keyboard_init(void) {
 
 
 static void keyboard_read(OSContPad *pad) {
-    for (int scancode = 0; scancode < 512; ++scancode) {
+    for (int scancode = 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         bool prev = gKeyboard[scancode].down;
         bool curr = kb_keys_curr_down[scancode];
 

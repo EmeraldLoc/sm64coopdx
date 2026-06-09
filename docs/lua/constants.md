@@ -84,9 +84,6 @@
 - [smlua_audio_utils.h](#smlua_audio_utilsh)
 - [smlua_hooks.h](#smlua_hooksh)
     - [enum LuaHookedEventType](#enum-LuaHookedEventType)
-    - [enum LuaHookedEventReturn](#enum-LuaHookedEventReturn)
-    - [enum LuaActionHookType](#enum-LuaActionHookType)
-    - [enum LuaModMenuElementType](#enum-LuaModMenuElementType)
 - [smlua_input_utils.h](#smlua_input_utilsh)
 - [smlua_misc_utils.h](#smlua_misc_utilsh)
     - [enum HudDisplayValue](#enum-HudDisplayValue)
@@ -3597,7 +3594,6 @@
 | HOOK_ON_TEXT_INPUT | 69 |
 | HOOK_ON_TEXT_EDITING | 70 |
 | HOOK_MAX | 71 |
-- MAX_HOOKED_BEHAVIORS
 
 [:arrow_up_small:](#)
 

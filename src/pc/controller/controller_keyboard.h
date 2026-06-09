@@ -44,7 +44,7 @@ void keyboard_on_all_keys_up(void);
 void keyboard_on_text_input(char* text);
 void keyboard_on_text_editing(char* text, int cursorPos);
 
-extern bool kb_keys_curr_down[512];
+extern bool kb_keys_curr_down[];
 
 #ifdef __cplusplus
 }

@@ -90,7 +90,6 @@ override_field_mutable = {
 override_field_invisible = {
     "Mod": [ "files", "showedScriptWarning" ],
     "Camera": [ "paletteEditorCapState" ],
-    "MarioState": [ "visibleToEnemies" ],
     "NetworkPlayer": [ "gag", "moderator", "discordId", "rxPacketHash", "rxSeqIds" ],
     "GraphNode": [ "_guard1", "_guard2", "padding" ],
     "GraphNodeRoot": ["unk15", "views"],
@@ -98,7 +97,7 @@ override_field_invisible = {
     "FnGraphNode": [ "luaTokenIndex" ],
     "Object": [ "firstSurface" ],
     "Animation": [ "unusedBoneCount" ],
-    "ModAudio": [ "sound", "decoder", "buffer", "bufferSize", "sampleCopiesTail", "volChannel" ],
+    "ModAudio": [ "alive", "sound", "decoder", "buffer", "bufferSize", "sampleCopiesTail", "volChannel" ],
     "Painting": [ "normalDisplayList", "textureMaps", "rippleDisplayList", "ripples" ],
     "DialogEntry": [ "str" ],
     "ModFsFile": [ "data", "capacity" ],
@@ -108,7 +107,6 @@ override_field_invisible = {
 
 override_field_deprecated = {
     "NetworkPlayer": [ "paletteIndex", "overridePaletteIndex", "overridePaletteIndexLp" ],
-    "StaticObjectCollision": [ "index" ],
     "ModAudio": [ "file", "relativePath" ], # compatibility band-aid
 }
 
@@ -276,7 +274,7 @@ def table_to_string(table):
                 continue
             if len(row[i]) > column_width[i]:
                 column_width[i] = len(row[i])
-    
+
     for row in table:
         for i in range(columns):
             if row[i][-1] == '\\':
@@ -511,7 +509,7 @@ def get_struct_field_info(struct, field):
     fimmutable = str(lvt == 'LVT_COBJECT' or 'const ' in ftype).lower()
     if lvt.startswith('LVT_') and lvt.endswith('_P') and 'OBJECT' not in lvt and 'COLLISION' not in lvt and 'TRAJECTORY' not in lvt:
         fimmutable = 'true'
-    
+
     if field.get('get') and field['set'] == 'NULL':
         fimmutable = 'true'
 

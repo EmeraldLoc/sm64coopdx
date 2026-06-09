@@ -122,9 +122,9 @@ extern unsigned int configFreeCameraDegrade;
 extern unsigned int configEnableRomhackCamera;
 extern bool         configRomhackCameraBowserFights;
 extern bool         configRomhackCameraHasCollision;
-extern bool         configRomhackCameraHasCentering;
+extern bool         configRomhackCameraSwitchable;
 extern bool         configRomhackCameraDPadBehavior;
-extern bool         configRomhackCameraSlowFall;
+extern bool         configRomhackCameraFollowing;
 // common camera settings
 extern bool         configCameraInvertX;
 extern bool         configCameraInvertY;
@@ -189,6 +189,7 @@ extern bool configExCoopTheme;
 
 void enable_queued_mods(void);
 void enable_queued_dynos_packs(void);
+void configfile_reset_keybinds(bool extra);
 void configfile_load(void);
 void configfile_save(const char *filename);
 const char *configfile_name(void);
