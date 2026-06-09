@@ -2968,6 +2968,7 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
+| index | `integer` | read-only |
 | length | `integer` | read-only |
 
 [:arrow_up_small:](#)

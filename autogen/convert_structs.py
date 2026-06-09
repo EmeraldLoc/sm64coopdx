@@ -99,7 +99,6 @@ override_field_invisible = {
 
 override_field_deprecated = {
     "NetworkPlayer": [ "paletteIndex", "overridePaletteIndex", "overridePaletteIndexLp" ],
-    "StaticObjectCollision": [ "index" ],
     "ModAudio": [ "file", "relativePath" ], # compatibility band-aid
 }
 
