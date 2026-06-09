@@ -22,6 +22,11 @@ DEBUG ?= 0
 # Enable development/testing flags
 DEVELOPMENT ?= 0
 
+# Enable this if you want to use some very unsafe and potentially harmful code from the Lua standard libs
+# that is normally disabled to prevent catastrophic accidents.
+# Only enable this if you know exactly why you need it and will take measures to mitigate the risks.
+LUA_UNSAFE ?= 0
+
 # Build for the N64 (turn this off for ports)
 TARGET_N64 = 0
 
@@ -709,6 +714,11 @@ ifeq ($(TARGET_N64),1)
   INCLUDE_DIRS += include/libc
 else
   INCLUDE_DIRS += sound lib/lua/include lib/coopnet/include $(EXTRA_INCLUDES)
+  ifeq ($(WINDOWS_BUILD),0)
+    ifeq ($(OSX_BUILD),0)
+      INCLUDE_DIRS += lib/sdl2/include
+    endif
+  endif
 endif
 
 # Configure backend flags
@@ -745,8 +755,17 @@ ifeq ($(OSX_BUILD),1)
   # on OSX at least the homebrew version of sdl-config gives include path as `.../include/SDL2` instead of `.../include`
   OSX_PREFIX := $(shell $(SDLCONFIG) --prefix)
   BACKEND_CFLAGS += -I$(OSX_PREFIX)/include $(shell $(SDLCONFIG) --cflags)
-else
+else ifeq ($(WINDOWS_BUILD),1)
   BACKEND_CFLAGS += `$(SDLCONFIG) --cflags`
+else
+  BACKEND_CFLAGS += -Ilib/sdl2/include
+  BACKEND_LDFLAGS += lib/sdl2/linux/libSDL2.a
+endif
+
+ifeq ($(WINDOWS_BUILD),0)
+  ifeq ($(OSX_BUILD),0)
+    BACKEND_LDFLAGS += -lm -ldl -lpthread
+  endif
 endif
 
 ifeq ($(WINDOWS_BUILD),1)
@@ -1013,6 +1032,16 @@ ifeq ($(DEVELOPMENT),1)
   CFLAGS += -DDEVELOPMENT
 endif
 
+# Check for unsafe mode option
+ifeq ($(LUA_UNSAFE),1)
+  ifneq ($(or $(filter 1,$(DEVELOPMENT)),$(filter dev,$(MAKECMDGOALS))),)
+    CC_CHECK_CFLAGS += -DLUA_UNSAFE
+    CFLAGS += -DLUA_UNSAFE
+  else
+    $(error LUA_UNSAFE cannot be enabled outside of development mode)
+  endif
+endif
+
 # Check for rpi option
 ifeq ($(TARGET_RPI),1)
   CC_CHECK_CFLAGS += -DTARGET_RPI
@@ -1115,9 +1144,9 @@ MAPFILE = $(BUILD_DIR)/coop.map
 exemap: $(EXE)
 	@$(PRINT) "$(GREEN)Creating map file: $(BLUE)$(MAPFILE) $(NO_COL)\n"
 	$(V)$(OBJDUMP) -t $(EXE) > $(MAPFILE)
+ifeq ($(IS_DEV_OR_DEBUG),0)
 	@cp $(EXE) $(EXE).bak && cp $(MAPFILE) $(MAPFILE).bak
 	$(V)$(PYTHON) $(TOOLS_DIR)/clean_mapfile.py $(EXE) $(MAPFILE)
-ifeq ($(IS_DEV_OR_DEBUG),0)
 	$(V)$(OBJCOPY) -p --strip-unneeded $(EXE)
 endif
 all: exemap
@@ -1543,6 +1572,7 @@ all:
     cp build/us_pc/libdiscord_game_sdk.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libcoopnet.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/coopdx_updater $(APP_MACOS_DIR); \
+    codesign --force --deep --sign - $(APP_MACOS_DIR)/coopdx_updater; \
     cp build/us_pc/libjuice.1.6.2.dylib $(APP_MACOS_DIR); \
     cp $(SDL2_LIB) $(APP_MACOS_DIR)/libSDL2.dylib; \
     install_name_tool -change $(BREW_PREFIX)/lib/libSDL2-2.0.0.dylib @executable_path/libSDL2.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
@@ -1572,7 +1602,6 @@ all:
 		echo '    <string>icon</string>' >> $(APP_CONTENTS_DIR)/Info.plist; \
 		echo '    <key>CFBundleDisplayName</key>' >> $(APP_CONTENTS_DIR)/Info.plist; \
 		echo '    <string>sm64coopdx</string>' >> $(APP_CONTENTS_DIR)/Info.plist; \
-		echo '    <!-- Add other keys and values here -->' >> $(APP_CONTENTS_DIR)/Info.plist; \
 		echo '</dict>' >> $(APP_CONTENTS_DIR)/Info.plist; \
 		echo '</plist>' >> $(APP_CONTENTS_DIR)/Info.plist; \
 		chmod +x $(APP_MACOS_DIR)/sm64coopdx; \
