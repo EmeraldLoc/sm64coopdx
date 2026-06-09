@@ -473,7 +473,7 @@ static void djui_panel_palettes_destroy(struct DjuiBase *base) {
 }
 
 void djui_panel_palettes_create(struct DjuiBase *caller) {
-    struct DjuiThreePanel *panel = djui_panel_menu_create(DLANG(HOST_MODS, MODS), true);
+    struct DjuiThreePanel *panel = djui_panel_menu_create(DLANG(PALETTES, PALETTES), true);
 
     struct DjuiBase *body = djui_three_panel_get_body(panel);
     {
