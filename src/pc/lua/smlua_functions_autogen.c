@@ -23228,15 +23228,20 @@ int smlua_func_mod_storage_load(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_storage_load", 1, top);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "mod_storage_load", 1, 2, top);
         return 0;
     }
 
     const char* key = smlua_to_string(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_load"); return 0; }
+    const char* defaultValue = (const char*) NULL;
+    if (top >= 2) {
+        defaultValue = smlua_to_string(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_storage_load"); return 0; }
+    }
 
-    lua_pushstring(L, mod_storage_load(key));
+    lua_pushstring(L, mod_storage_load(key, defaultValue));
 
     return 1;
 }
@@ -23245,15 +23250,20 @@ int smlua_func_mod_storage_load_integer(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_storage_load_integer", 1, top);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "mod_storage_load_integer", 1, 2, top);
         return 0;
     }
 
     const char* key = smlua_to_string(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_load_integer"); return 0; }
+    lua_Integer defaultValue = (lua_Integer) 0;
+    if (top >= 2) {
+        defaultValue = smlua_to_integer(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_storage_load_integer"); return 0; }
+    }
 
-    lua_pushinteger(L, mod_storage_load_integer(key));
+    lua_pushinteger(L, mod_storage_load_integer(key, defaultValue));
 
     return 1;
 }
@@ -23262,15 +23272,20 @@ int smlua_func_mod_storage_load_number(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_storage_load_number", 1, top);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "mod_storage_load_number", 1, 2, top);
         return 0;
     }
 
     const char* key = smlua_to_string(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_load_number"); return 0; }
+    lua_Number defaultValue = (lua_Number) 0;
+    if (top >= 2) {
+        defaultValue = smlua_to_number(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_storage_load_number"); return 0; }
+    }
 
-    lua_pushnumber(L, mod_storage_load_number(key));
+    lua_pushnumber(L, mod_storage_load_number(key, defaultValue));
 
     return 1;
 }
@@ -23279,15 +23294,20 @@ int smlua_func_mod_storage_load_bool(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
-    if (top != 1) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mod_storage_load_bool", 1, top);
+    if (top < 1 || top > 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected between %u and %u, Received %u", "mod_storage_load_bool", 1, 2, top);
         return 0;
     }
 
     const char* key = smlua_to_string(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mod_storage_load_bool"); return 0; }
+    bool defaultValue = (bool) 0;
+    if (top >= 2) {
+        defaultValue = smlua_to_boolean(L, 2);
+        if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mod_storage_load_bool"); return 0; }
+    }
 
-    lua_pushboolean(L, mod_storage_load_bool(key));
+    lua_pushboolean(L, mod_storage_load_bool(key, defaultValue));
 
     return 1;
 }
@@ -34104,7 +34124,7 @@ int smlua_func_is_transition_playing(lua_State* L) {
     return 1;
 }
 
-int smlua_func_get_current_play_mode(UNUSED lua_State* L) {
+int smlua_func_get_current_play_mode(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
@@ -34119,7 +34139,7 @@ int smlua_func_get_current_play_mode(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_get_delayed_warp_op(UNUSED lua_State* L) {
+int smlua_func_get_delayed_warp_op(lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
