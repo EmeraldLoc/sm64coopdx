@@ -16,7 +16,7 @@
 static struct DjuiFlowLayout *sLayout = NULL;
 static struct DjuiPaginated *sPaginated = NULL;
 static struct DjuiInputbox *sSearchInputbox = NULL;
-static struct DjuiCheckbox *sCheckboxes[MAX_CHARACTERS] = { 0 };
+static struct DjuiCheckbox *sCheckboxes[MAX_PRESET_PALETTES] = { 0 };
 static struct DjuiCheckbox *sCustomPaletteCheckbox = NULL;
 static unsigned int sCheckboxesCount = 0;
 
