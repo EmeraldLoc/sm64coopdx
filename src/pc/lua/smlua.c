@@ -320,7 +320,7 @@ void smlua_init(void) {
 
     // load libraries
     luaopen_base(L);
-#if defined(DEVELOPMENT)
+#if defined(DEVELOPMENT) && defined(LUA_UNSAFE)
     luaL_requiref(L, "debug", luaopen_debug, 1);
     luaL_requiref(L, "io", luaopen_io, 1);
     luaL_requiref(L, "os", luaopen_os, 1);
@@ -339,7 +339,7 @@ void smlua_init(void) {
     smlua_bind_sync_table();
     smlua_init_require_system();
 
-    extern char gSmluaConstants[];
+    extern const char gSmluaConstants[];
     smlua_exec_str(gSmluaConstants);
 
     smlua_cobject_init_globals();

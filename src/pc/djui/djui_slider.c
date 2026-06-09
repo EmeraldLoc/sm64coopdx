@@ -34,6 +34,10 @@ void djui_slider_update_style(struct DjuiBase* base) {
     djui_base_set_border_color_with_color(&slider->rect->base, configDjuiTheme.elements[borderElement]);
     djui_base_set_color(&slider->rect->base, 0, 0, 0, 0);
     djui_base_set_color_with_color(&slider->text->base, configDjuiTheme.elements[textElement]);
+    struct DjuiColor textValueForegroundColor = configDjuiTheme.elements[DJUI_THEME_ELEMENT_THREE_PANEL];
+    textValueForegroundColor.a = 255;
+    djui_base_set_color_with_color(&slider->textValueForeground->base, textValueForegroundColor);
+    djui_base_set_color_with_color(&slider->textValueBackground->base, configDjuiTheme.elements[textElement]);
     if (slider->updateRectValueColor) {
         djui_base_set_color_with_color(&slider->rectValue->base, configDjuiTheme.elements[rectValueElement]);
     }
@@ -46,6 +50,11 @@ void djui_slider_update_value(struct DjuiBase* base) {
     u32* value = slider->value;
     if (slider->rectValue != NULL && value != NULL) {
         djui_base_set_size(&slider->rectValue->base, ((f32)*value - min) / ((f32)max - min), 1.0f);
+
+        char textStr[16];
+        snprintf(textStr, sizeof(textStr), "%u", *value);
+        djui_text_set_text(slider->textValueForeground, textStr);
+        djui_text_set_text(slider->textValueBackground, textStr);
     }
 }
 
@@ -106,6 +115,35 @@ static void djui_slider_on_focus(struct DjuiBase* base, OSContPad* pad) {
     djui_slider_update_value(base);
 }
 
+static bool djui_slider_render(struct DjuiBase* base) {
+    struct DjuiSlider *slider = (struct DjuiSlider *) base;
+    struct DjuiText *text = slider->textValueForeground;
+    struct DjuiBaseRect* clip = &slider->rect->base.clip;
+
+    if (clip->width <= 0.f || slider->max <= slider->min) {
+        djui_base_set_visible(&slider->textValueForeground->base, false); // hide it
+        return true;
+    }
+
+    //
+    // clipping magic
+    //
+    // the foreground text inverted color effect is just two texts,
+    // one rendered below the slider and one above
+    // the one above uses clipping and an accurately computed offset
+    // from the slider to cut right at the end of the slider,
+    // producing this awesome white to black effect
+    //
+
+    f32 sliderValue01 = ((f32) *slider->value - slider->min) / ((f32) slider->max - slider->min);
+    f32 charHalfWidth = (text->font->char_width("0") * text->fontScale) / (2.f * clip->width);
+    f32 width = (0.5f + charHalfWidth * strlen(text->message)) / MAX(sliderValue01, 0.1f);
+    djui_base_set_size(&slider->textValueForeground->base, width, 1.0f);
+    djui_base_set_visible(&slider->textValueForeground->base, true);
+
+    return true;
+}
+
 static void djui_slider_destroy(struct DjuiBase* base) {
     struct DjuiSlider* slider = (struct DjuiSlider*)base;
     free(slider);
@@ -121,7 +159,7 @@ struct DjuiSlider* djui_slider_create(struct DjuiBase* parent, const char* messa
 
     slider->updateRectValueColor = true;
 
-    djui_base_init(parent, base, NULL, djui_slider_destroy);
+    djui_base_init(parent, base, djui_slider_render, djui_slider_destroy);
     djui_interactable_create(base, djui_slider_update_style);
     djui_interactable_hook_cursor_down(base, djui_slider_on_cursor_down_begin, NULL, djui_slider_on_cursor_down_end);
     djui_interactable_hook_focus(base, NULL, djui_slider_on_focus, NULL);
@@ -142,9 +180,22 @@ struct DjuiSlider* djui_slider_create(struct DjuiBase* parent, const char* messa
     djui_base_set_border_width(&rect->base, 2);
     slider->rect = rect;
 
+    struct DjuiText* textValueBackground = djui_text_create(&rect->base, "");
+    djui_base_set_size_type(&textValueBackground->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
+    djui_base_set_size(&textValueBackground->base, 1.0f, 1.0f);
+    djui_text_set_alignment(textValueBackground, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
+    djui_text_set_drop_shadow(textValueBackground, 64, 64, 64, 128);
+    slider->textValueBackground = textValueBackground;
+
     struct DjuiRect* rectValue = djui_rect_create(&rect->base);
     djui_base_set_size_type(&rectValue->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
     slider->rectValue = rectValue;
+
+    struct DjuiText* textValueForeground = djui_text_create(&rectValue->base, "");
+    djui_base_set_size_type(&textValueForeground->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
+    djui_text_set_alignment(textValueForeground, DJUI_HALIGN_RIGHT, DJUI_VALIGN_CENTER);
+    djui_text_set_drop_shadow(textValueForeground, 64, 64, 64, 128);
+    slider->textValueForeground = textValueForeground;
 
     djui_slider_update_value(base);
     djui_slider_update_style(base);

@@ -7,6 +7,7 @@
 #include "djui_panel_options.h"
 #include "pc/network/network_player.h"
 #include "pc/platform.h"
+#include "pc/debuglog.h"
 #include "game/level_update.h"
 #include "game/area.h"
 

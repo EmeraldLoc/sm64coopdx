@@ -149,6 +149,10 @@ static void djui_panel_theme_reset_djui_tree() {
         djui_text_set_font(gDjuiModReload, gDjuiFonts[configDjuiThemeFont]);
         djui_text_set_text(gDjuiModReload, DLANG(MISC, L_BUTTON));
     }
+
+    if (gDjuiChatBox) {
+        djui_inputbox_reset_text_color(gDjuiChatBox->chatInput);
+    }
 }
 
 static bool djui_panel_theme_apply(UNUSED struct DjuiBase* caller) {
