@@ -880,6 +880,7 @@
 - MAX_CHARACTERS
 - MAX_CHARACTER_NAME_LEN
 - MAX_CHARACTER_AUDIOS_PER_SOUND
+- MAX_CHARACTER_GFX_NAME_LEN
 
 ### [enum CharacterType](#CharacterType)
 | Identifier | Value |

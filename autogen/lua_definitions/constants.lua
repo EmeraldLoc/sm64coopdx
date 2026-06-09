@@ -2281,6 +2281,9 @@ MAX_CHARACTER_NAME_LEN = 128
 --- @type integer
 MAX_CHARACTER_AUDIOS_PER_SOUND = 8
 
+--- @type integer
+MAX_CHARACTER_GFX_NAME_LEN = 512
+
 CT_UNALLOCATED = -1 --- @type CharacterType
 CT_MARIO       =  0 --- @type CharacterType
 CT_LUIGI       =  1 --- @type CharacterType

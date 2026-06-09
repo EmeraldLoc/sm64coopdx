@@ -399,8 +399,8 @@
 | capWingModelId | `integer` |  |
 | capMetalWingModelId | `integer` |  |
 | capEnemyLayer | `integer` |  |
-| capEnemyGfx | `string` | read-only |
-| capEnemyDecalGfx | `string` | read-only |
+| capEnemyGfx | `string` |  |
+| capEnemyDecalGfx | `string` |  |
 | torsoRotMult | `number` |  |
 | animOffsetEnabled | `integer` |  |
 | animOffsetLowYPoint | `number` |  |
