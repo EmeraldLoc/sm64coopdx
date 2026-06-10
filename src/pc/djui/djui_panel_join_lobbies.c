@@ -86,6 +86,9 @@ static int sort_coopnet_lobby_comp(const void* a, const void* b) {
     const struct CoopnetLobby* lobbyB = *(const struct CoopnetLobby**)b;
 
     int retValue = 0;
+    if (configCoopNetSortSelected >= numSortOptions) {
+        configCoopNetSortSelected = 0;
+    }
     enum LobbySorting sortBy = sLobbySorting[configCoopNetSortSelected].sortType;
     if (sortBy == LOBBY_SORTING_NAME) {
         retValue = strcmp(lobbyA->hostName, lobbyB->hostName);

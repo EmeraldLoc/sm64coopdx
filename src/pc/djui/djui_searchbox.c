@@ -27,12 +27,17 @@ bool djui_searchbox_has_string(struct DjuiSearchbox* searchbox, const char* stri
     if (!searchbox) { return false; }
     if (!searchbox->inputbox) { return false; }
     if (!searchbox->inputbox->buffer) { return false; }
+    if (!string) { return false; }
     return strstr_lowercased(djui_text_get_uncolored_string(NULL, strlen(string) + 1, string), searchbox->inputbox->buffer);
 }
 
 bool djui_searchbox_has_any_strings(struct DjuiSearchbox* searchbox, const char** strings, size_t count) {
+    if (!searchbox) { return false; }
+    if (!searchbox->inputbox) { return false; }
+    if (!searchbox->inputbox->buffer) { return false; }
+    if (!strings) { return false; }
     for (size_t i = 0; i < count; i++) {
-        if (djui_searchbox_has_string(searchbox, strings[i])) {
+        if (strings[i] && djui_searchbox_has_string(searchbox, strings[i])) {
             return true;
         }
     }
