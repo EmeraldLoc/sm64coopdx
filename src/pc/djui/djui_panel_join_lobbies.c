@@ -60,13 +60,13 @@ static struct DjuiThreePanel* sDescriptionPanel = NULL;
 static struct DjuiText* sTooltip = NULL;
 static struct DjuiSelectionbox* sSelectionbox = NULL;
 static struct DjuiImage* sSortInvertImage = NULL;
+static struct DjuiSearchbox* sSearchbox = NULL;
 static unsigned int sSavedLobbyStartCount = 0;
 
 static char* sPassword = NULL;
 
 static void free_coopnet_lobbies() {
-    for (unsigned int i = 0; i < sCoopnetLobbyCount; i++)
-    {
+    for (unsigned int i = 0; i < sCoopnetLobbyCount; i++) {
         struct CoopnetLobby* lobby = sCoopnetLobbies[i];
         if (!lobby) { continue; }
         free(lobby->playerText);
@@ -165,11 +165,18 @@ void djui_panel_join_lobby(struct DjuiBase* caller) {
     djui_panel_join_message_create(caller);
 }
 
-static void djui_panel_join_on_sorting_change(UNUSED struct DjuiBase* base) {
+static void djui_panel_join_soft_refresh(UNUSED struct DjuiBase* base) {
     qsort(sCoopnetLobbies, sCoopnetLobbyCount, sizeof(sCoopnetLobbies[0]), sort_coopnet_lobby_comp);
     djui_base_destroy_children(&sLobbyLayout->base);
     for (unsigned int i = 0; i < sCoopnetLobbyCount; i++) {
         struct CoopnetLobby* lobby = sCoopnetLobbies[i];
+        const char* searchStrings[] = {
+            lobby->hostName,
+            lobby->mode,
+            lobby->playerText,
+            lobby->description
+        };
+        if (!djui_searchbox_has_any_strings(sSearchbox, searchStrings, 4)) { return; }
         struct DjuiLobbyEntry* entry = djui_lobby_entry_create(&sLobbyLayout->base, lobby->hostName, lobby->mode, lobby->playerText, lobby->description, lobby->disabled, djui_panel_join_lobby, djui_lobby_on_hover, djui_lobby_on_hover_end);
         entry->base.tag = (s64)lobby->lobbyId;
     }
@@ -178,7 +185,7 @@ static void djui_panel_join_on_sorting_change(UNUSED struct DjuiBase* base) {
 static void djui_panel_join_invert_sort(UNUSED struct DjuiBase* caller) {
     configCoopNetSortInverted = !configCoopNetSortInverted;
     sSortInvertImage->textureInfo.texture = configCoopNetSortInverted ? texture_selectionbox_up_icon : texture_selectionbox_down_icon;
-    djui_panel_join_on_sorting_change(NULL);
+    djui_panel_join_soft_refresh(NULL);
 }
 
 void djui_panel_join_query(uint64_t aLobbyId, UNUSED uint64_t aOwnerId, uint16_t aConnections, uint16_t aMaxConnections, int64_t aTimestamp, UNUSED const char* aGame, const char* aVersion, const char* aHostName, const char* aMode, const char* aDescription, size_t aModSize) {
@@ -248,7 +255,7 @@ void djui_panel_join_query_finish(void) {
 
     sLobbyPaginated->startIndex = sSavedLobbyStartCount;
     djui_paginated_update_page_buttons(sLobbyPaginated);
-    djui_panel_join_on_sorting_change(NULL);
+    djui_panel_join_soft_refresh(NULL);
     if (sLobbyLayout->base.child == NULL) {
         struct DjuiText* text = djui_text_create(&sLobbyLayout->base, DLANG(LOBBIES, NO_LOBBIES_FOUND));
         djui_base_set_size_type(&text->base, DJUI_SVT_RELATIVE, DJUI_SVT_RELATIVE);
@@ -313,6 +320,9 @@ void djui_panel_join_lobbies_create(struct DjuiBase* caller, const char* passwor
         true);
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
+        struct DjuiSearchbox* searchbox = djui_searchbox_create(body, djui_panel_join_soft_refresh);
+        sSearchbox = searchbox;
+
         char* sortChoices[sizeof(sLobbySorting)];
         for (int i = 0; i < numSortOptions; i++) {
             sortChoices[i] = djui_language_get("LOBBIES", sLobbySorting[i].langKey);
@@ -321,18 +331,20 @@ void djui_panel_join_lobbies_create(struct DjuiBase* caller, const char* passwor
         djui_base_set_color(&flowLayout->base, 0, 0, 0, 0);
         djui_base_set_size_type(&flowLayout->base, DJUI_SVT_RELATIVE, DJUI_SVT_ABSOLUTE);
         djui_base_set_size(&flowLayout->base, 1.0f, 32.0f);
-        sSelectionbox = djui_selectionbox_create(&flowLayout->base, DLANG(LOBBIES, SORT_BY), sortChoices, numSortOptions, &configCoopNetSortSelected, djui_panel_join_on_sorting_change);
-        djui_base_set_size(&sSelectionbox->base, 0.925, 32);
-        djui_base_set_size(&sSelectionbox->rect->base, 0.55, 1);
-        struct DjuiButton* button = djui_button_create(&flowLayout->base, "", DJUI_BUTTON_STYLE_NORMAL, djui_panel_join_invert_sort);
-        djui_base_set_alignment(&button->base, DJUI_HALIGN_RIGHT, DJUI_VALIGN_BOTTOM);
-        djui_base_set_size_type(&button->base, DJUI_SVT_ABSOLUTE, DJUI_SVT_ABSOLUTE);
-        djui_base_set_size(&button->base, 32, 32);
-        sSortInvertImage = djui_image_create(&button->base, configCoopNetSortInverted ? texture_selectionbox_up_icon : texture_selectionbox_down_icon, 16, 16, G_IM_FMT_RGBA, G_IM_SIZ_16b);
-        djui_base_set_size(&sSortInvertImage->base, 16, 16);
-        djui_base_set_alignment(&sSortInvertImage->base, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
-        djui_flow_layout_set_margin(flowLayout, 16);
-        djui_flow_layout_set_flow_direction(flowLayout, DJUI_FLOW_DIR_RIGHT);
+        {
+            sSelectionbox = djui_selectionbox_create(&flowLayout->base, DLANG(LOBBIES, SORT_BY), sortChoices, numSortOptions, &configCoopNetSortSelected, djui_panel_join_soft_refresh);
+            djui_base_set_size(&sSelectionbox->base, 0.925, 32);
+            djui_base_set_size(&sSelectionbox->rect->base, 0.55, 1);
+            struct DjuiButton* button = djui_button_create(&flowLayout->base, "", DJUI_BUTTON_STYLE_NORMAL, djui_panel_join_invert_sort);
+            djui_base_set_alignment(&button->base, DJUI_HALIGN_RIGHT, DJUI_VALIGN_BOTTOM);
+            djui_base_set_size_type(&button->base, DJUI_SVT_ABSOLUTE, DJUI_SVT_ABSOLUTE);
+            djui_base_set_size(&button->base, 32, 32);
+            sSortInvertImage = djui_image_create(&button->base, configCoopNetSortInverted ? texture_selectionbox_up_icon : texture_selectionbox_down_icon, 16, 16, G_IM_FMT_RGBA, G_IM_SIZ_16b);
+            djui_base_set_size(&sSortInvertImage->base, 16, 16);
+            djui_base_set_alignment(&sSortInvertImage->base, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
+            djui_flow_layout_set_margin(flowLayout, 16);
+            djui_flow_layout_set_flow_direction(flowLayout, DJUI_FLOW_DIR_RIGHT);
+        }
 
         sLobbyPaginated = djui_paginated_create(body, 10);
         sLobbyLayout = sLobbyPaginated->layout;
