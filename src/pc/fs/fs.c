@@ -292,23 +292,6 @@ bool fs_sys_filename_is_portable(char const *filename) {
 
 /* these operate on the real file system */
 
-static bool concat_path(char* destination, char* path, char* fname) {
-    return (snprintf(destination, SYS_MAX_PATH - 1, "%s/%s", path, fname) >= 0);
-}
-
-static char* path_basename(char* path) {
-    char* base = path;
-    while (*path != '\0') {
-        if (*(path + 1) != '\0') {
-            if (*path == '\\' || *path == '/') {
-                base = path + 1;
-            }
-        }
-        path++;
-    }
-    return base;
-}
-
 bool fs_sys_copy_file(char* src, const char* dir) {
     FILE* fin = fopen(src, "rb");
     if (fin == NULL) {
