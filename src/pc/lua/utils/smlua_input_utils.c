@@ -107,9 +107,9 @@ void controller_maps_load(const char* mapsPath, bool appendMaps) {
 
 #ifdef DEVELOPMENT
         if (loadedMaps >= 0) {
-            printf("Controller Database: Loaded %d controller mapping(s) from '%s.db'\n", loadedMaps, path);
+            LOG_INFO("Controller Database: Loaded %d controller mapping(s) from '%s.db'\n", loadedMaps, path);
         } else {
-            printf("Controller Database: Failed to load controller map from '%s.db'\n", path);
+            LOG_ERROR("Controller Database: Failed to load controller map from '%s.db'\n", path);
         }
 #endif
     }
