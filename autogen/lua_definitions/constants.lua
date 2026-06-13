@@ -8359,9 +8359,6 @@ HOOK_MAX                                    = 69 --- @type LuaHookedEventType
 --- | `HOOK_ON_PLAY_MODE_UPDATE`
 --- | `HOOK_MAX`
 
---- @type integer
-MAX_HOOKED_BEHAVIORS = 1024
-
 HUD_DISPLAY_LIVES         = 0 --- @type HudDisplayValue
 HUD_DISPLAY_COINS         = 1 --- @type HudDisplayValue
 HUD_DISPLAY_STARS         = 2 --- @type HudDisplayValue
@@ -11353,7 +11350,7 @@ COOP_OBJ_FLAG_NON_SYNC = (1 << 2)
 COOP_OBJ_FLAG_INITIALIZED = (1 << 3)
 
 --- @type string
-SM64COOPDX_VERSION = "v1.5"
+SM64COOPDX_VERSION = "v1.5.1"
 
 --- @type string
 VERSION_TEXT = "v"
@@ -11362,7 +11359,7 @@ VERSION_TEXT = "v"
 VERSION_NUMBER = 42
 
 --- @type integer
-MINOR_VERSION_NUMBER = 0
+MINOR_VERSION_NUMBER = 1
 
 --- @type string
 GAME_NAME = "sm64coopdx"

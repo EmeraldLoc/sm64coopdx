@@ -1126,6 +1126,7 @@
 --- @field public doubleJumpTimer integer
 --- @field public specialTripleJump integer
 --- @field public fadeWarpOpacity integer
+--- @field public visibleToObjects boolean
 --- @field public wasNetworkVisible integer
 --- @field public dialogId integer
 --- @field public prevNumStarsForDialog integer
@@ -1305,6 +1306,7 @@
 --- @field public collidedObjs Object[]
 --- @field public collisionData Pointer_Collision
 --- @field public behavior Pointer_BehaviorScript
+--- @field public initBhvCommand Pointer_BehaviorScript
 --- @field public curBhvCommand Pointer_BehaviorScript
 --- @field public bhvStack integer[]
 --- @field public bhvStackIndex integer
@@ -2242,6 +2244,7 @@
 --- @field public dialog6 integer
 
 --- @class StaticObjectCollision
+--- @field public index integer
 --- @field public length integer
 
 --- @class Surface

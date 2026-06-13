@@ -1643,6 +1643,7 @@
 | doubleJumpTimer | `integer` |  |
 | specialTripleJump | `integer` |  |
 | fadeWarpOpacity | `integer` |  |
+| visibleToObjects | `boolean` |  |
 | wasNetworkVisible | `integer` |  |
 | dialogId | `integer` | read-only |
 | prevNumStarsForDialog | `integer` |  |
@@ -1906,6 +1907,7 @@
 | collidedObjs | `Array` <`Object`> |  |
 | collisionData | `Pointer` <`Collision`> |  |
 | behavior | `Pointer` <`BehaviorScript`> | read-only |
+| initBhvCommand | `Pointer` <`BehaviorScript`> | read-only |
 | curBhvCommand | `Pointer` <`BehaviorScript`> | read-only |
 | bhvStack | `Array` <`integer`> | read-only |
 | bhvStackIndex | `integer` | read-only |
@@ -2956,6 +2958,7 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
+| index | `integer` | read-only |
 | length | `integer` | read-only |
 
 [:arrow_up_small:](#)
