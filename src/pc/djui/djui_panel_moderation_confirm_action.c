@@ -36,6 +36,7 @@ static void djui_panel_moderation_call_action(struct DjuiBase* caller) {
 static void djui_panel_moderation_confirm_reason_text_change(struct DjuiBase* caller) {
     struct DjuiInputbox* inputbox = (struct DjuiInputbox*)caller;
     if (inputbox) {
+        free(sReason);
         sReason = strdup(inputbox->buffer);
     }
 }

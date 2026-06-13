@@ -71,7 +71,7 @@ s32 deref_s32_pointer(s32* pointer) {
 
 ///
 
-void djui_popup_create_global(const char* message, int lines) {
+void djui_popup_create_global(const char* message, OPTIONAL int lines) {
     djui_popup_create(message, lines);
     network_send_global_popup(message, lines);
 }

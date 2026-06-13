@@ -4034,34 +4034,10 @@ Gets the header hex color code from a `DJUI_RAINBOW_COLOR_*` constant
 <br />
 
 
-## [djui_popup_create_auto_scaling](#djui_popup_create_auto_scaling)
-
-### Description
-Creates an auto-scaling popup that says `message` which will always show the entire message with padding lines of 'paddingLines'
-
-### Lua Example
-`djui_popup_create_auto_scaling(message, paddingLines)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| message | `string` |
-| paddingLines | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void djui_popup_create_auto_scaling(const char* message, int paddingLines);`
-
-[:arrow_up_small:](#)
-
-<br />
-
 ## [djui_popup_create](#djui_popup_create)
 
 ### Description
-Creates a popup that says `message` and has `lines`
+Creates a popup that says `message`. The line count may be decided automatically or be set manually
 
 ### Lua Example
 `djui_popup_create(message, lines)`
@@ -4076,7 +4052,7 @@ Creates a popup that says `message` and has `lines`
 - None
 
 ### C Prototype
-`void djui_popup_create(const char* message, int lines);`
+`void djui_popup_create(const char* message, OPTIONAL int lines);`
 
 [:arrow_up_small:](#)
 

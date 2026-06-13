@@ -816,7 +816,6 @@
 <br />
 
 - djui_popup.h
-   - [djui_popup_create_auto_scaling](functions-3.md#djui_popup_create_auto_scaling)
    - [djui_popup_create](functions-3.md#djui_popup_create)
 
 <br />

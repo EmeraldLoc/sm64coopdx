@@ -36,7 +36,7 @@ void network_create_kick_popup(enum KickReasonType kickReason, char* reason) {
 
     char popupText[512] = { 0 };
     djui_language_replace(text, popupText, 512, '@', reason);
-    djui_popup_create_auto_scaling(popupText, 1);
+    djui_popup_create(popupText, 0);
 }
 
 void network_send_kick(u8 localIndex, enum KickReasonType kickReason, char* reason) {

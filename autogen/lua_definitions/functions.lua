@@ -4285,15 +4285,8 @@ function djui_menu_get_rainbow_string_color(color)
 end
 
 --- @param message string
---- @param paddingLines integer
---- Creates an auto-scaling popup that says `message` which will always show the entire message with padding lines of 'paddingLines'
-function djui_popup_create_auto_scaling(message, paddingLines)
-    -- ...
-end
-
---- @param message string
---- @param lines integer
---- Creates a popup that says `message` and has `lines`
+--- @param lines? integer
+--- Creates a popup that says `message`. The line count may be decided automatically or be set manually
 function djui_popup_create(message, lines)
     -- ...
 end
@@ -11601,7 +11594,7 @@ function deref_s32_pointer(pointer)
 end
 
 --- @param message string
---- @param lines integer
+--- @param lines? integer
 --- Creates a DJUI popup that is broadcasted to every client
 function djui_popup_create_global(message, lines)
     -- ...
