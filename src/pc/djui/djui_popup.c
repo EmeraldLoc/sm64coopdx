@@ -64,6 +64,7 @@ void djui_popup_create(const char* message, OPTIONAL int lines) {
         f32 rectHeight = textHeight + 32;
         djui_base_set_location(base, 8, -rectHeight);
         djui_base_set_size(base, DJUI_POPUP_WIDTH, rectHeight);
+        height = rectHeight;
     }
     popup->text = text;
 

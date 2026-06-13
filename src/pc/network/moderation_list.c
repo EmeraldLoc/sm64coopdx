@@ -18,32 +18,32 @@ struct ModerationLists gModerationLists = {
     }
 };
 
-static const char* safe_ini_get(ini_t* ini, const char* section, const char* key) {
+static const char* safe_ini_get(ini_t *ini, const char* section, const char* key) {
     const char* str = ini_get(ini, section, key);
     return str ? str : "";
 }
 
 struct ModerationList* moderation_list_get_list_by_type(enum ModerationListType type) {
-    if (type == MODERATION_LIST_TYPE_BAN) return &gModerationLists.banList;
-    if (type == MODERATION_LIST_TYPE_MODERATOR) return &gModerationLists.moderatorList;
+    if (type == MODERATION_LIST_TYPE_BAN) { return &gModerationLists.banList; }
+    if (type == MODERATION_LIST_TYPE_MODERATOR) { return &gModerationLists.moderatorList; }
     LOG_ERROR("Type %u is not a valid type", type);
     return NULL;
 }
 
 void moderation_list_save() {
     FILE* file = fopen(fs_get_write_path(MODERATION_LIST_FILEPATH), "w");
-    if (!file) return;
+    if (!file) { return; }
 
     for (u8 type = 0; type < MODERATION_LIST_TYPE_COUNT; type++) {
-        struct ModerationList* list = moderation_list_get_list_by_type(type);
-        if (!list) continue;
+        struct ModerationList *list = moderation_list_get_list_by_type(type);
+        if (!list) { continue; }
 
         fprintf(file, "[Type %u]\n", type);
         fprintf(file, "count = %u\n\n", list->count);
 
         for (u16 i = 0; i < list->count; i++) {
-            struct ModerationEntry* entry = list->list[i];
-            if (!entry) continue;
+            struct ModerationEntry *entry = list->list[i];
+            if (!entry) { continue; }
             fprintf(file, "[Entry %u for %u]\n", i, type);
             // windows <3
             fprintf(file, "time = %lld\n", (long long)entry->time);
@@ -61,12 +61,12 @@ void moderation_list_save() {
 }
 
 void moderation_list_load() {
-    ini_t* iniFile = ini_load(fs_get_write_path(MODERATION_LIST_FILEPATH));
-    if (!iniFile) return;
+    ini_t *iniFile = ini_load(fs_get_write_path(MODERATION_LIST_FILEPATH));
+    if (!iniFile) { return; }
 
     for (u8 type = 0; type < MODERATION_LIST_TYPE_COUNT; type++) {
-        struct ModerationList* list = moderation_list_get_list_by_type(type);
-        if (!list) continue;
+        struct ModerationList *list = moderation_list_get_list_by_type(type);
+        if (!list) { continue; }
 
         char typeSection[16];
         snprintf(typeSection, 16, "Type %u", type);
@@ -76,8 +76,8 @@ void moderation_list_load() {
             char entrySection[32];
             snprintf(entrySection, 32, "Entry %u for %u", i, type);
 
-            struct ModerationEntry* entry = malloc(sizeof(struct ModerationEntry));
-            if (!entry) continue;
+            struct ModerationEntry *entry = malloc(sizeof(struct ModerationEntry));
+            if (!entry) { continue; }
 
             entry->permanent = (strtol(safe_ini_get(iniFile, entrySection, "permanent"), NULL, 0) != 0);
 
@@ -99,17 +99,17 @@ void moderation_list_load() {
         }
     }
     ini_free(iniFile);
-    // wipe non-permanent players from list
+    // wipe non-permanent players from list if any exist
     moderation_list_save();
 }
 
-void moderation_list_add(enum ModerationListType type, u8 localIndex, char* reason, bool permanent) {
-    struct ModerationList* list = moderation_list_get_list_by_type(type);
+void moderation_list_add(enum ModerationListType type, u8 localIndex, char *reason, bool permanent) {
+    struct ModerationList *list = moderation_list_get_list_by_type(type);
     if (!list || list->count >= MAX_MODERATION_LIST_ENTRIES) return;
 
-    struct NetworkPlayer* np = &gNetworkPlayers[localIndex];
-    struct ModerationEntry* entry = malloc(sizeof(struct ModerationEntry));
-    if (!entry) return;
+    struct NetworkPlayer *np = &gNetworkPlayers[localIndex];
+    struct ModerationEntry *entry = malloc(sizeof(struct ModerationEntry));
+    if (!entry) { return; }
 
     entry->playerName = strdup(np->name);
     memcpy(entry->playerColor, network_get_player_text_color(np->localIndex), 3);
@@ -123,8 +123,8 @@ void moderation_list_add(enum ModerationListType type, u8 localIndex, char* reas
     moderation_list_save();
 }
 
-void moderation_list_remove(enum ModerationListType type, char* address) {
-    struct ModerationList* list = moderation_list_get_list_by_type(type);
+void moderation_list_remove(enum ModerationListType type, char *address) {
+    struct ModerationList *list = moderation_list_get_list_by_type(type);
     if (!list || !address) return;
 
     for (u16 i = 0; i < list->count; i++) {
@@ -148,8 +148,8 @@ void moderation_list_remove(enum ModerationListType type, char* address) {
     LOG_ERROR("Address %s not found in list %u", address, type);
 }
 
-bool moderation_list_contains(enum ModerationListType type, char* address) {
-    struct ModerationList* list = moderation_list_get_list_by_type(type);
+bool moderation_list_contains(enum ModerationListType type, char *address) {
+    struct ModerationList *list = moderation_list_get_list_by_type(type);
     if (!list || !address) return false;
 
     for (u16 i = 0; i < list->count; i++) {
