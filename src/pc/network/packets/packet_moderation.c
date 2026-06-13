@@ -17,13 +17,15 @@ void network_send_moderation_action(u8 action, u8 localIndex, char* reason, bool
     struct NetworkPlayer* np = &gNetworkPlayers[localIndex];
     if (!np->connected) {
         LOG_ERROR("Moderator tried to perform moderation on a disconnected player!");
+        return;
     }
+
     if (np->moderator && localIndex != 0) {
         LOG_ERROR("Moderator tried to perform moderation on another moderator!");
         return;
     }
 
-    if (!sValidActions[action]) {
+    if (action >= MODERATION_ACTION_COUNT || !sValidActions[action]) {
         LOG_ERROR("Tried to send unimplemented action to the server!");
         return;
     }

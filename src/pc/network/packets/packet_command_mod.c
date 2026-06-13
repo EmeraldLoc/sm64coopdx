@@ -15,7 +15,7 @@ void network_send_chat_command(u8 globalIndex, enum ChatConfirmCommand ccc, char
     packet_write(&p, &cccType, sizeof(u8));
     u16 reasonLength = 0;
     if (reason) {
-        u16 reasonLength = strlen(reason);
+        reasonLength = strlen(reason);
         packet_write(&p, &reasonLength, sizeof(u16));
         packet_write(&p, reason, sizeof(u8) * reasonLength);
     } else {

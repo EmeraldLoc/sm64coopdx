@@ -1,4 +1,5 @@
 #pragma once
+#include <PR/ultratypes.h>
 #include <stdbool.h>
 
 #define QUEUED_DISCONNECT_NONE 255

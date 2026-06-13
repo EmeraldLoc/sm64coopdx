@@ -51,7 +51,7 @@ void network_send_join_request(void) {
     packet_write(&p, &configPlayerModel,     sizeof(u8));
     packet_write(&p, &configPlayerPalette,   sizeof(struct PlayerPalette));
     packet_write(&p, &configPlayerName,      sizeof(u8) * MAX_CONFIG_STRING);
-    char discordId[64];
+    char discordId[64] = { 0 };
     snprintf(discordId, 64, "%s", get_local_discord_id());
     packet_write(&p, &discordId, sizeof(u8) * 64);
 

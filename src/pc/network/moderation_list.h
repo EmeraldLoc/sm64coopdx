@@ -1,5 +1,6 @@
 #pragma once
 #include <stdbool.h>
+#include <time.h>
 #include <PR/ultratypes.h>
 #include "moderation.h"
 

@@ -16,6 +16,12 @@ static void djui_panel_moderation_call_action(struct DjuiBase *caller) {
     u8 action = caller->uTag;
     char *address = caller->cTag;
 
+    // verify we are initiating moderation on the intended player, otherwise, do nothing
+    if (player >= MAX_PLAYERS || !gNetworkPlayers[player].connected || strcmp(gNetworkSystem->get_id_str(player), address) != 0) {
+        djui_panel_menu_back(caller);
+        return;
+    }
+
     switch (action) {
         case MODERATION_ACTION_KICK:  network_kick_player(player, sReason);            break;
         case MODERATION_ACTION_BAN:   network_ban_player(player, sReason, sPermanent); break;
@@ -28,9 +34,8 @@ static void djui_panel_moderation_call_action(struct DjuiBase *caller) {
     free(sReason);
     sReason = NULL;
     sPermanent = false;
+    if (sOnYesClick) { sOnYesClick(caller); }
     djui_panel_menu_back(caller);
-
-    if (sOnYesClick) sOnYesClick(caller);
 }
 
 static void djui_panel_moderation_confirm_reason_text_change(struct DjuiBase *caller) {
@@ -130,7 +135,7 @@ void djui_panel_moderation_confirm_create_body(struct DjuiBase *caller, char *ti
     djui_panel_add(caller, panel, NULL);
 }
 
-void djui_panel_moderation_confirm_create(struct DjuiBase* caller, u8 action, u8 localIndex, bool permanent, void (*on_yes_click)(struct DjuiBase*)) {
+void djui_panel_moderation_confirm_create(struct DjuiBase *caller, u8 action, u8 localIndex, bool permanent, void (*on_yes_click)(struct DjuiBase*)) {
     if (localIndex >= MAX_PLAYERS) { return; }
     struct NetworkPlayer *np = &gNetworkPlayers[localIndex];
     if (!np->connected) { return; }
@@ -140,7 +145,7 @@ void djui_panel_moderation_confirm_create(struct DjuiBase* caller, u8 action, u8
     djui_panel_moderation_confirm_create_body(caller, title, message, localIndex, action, permanent, gNetworkSystem->get_id_str(localIndex), on_yes_click);
 }
 
-void djui_panel_moderation_confirm_create_using_list(struct DjuiBase* caller, u8 action, u8 listType, u16 listIndex, void (*on_yes_click)(struct DjuiBase*)) {
+void djui_panel_moderation_confirm_create_using_list(struct DjuiBase *caller, u8 action, u8 listType, u16 listIndex, void (*on_yes_click)(struct DjuiBase *)) {
     struct ModerationList *list = moderation_list_get_list_by_type(listType);
     if (!list) { return; }
     if (listIndex >= list->count) { return; }

@@ -18,12 +18,12 @@ struct ModerationLists gModerationLists = {
     }
 };
 
-static const char* safe_ini_get(ini_t *ini, const char* section, const char* key) {
+static const char *safe_ini_get(ini_t *ini, const char* section, const char* key) {
     const char* str = ini_get(ini, section, key);
     return str ? str : "";
 }
 
-struct ModerationList* moderation_list_get_list_by_type(enum ModerationListType type) {
+struct ModerationList *moderation_list_get_list_by_type(enum ModerationListType type) {
     if (type == MODERATION_LIST_TYPE_BAN) { return &gModerationLists.banList; }
     if (type == MODERATION_LIST_TYPE_MODERATOR) { return &gModerationLists.moderatorList; }
     LOG_ERROR("Type %u is not a valid type", type);
@@ -31,7 +31,7 @@ struct ModerationList* moderation_list_get_list_by_type(enum ModerationListType 
 }
 
 void moderation_list_save() {
-    FILE* file = fopen(fs_get_write_path(MODERATION_LIST_FILEPATH), "w");
+    FILE *file = fopen(fs_get_write_path(MODERATION_LIST_FILEPATH), "w");
     if (!file) { return; }
 
     for (u8 type = 0; type < MODERATION_LIST_TYPE_COUNT; type++) {
@@ -86,13 +86,20 @@ void moderation_list_load() {
                 continue;
             }
 
-            entry->time = strtol(safe_ini_get(iniFile, entrySection, "time"), NULL, 0);
             entry->playerName = strdup(safe_ini_get(iniFile, entrySection, "playerName"));
+            entry->address = strdup(safe_ini_get(iniFile, entrySection, "address"));
+            entry->discordId = strdup(safe_ini_get(iniFile, entrySection, "discordId"));
+            if (!entry->playerName || !entry->address || !entry->discordId) {
+                free(entry->playerName);
+                free(entry->address);
+                free(entry->discordId);
+                free(entry);
+                return;
+            }
+            entry->time = strtol(safe_ini_get(iniFile, entrySection, "time"), NULL, 0);
             entry->playerColor[0] = strtol(safe_ini_get(iniFile, entrySection, "playerColorR"), NULL, 0);
             entry->playerColor[1] = strtol(safe_ini_get(iniFile, entrySection, "playerColorG"), NULL, 0);
             entry->playerColor[2] = strtol(safe_ini_get(iniFile, entrySection, "playerColorB"), NULL, 0);
-            entry->address = strdup(safe_ini_get(iniFile, entrySection, "address"));
-            entry->discordId = strdup(safe_ini_get(iniFile, entrySection, "discordId"));
             snprintf(entry->reason, MAX_REASON_LENGTH, "%s", safe_ini_get(iniFile, entrySection, "reason"));
 
             list->list[list->count++] = entry;
