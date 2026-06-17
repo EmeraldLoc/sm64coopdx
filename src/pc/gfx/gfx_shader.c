@@ -210,6 +210,7 @@ char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     bool opt_texture_edge = cc->cm.texture_edge;
     bool opt_2cycle = cc->cm.use_2cycle;
     bool opt_light_map = cc->cm.light_map;
+    bool opt_tex_persp = cc->cm.tex_persp;
     bool world_geometry = cc->cm.world_geometry;
     bool opt_dither = cc->cm.use_dither;
 
@@ -219,6 +220,7 @@ char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     append_line(fs_buf, &fs_len, "#version 410 core");
     append_line(fs_buf, &fs_len, "out vec4 fragColor;");
     for (int t = 0; t < 2; t++) {
+        if (!opt_tex_persp) { append_str(fs_buf, &fs_len, "noperspective "); }
         fs_len += sprintf(fs_buf + fs_len, "in vec2 vTexCoord%d;\n", t);
     }
     append_line(fs_buf, &fs_len, "in vec4 vFog;");
@@ -549,9 +551,20 @@ void gfx_init_shaders() {
 }
 
 static void process_shader_line(struct Shader *shader, struct ShaderInput *referenceInputs, char *output, const char *line) {
-    char type[32], name[MAX_SHADER_VARIABLE_NAME];
+    char qualifier[32] = { 0 }, type[32] = { 0 }, name[MAX_SHADER_VARIABLE_NAME] = { 0 };
 
     // parse inputs for inputs equivalent to reference inputs
+    if (sscanf(line, "%31s in %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+        for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
+            if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
+                char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
+                snprintf(layoutLine, sizeof(layoutLine), "%s layout(location=%d) in %s %s", qualifier, referenceInputs[i].location, type, name);
+                strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+                return;
+            }
+        }
+    }
+
     if (sscanf(line, " in %31s %31[^; \t\n]", type, name) == 2) {
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
@@ -564,6 +577,19 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
     }
 
     // look for and parse outputs
+    if (sscanf(line, "%31s out %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+        // add name to our shader outputs
+        if (shader) {
+            snprintf(shader->shaderOutputs[sShaderOutputCount].name, MAX_SHADER_VARIABLE_NAME, "%s", name);
+            shader->shaderOutputs[sShaderOutputCount].location = sShaderOutputCount;
+        }
+        char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
+        snprintf(layoutLine, sizeof(layoutLine), "%s layout(location=%d) out %s %s", qualifier, sShaderOutputCount, type, name);
+        strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+        if (sShaderOutputCount < MAX_SHADER_OUTPUTS - 1) { sShaderOutputCount++; }
+        return;
+    }
+
     if (sscanf(line, " out %31s %31[^; \t\n]", type, name) == 2) {
         // add name to our shader outputs
         if (shader) {

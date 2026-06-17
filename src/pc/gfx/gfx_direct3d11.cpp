@@ -621,13 +621,13 @@ static void gfx_d3d11_shader_get_info(struct ShaderProgram *prg, uint8_t *num_in
     used_textures[1] = p->used_textures[1];
 }
 
-static void gfx_d3d11_create_framebuffer(UNUSED u32 *fbo, UNUSED u32 *depthBuffer, UNUSED u32 *tex, UNUSED u32 width, UNUSED u32 height) {
+static void gfx_d3d11_create_framebuffer(UNUSED struct FramePass *framePass) {
 }
 
-static void gfx_d3d11_delete_framebuffer(UNUSED u32 fbo, UNUSED u32 depthBuffer, UNUSED u32 tex) {
+static void gfx_d3d11_delete_framebuffer(UNUSED struct FramePass *framePass) {
 }
 
-static void gfx_d3d11_set_framebuffer(UNUSED u32 fbo, UNUSED u32 width, UNUSED u32 height) {
+static void gfx_d3d11_set_framebuffer(UNUSED struct FramePass *framePass) {
 }
 
 static void gfx_d3d11_reset_framebuffer(void) {
@@ -950,7 +950,13 @@ static void gfx_d3d11_start_frame(void) {
     d3d.context->OMSetRenderTargets(1, d3d.backbuffer_view.GetAddressOf(), d3d.depth_stencil_view.Get());
 
     // Clear render targets
-    const float clearColor[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    const float clearColor[] = {
+        framePass->clearColor[0] / 255.0f,
+        framePass->clearColor[1] / 255.0f,
+        framePass->clearColor[2] / 255.0f,
+        framePass->clearColor[3] / 255.0f
+    };
     d3d.context->ClearRenderTargetView(d3d.backbuffer_view.Get(), clearColor);
     d3d.context->ClearDepthStencilView(d3d.depth_stencil_view.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 

@@ -460,6 +460,7 @@ int gfx_shader_create_frame_pass() {
         // set default values
         framePass->active = true;
         gfx_get_dimensions(&framePass->width, &framePass->height);
+        framePass->clearColor[3] = 255; // clear color is black from memset, set alpha to 255
 
         return i;
     }
@@ -474,7 +475,7 @@ void gfx_shader_remove_frame_pass(int framePassIndex) {
     struct FramePass *framePass = &gFramePasses[framePassIndex];
     if (!framePass->active) return;
 
-    gfx_get_current_rendering_api()->delete_framebuffer(framePass->fbo, framePass->depthBuffer, framePass->passTexture);
+    gfx_get_current_rendering_api()->delete_framebuffer(framePass);
     memset(framePass, 0, sizeof(struct FramePass));
 }
 
@@ -488,7 +489,7 @@ void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int heigh
     framePass->height = height;
 
     // needs to be recreated
-    gfx_get_current_rendering_api()->delete_framebuffer(framePass->fbo, framePass->depthBuffer, framePass->passTexture);
+    gfx_get_current_rendering_api()->delete_framebuffer(framePass);
     framePass->fbo = 0;
     framePass->depthBuffer = 0;
     framePass->passTexture = 0;

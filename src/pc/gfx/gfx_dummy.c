@@ -154,13 +154,13 @@ static void gfx_dummy_renderer_shader_get_info(UNUSED struct ShaderProgram *prg,
     used_textures[1] = false;
 }
 
-static void gfx_dummy_renderer_create_framebuffer(UNUSED u32 *fbo, UNUSED u32 *depthBuffer, UNUSED u32 *tex, UNUSED u32 width, UNUSED u32 height) {
+static void gfx_dummy_renderer_create_framebuffer(UNUSED struct FramePass *framePass) {
 }
 
-static void gfx_dummy_renderer_delete_framebuffer(UNUSED u32 fbo, UNUSED u32 depthBuffer, UNUSED u32 tex) {
+static void gfx_dummy_renderer_delete_framebuffer(UNUSED struct FramePass *framePass) {
 }
 
-static void gfx_dummy_renderer_set_framebuffer(UNUSED u32 fbo, UNUSED u32 width, UNUSED u32 height) {
+static void gfx_dummy_renderer_set_framebuffer(UNUSED struct FramePass *framePass) {
 }
 
 static void gfx_dummy_renderer_reset_framebuffer(void) {

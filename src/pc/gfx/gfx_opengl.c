@@ -561,24 +561,24 @@ static void gfx_opengl_shader_get_info(struct ShaderProgram *prg, uint8_t *num_i
     used_textures[1] = prg->used_textures[1];
 }
 
-static void gfx_opengl_create_framebuffer(u32 *fbo, u32 *depthBuffer, u32 *tex, u32 width, u32 height) {
-    glGenFramebuffers(1, fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, *fbo);
+static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
+    glGenFramebuffers(1, &framePass->fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
 
-    glGenTextures(1, tex);
-    glBindTexture(GL_TEXTURE_2D, *tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glGenTextures(1, &framePass->passTexture);
+    glBindTexture(GL_TEXTURE_2D, framePass->passTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framePass->width, framePass->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, *tex, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framePass->passTexture, 0);
 
     // create depth buffer
-    glGenRenderbuffers(1, depthBuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, *depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, *depthBuffer);
+    glGenRenderbuffers(1, &framePass->depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, framePass->depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, framePass->width, framePass->height);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, framePass->depthBuffer);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         LOG_ERROR("Framebuffer is not complete!");
@@ -587,15 +587,15 @@ static void gfx_opengl_create_framebuffer(u32 *fbo, u32 *depthBuffer, u32 *tex, 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-static void gfx_opengl_delete_framebuffer(u32 fbo, u32 depthBuffer, u32 tex) {
-    if (fbo > 0) glDeleteFramebuffers(1, &fbo);
-    if (depthBuffer > 0) glDeleteRenderbuffers(1, &depthBuffer);
-    if (tex > 0) glDeleteTextures(1, &tex);
+static void gfx_opengl_delete_framebuffer(struct FramePass *framePass) {
+    if (framePass->fbo > 0) { glDeleteFramebuffers(1, &framePass->fbo); }
+    if (framePass->depthBuffer > 0) { glDeleteRenderbuffers(1, &framePass->depthBuffer); }
+    if (framePass->passTexture > 0) { glDeleteTextures(1, &framePass->passTexture); }
 }
 
-static void gfx_opengl_set_framebuffer(u32 fbo, u32 width, u32 height) {
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-    glViewport(0, 0, width, height);
+static void gfx_opengl_set_framebuffer(struct FramePass *framePass) {
+    glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
+    glViewport(0, 0, framePass->width, framePass->height);
 }
 
 static void gfx_opengl_reset_framebuffer(void) {
@@ -777,7 +777,15 @@ static void gfx_opengl_start_frame(void) {
 
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    glClearColor(
+        framePass->clearColor[0] / 255.0f,
+        framePass->clearColor[1] / 255.0f,
+        framePass->clearColor[2] / 255.0f,
+        framePass->clearColor[3] / 255.0f
+    );
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_SCISSOR_TEST);
 }

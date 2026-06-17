@@ -21,9 +21,9 @@ struct GfxRenderingAPI {
     struct ShaderProgram *(*lookup_shader)(struct ColorCombiner* cc);
     struct ShaderProgram *(*lookup_shader_using_index)(uint8_t shaderIndex, uint8_t framePassIndex);
     void (*shader_get_info)(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]);
-    void (*create_framebuffer)(uint32_t *fbo, uint32_t *depthBuffer, uint32_t *tex, uint32_t width, uint32_t height);
-    void (*delete_framebuffer)(uint32_t fbo, uint32_t depthBuffer, uint32_t tex);
-    void (*set_framebuffer)(uint32_t fbo, uint32_t width, uint32_t height);
+    void (*create_framebuffer)(struct FramePass *framePass);
+    void (*delete_framebuffer)(struct FramePass *framePass);
+    void (*set_framebuffer)(struct FramePass *framePass);
     void (*reset_framebuffer)(void);
     void (*set_uniform)(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements);
     uint32_t (*new_texture)(void);

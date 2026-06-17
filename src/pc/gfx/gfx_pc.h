@@ -55,6 +55,7 @@ struct FramePass {
     u32 height;
     bool active;
     bool drawWorldGeometry;
+    u8 clearColor[4];
 };
 
 extern struct RSP rsp;
@@ -84,6 +85,7 @@ extern "C" {
 void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, const char *window_title);
 struct GfxRenderingAPI *gfx_get_current_rendering_api(void);
 void gfx_start_frame(void);
+struct FramePass *gfx_get_current_frame_pass(void);
 void gfx_run_basic(Gfx *commands);
 void gfx_run(Gfx *commands);
 void gfx_end_frame_render(void);

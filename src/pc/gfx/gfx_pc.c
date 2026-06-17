@@ -1108,12 +1108,13 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
 
     struct CombineMode* cm = &rdp.combine_mode;
 
-    cm->use_alpha      = (rdp.other_mode_l & (G_BL_A_MEM << 18))        == 0;
-    cm->texture_edge   = (rdp.other_mode_l & CVG_X_ALPHA)               == CVG_X_ALPHA;
-    cm->use_dither     = (rdp.other_mode_l & G_AC_DITHER)               == G_AC_DITHER;
-    cm->use_2cycle     = (rdp.other_mode_h & (3U << G_MDSFT_CYCLETYPE)) == G_CYC_2CYCLE;
-    cm->use_fog        = (rdp.other_mode_l >> 30)                       == G_BL_CLR_FOG;
-    cm->light_map      = (rsp.geometry_mode & G_LIGHT_MAP_EXT)          == G_LIGHT_MAP_EXT;
+    cm->use_alpha      = (rdp.other_mode_l  & (G_BL_A_MEM << 18))        == 0;
+    cm->texture_edge   = (rdp.other_mode_l  & CVG_X_ALPHA)               == CVG_X_ALPHA;
+    cm->use_dither     = (rdp.other_mode_l  & G_AC_DITHER)               == G_AC_DITHER;
+    cm->use_2cycle     = (rdp.other_mode_h  & (3U << G_MDSFT_CYCLETYPE)) == G_CYC_2CYCLE;
+    cm->use_fog        = (rdp.other_mode_l  >> 30)                       == G_BL_CLR_FOG;
+    cm->light_map      = (rsp.geometry_mode & G_LIGHT_MAP_EXT)           == G_LIGHT_MAP_EXT;
+    cm->tex_persp      = (rdp.other_mode_h  & G_TP_PERSP)                == G_TP_PERSP;
     cm->world_geometry = gShaderFlagsEnabled && (v1->world_geometry && v2->world_geometry && v3->world_geometry);
 
     if (cm->texture_edge) {
@@ -2095,6 +2096,14 @@ void gfx_start_frame(void) {
     gfx_current_dimensions.x_adjust_ratio = (4.0f / 3.0f) / gfx_current_dimensions.aspect_ratio;
 }
 
+struct FramePass *gfx_get_current_frame_pass(void) {
+    if (gCurrentFramePassIndex < 0) {
+        return &gDefaultGeoFramePass;
+    } else {
+        return &gFramePasses[gCurrentFramePassIndex];
+    }
+}
+
 static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
     for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
         struct FramePass *framePass = &gFramePasses[i];
@@ -2103,7 +2112,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
 
         // remove default frame pass if we have lua frame pass
         if (gDefaultGeoFramePass.active) {
-            gfx_rapi->delete_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.depthBuffer, gDefaultGeoFramePass.passTexture);
+            gfx_rapi->delete_framebuffer(&gDefaultGeoFramePass);
             memset(&gDefaultGeoFramePass, 0, sizeof(struct FramePass));
         }
 
@@ -2111,9 +2120,9 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
 
         // setup framebuffer
         if (framePass->fbo == 0) {
-            gfx_rapi->create_framebuffer(&framePass->fbo, &framePass->depthBuffer, &framePass->passTexture, framePass->width, framePass->height);
+            gfx_rapi->create_framebuffer(framePass);
         }
-        gfx_rapi->set_framebuffer(framePass->fbo, framePass->width, framePass->height);
+        gfx_rapi->set_framebuffer(framePass);
 
         gfx_rapi->start_frame(); // resets color and depth
 
@@ -2167,6 +2176,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
+    // Shader TODO: Give directx support for frame passes
     if (gRenderApi == &gfx_direct3d11_api) {
         gfx_run_basic(commands);
         return;
@@ -2189,16 +2199,17 @@ void gfx_run(Gfx *commands) {
             memset(&gDefaultGeoFramePass, 0, sizeof(struct FramePass));
             gDefaultGeoFramePass.active = true;
             gDefaultGeoFramePass.drawWorldGeometry = true;
+            gDefaultGeoFramePass.clearColor[3] = 255;
         }
 
         // create/update fbo
         if (gDefaultGeoFramePass.fbo == 0 || gDefaultGeoFramePass.width != gfx_current_dimensions.width || gDefaultGeoFramePass.height != gfx_current_dimensions.height) {
-            gfx_rapi->delete_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.depthBuffer, gDefaultGeoFramePass.passTexture);
+            gfx_rapi->delete_framebuffer(&gDefaultGeoFramePass);
             gfx_get_dimensions(&gDefaultGeoFramePass.width, &gDefaultGeoFramePass.height);
-            gfx_rapi->create_framebuffer(&gDefaultGeoFramePass.fbo, &gDefaultGeoFramePass.depthBuffer, &gDefaultGeoFramePass.passTexture, gDefaultGeoFramePass.width, gDefaultGeoFramePass.height);
+            gfx_rapi->create_framebuffer(&gDefaultGeoFramePass);
         }
 
-        gfx_rapi->set_framebuffer(gDefaultGeoFramePass.fbo, gDefaultGeoFramePass.width, gDefaultGeoFramePass.height);
+        gfx_rapi->set_framebuffer(&gDefaultGeoFramePass);
 
         gfx_rapi->start_frame(); // resets color and depth
 
