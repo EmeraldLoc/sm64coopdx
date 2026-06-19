@@ -220,7 +220,7 @@ char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     append_line(fs_buf, &fs_len, "#version 410 core");
     append_line(fs_buf, &fs_len, "out vec4 fragColor;");
     for (int t = 0; t < 2; t++) {
-        if (!opt_tex_persp) { append_str(fs_buf, &fs_len, "noperspective "); }
+        if (opt_tex_persp) { append_str(fs_buf, &fs_len, "noperspective "); }
         fs_len += sprintf(fs_buf + fs_len, "in vec2 vTexCoord%d;\n", t);
     }
     append_line(fs_buf, &fs_len, "in vec4 vFog;");
@@ -558,7 +558,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
                 char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
-                snprintf(layoutLine, sizeof(layoutLine), "%s layout(location=%d) in %s %s", qualifier, referenceInputs[i].location, type, name);
+                snprintf(layoutLine, sizeof(layoutLine), "layout(location=%d) %s in %s %s", referenceInputs[i].location, qualifier, type, name);
                 strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
                 return;
             }
@@ -584,7 +584,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
             shader->shaderOutputs[sShaderOutputCount].location = sShaderOutputCount;
         }
         char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
-        snprintf(layoutLine, sizeof(layoutLine), "%s layout(location=%d) out %s %s", qualifier, sShaderOutputCount, type, name);
+        snprintf(layoutLine, sizeof(layoutLine), "layout(location=%d) %s out %s %s", sShaderOutputCount, qualifier, type, name);
         strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
         if (sShaderOutputCount < MAX_SHADER_OUTPUTS - 1) { sShaderOutputCount++; }
         return;
