@@ -755,6 +755,9 @@ GLSLANG_LIBS :=
 ifeq ($(WINDOWS_BUILD),1)
   GLSLANG_LIBS := -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
   BACKEND_LDFLAGS += $(GLSLANG_LIBS)
+else ifeq ($(OSX_BUILD),1)
+  GLSLANG_LIBS := -lglslang -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
+  BACKEND_LDFLAGS += $(GLSLANG_LIBS)
 else
   GLSLANG_LIBS := $(shell pkg-config --libs glslang SPIRV-Tools)
   BACKEND_LDFLAGS += $(GLSLANG_LIBS) -lglslang-default-resource-limits
@@ -762,6 +765,8 @@ endif
 
 # SPIR-V Cross
 ifeq ($(WINDOWS_BUILD),1)
+  SPIRV_CROSS_LIBS := -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-msl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-core -lSPIRV-Tools-opt -lSPIRV-Tools
+else ifeq ($(OSX_BUILD),1)
   SPIRV_CROSS_LIBS := -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-msl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-core -lSPIRV-Tools-opt -lSPIRV-Tools
 else
   SPIRV_CROSS_LIBS := -lspirv-cross-c-shared

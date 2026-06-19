@@ -266,6 +266,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         if (!usingCustomFragmentShader) {
             fprintf(stderr, "Fragment shader compilation failed\n");
             fprintf(stderr, "%s\n", &error_log[0]);
+            fprintf(stderr, "%s\n", fsShaderCode);
             sys_fatal("fragment shader compilation failed (see terminal)");
         } else {
             LOG_LUA_LINE("Fragment Shader: %s", &error_log[0]);
