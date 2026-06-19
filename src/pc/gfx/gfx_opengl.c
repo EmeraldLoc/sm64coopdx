@@ -195,21 +195,29 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     if (usingCustomVertexShader) {
         // make sure it compiles with glslang first
         if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-            LOG_ERROR("Failed to compile vertex shader!");
+            LOG_ERROR("Failed to compile custom vertex shader to SPIR-V!");
             usingCustomVertexShader = false;
             free(vsShaderCode);
             vsShaderCode = (char*)vs_buf;
         }
     }
 
+    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
+        sys_fatal("Failed to compile vertex shader to SPIR-V!");
+    }
+
     if (usingCustomFragmentShader) {
         // make sure it compiles with glslang first
         if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
-            LOG_ERROR("Failed to compile fragment shader!");
+            LOG_ERROR("Failed to compile custom fragment shader to SPIR-V!");
             usingCustomFragmentShader = false;
             free(fsShaderCode);
             fsShaderCode = (char*)fs_buf;
         }
+    }
+
+    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
+        sys_fatal("Failed to compile fragment shader to SPIR-V!");
     }
 
     const GLchar *sources[2] = { vsShaderCode, fsShaderCode };

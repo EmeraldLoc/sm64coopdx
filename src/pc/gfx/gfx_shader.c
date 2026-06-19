@@ -616,6 +616,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
             // add to shader uniforms
             snprintf(shader->shaderUniforms[sShaderUniformCount].name, MAX_SHADER_VARIABLE_NAME, "%s", name);
             shader->shaderUniforms[sShaderUniformCount].location = sShaderUniformCount;
+            shader->shaderUniforms[sShaderUniformCount].size = 1;
             if (sShaderUniformCount < MAX_SHADER_UNIFORMS - 1) { sShaderUniformCount++; }
         }
     }
