@@ -1288,6 +1288,30 @@ Deletes a frame pass using `framePassIndex`
 
 <br />
 
+## [gfx_shader_get_frame_pass_viewport](#gfx_shader_get_frame_pass_viewport)
+
+### Description
+Gets a frame passes viewport size
+
+### Lua Example
+`local width, height = gfx_shader_get_frame_pass_viewport(framePassIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+
+### Returns
+- `integer`
+- `integer`
+
+### C Prototype
+`void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET int *width, RET int *height);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_shader_set_frame_pass_viewport](#gfx_shader_set_frame_pass_viewport)
 
 ### Description

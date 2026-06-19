@@ -134,6 +134,8 @@ void gfx_shader_set_mat4(const char *name, const Mat4 mat4);
 int gfx_shader_create_frame_pass();
 /* |description|Deletes a frame pass using `framePassIndex`|descriptionEnd| */
 void gfx_shader_remove_frame_pass(int framePassIndex);
+/* |description|Gets a frame passes viewport size|descriptionEnd| */
+void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET int *width, RET int *height);
 /* |description|Sets a frame passes viewport size|descriptionEnd| */
 void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height);
 /* |description|Configures whether a frame pass should redraw the whole scene or use a fullscreen quad|descriptionEnd| */

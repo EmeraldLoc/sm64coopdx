@@ -61,7 +61,6 @@ static struct ShaderProgram *opengl_prg = NULL;
 static struct GLTexture *opengl_tex[2];
 static int opengl_curtex = 0;
 
-static uint32_t frame_count;
 
 static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
@@ -82,22 +81,8 @@ static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
     }
 }
 
-static inline void gfx_opengl_set_shader_uniforms(struct ShaderProgram *prg) {
-    glUniform1f(prg->uniform_locations[4], (float)frame_count);
-    glUniform3f(prg->uniform_locations[5], gVertexColor[0] / 255.0f, gVertexColor[1] / 255.0f, gVertexColor[2] / 255.0f);
-    glUniform1i(prg->uniform_locations[6], configFiltering);
-    if (rsp.modelview_matrix_stack_size > 0) {
-        glUniformMatrix4fv(prg->uniform_locations[7], 1, GL_FALSE, (const GLfloat *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
-    }
-    glUniformMatrix4fv(prg->uniform_locations[8], 1, GL_FALSE, (const GLfloat *)rsp.MP_matrix);
-    glUniformMatrix4fv(prg->uniform_locations[9], 1, GL_FALSE, (const GLfloat *)rsp.P_matrix);
-    glUniformMatrix4fv(prg->uniform_locations[10], 1, GL_FALSE, (const GLfloat *)gInverseCameraMatrix.m);
-    glUniform1f(prg->uniform_locations[11], (float)gfx_current_dimensions.aspect_ratio);
-    glUniform1f(prg->uniform_locations[12], (float)gfx_current_dimensions.x_adjust_ratio);
-    if (prg->world_geometry) {
-        glUniform1iv(prg->uniform_locations[13], SHADER_FLAG_MAX, gShaderFlags);
-        glUniform1fv(prg->uniform_locations[14], SHADER_FLAG_MAX, gShaderFlagValues);
-    }
+static inline void gfx_opengl_set_shader_uniforms(void) {
+    gfx_set_builtin_uniforms();
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
 }
 
@@ -111,10 +96,13 @@ static inline void gfx_opengl_set_texture_uniforms(struct ShaderProgram *prg, co
 
 static void gfx_opengl_unload_shader(struct ShaderProgram *old_prg) {
     if (old_prg != NULL) {
-        for (int i = 0; i < old_prg->num_attribs; i++)
+        for (int i = 0; i < old_prg->num_attribs; i++) {
             glDisableVertexAttribArray(old_prg->attrib_locations[i]);
-        if (old_prg == opengl_prg)
+        }
+
+        if (old_prg == opengl_prg) {
             opengl_prg = NULL;
+        }
     } else {
         opengl_prg = NULL;
     }
@@ -124,7 +112,7 @@ static void gfx_opengl_load_shader(struct ShaderProgram *new_prg) {
     opengl_prg = new_prg;
     glUseProgram(new_prg->opengl_program_id);
     gfx_opengl_vertex_array_set_attribs(new_prg);
-    gfx_opengl_set_shader_uniforms(new_prg);
+    gfx_opengl_set_shader_uniforms();
     gfx_opengl_set_texture_uniforms(new_prg, 0);
     gfx_opengl_set_texture_uniforms(new_prg, 1);
 }
@@ -133,10 +121,14 @@ static void gfx_opengl_remove_shaders(void) {
     for (int i = 0; i < MAX_FRAME_PASSES; i++) {
         for (int j = 0; j < CC_MAX_SHADERS; j++) {
             gfx_opengl_unload_shader(&shader_program_pool[i][j]);
+            gfx_destroy_shader(shader_program_pool[i][j].vertexShader);
+            gfx_destroy_shader(shader_program_pool[i][j].fragmentShader);
             memset(&shader_program_pool[i][j], 0, sizeof(shader_program_pool[i][j]));
         }
 
         gfx_opengl_unload_shader(&post_process_shader_program_pool[i]);
+        gfx_destroy_shader(post_process_shader_program_pool[i].vertexShader);
+        gfx_destroy_shader(post_process_shader_program_pool[i].fragmentShader);
         memset(&post_process_shader_program_pool[i], 0, sizeof(post_process_shader_program_pool[i]));
 
         shader_program_pool_index[i] = 0;
@@ -325,29 +317,13 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         glUniform1i(sampler_location, t);
     }
 
-    prg->uniform_locations[4] = glGetUniformLocation(shader_program, "uFrameCount");
-
     if ((opt_alpha && opt_dither) || ccf.do_noise) {
         prg->used_noise = true;
     } else {
         prg->used_noise = false;
     }
 
-    prg->uniform_locations[5] = glGetUniformLocation(shader_program, "uLightmapColor");
-
     prg->used_lightmap = opt_light_map;
-
-    prg->uniform_locations[6] = glGetUniformLocation(shader_program, "uFilter");
-    prg->uniform_locations[7] = glGetUniformLocation(shader_program, "uModelViewMatrix");
-    prg->uniform_locations[8] = glGetUniformLocation(shader_program, "uModelProjectionMatrix");
-    prg->uniform_locations[9] = glGetUniformLocation(shader_program, "uProjectionMatrix");
-    prg->uniform_locations[10] = glGetUniformLocation(shader_program, "uInverseCameraMatrix");
-    prg->uniform_locations[11] = glGetUniformLocation(shader_program, "uAspectRatio");
-    prg->uniform_locations[12] = glGetUniformLocation(shader_program, "uXAdjustRatio");
-
-    prg->uniform_locations[13] = glGetUniformLocation(shader_program, "uShaderFlags");
-    prg->uniform_locations[14] = glGetUniformLocation(shader_program, "uShaderFlagValues");
-
     prg->world_geometry = world_geometry;
 
     GLint passTexLoc = glGetUniformLocation(shader_program, "uPassTex");
@@ -355,10 +331,10 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         glUniform1i(passTexLoc, 10);
     }
 
-    gfx_opengl_load_shader(prg);
+    prg->vertexShader = vertexShader;
+    prg->fragmentShader = fragmentShader;
 
-    gfx_destroy_shader(vertexShader);
-    gfx_destroy_shader(fragmentShader);
+    gfx_opengl_load_shader(prg);
 
     return prg;
 }
@@ -504,6 +480,9 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     prg->num_floats = num_floats;
     prg->num_attribs = cnt;
 
+    prg->vertexShader = vertexShader;
+    prg->fragmentShader = fragmentShader;
+
     gfx_opengl_load_shader(prg);
 
     for (int t = 0; t < 2; t++) {
@@ -517,30 +496,17 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
         glUniform1i(sampler_location, t);
     }
 
-    prg->uniform_locations[4] = glGetUniformLocation(shader_program, "uFrameCount");
-    prg->uniform_locations[5] = glGetUniformLocation(shader_program, "uLightmapColor");
-    prg->uniform_locations[6] = glGetUniformLocation(shader_program, "uFilter");
-    prg->uniform_locations[7] = glGetUniformLocation(shader_program, "uModelViewMatrix");
-    prg->uniform_locations[8] = glGetUniformLocation(shader_program, "uModelProjectionMatrix");
-    prg->uniform_locations[9] = glGetUniformLocation(shader_program, "uProjectionMatrix");
-    prg->uniform_locations[10] = glGetUniformLocation(shader_program, "uInverseCameraMatrix");
-    prg->uniform_locations[11] = glGetUniformLocation(shader_program, "uAspectRatio");
-    prg->uniform_locations[12] = glGetUniformLocation(shader_program, "uXAdjustRatio");
-
     GLint passTexLoc = glGetUniformLocation(shader_program, "uPassTex");
     if (passTexLoc != -1) {
         glUniform1i(passTexLoc, 10);
     }
-
-    gfx_destroy_shader(vertexShader);
-    gfx_destroy_shader(fragmentShader);
 
     return prg;
 }
 
 static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner *cc) {
     int framePassIndex = gCurrentFramePassIndex + 1;
-    if (framePassIndex == 0) return NULL;
+    if (framePassIndex == 0) { return NULL; }
     for (size_t i = 0; i < shader_program_pool_size[framePassIndex]; i++) {
         if (shader_program_pool[framePassIndex][i].hash == cc->hash) {
              return &shader_program_pool[framePassIndex][i];
@@ -605,24 +571,33 @@ static void gfx_opengl_reset_framebuffer(void) {
     glViewport(0, 0, windowWidth, windowHeight);
 }
 
+static void gfx_opengl_set_uniform_for_shader(struct Shader *shader, const char* name, ShaderUniformType type, const void *data, uint32_t numElements) {
+    if (!shader) { return; }
+    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
+        if (shader->shaderUniforms[i].size == 0) { break; }
+
+        if (strcmp(shader->shaderUniforms[i].name, name) == 0) {
+            GLint loc = shader->shaderUniforms[i].location;
+            switch (type) {
+                case SHADER_UNIFORM_TYPE_BOOL:  glUniform1iv(loc, numElements, (const GLint*)data); break;
+                case SHADER_UNIFORM_TYPE_INT:   glUniform1iv(loc, numElements, (const GLint*)data); break;
+                case SHADER_UNIFORM_TYPE_FLOAT: glUniform1fv(loc, numElements, (const GLfloat*)data); break;
+                case SHADER_UNIFORM_TYPE_VEC2:  glUniform2fv(loc, numElements, (const GLfloat*)data); break;
+                case SHADER_UNIFORM_TYPE_VEC3:  glUniform3fv(loc, numElements, (const GLfloat*)data); break;
+                case SHADER_UNIFORM_TYPE_VEC4:  glUniform4fv(loc, numElements, (const GLfloat*)data); break;
+                case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); break;
+            }
+        }
+    }
+}
+
 static void gfx_opengl_set_uniform(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
     if (!prg) {
         if (!opengl_prg) { return; }
         prg = opengl_prg;
     }
-
-    GLint loc = glGetUniformLocation(prg->opengl_program_id, name);
-    if (loc == -1) return;
-
-    switch (type) {
-        case SHADER_UNIFORM_TYPE_BOOL:  glUniform1iv(loc, numElements, (const GLint*)data); break;
-        case SHADER_UNIFORM_TYPE_INT:   glUniform1iv(loc, numElements, (const GLint*)data); break;
-        case SHADER_UNIFORM_TYPE_FLOAT: glUniform1fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_VEC2:  glUniform2fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_VEC3:  glUniform3fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_VEC4:  glUniform4fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); break;
-    }
+    gfx_opengl_set_uniform_for_shader(prg->vertexShader, name, type, data, numElements);
+    gfx_opengl_set_uniform_for_shader(prg->fragmentShader, name, type, data, numElements);
 }
 
 static GLuint gfx_opengl_new_texture(void) {
@@ -646,9 +621,9 @@ static void gfx_opengl_select_texture(int tile, GLuint texture_id) {
     gfx_opengl_set_texture_uniforms(opengl_prg, tile);
 }
 
-static void gfx_opengl_bind_texture_raw(int tile, GLuint texture_id) {
+static void gfx_opengl_bind_texture_raw(int tile, u64 texture_id) {
     glActiveTexture(GL_TEXTURE0 + tile);
-    glBindTexture(GL_TEXTURE_2D, texture_id);
+    glBindTexture(GL_TEXTURE_2D, (GLuint)texture_id);
 }
 
 static void gfx_opengl_upload_texture(const uint8_t *rgba32_buf, int width, int height) {
@@ -773,8 +748,6 @@ static void gfx_opengl_on_resize(void) {
 }
 
 static void gfx_opengl_start_frame(void) {
-    frame_count++;
-
     glDisable(GL_SCISSOR_TEST);
     glDepthMask(GL_TRUE); // Must be set to clear Z-buffer
 

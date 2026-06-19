@@ -22,9 +22,9 @@
 extern "C" {
 #endif
 
-typedef struct SpirVShader {
+typedef struct {
     u32 *words; // SPIR-V words
-    int size; // number of words in SPIR-V binary
+    int size; // number of words in SPIR-V shader
 } SpirVShader;
 
 typedef enum ShaderUniformType {

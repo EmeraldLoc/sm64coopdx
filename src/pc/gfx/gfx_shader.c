@@ -620,6 +620,17 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
         }
     }
 
+    // look for and override version number
+    if (sscanf(line, "#version %31s %31s", type, name) == 2
+    ||  sscanf(line, " #version %31s %31s", type, name) == 2
+    ||  sscanf(line, "#version %31s", type) == 1
+    ||  sscanf(line, " #version %31s", type) == 1) {
+        char layoutLine[32] = { 0 };
+        snprintf(layoutLine, sizeof(layoutLine), "#version 410 core");
+        strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+        return;
+    }
+
     strncat(output, line, MAX_SHADER_CODE - strlen(output) - 1);
 }
 
@@ -710,15 +721,15 @@ static bool process_conversion_410_to_450_line(struct ShaderBinding *referenceBi
         }
     }
 
-    // find and change #version 410 to #version 450
-    if (strncmp(line, "#version", 8) == 0) {
-        int version;
-        if (sscanf(line, "#version %d", &version) == 1) {
-            if (version == 410) {
-                strncat(output, "#version 450", MAX_SHADER_CODE - strlen(output) - 1);
-                return true;
-            }
-        }
+    int version = 0;
+
+    // look for and override version number
+    if (sscanf(line, "#version %d %s", &version, name) == 2) {
+        char layoutLine[32] = { 0 };
+        snprintf(layoutLine, sizeof(layoutLine), "#version 450 core");
+        strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+        LOG_CONSOLE("converted version to 450 core")
+        return true;
     }
 
     strncat(output, line, MAX_SHADER_CODE - strlen(output) - 1);
@@ -766,10 +777,10 @@ static void gfx_convert_410_to_450(struct ShaderBinding *referenceBindings, char
         line = lineEnd + 1;
     }
 
-    char *versionText = "#version 450";
+    char *versionText = "#version 450 core";
 
     // readd the uniforms into a block
-    if (sShaderUniformCode[0] != '\0' && strncmp(sanitized, versionText, 12) == 0) {
+    if (sShaderUniformCode[0] != '\0' && strncmp(sanitized, versionText, 17) == 0) {
         // Shader TODO: is this a good method?
         char *sanitizedSource = strdup(sanitized);
         if (!sanitizedSource) {
@@ -795,7 +806,7 @@ static void gfx_convert_410_to_450(struct ShaderBinding *referenceBindings, char
         strncat(sanitized, "};\n", MAX_SHADER_CODE - 1);
 
         // append rest of code
-        strncat(sanitized, sanitizedSource + 12, MAX_SHADER_CODE - 1);
+        strncat(sanitized, sanitizedSource + 17, MAX_SHADER_CODE - 1);
 
         // cleanup
         free(sanitizedSource);
@@ -909,7 +920,6 @@ void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
 
     SPVC_CHECK(spvc_context_create(&context));
     SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
-
     SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_HLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
 
     spvc_resources resources;
@@ -964,6 +974,8 @@ void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
     spvc_context_destroy(context);
 }
 
+#undef SPVC_CHECK
+
 void gfx_destroy_shader_contents(struct Shader *shader) {
     if (!shader) { return; }
 
@@ -977,5 +989,3 @@ void gfx_destroy_shader(struct Shader *shader) {
     free(shader);
     shader = NULL;
 }
-
-#undef SPVC_CHECK

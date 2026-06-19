@@ -5,6 +5,8 @@
 #include "gfx_shader.h"
 
 struct ShaderProgram {
+    struct Shader *vertexShader;
+    struct Shader *fragmentShader;
     u64 hash;
     u32 opengl_program_id;
     u8 num_inputs;

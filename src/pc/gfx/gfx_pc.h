@@ -48,9 +48,18 @@ struct RSP {
 };
 
 struct FramePass {
+    // opengl
     u32 fbo;
     u32 depthBuffer;
     u32 passTexture;
+
+    // d3d
+    void *d3dTexture;
+    void *d3dRtv;
+    void *d3dSrv;
+    void *d3dDsv;
+
+    // global
     u32 width;
     u32 height;
     bool active;
@@ -92,6 +101,7 @@ void gfx_end_frame_render(void);
 void gfx_display_frame(void);
 void gfx_end_frame(void);
 void gfx_shutdown(void);
+void gfx_set_builtin_uniforms(void);
 void gfx_remove_all_color_combiners(void);
 void gfx_pc_precomp_shader(uint32_t rgb1, uint32_t alpha1, uint32_t rgb2, uint32_t alpha2, uint32_t flags);
 

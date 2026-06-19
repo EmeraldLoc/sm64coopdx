@@ -11166,6 +11166,14 @@ function gfx_shader_remove_frame_pass(framePassIndex)
 end
 
 --- @param framePassIndex integer
+--- @return integer width
+--- @return integer height
+--- Gets a frame passes viewport size
+function gfx_shader_get_frame_pass_viewport(framePassIndex)
+    -- ...
+end
+
+--- @param framePassIndex integer
 --- @param width integer
 --- @param height integer
 --- Sets a frame passes viewport size

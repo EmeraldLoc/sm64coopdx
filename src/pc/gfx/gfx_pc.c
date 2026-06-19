@@ -134,6 +134,8 @@ bool gShaderFlagsEnabled = true;
 static Mat4 sInverseCameraMatrix;
 static bool sHasInverseCameraMatrix = false;
 
+static float sFrameCount = 0;
+
 // 4x4 pink-black checkerboard texture to indicate missing textures
 #define MISSING_W 4
 #define MISSING_H 4
@@ -1680,6 +1682,13 @@ static void gfx_draw_fullscreen_quad() {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
+    if (gRenderApi == &gfx_direct3d11_api) {
+        // flip y coordinates on texture
+        for (int i = 0; i < 6; i++) {
+            quadVerticies[i * 6 + 5] = 1.0f - quadVerticies[i * 6 + 5];
+        }
+    }
+
     gfx_rapi->create_or_load_post_process_shader();
 
     gfx_rapi->set_use_alpha(false);
@@ -2075,6 +2084,7 @@ struct GfxRenderingAPI *gfx_get_current_rendering_api(void) {
 }
 
 void gfx_start_frame(void) {
+    sFrameCount++;
     if (gGfxPcResetTex1 > 0) {
         gGfxPcResetTex1--;
         rdp.loaded_texture[1].addr = NULL;
@@ -2171,16 +2181,17 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
     }
     dropped_frame = false;
 
+    gfx_rapi->reset_framebuffer();
     gfx_rapi->start_frame();
     gfx_run_dl(commands);
 }
 
 void gfx_run(Gfx *commands) {
     // Shader TODO: Give directx support for frame passes
-    if (gRenderApi == &gfx_direct3d11_api) {
+    /*if (gRenderApi == &gfx_direct3d11_api) {
         gfx_run_basic(commands);
         return;
-    }
+    }*/
     if (!gfx_wapi->start_frame()) {
         dropped_frame = true;
         return;
@@ -2278,7 +2289,47 @@ void gfx_shutdown(void) {
     gGfxInited = false;
 }
 
-void gfx_remove_all_color_combiners() {
+void gfx_set_builtin_uniforms(void) {
+    gfx_rapi->set_uniform(NULL, "uFrameCount", SHADER_UNIFORM_TYPE_FLOAT, &sFrameCount, 1);
+
+    float lightmapColor[3] = {
+        gVertexColor[0] / 255.0f,
+        gVertexColor[1] / 255.0f,
+        gVertexColor[2] / 255.0f
+    };
+    gfx_rapi->set_uniform(NULL, "uLightmapColor", SHADER_UNIFORM_TYPE_VEC3, lightmapColor, 1);
+
+    gfx_rapi->set_uniform(NULL, "uFilter", SHADER_UNIFORM_TYPE_INT, &configFiltering, 1);
+
+    if (rsp.modelview_matrix_stack_size > 0) {
+        gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);
+        Mat4 cameraMatrix;
+        mtxf_inverse(cameraMatrix, gInverseCameraMatrix.m);
+
+        Mat4 modelMatrix;
+        mtxf_mul(modelMatrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size-1], cameraMatrix);
+
+        gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)modelMatrix, 1);
+        gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)gInverseCameraMatrix.m, 1);
+    }
+
+    gfx_rapi->set_uniform(NULL, "uModelProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.MP_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
+
+    Mat4 invProjectionMatrix;
+    mtxf_inverse(invProjectionMatrix, rsp.P_matrix);
+    gfx_rapi->set_uniform(NULL, "uInverseProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)invProjectionMatrix, 1);
+
+    float aspectRatio = (float)gfx_current_dimensions.aspect_ratio;
+    float xAdjustRatio = (float)gfx_current_dimensions.x_adjust_ratio;
+    gfx_rapi->set_uniform(NULL, "uAspectRatio", SHADER_UNIFORM_TYPE_FLOAT, &aspectRatio, 1);
+    gfx_rapi->set_uniform(NULL, "uXAdjustRatio", SHADER_UNIFORM_TYPE_FLOAT, &xAdjustRatio, 1);
+
+    gfx_rapi->set_uniform(NULL, "uShaderFlags", SHADER_UNIFORM_TYPE_INT, gShaderFlags, SHADER_FLAG_MAX);
+    gfx_rapi->set_uniform(NULL, "uShaderFlagValues", SHADER_UNIFORM_TYPE_FLOAT, gShaderFlagValues, SHADER_FLAG_MAX);
+}
+
+void gfx_remove_all_color_combiners(void) {
     for (int i = 0; i < CC_MAX_SHADERS; i++) {
         memset(&color_combiner_pool[i], 0, sizeof(color_combiner_pool[i]));
     }

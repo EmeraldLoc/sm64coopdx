@@ -81,7 +81,6 @@
 - [RayIntersectionInfo](#RayIntersectionInfo)
 - [RomhackCameraSettings](#RomhackCameraSettings)
 - [ServerSettings](#ServerSettings)
-- [ShaderProgram](#ShaderProgram)
 - [SpawnInfo](#SpawnInfo)
 - [SpawnParticlesInfo](#SpawnParticlesInfo)
 - [StarPositions](#StarPositions)
@@ -705,7 +704,6 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | cm | [CombineMode](structs.md#CombineMode) | read-only |
-| prg | [ShaderProgram](structs.md#ShaderProgram) |  |
 | shader_input_mapping | `Array` <`integer`> |  |
 | shader_input_mapping_as_u64 | `Array` <`integer`> |  |
 | shader_commands | `Array` <`integer`> |  |
@@ -2910,27 +2908,6 @@
 | nametags | `integer` |  |
 | maxPlayers | `integer` |  |
 | pauseAnywhere | `integer` |  |
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [ShaderProgram](#ShaderProgram)
-
-| Field | Type | Access |
-| ----- | ---- | ------ |
-| hash | `integer` |  |
-| opengl_program_id | `integer` |  |
-| num_inputs | `integer` |  |
-| used_textures | `Array` <`boolean`> |  |
-| num_floats | `integer` |  |
-| attrib_locations | `Array` <`integer`> |  |
-| uniform_locations | `Array` <`integer`> |  |
-| attrib_sizes | `Array` <`integer`> |  |
-| num_attribs | `integer` |  |
-| used_noise | `boolean` |  |
-| used_lightmap | `boolean` |  |
-| world_geometry | `boolean` |  |
 
 [:arrow_up_small:](#)
 

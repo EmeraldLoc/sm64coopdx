@@ -32,7 +32,6 @@ in_files = [
     "src/game/paintings.h",
     "src/pc/djui/djui_types.h",
     "src/pc/gfx/gfx_cc.h",
-    "src/pc/gfx/gfx_opengl.h",
     "src/game/level_update.h",
     "src/game/first_person_cam.h",
     "src/game/player_palette.h",
@@ -104,6 +103,7 @@ override_field_invisible = {
     "DialogEntry": [ "str" ],
     "ModFsFile": [ "data", "capacity" ],
     "ModFs": [ "files" ],
+    "ColorCombiner": [ "prg" ],
 }
 
 override_field_deprecated = {
@@ -510,7 +510,7 @@ def get_struct_field_info(struct, field):
     fimmutable = str(lvt == 'LVT_COBJECT' or 'const ' in ftype).lower()
     if lvt.startswith('LVT_') and lvt.endswith('_P') and 'OBJECT' not in lvt and 'COLLISION' not in lvt and 'TRAJECTORY' not in lvt:
         fimmutable = 'true'
-    
+
     if field.get('get') and field['set'] == 'NULL':
         fimmutable = 'true'
 

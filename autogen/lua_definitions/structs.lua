@@ -513,7 +513,6 @@
 
 --- @class ColorCombiner
 --- @field public cm CombineMode
---- @field public prg ShaderProgram
 --- @field public shader_input_mapping integer[]
 --- @field public shader_input_mapping_as_u64 integer[]
 --- @field public shader_commands integer[]
@@ -2206,20 +2205,6 @@
 --- @field public nametags integer
 --- @field public maxPlayers integer
 --- @field public pauseAnywhere integer
-
---- @class ShaderProgram
---- @field public hash integer
---- @field public opengl_program_id integer
---- @field public num_inputs integer
---- @field public used_textures boolean[]
---- @field public num_floats integer
---- @field public attrib_locations integer[]
---- @field public uniform_locations integer[]
---- @field public attrib_sizes integer[]
---- @field public num_attribs integer
---- @field public used_noise boolean
---- @field public used_lightmap boolean
---- @field public world_geometry boolean
 
 --- @class SpawnInfo
 --- @field public startPos Vec3s

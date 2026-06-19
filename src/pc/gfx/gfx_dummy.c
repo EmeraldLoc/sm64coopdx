@@ -176,7 +176,7 @@ static uint32_t gfx_dummy_renderer_new_texture(void) {
 static void gfx_dummy_renderer_select_texture(UNUSED int tile, UNUSED uint32_t texture_id) {
 }
 
-static void gfx_dummy_renderer_bind_texture_raw(UNUSED int tile, UNUSED uint32_t texture_id) {
+static void gfx_dummy_renderer_bind_texture_raw(UNUSED int tile, UNUSED uint64_t texture_id) {
 }
 
 static void gfx_dummy_renderer_upload_texture(UNUSED const uint8_t *rgba32_buf, UNUSED int width, UNUSED int height) {
