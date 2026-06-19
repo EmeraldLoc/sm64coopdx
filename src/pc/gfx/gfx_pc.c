@@ -1682,12 +1682,14 @@ static void gfx_draw_fullscreen_quad() {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
+#ifdef WIN32
     if (gRenderApi == &gfx_direct3d11_api) {
         // flip y coordinates on texture
         for (int i = 0; i < 6; i++) {
             quadVerticies[i * 6 + 5] = 1.0f - quadVerticies[i * 6 + 5];
         }
     }
+#endif
 
     gfx_rapi->create_or_load_post_process_shader();
 
