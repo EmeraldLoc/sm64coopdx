@@ -92,6 +92,7 @@ static struct RenderingState {
     struct Box viewport, scissor;
     struct ShaderProgram *shader_program;
     struct TextureHashmapNode *textures[2];
+    ALIGNED16 Mat4 mp_matrix;
 } rendering_state;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
@@ -708,10 +709,6 @@ static void gfx_sp_pop_matrix(uint32_t count) {
     }
 }
 
-static float gfx_adjust_x_for_aspect_ratio(float x) {
-    return x * gfx_current_dimensions.x_adjust_ratio;
-}
-
 static OPTIMIZE_O3 void gfx_local_to_world_space(VEC_OUT Vec3f pos, VEC_OUT Vec3f normal) {
     if (!sHasInverseCameraMatrix) { return; }
 
@@ -790,8 +787,6 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         float z = v->ob[0] * rsp.MP_matrix[0][2] + v->ob[1] * rsp.MP_matrix[1][2] + v->ob[2] * rsp.MP_matrix[2][2] + rsp.MP_matrix[3][2];
         float w = v->ob[0] * rsp.MP_matrix[0][3] + v->ob[1] * rsp.MP_matrix[1][3] + v->ob[2] * rsp.MP_matrix[2][3] + rsp.MP_matrix[3][3];
 #endif
-
-        x = gfx_adjust_x_for_aspect_ratio(x);
 
         short U = v->tc[0] * rsp.texture_scaling_factor.s >> 16;
         short V = v->tc[1] * rsp.texture_scaling_factor.t >> 16;
@@ -991,10 +986,12 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         if (z < -w) d->clip_rej |= 16;
         if (z > w) d->clip_rej |= 32;
 
-        d->x = x;
-        d->y = y;
-        d->z = z;
-        d->w = w;
+        d->x = v->ob[0];
+        d->y = v->ob[1];
+        d->z = v->ob[2];
+        d->w = 1.0;
+
+        mtxf_copy(d->MP_matrix, rsp.MP_matrix);
 
         if (rsp.geometry_mode & G_FOG) {
             if (fabsf(w) < 0.001f) {
@@ -1031,7 +1028,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
     struct GfxVertex *v_arr[3] = {v1, v2, v3};
 
-    if (v1->clip_rej & v2->clip_rej & v3->clip_rej && gCullingEnabled) {
+    /*if (v1->clip_rej & v2->clip_rej & v3->clip_rej && gCullingEnabled) {
         // The whole triangle lies outside the visible area
         return;
     }
@@ -1067,7 +1064,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                 // this is needed because of the mirror room... some custom models will set/clear cull values resulting in cull both
                 break;
         }
-    }
+    }*/
 
     bool depth_test = (rsp.geometry_mode & G_ZBUFFER) == G_ZBUFFER;
     if (depth_test != rendering_state.depth_test) {
@@ -1088,6 +1085,11 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         gfx_flush();
         gfx_rapi->set_zmode_decal(zmode_decal);
         rendering_state.decal_mode = zmode_decal;
+    }
+
+    if (memcmp(v1->MP_matrix, rendering_state.mp_matrix, sizeof(rendering_state.mp_matrix)) != 0) {
+        gfx_flush();
+        mtxf_copy(rendering_state.mp_matrix, v1->MP_matrix);
     }
 
     if (rdp.viewport_or_scissor_changed) {
@@ -1622,13 +1624,15 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     lrxf = lrxf / (4.0f * HALF_SCREEN_WIDTH) - 1.0f;
     lryf = -(lryf / (4.0f * HALF_SCREEN_HEIGHT)) + 1.0f;
 
-    ulxf = gfx_adjust_x_for_aspect_ratio(ulxf);
-    lrxf = gfx_adjust_x_for_aspect_ratio(lrxf);
-
     struct GfxVertex* ul = &rsp.loaded_vertices[MAX_VERTICES + 0];
     struct GfxVertex* ll = &rsp.loaded_vertices[MAX_VERTICES + 1];
     struct GfxVertex* lr = &rsp.loaded_vertices[MAX_VERTICES + 2];
     struct GfxVertex* ur = &rsp.loaded_vertices[MAX_VERTICES + 3];
+
+    mtxf_identity(ul->MP_matrix);
+    mtxf_identity(ll->MP_matrix);
+    mtxf_identity(lr->MP_matrix);
+    mtxf_identity(ur->MP_matrix);
 
     ul->x = ulxf;
     ul->y = ulyf;
@@ -2315,7 +2319,7 @@ void gfx_set_builtin_uniforms(void) {
         gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)gInverseCameraMatrix.m, 1);
     }
 
-    gfx_rapi->set_uniform(NULL, "uModelProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.MP_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rendering_state.mp_matrix, 1);
     gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
 
     Mat4 invProjectionMatrix;

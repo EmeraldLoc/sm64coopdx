@@ -4,6 +4,9 @@
 #include <math.h>
 #include <assert.h>
 
+#include "types.h"
+#include "macros.h"
+
 #define SUPPORT_CHECK(x) assert(x)
 
 // SCALE_M_N: upscale/downscale M-bit integer to N-bit
@@ -42,9 +45,9 @@ struct Box {
 
 struct GfxVertex {
     float x, y, z, w;
-    float clipW;
     float u, v;
     struct RGBA color;
+    ALIGNED16 Mat4 MP_matrix;
     uint8_t fog_z;
     uint8_t clip_rej;
     uint8_t world_geometry;

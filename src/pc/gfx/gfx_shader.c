@@ -188,6 +188,12 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     append_line(vs_buf, &vs_len, "out vec3 vNormal;");
     append_line(vs_buf, &vs_len, "in vec3 aBarycentric;");
     append_line(vs_buf, &vs_len, "out vec3 vBarycentric;");
+    append_line(vs_buf, &vs_len, "uniform mat4 uModelProjectionMatrix;");
+    append_line(vs_buf, &vs_len, "uniform mat4 uModelViewMatrix;");
+    append_line(vs_buf, &vs_len, "uniform mat4 uModelMatrix;");
+    append_line(vs_buf, &vs_len, "uniform mat4 uViewMatrix;");
+    append_line(vs_buf, &vs_len, "uniform mat4 uProjectionMatrix;");
+    append_line(vs_buf, &vs_len, "uniform float uXAdjustRatio;");
     append_line(vs_buf, &vs_len, "void main() {");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "vTexCoord%d = aTexCoord%d;\n", t, t);
@@ -199,7 +205,10 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     }
     append_line(vs_buf, &vs_len, "vNormal = aNormal;");
     append_line(vs_buf, &vs_len, "vBarycentric = aBarycentric;");
-    append_line(vs_buf, &vs_len, "gl_Position = aVtxPos;");
+    append_line(vs_buf, &vs_len, "vec4 objectPos = aVtxPos;");
+    append_line(vs_buf, &vs_len, "vec4 clipPos = uModelProjectionMatrix * objectPos;");
+    append_line(vs_buf, &vs_len, "clipPos.x *= uXAdjustRatio;");
+    append_line(vs_buf, &vs_len, "gl_Position = clipPos;");
     append_line(vs_buf, &vs_len, "}");
 
     vs_buf[vs_len] = '\0';
