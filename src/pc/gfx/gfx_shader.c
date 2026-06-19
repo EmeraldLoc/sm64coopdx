@@ -160,7 +160,12 @@ static void append_formula(char *buf, size_t *len, uint8_t* cmd, bool do_single,
     }
 }
 
-char *gfx_generate_default_vertex_shader_from_cc(UNUSED struct ColorCombiner *cc) {
+char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
+    struct CCFeatures ccf = { 0 };
+    gfx_cc_get_features(cc, &ccf);
+
+    bool opt_tex_persp = cc->cm.tex_persp;
+
     static char vs_buf[8192] = { 0 };
     size_t vs_len = 0;
 
@@ -168,6 +173,7 @@ char *gfx_generate_default_vertex_shader_from_cc(UNUSED struct ColorCombiner *cc
     append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "in vec2 aTexCoord%d;\n", t);
+        if (!opt_tex_persp) { append_str(vs_buf, &vs_len, "noperspective "); }
         vs_len += sprintf(vs_buf + vs_len, "out vec2 vTexCoord%d;\n", t);
     }
     append_line(vs_buf, &vs_len, "in vec4 aFog;");
@@ -220,7 +226,7 @@ char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     append_line(fs_buf, &fs_len, "#version 410 core");
     append_line(fs_buf, &fs_len, "out vec4 fragColor;");
     for (int t = 0; t < 2; t++) {
-        if (opt_tex_persp) { append_str(fs_buf, &fs_len, "noperspective "); }
+        if (!opt_tex_persp) { append_str(fs_buf, &fs_len, "noperspective "); }
         fs_len += sprintf(fs_buf + fs_len, "in vec2 vTexCoord%d;\n", t);
     }
     append_line(fs_buf, &fs_len, "in vec4 vFog;");
