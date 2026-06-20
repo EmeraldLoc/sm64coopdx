@@ -136,6 +136,17 @@ static void gfx_opengl_remove_shaders(void) {
     }
 }
 
+static void cache_uniform_locations(int shaderProgram, struct Shader *shader) {
+    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
+        if (shader->shaderUniforms[i].size == 0) { continue; }
+
+        int loc = glGetUniformLocation(shaderProgram, shader->shaderUniforms[i].name);
+        if (loc == -1) { continue; }
+
+        shader->shaderUniforms[i].location = loc;
+    }
+}
+
 static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorCombiner *cc) {
     struct CCFeatures ccf = { 0 };
     gfx_cc_get_features(cc, &ccf);
@@ -340,6 +351,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         glUniform1i(passTexLoc, 10);
     }
 
+    cache_uniform_locations(prg->opengl_program_id, vertexShader);
+    cache_uniform_locations(prg->opengl_program_id, fragmentShader);
+
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
 
@@ -471,6 +485,8 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
+    glUseProgram(shader_program);
+
     size_t cnt = 0;
     size_t num_floats = 0;
 
@@ -488,6 +504,9 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     prg->opengl_program_id = shader_program;
     prg->num_floats = num_floats;
     prg->num_attribs = cnt;
+
+    cache_uniform_locations(prg->opengl_program_id, vertexShader);
+    cache_uniform_locations(prg->opengl_program_id, fragmentShader);
 
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
@@ -581,7 +600,7 @@ static void gfx_opengl_reset_framebuffer(void) {
 }
 
 static void gfx_opengl_set_uniform_for_shader(struct Shader *shader, const char* name, ShaderUniformType type, const void *data, uint32_t numElements) {
-    /*if (!shader) { return; }
+    if (!shader) { return; }
     for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
         if (shader->shaderUniforms[i].size == 0) { break; }
 
@@ -597,19 +616,6 @@ static void gfx_opengl_set_uniform_for_shader(struct Shader *shader, const char*
                 case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); break;
             }
         }
-    }*/
-
-    int loc = glGetUniformLocation(opengl_prg->opengl_program_id, name);
-    if (loc == -1) { return; }
-
-    switch (type) {
-        case SHADER_UNIFORM_TYPE_BOOL:  glUniform1iv(loc, numElements, (const GLint*)data); break;
-        case SHADER_UNIFORM_TYPE_INT:   glUniform1iv(loc, numElements, (const GLint*)data); break;
-        case SHADER_UNIFORM_TYPE_FLOAT: glUniform1fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_VEC2:  glUniform2fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_VEC3:  glUniform3fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_VEC4:  glUniform4fv(loc, numElements, (const GLfloat*)data); break;
-        case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); break;
     }
 }
 
