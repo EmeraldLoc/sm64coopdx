@@ -1600,25 +1600,25 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
 
     ul->x = ulxf;
     ul->y = ulyf;
-    ul->z = -1.0f;
+    ul->z = 0.0f;
     ul->w = 1.0f;
     mtxf_identity(ul->MP_matrix);
 
     ll->x = ulxf;
     ll->y = lryf;
-    ll->z = -1.0f;
+    ll->z = 0.0f;
     ll->w = 1.0f;
     mtxf_identity(ll->MP_matrix);
 
     lr->x = lrxf;
     lr->y = lryf;
-    lr->z = -1.0f;
+    lr->z = 0.0f;
     lr->w = 1.0f;
     mtxf_identity(lr->MP_matrix);
 
     ur->x = lrxf;
     ur->y = ulyf;
-    ur->z = -1.0f;
+    ur->z = 0.0f;
     ur->w = 1.0f;
     mtxf_identity(ur->MP_matrix);
 
