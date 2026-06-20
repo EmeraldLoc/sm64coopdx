@@ -155,6 +155,7 @@ static struct {
     s8 depth_test;
     s8 depth_mask;
     s8 zmode_decal;
+    int cull_mode;
 
     // Previous states (to prevent setting states needlessly)
 
@@ -345,7 +346,7 @@ static void gfx_d3d11_init(void) {
     ZeroMemory(&vertex_buffer_desc, sizeof(D3D11_BUFFER_DESC));
 
     vertex_buffer_desc.Usage = D3D11_USAGE_DYNAMIC;
-    vertex_buffer_desc.ByteWidth = 256 * ((16 + (CC_MAX_INPUTS * 4) + (2 * 2)) * 3) * sizeof(float); // Same as buf_vbo stride size in gfx_pc
+    vertex_buffer_desc.ByteWidth = VERTEX_STRIDE * sizeof(float); // Same as buf_vbo stride size in gfx_pc
     vertex_buffer_desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     vertex_buffer_desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
     vertex_buffer_desc.MiscFlags = 0;
@@ -1050,6 +1051,10 @@ static void gfx_d3d11_set_use_alpha(bool use_alpha) {
     // Already part of the pipeline state from shader info
 }
 
+static void gfx_d3d11_set_cull_mode(GfxCullMode mode) {
+    d3d.cull_mode = mode;
+}
+
 static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     if (d3d.last_depth_test != d3d.depth_test || d3d.last_depth_mask != d3d.depth_mask) {
         d3d.last_depth_test = d3d.depth_test;
@@ -1078,7 +1083,15 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
         ZeroMemory(&rasterizer_desc, sizeof(D3D11_RASTERIZER_DESC));
 
         rasterizer_desc.FillMode = D3D11_FILL_SOLID;
-        rasterizer_desc.CullMode = D3D11_CULL_NONE;
+
+        if (d3d.cull_mode == G_CULL_FRONT) {
+            rasterizer_desc.CullMode = D3D11_CULL_FRONT;
+        } else if (d3d.cull_mode == G_CULL_BACK) {
+            rasterizer_desc.CullMode = D3D11_CULL_BACK;
+        } else {
+            rasterizer_desc.CullMode = D3D11_CULL_NONE;
+        }
+
         rasterizer_desc.FrontCounterClockwise = true;
         rasterizer_desc.DepthBias = 0;
         rasterizer_desc.SlopeScaledDepthBias = d3d.zmode_decal ? -2.0f : 0.0f;
@@ -1276,6 +1289,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_set_viewport,
     gfx_d3d11_set_scissor,
     gfx_d3d11_set_use_alpha,
+    gfx_d3d11_set_cull_mode,
     gfx_d3d11_draw_triangles,
     gfx_d3d11_init,
     gfx_d3d11_on_resize,

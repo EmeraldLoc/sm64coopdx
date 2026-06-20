@@ -85,10 +85,24 @@ static struct GfxState gfx_states[MAX_GFX_STATES];
 static size_t num_gfx_states;
 
 static struct RenderingState {
+    int cull_mode;
     bool depth_test;
     bool depth_mask;
     bool decal_mode;
     bool alpha_blend;
+    bool fog_enabled;
+    f32 depth_z_sub;
+    f32 depth_z_mult;
+    f32 depth_z_add;
+    s16 fog_mul;
+    f32 fog_intensity;
+    s16 fog_offset;
+    u8 fog_color_r;
+    u8 fog_color_g;
+    u8 fog_color_b;
+    u8 rdp_fog_color_r;
+    u8 rdp_fog_color_g;
+    u8 rdp_fog_color_b;
     struct Box viewport, scissor;
     struct ShaderProgram *shader_program;
     struct TextureHashmapNode *textures[2];
@@ -99,7 +113,7 @@ struct GfxDimensions gfx_current_dimensions = { 0 };
 
 static bool dropped_frame = false;
 
-static float buf_vbo[MAX_BUFFERED * ((16 + (CC_MAX_INPUTS * 4) + (2 * 2)) * 3)] = { 0.0f }; // 3 vertices in a triangle and 16 floats per verticies plus the 4 floats per input for verticies plus the 2 per texture
+static float buf_vbo[VERTEX_STRIDE] = { 0.0f };
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
@@ -759,34 +773,10 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         }
     }
 
-#ifdef __SSE__
-    __m128 mat0 = _mm_load_ps(rsp.MP_matrix[0]);
-    __m128 mat1 = _mm_load_ps(rsp.MP_matrix[1]);
-    __m128 mat2 = _mm_load_ps(rsp.MP_matrix[2]);
-    __m128 mat3 = _mm_load_ps(rsp.MP_matrix[3]);
-#endif
-
     for (size_t i = 0; i < n_vertices; i++, dest_index++) {
         const Vtx_t *v = &vertices[i].v;
         const Vtx_tn *vn = &vertices[i].n;
         struct GfxVertex *d = &rsp.loaded_vertices[dest_index];
-
-#ifdef __SSE__
-        __m128 ob0 = _mm_set1_ps(v->ob[0]);
-        __m128 ob1 = _mm_set1_ps(v->ob[1]);
-        __m128 ob2 = _mm_set1_ps(v->ob[2]);
-
-        __m128 pos = _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_mul_ps(ob0, mat0), _mm_mul_ps(ob1, mat1)), _mm_mul_ps(ob2, mat2)), mat3);
-        float x = pos[0];
-        float y = pos[1];
-        float z = pos[2];
-        float w = pos[3];
-#else
-        float x = v->ob[0] * rsp.MP_matrix[0][0] + v->ob[1] * rsp.MP_matrix[1][0] + v->ob[2] * rsp.MP_matrix[2][0] + rsp.MP_matrix[3][0];
-        float y = v->ob[0] * rsp.MP_matrix[0][1] + v->ob[1] * rsp.MP_matrix[1][1] + v->ob[2] * rsp.MP_matrix[2][1] + rsp.MP_matrix[3][1];
-        float z = v->ob[0] * rsp.MP_matrix[0][2] + v->ob[1] * rsp.MP_matrix[1][2] + v->ob[2] * rsp.MP_matrix[2][2] + rsp.MP_matrix[3][2];
-        float w = v->ob[0] * rsp.MP_matrix[0][3] + v->ob[1] * rsp.MP_matrix[1][3] + v->ob[2] * rsp.MP_matrix[2][3] + rsp.MP_matrix[3][3];
-#endif
 
         short U = v->tc[0] * rsp.texture_scaling_factor.s >> 16;
         short V = v->tc[1] * rsp.texture_scaling_factor.t >> 16;
@@ -977,15 +967,6 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         d->u = U;
         d->v = V;
 
-        // trivial clip rejection
-        d->clip_rej = 0;
-        if (x < -w) d->clip_rej |= 1;
-        if (x > w) d->clip_rej |= 2;
-        if (y < -w) d->clip_rej |= 4;
-        if (y > w) d->clip_rej |= 8;
-        if (z < -w) d->clip_rej |= 16;
-        if (z > w) d->clip_rej |= 32;
-
         d->x = v->ob[0];
         d->y = v->ob[1];
         d->z = v->ob[2];
@@ -993,27 +974,6 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
 
         mtxf_copy(d->MP_matrix, rsp.MP_matrix);
 
-        if (rsp.geometry_mode & G_FOG) {
-            if (fabsf(w) < 0.001f) {
-                // To avoid division by zero
-                w = 0.001f;
-            }
-
-            float winv = 1.0f / w;
-            if (winv < 0.0f) {
-                winv = 32767.0f;
-            }
-
-            z -= sDepthZSub;
-            z *= sDepthZMult;
-            z += sDepthZAdd;
-
-            float fog_z = z * winv * rsp.fog_mul * gFogIntensity + rsp.fog_offset;
-
-            if (fog_z < 0) fog_z = 0;
-            if (fog_z > 255) fog_z = 255;
-            d->fog_z = fog_z;
-        }
         if (!(rsp.geometry_mode & G_FRESNEL_ALPHA_EXT)) {
             d->color.a = v->cn[3];
         }
@@ -1028,43 +988,12 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
     struct GfxVertex *v_arr[3] = {v1, v2, v3};
 
-    /*if (v1->clip_rej & v2->clip_rej & v3->clip_rej && gCullingEnabled) {
-        // The whole triangle lies outside the visible area
-        return;
+    int cull_mode = (rsp.geometry_mode & G_CULL_BOTH);
+    if (cull_mode != rendering_state.cull_mode) {
+        gfx_flush();
+        gfx_rapi->set_cull_mode(cull_mode);
+        rendering_state.cull_mode = cull_mode;
     }
-
-    if ((rsp.geometry_mode & G_CULL_BOTH) != 0 && gCullingEnabled) {
-        float dx1 = v1->x / (v1->w) - v2->x / (v2->w);
-        float dy1 = v1->y / (v1->w) - v2->y / (v2->w);
-        float dx2 = v3->x / (v3->w) - v2->x / (v2->w);
-        float dy2 = v3->y / (v3->w) - v2->y / (v2->w);
-        float cross = dx1 * dy2 - dy1 * dx2;
-
-        if ((v1->w < 0) ^ (v2->w < 0) ^ (v3->w < 0)) {
-            // If one vertex lies behind the eye, negating cross will give the correct result.
-            // If all vertices lie behind the eye, the triangle will be rejected anyway.
-            cross = -cross;
-        }
-
-        // Invert culling: back becomes front and front becomes back
-        if (rsp.geometry_mode & G_CULL_INVERT_EXT) {
-            cross = -cross;
-        }
-
-        switch (rsp.geometry_mode & G_CULL_BOTH) {
-            case G_CULL_FRONT:
-                if (cross <= 0) return;
-                break;
-            case G_CULL_BACK:
-                if (cross >= 0) return;
-                break;
-            case G_CULL_BOTH:
-                // Why is this even an option?
-                // HACK: Instead of culling both sides and displaying nothing, cull nothing and display everything
-                // this is needed because of the mirror room... some custom models will set/clear cull values resulting in cull both
-                break;
-        }
-    }*/
 
     bool depth_test = (rsp.geometry_mode & G_ZBUFFER) == G_ZBUFFER;
     if (depth_test != rendering_state.depth_test) {
@@ -1085,6 +1014,59 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         gfx_flush();
         gfx_rapi->set_zmode_decal(zmode_decal);
         rendering_state.decal_mode = zmode_decal;
+    }
+
+    bool fog_enabled = (rsp.geometry_mode & G_FOG) == G_FOG;
+    if (fog_enabled != rendering_state.fog_enabled) {
+        gfx_flush();
+        rendering_state.fog_enabled = fog_enabled;
+    }
+
+    if (sDepthZAdd != rendering_state.depth_z_add) {
+        gfx_flush();
+        rendering_state.depth_z_add = sDepthZAdd;
+    }
+
+    if (sDepthZMult != rendering_state.depth_z_mult) {
+        gfx_flush();
+        rendering_state.depth_z_mult = sDepthZMult;
+    }
+
+    if (sDepthZSub != rendering_state.depth_z_sub) {
+        gfx_flush();
+        rendering_state.depth_z_sub = sDepthZSub;
+    }
+
+    if (rsp.fog_mul != rendering_state.fog_mul) {
+        gfx_flush();
+        rendering_state.fog_mul = rsp.fog_mul;
+    }
+
+    if (gFogIntensity != rendering_state.fog_intensity) {
+        gfx_flush();
+        rendering_state.fog_intensity = gFogIntensity;
+    }
+
+    if (rsp.fog_offset != rendering_state.fog_offset) {
+        gfx_flush();
+        rendering_state.fog_offset = rsp.fog_offset;
+    }
+
+    if (gFogColor[0] != rendering_state.fog_color_r ||
+        gFogColor[1] != rendering_state.fog_color_g ||
+        gFogColor[2] != rendering_state.fog_color_b ||
+        rdp.fog_color.r != rendering_state.rdp_fog_color_r ||
+        rdp.fog_color.g != rendering_state.rdp_fog_color_g ||
+        rdp.fog_color.b != rendering_state.rdp_fog_color_b) {
+
+        gfx_flush();
+
+        rendering_state.fog_color_r = gFogColor[0];
+        rendering_state.fog_color_g = gFogColor[1];
+        rendering_state.fog_color_b = gFogColor[2];
+        rendering_state.rdp_fog_color_r = rdp.fog_color.r;
+        rendering_state.rdp_fog_color_g = rdp.fog_color.g;
+        rendering_state.rdp_fog_color_b = rdp.fog_color.b;
     }
 
     if (memcmp(v1->MP_matrix, rendering_state.mp_matrix, sizeof(rendering_state.mp_matrix)) != 0) {
@@ -1176,14 +1158,10 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
 
     for (int32_t i = 0; i < 3; i++) {
         // send triangle data
-        float z = v_arr[i]->z, w = v_arr[i]->w;
-        if (z_is_from_0_to_1) {
-            z = (z + w) / 2.0f;
-        }
         buf_vbo[buf_vbo_len++] = v_arr[i]->x;
         buf_vbo[buf_vbo_len++] = v_arr[i]->y;
-        buf_vbo[buf_vbo_len++] = z;
-        buf_vbo[buf_vbo_len++] = w;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->z;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->w;
         for (int32_t j = 0; j < 2; j++) {
             uint32_t tex_width = (rdp.texture_tile[j].lrs - rdp.texture_tile[j].uls + 4) / 4;
             uint32_t tex_height = (rdp.texture_tile[j].lrt - rdp.texture_tile[j].ult + 4) / 4;
@@ -1216,15 +1194,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
             buf_vbo[buf_vbo_len++] = u / tex_width;
             buf_vbo[buf_vbo_len++] = v / tex_height;
         }
-
-        // send fog data
-        f32 r = gFogColor[0] / 255.0f;
-        f32 g = gFogColor[1] / 255.0f;
-        f32 b = gFogColor[2] / 255.0f;
-        buf_vbo[buf_vbo_len++] = (rdp.fog_color.r / 255.0f) * r;
-        buf_vbo[buf_vbo_len++] = (rdp.fog_color.g / 255.0f) * g;
-        buf_vbo[buf_vbo_len++] = (rdp.fog_color.b / 255.0f) * b;
-        buf_vbo[buf_vbo_len++] = v_arr[i]->fog_z / 255.0f; // fog factor (not alpha)
 
         // send lightmap info
         struct RGBA* col = &v_arr[i]->color;
@@ -1629,30 +1598,29 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     struct GfxVertex* lr = &rsp.loaded_vertices[MAX_VERTICES + 2];
     struct GfxVertex* ur = &rsp.loaded_vertices[MAX_VERTICES + 3];
 
-    mtxf_identity(ul->MP_matrix);
-    mtxf_identity(ll->MP_matrix);
-    mtxf_identity(lr->MP_matrix);
-    mtxf_identity(ur->MP_matrix);
-
     ul->x = ulxf;
     ul->y = ulyf;
     ul->z = -1.0f;
     ul->w = 1.0f;
+    mtxf_identity(ul->MP_matrix);
 
     ll->x = ulxf;
     ll->y = lryf;
     ll->z = -1.0f;
     ll->w = 1.0f;
+    mtxf_identity(ll->MP_matrix);
 
     lr->x = lrxf;
     lr->y = lryf;
     lr->z = -1.0f;
     lr->w = 1.0f;
+    mtxf_identity(lr->MP_matrix);
 
     ur->x = lrxf;
     ur->y = ulyf;
     ur->z = -1.0f;
     ur->w = 1.0f;
+    mtxf_identity(ur->MP_matrix);
 
     // The coordinates for texture rectangle shall bypass the viewport setting
     struct Box default_viewport = {0, 0, gfx_current_dimensions.width, gfx_current_dimensions.height};
@@ -2306,6 +2274,27 @@ void gfx_set_builtin_uniforms(void) {
     gfx_rapi->set_uniform(NULL, "uLightmapColor", SHADER_UNIFORM_TYPE_VEC3, lightmapColor, 1);
 
     gfx_rapi->set_uniform(NULL, "uFilter", SHADER_UNIFORM_TYPE_INT, &configFiltering, 1);
+
+    float fog_mul = (float)rendering_state.fog_mul;
+    gfx_rapi->set_uniform(NULL, "uFogMul", SHADER_UNIFORM_TYPE_FLOAT, &fog_mul, 1);
+
+    gfx_rapi->set_uniform(NULL, "uFogIntensity", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.fog_intensity, 1);
+
+    float fog_offset = (float)rendering_state.fog_offset;
+    gfx_rapi->set_uniform(NULL, "uFogOffset", SHADER_UNIFORM_TYPE_FLOAT, &fog_offset, 1);
+
+    float fogColor[3] = {
+        (rendering_state.rdp_fog_color_r / 255.0f) * (rendering_state.fog_color_r / 255.0f),
+        (rendering_state.rdp_fog_color_g / 255.0f) * (rendering_state.fog_color_g / 255.0f),
+        (rendering_state.rdp_fog_color_b / 255.0f) * (rendering_state.fog_color_b / 255.0f)
+    };
+    gfx_rapi->set_uniform(NULL, "uFogColor", SHADER_UNIFORM_TYPE_VEC3, &fogColor, 1);
+
+    gfx_rapi->set_uniform(NULL, "uDepthZSub", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.depth_z_sub, 1);
+    gfx_rapi->set_uniform(NULL, "uDepthZMult", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.depth_z_mult, 1);
+    gfx_rapi->set_uniform(NULL, "uDepthZAdd", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.depth_z_add, 1);
+
+    gfx_rapi->set_uniform(NULL, "uFogEnabled", SHADER_UNIFORM_TYPE_BOOL, &rendering_state.fog_enabled, 1);
 
     if (rsp.modelview_matrix_stack_size > 0) {
         gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);

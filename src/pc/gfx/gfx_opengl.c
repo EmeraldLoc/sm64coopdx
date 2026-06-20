@@ -713,6 +713,17 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
     }
 }
 
+static void gfx_opengl_set_cull_mode(int mode) {
+    glEnable(GL_CULL_FACE);
+    if (mode == G_CULL_FRONT) {
+        glCullFace(GL_FRONT);
+    } else if (mode == G_CULL_BACK) {
+        glCullFace(GL_BACK);
+    } else {
+        glDisable(GL_CULL_FACE);
+    }
+}
+
 static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
     gfx_opengl_set_shader_uniforms();
@@ -825,6 +836,7 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_set_viewport,
     gfx_opengl_set_scissor,
     gfx_opengl_set_use_alpha,
+    gfx_opengl_set_cull_mode,
     gfx_opengl_draw_triangles,
     gfx_opengl_init,
     gfx_opengl_on_resize,
