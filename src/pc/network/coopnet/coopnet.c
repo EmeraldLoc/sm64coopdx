@@ -121,6 +121,10 @@ static void coopnet_on_error(enum MPacketErrorNumber error, uint64_t tag) {
                 djui_popup_create(built, 2);
             }
             break;
+        case MERR_LOBBY_CREATION_FAILED:
+            djui_popup_create(DLANG(NOTIF, LOBBY_CREATION_FAILED), 2);
+            network_shutdown(false, false, false, false);
+            break;
         case MERR_LOBBY_NOT_FOUND:
             djui_popup_create(DLANG(NOTIF, LOBBY_NOT_FOUND), 2);
             network_shutdown(false, false, false, false);

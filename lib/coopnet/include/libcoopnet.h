@@ -27,6 +27,7 @@ typedef enum {
 
 enum MPacketErrorNumber {
     MERR_NONE,
+    MERR_LOBBY_CREATION_FAILED,
     MERR_LOBBY_NOT_FOUND,
     MERR_LOBBY_JOIN_FULL,
     MERR_LOBBY_JOIN_FAILED,
