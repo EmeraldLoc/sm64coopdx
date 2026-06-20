@@ -1153,7 +1153,6 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
         }
 
         d3d.context->VSSetConstantBuffers(0, 1, d3d.shader_program->vertexConstantBuffer.GetAddressOf());
-        d3d.context->PSSetConstantBuffers(0, 1, d3d.shader_program->vertexConstantBuffer.GetAddressOf());
     }
 
     // Set fragment uniform buffers
@@ -1168,7 +1167,6 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
             d3d.context->Unmap(d3d.shader_program->fragmentConstantBuffer.Get(), 0);
         }
 
-        d3d.context->VSSetConstantBuffers(0, 1, d3d.shader_program->fragmentConstantBuffer.GetAddressOf());
         d3d.context->PSSetConstantBuffers(0, 1, d3d.shader_program->fragmentConstantBuffer.GetAddressOf());
     }
 
