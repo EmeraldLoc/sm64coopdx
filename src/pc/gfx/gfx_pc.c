@@ -184,8 +184,9 @@ void ext_gfx_run_dl(Gfx* cmd);
 /*static unsigned long get_time(void) {
     return 0;
 }*/
-
+static int sFlushCount = 0;
 static void gfx_flush(void) {
+    sFlushCount += buf_vbo_num_tris;
     if (buf_vbo_len > 0) {
         gfx_rapi->draw_triangles(buf_vbo, buf_vbo_len, buf_vbo_num_tris);
         buf_vbo_len = 0;
@@ -2058,6 +2059,8 @@ struct GfxRenderingAPI *gfx_get_current_rendering_api(void) {
 }
 
 void gfx_start_frame(void) {
+    printf("Flush count was %d\n", sFlushCount);
+    sFlushCount = 0;
     sFrameCount++;
     if (gGfxPcResetTex1 > 0) {
         gGfxPcResetTex1--;

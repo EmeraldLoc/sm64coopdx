@@ -164,6 +164,7 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     struct CCFeatures ccf = { 0 };
     gfx_cc_get_features(cc, &ccf);
 
+    bool opt_fog = cc->cm.use_fog;
     bool opt_tex_persp = cc->cm.tex_persp;
 
     static char vs_buf[8192] = { 0 };
@@ -186,7 +187,9 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     append_line(vs_buf, &vs_len, "out vec3 vNormal;");
     append_line(vs_buf, &vs_len, "in vec3 aBarycentric;");
     append_line(vs_buf, &vs_len, "out vec3 vBarycentric;");
-    append_line(vs_buf, &vs_len, "out float vFogZ;");
+    if (opt_fog) {
+        append_line(vs_buf, &vs_len, "out float vFogZ;");
+    }
     append_line(vs_buf, &vs_len, "uniform mat4 uModelProjectionMatrix;");
     append_line(vs_buf, &vs_len, "uniform float uXAdjustRatio;");
     append_line(vs_buf, &vs_len, "uniform float uFogMul;");
@@ -195,7 +198,6 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     append_line(vs_buf, &vs_len, "uniform float uDepthZSub;");
     append_line(vs_buf, &vs_len, "uniform float uDepthZMult;");
     append_line(vs_buf, &vs_len, "uniform float uDepthZAdd;");
-    append_line(vs_buf, &vs_len, "uniform bool uFogEnabled;");
     append_line(vs_buf, &vs_len, "void main() {");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "vTexCoord%d = aTexCoord%d;\n", t, t);
@@ -212,20 +214,18 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     append_line(vs_buf, &vs_len, "clipPos.x *= uXAdjustRatio;");
     append_line(vs_buf, &vs_len, "gl_Position = clipPos;");
 
-    append_line(vs_buf, &vs_len, "if (uFogEnabled) {");
-    append_line(vs_buf, &vs_len, "float w = clipPos.w;");
-    append_line(vs_buf, &vs_len, "if (abs(w) < 0.001) { w = 0.001; }");
-    append_line(vs_buf, &vs_len, "float winv = 1.0 / w;");
-    append_line(vs_buf, &vs_len, "if (winv < 0.0) { winv = 32767.0; }");
-    append_line(vs_buf, &vs_len, "float adjClipZ = clipPos.z;");
-    append_line(vs_buf, &vs_len, "adjClipZ -= uDepthZSub;");
-    append_line(vs_buf, &vs_len, "adjClipZ *= uDepthZMult;");
-    append_line(vs_buf, &vs_len, "adjClipZ += uDepthZAdd;");
-    append_line(vs_buf, &vs_len, "float fog_z = (adjClipZ * winv * uFogMul * uFogIntensity) + uFogOffset;");
-    append_line(vs_buf, &vs_len, "vFogZ = clamp(fog_z / 255.0, 0.0, 1.0);");
-    append_line(vs_buf, &vs_len, "} else {");
-    append_line(vs_buf, &vs_len, "vFogZ = 0.0;");
-    append_line(vs_buf, &vs_len, "}");
+    if (opt_fog) {
+        append_line(vs_buf, &vs_len, "float w = clipPos.w;");
+        append_line(vs_buf, &vs_len, "if (abs(w) < 0.001) { w = 0.001; }");
+        append_line(vs_buf, &vs_len, "float winv = 1.0 / w;");
+        append_line(vs_buf, &vs_len, "if (winv < 0.0) { winv = 32767.0; }");
+        append_line(vs_buf, &vs_len, "float adjClipZ = clipPos.z;");
+        append_line(vs_buf, &vs_len, "adjClipZ -= uDepthZSub;");
+        append_line(vs_buf, &vs_len, "adjClipZ *= uDepthZMult;");
+        append_line(vs_buf, &vs_len, "adjClipZ += uDepthZAdd;");
+        append_line(vs_buf, &vs_len, "float fog_z = (adjClipZ * winv * uFogMul * uFogIntensity) + uFogOffset;");
+        append_line(vs_buf, &vs_len, "vFogZ = clamp(fog_z / 255.0, 0.0, 1.0);");
+    }
 
     append_line(vs_buf, &vs_len, "}");
 
@@ -260,7 +260,10 @@ char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     for (int i = 0; i < CC_MAX_INPUTS; i++) {
         fs_len += sprintf(fs_buf + fs_len, "in vec4 vInput%d;\n", i + 1);
     }
-    append_line(fs_buf, &fs_len, "in float vFogZ;");
+
+    if (opt_fog) {
+        append_line(fs_buf, &fs_len, "in float vFogZ;");
+    }
 
     for (int t = 0; t < 2; t++) {
         if (ccf.used_textures[t]) {
