@@ -84,12 +84,28 @@ enum DjuiThemeElements {
     DJUI_THEME_ELEMENT_COUNT,
 };
 
+struct DjuiDeprecatedTheme {
+    PROPERTY(textColor,             djui_theme_get_text_color,               NULL);
+    PROPERTY(defaultRectColor,      djui_theme_get_default_rect_color,       NULL);
+    PROPERTY(cursorDownRectColor,   djui_theme_get_cursor_down_rect_color,   NULL);
+    PROPERTY(hoveredRectColor,      djui_theme_get_hovered_rect_color,       NULL);
+    PROPERTY(defaultBorderColor,    djui_theme_get_default_border_color,     NULL);
+    PROPERTY(cursorDownBorderColor, djui_theme_get_cursor_down_border_color, NULL);
+    PROPERTY(hoveredBorderColor,    djui_theme_get_hovered_border_color,     NULL);
+    PROPERTY(rectColor,             djui_theme_get_rect_color,               NULL);
+    PROPERTY(borderColor,           djui_theme_get_border_color,             NULL);
+    PROPERTY(hudFontHeader,         djui_theme_get_hud_font_header,          NULL);
+};
+
 struct DjuiTheme {
     char name[MAX_DJUI_THEME_NAME_LEN];
     struct DjuiColor elements[DJUI_THEME_ELEMENT_COUNT];
     unsigned int headerFont;
     bool useRainbowColor;
     bool gradients;
+    struct DjuiDeprecatedTheme interactables;
+    struct DjuiDeprecatedTheme threePanels;
+    struct DjuiDeprecatedTheme panels;
 };
 
 extern struct DjuiTheme* gDjuiThemes[MAX_DJUI_THEMES];
@@ -101,3 +117,23 @@ bool djui_themes_save_current(bool setThemeArray);
 bool djui_themes_save(struct DjuiTheme* theme, bool setThemeArray);
 void djui_themes_load(void);
 void djui_theme_delete(struct DjuiTheme* theme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_TEXT` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_text_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_default_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY_DOWN` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_cursor_down_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY_HOVER` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_hovered_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY_BORDER` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_default_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY_BORDER_DOWN` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_cursor_down_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY_BORDER_HOVER` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_hovered_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_THREE_PANEL` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets the color of the `DJUI_THEME_ELEMENT_THREE_PANEL_BORDER` of the current menu theme|descriptionEnd| */
+struct DjuiColor *djui_theme_get_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
+/* |description|Gets whether header font of the theme is `FONT_HUD`|descriptionEnd| */
+bool djui_theme_get_hud_font_header(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme); 

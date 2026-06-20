@@ -82,6 +82,7 @@ in_files = [
     "src/pc/network/sync_object.h",
     "src/audio/load.h",
     "src/pc/djui/djui_gfx.h",
+    "src/pc/djui/djui_theme.h",
 ]
 
 override_allowed_functions = {
@@ -103,6 +104,7 @@ override_allowed_functions = {
     "src/pc/network/sync_object.h":         [ "sync_object_is_initialized", "sync_object_is_owned_locally", "sync_object_get_object" ],
     "src/audio/load.h":                     [ "set_sound_bank_override" ],
     "src/pc/djui/djui_gfx.h":               [ "djui_gfx_get_scale" ],
+    "src/pc/djui/djui_theme.h":             [ "djui_theme_get_text_color", "djui_theme_get_default_rect_color", "djui_theme_get_cursor_down_rect_color", "djui_theme_get_hovered_rect_color", "djui_theme_get_default_border_color", "djui_theme_get_cursor_down_border_color", "djui_theme_get_hovered_border_color", "djui_theme_get_rect_color", "djui_theme_get_border_color", "djui_theme_get_hud_font_header" ],
 }
 
 override_disallowed_functions = {
