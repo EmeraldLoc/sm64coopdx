@@ -741,6 +741,8 @@ static void gfx_opengl_set_cull_mode(int mode) {
 
 static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
+    gfx_set_builtin_uniforms();
+    smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }

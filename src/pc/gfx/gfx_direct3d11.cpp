@@ -1137,6 +1137,9 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
         }
     }
 
+    gfx_set_builtin_uniforms();
+    smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
+
     // Set vertex uniform buffers
 
     if (d3d.shader_program->vertexUboSize > 0) {
