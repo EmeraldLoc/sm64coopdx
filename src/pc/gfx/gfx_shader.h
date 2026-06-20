@@ -9,7 +9,7 @@
 #define MAX_SHADER_INPUTS 64
 #define MAX_SHADER_OUTPUTS 512
 #define MAX_SHADER_UNIFORMS 8192
-#define MAX_SHADER_BINDINGS 32
+#define MAX_SHADER_BINDINGS 64
 
 #include <glslang/Include/glslang_c_interface.h>
 #include <glslang/Public/resource_limits_c.h>

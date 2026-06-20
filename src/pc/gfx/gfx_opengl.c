@@ -360,6 +360,15 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         glUniform1i(passTexLoc, 10);
     }
 
+    char uniformName[16];
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        snprintf(uniformName, sizeof(uniformName), "uPassTex%d", i);
+        GLint loc = glGetUniformLocation(shader_program, uniformName);
+        if (loc != -1) {
+            glUniform1i(loc, 10 + i);
+        }
+    }
+
     cache_uniform_locations(shader_program, vertexShader);
     cache_uniform_locations(shader_program, fragmentShader);
 
@@ -536,6 +545,15 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     GLint passTexLoc = glGetUniformLocation(shader_program, "uPassTex");
     if (passTexLoc != -1) {
         glUniform1i(passTexLoc, 10);
+    }
+
+    char uniformName[16];
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        snprintf(uniformName, sizeof(uniformName), "uPassTex%d", i);
+        GLint loc = glGetUniformLocation(shader_program, uniformName);
+        if (loc != -1) {
+            glUniform1i(loc, 10 + i);
+        }
     }
 
     return prg;

@@ -91,171 +91,261 @@ end
 ---@param cc ColorCombiner
 ---@param shaderIndex integer
 local function on_vertex_shader_create(cc, shaderIndex)
-    local vertexShader = {}
-    table.insert(vertexShader, "#version 150")
-    table.insert(vertexShader, "in vec4 aVtxPos;")
-    table.insert(vertexShader, "in vec2 aTexCoord0;")
-    table.insert(vertexShader, "out vec2 vTexCoord0;")
-    table.insert(vertexShader, "in vec2 aTexCoord1;")
-    table.insert(vertexShader, "out vec2 vTexCoord1;")
-    table.insert(vertexShader, "in vec4 aFog;")
-    table.insert(vertexShader, "out vec4 vFog;")
-    table.insert(vertexShader, "in vec2 aLightMap;")
-    table.insert(vertexShader, "out vec2 vLightMap;")
+    local opt_fog = cc.cm.flags & CM_FLAG_USE_FOG ~= 0
+    local opt_tex_persp = cc.cm.flags & CM_FLAG_TEX_PERSP ~= 0
 
-    for i = 1, CC_MAX_INPUTS do
-        table.insert(vertexShader, string.format("in vec4 aInput%d;", i))
-        table.insert(vertexShader, string.format("out vec4 vInput%d;", i))
+    local vs = {}
+
+    table.insert(vs, "#version 410 core")
+    table.insert(vs, "in vec4 aVtxPos;")
+
+    for t = 0, 1 do
+        table.insert(vs, string.format("in vec2 aTexCoord%d;", t))
+
+        if not opt_tex_persp then
+            table.insert(vs, string.format("noperspective out vec2 vTexCoord%d;", t))
+        else
+            table.insert(vs, string.format("out vec2 vTexCoord%d;", t))
+        end
     end
 
-    table.insert(vertexShader, "in vec3 aNormal;")
-    table.insert(vertexShader, "out vec3 vNormal;")
-    table.insert(vertexShader, "in vec3 aBarycentric;")
-    table.insert(vertexShader, "out vec3 vBarycentric;")
+    table.insert(vs, "in vec2 aLightMap;")
+    table.insert(vs, "out vec2 vLightMap;")
 
-    table.insert(vertexShader, "void main() {")
-    table.insert(vertexShader, "vTexCoord0 = aTexCoord0;")
-    table.insert(vertexShader, "vTexCoord1 = aTexCoord1;")
-    table.insert(vertexShader, "vFog = aFog;")
-    table.insert(vertexShader, "vLightMap = aLightMap;")
     for i = 1, CC_MAX_INPUTS do
-        table.insert(vertexShader, string.format("vInput%d = aInput%d;", i, i))
+        table.insert(vs, string.format("in vec4 aInput%d;", i))
+        table.insert(vs, string.format("out vec4 vInput%d;", i))
     end
-    table.insert(vertexShader, "vNormal = aNormal;")
-    table.insert(vertexShader, "vBarycentric = aBarycentric;")
-    table.insert(vertexShader, "gl_Position = aVtxPos;")
-    table.insert(vertexShader, "}")
 
-    return table.concat(vertexShader, "\n")
+    table.insert(vs, "in vec3 aNormal;")
+    table.insert(vs, "out vec3 vNormal;")
+    table.insert(vs, "in vec3 aBarycentric;")
+    table.insert(vs, "out vec3 vBarycentric;")
+
+    if opt_fog then
+        table.insert(vs, "out float vFogZ;")
+    end
+
+    table.insert(vs, "uniform mat4 uModelViewProjectionMatrix;")
+    table.insert(vs, "uniform float uXAdjustRatio;")
+    table.insert(vs, "uniform float uFogMul;")
+    table.insert(vs, "uniform float uFogIntensity;")
+    table.insert(vs, "uniform float uFogOffset;")
+    table.insert(vs, "uniform float uDepthZSub;")
+    table.insert(vs, "uniform float uDepthZMult;")
+    table.insert(vs, "uniform float uDepthZAdd;")
+
+    table.insert(vs, "void main() {")
+
+    for t = 0, 1 do
+        table.insert(vs, string.format("vTexCoord%d = aTexCoord%d;", t, t))
+    end
+
+    table.insert(vs, "vLightMap = aLightMap;")
+
+    for i = 1, CC_MAX_INPUTS do
+        table.insert(vs, string.format("vInput%d = aInput%d;", i, i))
+    end
+
+    table.insert(vs, "vNormal = aNormal;")
+    table.insert(vs, "vBarycentric = aBarycentric;")
+
+    table.insert(vs, "vec4 clipPos = uModelViewProjectionMatrix * aVtxPos;")
+    table.insert(vs, "clipPos.x *= uXAdjustRatio;")
+    table.insert(vs, "gl_Position = clipPos;")
+
+    if opt_fog then
+        table.insert(vs, "float w = clipPos.w;")
+        table.insert(vs, "if (abs(w) < 0.001) w = 0.001;")
+        table.insert(vs, "float winv = 1.0 / w;")
+        table.insert(vs, "if (winv < 0.0) winv = 32767.0;")
+
+        table.insert(vs, "float adjClipZ = clipPos.z;")
+        table.insert(vs, "adjClipZ -= uDepthZSub;")
+        table.insert(vs, "adjClipZ *= uDepthZMult;")
+        table.insert(vs, "adjClipZ += uDepthZAdd;")
+
+        table.insert(vs, "float fog_z = (adjClipZ * winv * uFogMul * uFogIntensity) + uFogOffset;")
+        table.insert(vs, "vFogZ = clamp(fog_z / 255.0, 0.0, 1.0);")
+    end
+
+    table.insert(vs, "}")
+
+    return table.concat(vs, "\n")
 end
 
 ---@param cc ColorCombiner
 ---@param shaderIndex integer
 local function on_fragment_shader_create(cc, shaderIndex)
     local ccf = gfx_color_combiner_get_features(cc)
-    local opt_alpha = cc.cm.flags & USE_ALPHA ~= 0
-    local opt_fog = cc.cm.flags & USE_FOG ~= 0
-    local opt_texture_edge = cc.cm.flags & TEXTURE_EDGE ~= 0
-    local opt_2cycle = cc.cm.flags & USE_2CYCLE ~= 0
-    local opt_light_map = cc.cm.flags & LIGHT_MAP ~= 0
-    local opt_dither = cc.cm.flags & USE_DITHER ~= 0
 
-    local fragmentShader = {}
-    table.insert(fragmentShader, "#version 150")
+    local opt_alpha = cc.cm.flags & CM_FLAG_USE_ALPHA ~= 0
+    local opt_fog = cc.cm.flags & CM_FLAG_USE_FOG ~= 0
+    local opt_texture_edge = cc.cm.flags & CM_FLAG_TEXTURE_EDGE ~= 0
+    local opt_2cycle = cc.cm.flags & CM_FLAG_USE_2CYCLE ~= 0
+    local opt_light_map = cc.cm.flags & CM_FLAG_LIGHT_MAP ~= 0
+    local opt_dither = cc.cm.flags & CM_FLAG_USE_DITHER ~= 0
+    local world_geometry = cc.cm.flags & CM_FLAG_WORLD_GEOMETRY ~= 0
+    local opt_tex_persp = cc.cm.flags & CM_FLAG_TEX_PERSP ~= 0
 
-    table.insert(fragmentShader, "out vec4 fragColor;")
-    table.insert(fragmentShader, "in vec2 vTexCoord0;")
-    table.insert(fragmentShader, "in vec2 vTexCoord1;")
-    table.insert(fragmentShader, "in vec4 vFog;")
-    table.insert(fragmentShader, "in vec2 vLightMap;")
+    local fs = {}
 
-    for i = 1, CC_MAX_INPUTS do
-        table.insert(fragmentShader, string.format("in vec4 vInput%d;", i))
-    end
+    table.insert(fs, "#version 410 core")
+    table.insert(fs, "out vec4 fragColor;")
 
-    table.insert(fragmentShader, "in vec3 vNormal;")
-    table.insert(fragmentShader, "in vec3 vBarycentric;")
-
-    if ccf.used_textures[1] then
-        table.insert(fragmentShader, "uniform sampler2D uTex0;")
-        table.insert(fragmentShader, "uniform vec2 uTex0Size;")
-        table.insert(fragmentShader, "uniform bool uTex0Filter;")
-    end
-    if ccf.used_textures[2] then
-        table.insert(fragmentShader, "uniform sampler2D uTex1;")
-        table.insert(fragmentShader, "uniform vec2 uTex1Size;")
-        table.insert(fragmentShader, "uniform bool uTex1Filter;")
-    end
-
-    if ccf.used_textures[1] or ccf.used_textures[2] then
-        table.insert(fragmentShader, "#define TEX_OFFSET(off) texture(tex, texCoord - (off)/texSize)")
-        table.insert(fragmentShader, "vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {")
-        table.insert(fragmentShader, "    vec2 offset = fract(texCoord*texSize - vec2(0.5));")
-        table.insert(fragmentShader, "    offset -= step(1.0, offset.x + offset.y);")
-        table.insert(fragmentShader, "    vec4 c0 = TEX_OFFSET(offset);")
-        table.insert(fragmentShader, "    vec4 c1 = TEX_OFFSET(vec2(offset.x - sign(offset.x), offset.y));")
-        table.insert(fragmentShader, "    vec4 c2 = TEX_OFFSET(vec2(offset.x, offset.y - sign(offset.y)));")
-        table.insert(fragmentShader, "    return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);")
-        table.insert(fragmentShader, "}")
-        table.insert(fragmentShader, "vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec2 texSize, in bool dofilter, in int filterType) {")
-        table.insert(fragmentShader, "    if (dofilter && filterType == 2) return filter3point(tex, uv, texSize);")
-        table.insert(fragmentShader, "    else return texture(tex, uv);")
-        table.insert(fragmentShader, "}")
-    end
-
-    if (opt_alpha and opt_dither) or ccf.do_noise then
-        table.insert(fragmentShader, "uniform float uFrameCount;")
-        table.insert(fragmentShader, "float random(in vec3 value) {")
-        table.insert(fragmentShader, "    float random = dot(sin(value), vec3(12.9898, 78.233, 37.719));")
-        table.insert(fragmentShader, "    return fract(sin(random) * 143758.5453);")
-        table.insert(fragmentShader, "}")
-    end
-
-    if opt_light_map then
-        table.insert(fragmentShader, "uniform vec3 uLightmapColor;")
-    end
-    table.insert(fragmentShader, "uniform int uFilter;")
-
-    table.insert(fragmentShader, "void main() {")
-    if (opt_alpha and opt_dither) or ccf.do_noise then
-        table.insert(fragmentShader, "float noise = floor(random(floor(vec3(gl_FragCoord.xy, uFrameCount))) + 0.5);")
-    end
-
-    if ccf.used_textures[1] then
-        table.insert(fragmentShader, "vec4 texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter, uFilter);")
-    end
-    if ccf.used_textures[2] then
-        if opt_light_map then
-            table.insert(fragmentShader, "vec4 texVal1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter, uFilter);")
-            table.insert(fragmentShader, "texVal0.rgb *= uLightmapColor.rgb;")
-            table.insert(fragmentShader, "texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;")
+    for t = 0, 1 do
+        if not opt_tex_persp then
+            table.insert(fs, string.format("noperspective in vec2 vTexCoord%d;", t))
         else
-            table.insert(fragmentShader, "vec4 texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter, uFilter);")
+            table.insert(fs, string.format("in vec2 vTexCoord%d;", t))
         end
     end
 
-    table.insert(fragmentShader, (opt_alpha and "vec4 texel = " or "vec3 texel = "))
+    table.insert(fs, "in vec2 vLightMap;")
 
+    for i = 1, CC_MAX_INPUTS do
+        table.insert(fs, string.format("in vec4 vInput%d;", i))
+    end
+
+    if opt_fog then
+        table.insert(fs, "in float vFogZ;")
+    end
+
+    if ccf.used_textures[1] then
+        table.insert(fs, "uniform sampler2D uTex0;")
+        table.insert(fs, "uniform vec2 uTex0Size;")
+        table.insert(fs, "uniform bool uTex0Filter;")
+    end
+
+    if ccf.used_textures[2] then
+        table.insert(fs, "uniform sampler2D uTex1;")
+        table.insert(fs, "uniform vec2 uTex1Size;")
+        table.insert(fs, "uniform bool uTex1Filter;")
+    end
+
+    -- 3-point filtering
+    if ccf.used_textures[1] or ccf.used_textures[2] then
+        table.insert(fs, "#define TEX_OFFSET(off) texture(tex, texCoord - (off)/texSize)")
+        table.insert(fs, "vec4 filter3point(in sampler2D tex, in vec2 texCoord, in vec2 texSize) {")
+        table.insert(fs, "    vec2 offset = fract(texCoord * texSize - vec2(0.5));")
+        table.insert(fs, "    offset -= step(1.0, offset.x + offset.y);")
+        table.insert(fs, "    vec4 c0 = TEX_OFFSET(offset);")
+        table.insert(fs, "    vec4 c1 = TEX_OFFSET(vec2(offset.x - sign(offset.x), offset.y));")
+        table.insert(fs, "    vec4 c2 = TEX_OFFSET(vec2(offset.x, offset.y - sign(offset.y)));")
+        table.insert(fs, "    return c0 + abs(offset.x)*(c1-c0) + abs(offset.y)*(c2-c0);")
+        table.insert(fs, "}")
+
+        table.insert(fs, "vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec2 texSize, in bool dofilter, in int filterType) {")
+        table.insert(fs, "    if (dofilter && filterType == 2)")
+        table.insert(fs, "        return filter3point(tex, uv, texSize);")
+        table.insert(fs, "    return texture(tex, uv);")
+        table.insert(fs, "}")
+    end
+
+    if (opt_alpha and opt_dither) or ccf.do_noise then
+        table.insert(fs, "uniform float uFrameCount;")
+        table.insert(fs, "float random(in vec3 v) {")
+        table.insert(fs, "    float r = dot(sin(v), vec3(12.9898, 78.233, 37.719));")
+        table.insert(fs, "    return fract(sin(r) * 143758.5453);")
+        table.insert(fs, "}")
+    end
+
+    if opt_light_map then
+        table.insert(fs, "uniform vec3 uLightmapColor;")
+    end
+
+    if opt_fog then
+        table.insert(fs, "uniform vec3 uFogColor;")
+    end
+
+    table.insert(fs, "uniform int uFilter;")
+
+    table.insert(fs, "void main() {")
+
+    if (opt_alpha and opt_dither) or ccf.do_noise then
+        table.insert(fs, "float noise = floor(random(vec3(gl_FragCoord.xy, uFrameCount)) + 0.5);")
+    end
+
+    if ccf.used_textures[1] then
+        table.insert(fs, "vec4 texVal0 = sampleTex(uTex0, vTexCoord0, uTex0Size, uTex0Filter, uFilter);")
+    end
+
+    if ccf.used_textures[2] then
+        if opt_light_map then
+            table.insert(fs, "vec4 texVal1 = sampleTex(uTex1, vLightMap, uTex1Size, uTex1Filter, uFilter);")
+            table.insert(fs, "texVal0.rgb *= uLightmapColor.rgb;")
+            table.insert(fs, "texVal1.rgb = texVal1.rgb * texVal1.rgb + texVal1.rgb;")
+        else
+            table.insert(fs, "vec4 texVal1 = sampleTex(uTex1, vTexCoord1, uTex1Size, uTex1Filter, uFilter);")
+        end
+    end
+
+    if opt_alpha then
+        table.insert(fs, "vec4 texel = ")
+    else
+        table.insert(fs, "vec3 texel = ")
+    end
+
+    -- combine passes
     for i = 0, (opt_2cycle and 1 or 0) do
         local cmd = {}
         for j = 0, CC_MAX_INPUTS - 1 do
             cmd[j + 1] = cc.shader_commands[i * CC_MAX_INPUTS + j + 1]
         end
+
         local idx = i * 2
 
         if not ccf.color_alpha_same[i + 1] and opt_alpha then
-            local color = append_formula(cmd, ccf.do_single[idx + 1], ccf.do_multiply[idx + 1], ccf.do_mix[idx + 1], false, false)
-            local alpha = append_formula(cmd, ccf.do_single[idx + 2], ccf.do_multiply[idx + 2], ccf.do_mix[idx + 2], true, true)
-            table.insert(fragmentShader, "vec4(" .. color .. ", " .. alpha .. ")")
+            table.insert(fs, "vec4(")
+            table.insert(fs, append_formula(cmd, ccf.do_single[idx + 1], ccf.do_multiply[idx + 1], ccf.do_mix[idx + 1], false, false))
+            table.insert(fs, ", ")
+            table.insert(fs, append_formula(cmd, ccf.do_single[idx + 2], ccf.do_multiply[idx + 2], ccf.do_mix[idx + 2], true, true))
+
+            table.insert(fs, ")")
         else
-            table.insert(fragmentShader, append_formula(cmd, ccf.do_single[idx + 1], ccf.do_multiply[idx + 1], ccf.do_mix[idx + 1], opt_alpha, false))
+            table.insert(fs,
+                append_formula(cmd,
+                    ccf.do_single[idx + 1],
+                    ccf.do_multiply[idx + 1],
+                    ccf.do_mix[idx + 1],
+                    opt_alpha,
+                    false
+                )
+            )
         end
-        table.insert(fragmentShader, ";")
-        if i == 0 and opt_2cycle then table.insert(fragmentShader, "texel = ") end
+
+        table.insert(fs, ";")
+
+        if i == 0 and opt_2cycle then
+            table.insert(fs, "texel = ")
+        end
     end
 
     if opt_texture_edge and opt_alpha then
-        table.insert(fragmentShader, "if (texel.a > 0.3) texel.a = 1.0; else discard;")
+        table.insert(fs, "if (texel.a > 0.3) texel.a = 1.0; else discard;")
     end
+
     if opt_fog then
         if opt_alpha then
-            table.insert(fragmentShader, "texel = vec4(mix(texel.rgb, vFog.rgb, vFog.a), texel.a);")
+            table.insert(fs, "texel = vec4(mix(texel.rgb, uFogColor, vFogZ), texel.a);")
         else
-            table.insert(fragmentShader, "texel = mix(texel, vFog.rgb, vFog.a);")
+            table.insert(fs, "texel = mix(texel, uFogColor, vFogZ);")
         end
     end
+
     if opt_alpha and opt_dither then
-        table.insert(fragmentShader, "texel.a *= noise;")
+        table.insert(fs, "texel.a *= noise;")
     end
 
     if opt_alpha then
-        table.insert(fragmentShader, "fragColor = texel;")
+        table.insert(fs, "fragColor = texel;")
     else
-        table.insert(fragmentShader, "fragColor = vec4(texel, 1.0);")
+        table.insert(fs, "fragColor = vec4(texel, 1.0);")
     end
-    table.insert(fragmentShader, "}")
 
-    return table.concat(fragmentShader, "\n")
+    table.insert(fs, "}")
+
+    return table.concat(fs, "\n")
 end
 
 hook_event(HOOK_ON_VERTEX_SHADER_CREATE, on_vertex_shader_create)

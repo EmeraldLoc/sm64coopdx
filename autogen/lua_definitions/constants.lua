@@ -3145,20 +3145,24 @@ SHADER_OPT_TEXTURE_EDGE = (1 << 26)
 --- @type integer
 SHADER_OPT_NOISE = (1 << 27)
 
-USE_ALPHA    = 1 << 0 --- @type CombineModeFlags
-USE_FOG      = 1 << 1 --- @type CombineModeFlags
-TEXTURE_EDGE = 1 << 2 --- @type CombineModeFlags
-USE_DITHER   = 1 << 3 --- @type CombineModeFlags
-USE_2CYCLE   = 1 << 4 --- @type CombineModeFlags
-LIGHT_MAP    = 1 << 5 --- @type CombineModeFlags
+CM_FLAG_USE_ALPHA      = 1 << 0 --- @type CombineModeFlags
+CM_FLAG_USE_FOG        = 1 << 1 --- @type CombineModeFlags
+CM_FLAG_TEXTURE_EDGE   = 1 << 2 --- @type CombineModeFlags
+CM_FLAG_USE_DITHER     = 1 << 3 --- @type CombineModeFlags
+CM_FLAG_USE_2CYCLE     = 1 << 4 --- @type CombineModeFlags
+CM_FLAG_LIGHT_MAP      = 1 << 5 --- @type CombineModeFlags
+CM_FLAG_TEX_PERSP      = 1 << 6 --- @type CombineModeFlags
+CM_FLAG_WORLD_GEOMETRY = 1 << 7 --- @type CombineModeFlags
 
 --- @alias CombineModeFlags
---- | `USE_ALPHA`
---- | `USE_FOG`
---- | `TEXTURE_EDGE`
---- | `USE_DITHER`
---- | `USE_2CYCLE`
---- | `LIGHT_MAP`
+--- | `CM_FLAG_USE_ALPHA`
+--- | `CM_FLAG_USE_FOG`
+--- | `CM_FLAG_TEXTURE_EDGE`
+--- | `CM_FLAG_USE_DITHER`
+--- | `CM_FLAG_USE_2CYCLE`
+--- | `CM_FLAG_LIGHT_MAP`
+--- | `CM_FLAG_TEX_PERSP`
+--- | `CM_FLAG_WORLD_GEOMETRY`
 
 --- @type integer
 SHADER_CMD_LENGTH = 16

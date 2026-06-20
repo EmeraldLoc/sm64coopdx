@@ -2112,18 +2112,13 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
         gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
 
-        // bind pass tex if it exists
+        // bind pass textures if they exists
         if (i > 0) {
-            int lastPassTex = -1;
-            for (int j = i - 1; j >= 0; j--) {
-                if (gFramePasses[j].active) {
-                    lastPassTex = gFramePasses[j].passTexture;
-                    break;
+            int textureSlotOffset = 10;
+            for (int j = 0; j < i; j++) {
+                if (gFramePasses[j].active && gFramePasses[j].passTexture != 0) {
+                    gfx_rapi->bind_texture_raw(textureSlotOffset + j, gFramePasses[j].passTexture);
                 }
-            }
-
-            if (lastPassTex != -1) {
-                gfx_rapi->bind_texture_raw(10, lastPassTex);
             }
         }
 
@@ -2214,22 +2209,21 @@ void gfx_run(Gfx *commands) {
     gfx_sp_reset(); // resets the rsp
     sHasInverseCameraMatrix = false;
 
-    int lastPassTex = -1;
+    int textureSlotOffset = 10;
+
     if (gDefaultGeoFramePass.active) {
-        lastPassTex = gDefaultGeoFramePass.passTexture;
+        if (gDefaultGeoFramePass.passTexture != 0) {
+            gfx_rapi->bind_texture_raw(textureSlotOffset, gDefaultGeoFramePass.passTexture);
+        }
     } else {
-        for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
-            if (gFramePasses[i].active) {
-                lastPassTex = gFramePasses[i].passTexture;
-                break;
+        for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+            if (gFramePasses[i].active && gFramePasses[i].passTexture != 0) {
+                gfx_rapi->bind_texture_raw(textureSlotOffset + i, gFramePasses[i].passTexture);
             }
         }
     }
 
-    if (lastPassTex != -1) {
-        gfx_rapi->bind_texture_raw(10, lastPassTex);
-        gfx_draw_fullscreen_quad();  // draw final quad
-    }
+    gfx_draw_fullscreen_quad();  // draw final quad
 }
 
 void gfx_end_frame_render(void) {

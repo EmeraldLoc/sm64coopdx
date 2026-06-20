@@ -569,11 +569,25 @@ static void gfx_init_shader_bindings() {
     gShaderBindings[cnt].binding = 10;
     cnt++;
 
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        if (cnt >= MAX_SHADER_BINDINGS) { break; }
+        snprintf(gShaderBindings[cnt].name, MAX_SHADER_VARIABLE_NAME, "uPassTex%d", i);
+        gShaderBindings[cnt].binding = 10 + i;
+        cnt++;
+    }
+
     cnt = 0;
 
     snprintf(gPostProcessShaderBindings[cnt].name, MAX_SHADER_VARIABLE_NAME, "uPassTex");
     gPostProcessShaderBindings[cnt].binding = 10;
     cnt++;
+
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        if (cnt >= MAX_SHADER_BINDINGS) { break; }
+        snprintf(gPostProcessShaderBindings[cnt].name, MAX_SHADER_VARIABLE_NAME, "uPassTex%d", i);
+        gPostProcessShaderBindings[cnt].binding = 10 + i;
+        cnt++;
+    }
 }
 
 void gfx_init_shaders() {

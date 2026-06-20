@@ -1400,12 +1400,14 @@
 ### [enum CombineModeFlags](#CombineModeFlags)
 | Identifier | Value |
 | :--------- | :---- |
-| USE_ALPHA | 1 << 0 |
-| USE_FOG | 1 << 1 |
-| TEXTURE_EDGE | 1 << 2 |
-| USE_DITHER | 1 << 3 |
-| USE_2CYCLE | 1 << 4 |
-| LIGHT_MAP | 1 << 5 |
+| CM_FLAG_USE_ALPHA | 1 << 0 |
+| CM_FLAG_USE_FOG | 1 << 1 |
+| CM_FLAG_TEXTURE_EDGE | 1 << 2 |
+| CM_FLAG_USE_DITHER | 1 << 3 |
+| CM_FLAG_USE_2CYCLE | 1 << 4 |
+| CM_FLAG_LIGHT_MAP | 1 << 5 |
+| CM_FLAG_TEX_PERSP | 1 << 6 |
+| CM_FLAG_WORLD_GEOMETRY | 1 << 7 |
 - SHADER_CMD_LENGTH
 - CC_MAX_SHADERS
 - CC_MAX_INPUTS
