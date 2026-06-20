@@ -24,7 +24,7 @@ struct GfxWindowManagerAPI;
 #define MAX_FRAME_PASSES MAX_CUSTOM_FRAME_PASSES + 1
 
 struct RSP {
-    ALIGNED16 Mat4 MP_matrix;
+    ALIGNED16 Mat4 MVP_matrix;
     ALIGNED16 Mat4 P_matrix;
     ALIGNED16 Mat4 modelview_matrix_stack[MAX_MATRIX_STACK_SIZE];
     uint32_t modelview_matrix_stack_size;
@@ -101,7 +101,6 @@ void gfx_end_frame_render(void);
 void gfx_display_frame(void);
 void gfx_end_frame(void);
 void gfx_shutdown(void);
-void gfx_set_builtin_uniforms(void);
 void gfx_remove_all_color_combiners(void);
 void gfx_pc_precomp_shader(uint32_t rgb1, uint32_t alpha1, uint32_t rgb2, uint32_t alpha2, uint32_t flags);
 

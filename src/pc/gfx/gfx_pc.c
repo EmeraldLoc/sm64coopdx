@@ -106,7 +106,7 @@ static struct RenderingState {
     struct Box viewport, scissor;
     struct ShaderProgram *shader_program;
     struct TextureHashmapNode *textures[2];
-    ALIGNED16 Mat4 mp_matrix;
+    ALIGNED16 Mat4 mvp_matrix;
 } sRenderingState;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
@@ -146,6 +146,7 @@ f32 gShaderFlagValues[SHADER_FLAG_MAX] = { 0 };
 bool gShaderFlagsEnabled = true;
 
 // need inverse camera matrix to compute world space for lighting engine
+static Mat4 sCameraMatrix;
 static Mat4 sInverseCameraMatrix;
 static bool sHasInverseCameraMatrix = false;
 
@@ -174,9 +175,12 @@ static void gfx_update_loaded_texture(uint8_t tile_number, uint32_t size_bytes, 
     rdp.loaded_texture[tile_number].addr = addr;
 }
 
-//////////////////////////
-// forward declaration //
-////////////////////////
+///////////////////////////
+// forward declarations //
+/////////////////////////
+void gfx_set_fog_uniforms(void);
+void gfx_set_matrix_uniforms(void);
+void gfx_set_builtin_uniforms(void);
 void ext_gfx_run_dl(Gfx* cmd);
 
 //////////////////////////////////
@@ -671,6 +675,8 @@ static void OPTIMIZE_O3 gfx_sp_matrix(uint8_t parameters, const int32_t *addr) {
         if (addr) {
             memcpy(sInverseCameraMatrix, addr, sizeof(sInverseCameraMatrix));
             sHasInverseCameraMatrix = true;
+
+            mtxf_inverse(sCameraMatrix, sInverseCameraMatrix);
         }
         return;
     }
@@ -708,7 +714,7 @@ static void OPTIMIZE_O3 gfx_sp_matrix(uint8_t parameters, const int32_t *addr) {
         }
         rsp.lights_changed = 1;
     }
-    mtxf_mul(rsp.MP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
+    mtxf_mul(rsp.MVP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
 }
 
 static void gfx_sp_pop_matrix(uint32_t count) {
@@ -716,7 +722,7 @@ static void gfx_sp_pop_matrix(uint32_t count) {
         if (rsp.modelview_matrix_stack_size > 0) {
             --rsp.modelview_matrix_stack_size;
             if (rsp.modelview_matrix_stack_size > 0) {
-                mtxf_mul(rsp.MP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
+                mtxf_mul(rsp.MVP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
             }
         }
     }
@@ -971,7 +977,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         d->z = v->ob[2];
         d->w = 1.0;
 
-        mtxf_copy(d->MP_matrix, rsp.MP_matrix);
+        mtxf_copy(d->MVP_matrix, rsp.MVP_matrix);
 
         if (!(rsp.geometry_mode & G_FRESNEL_ALPHA_EXT)) {
             d->color.a = v->cn[3];
@@ -1019,36 +1025,43 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     if (fog_enabled != sRenderingState.fog_enabled) {
         gfx_flush();
         sRenderingState.fog_enabled = fog_enabled;
+        gfx_set_fog_uniforms();
     }
 
     if (sDepthZAdd != sRenderingState.depth_z_add) {
         gfx_flush();
         sRenderingState.depth_z_add = sDepthZAdd;
+        gfx_set_fog_uniforms();
     }
 
     if (sDepthZMult != sRenderingState.depth_z_mult) {
         gfx_flush();
         sRenderingState.depth_z_mult = sDepthZMult;
+        gfx_set_fog_uniforms();
     }
 
     if (sDepthZSub != sRenderingState.depth_z_sub) {
         gfx_flush();
         sRenderingState.depth_z_sub = sDepthZSub;
+        gfx_set_fog_uniforms();
     }
 
     if (rsp.fog_mul != sRenderingState.fog_mul) {
         gfx_flush();
         sRenderingState.fog_mul = rsp.fog_mul;
+        gfx_set_fog_uniforms();
     }
 
     if (gFogIntensity != sRenderingState.fog_intensity) {
         gfx_flush();
         sRenderingState.fog_intensity = gFogIntensity;
+        gfx_set_fog_uniforms();
     }
 
     if (rsp.fog_offset != sRenderingState.fog_offset) {
         gfx_flush();
         sRenderingState.fog_offset = rsp.fog_offset;
+        gfx_set_fog_uniforms();
     }
 
     if (gFogColor[0] != sRenderingState.fog_color_r ||
@@ -1059,18 +1072,20 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         rdp.fog_color.b != sRenderingState.rdp_fog_color_b) {
 
         gfx_flush();
-
         sRenderingState.fog_color_r = gFogColor[0];
         sRenderingState.fog_color_g = gFogColor[1];
         sRenderingState.fog_color_b = gFogColor[2];
         sRenderingState.rdp_fog_color_r = rdp.fog_color.r;
         sRenderingState.rdp_fog_color_g = rdp.fog_color.g;
         sRenderingState.rdp_fog_color_b = rdp.fog_color.b;
+
+        gfx_set_fog_uniforms();
     }
 
-    if (memcmp(v1->MP_matrix, sRenderingState.mp_matrix, sizeof(sRenderingState.mp_matrix)) != 0) {
+    if (memcmp(v1->MVP_matrix, sRenderingState.mvp_matrix, sizeof(sRenderingState.mvp_matrix)) != 0) {
         gfx_flush();
-        mtxf_copy(sRenderingState.mp_matrix, v1->MP_matrix);
+        mtxf_copy(sRenderingState.mvp_matrix, v1->MVP_matrix);
+        gfx_set_matrix_uniforms();
     }
 
     if (rdp.viewport_or_scissor_changed) {
@@ -1122,6 +1137,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         gfx_rapi->unload_shader(sRenderingState.shader_program);
         gfx_rapi->load_shader(prg);
         sRenderingState.shader_program = prg;
+        gfx_set_builtin_uniforms();
     }
     if (cm->use_alpha != sRenderingState.alpha_blend) {
         gfx_flush();
@@ -1601,25 +1617,25 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     ul->y = ulyf;
     ul->z = 0.0f;
     ul->w = 1.0f;
-    mtxf_identity(ul->MP_matrix);
+    mtxf_identity(ul->MVP_matrix);
 
     ll->x = ulxf;
     ll->y = lryf;
     ll->z = 0.0f;
     ll->w = 1.0f;
-    mtxf_identity(ll->MP_matrix);
+    mtxf_identity(ll->MVP_matrix);
 
     lr->x = lrxf;
     lr->y = lryf;
     lr->z = 0.0f;
     lr->w = 1.0f;
-    mtxf_identity(lr->MP_matrix);
+    mtxf_identity(lr->MVP_matrix);
 
     ur->x = lrxf;
     ur->y = ulyf;
     ur->z = 0.0f;
     ur->w = 1.0f;
-    mtxf_identity(ur->MP_matrix);
+    mtxf_identity(ur->MVP_matrix);
 
     // The coordinates for texture rectangle shall bypass the viewport setting
     struct Box default_viewport = {0, 0, gfx_current_dimensions.width, gfx_current_dimensions.height};
@@ -2262,17 +2278,10 @@ void gfx_shutdown(void) {
     gGfxInited = false;
 }
 
-void gfx_set_builtin_uniforms(void) {
-    gfx_rapi->set_uniform(NULL, "uFrameCount", SHADER_UNIFORM_TYPE_FLOAT, &sFrameCount, 1);
+void gfx_set_fog_uniforms(void) {
+    gfx_rapi->set_uniform(NULL, "uFogEnabled", SHADER_UNIFORM_TYPE_BOOL, &sRenderingState.fog_enabled, 1);
 
-    float lightmapColor[3] = {
-        gVertexColor[0] / 255.0f,
-        gVertexColor[1] / 255.0f,
-        gVertexColor[2] / 255.0f
-    };
-    gfx_rapi->set_uniform(NULL, "uLightmapColor", SHADER_UNIFORM_TYPE_VEC3, lightmapColor, 1);
-
-    gfx_rapi->set_uniform(NULL, "uFilter", SHADER_UNIFORM_TYPE_INT, &configFiltering, 1);
+    if (!sRenderingState.fog_enabled) { return; }
 
     float fog_mul = (float)sRenderingState.fog_mul;
     gfx_rapi->set_uniform(NULL, "uFogMul", SHADER_UNIFORM_TYPE_FLOAT, &fog_mul, 1);
@@ -2288,31 +2297,34 @@ void gfx_set_builtin_uniforms(void) {
         (sRenderingState.rdp_fog_color_b / 255.0f) * (sRenderingState.fog_color_b / 255.0f)
     };
     gfx_rapi->set_uniform(NULL, "uFogColor", SHADER_UNIFORM_TYPE_VEC3, &fogColor, 1);
+}
 
-    gfx_rapi->set_uniform(NULL, "uDepthZSub", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.depth_z_sub, 1);
-    gfx_rapi->set_uniform(NULL, "uDepthZMult", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.depth_z_mult, 1);
-    gfx_rapi->set_uniform(NULL, "uDepthZAdd", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.depth_z_add, 1);
-
-    gfx_rapi->set_uniform(NULL, "uFogEnabled", SHADER_UNIFORM_TYPE_BOOL, &sRenderingState.fog_enabled, 1);
-
+void gfx_set_matrix_uniforms(void) {
     if (rsp.modelview_matrix_stack_size > 0) {
         gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);
-        Mat4 cameraMatrix;
-        mtxf_inverse(cameraMatrix, gInverseCameraMatrix.m);
 
         Mat4 modelMatrix;
-        mtxf_mul(modelMatrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size-1], cameraMatrix);
+        mtxf_mul(modelMatrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size-1], sCameraMatrix);
 
         gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)modelMatrix, 1);
         gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)gInverseCameraMatrix.m, 1);
     }
 
-    gfx_rapi->set_uniform(NULL, "uModelProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mp_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mvp_matrix, 1);
     gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
+}
 
-    Mat4 invProjectionMatrix;
-    mtxf_inverse(invProjectionMatrix, rsp.P_matrix);
-    gfx_rapi->set_uniform(NULL, "uInverseProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)invProjectionMatrix, 1);
+void gfx_set_builtin_uniforms(void) {
+    gfx_rapi->set_uniform(NULL, "uFrameCount", SHADER_UNIFORM_TYPE_FLOAT, &sFrameCount, 1);
+
+    float lightmapColor[3] = {
+        gVertexColor[0] / 255.0f,
+        gVertexColor[1] / 255.0f,
+        gVertexColor[2] / 255.0f
+    };
+    gfx_rapi->set_uniform(NULL, "uLightmapColor", SHADER_UNIFORM_TYPE_VEC3, lightmapColor, 1);
+
+    gfx_rapi->set_uniform(NULL, "uFilter", SHADER_UNIFORM_TYPE_INT, &configFiltering, 1);
 
     float aspectRatio = (float)gfx_current_dimensions.aspect_ratio;
     float xAdjustRatio = (float)gfx_current_dimensions.x_adjust_ratio;
@@ -2321,6 +2333,11 @@ void gfx_set_builtin_uniforms(void) {
 
     gfx_rapi->set_uniform(NULL, "uShaderFlags", SHADER_UNIFORM_TYPE_INT, gShaderFlags, SHADER_FLAG_MAX);
     gfx_rapi->set_uniform(NULL, "uShaderFlagValues", SHADER_UNIFORM_TYPE_FLOAT, gShaderFlagValues, SHADER_FLAG_MAX);
+
+    gfx_set_fog_uniforms();
+    gfx_set_matrix_uniforms();
+
+    smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
 }
 
 void gfx_remove_all_color_combiners(void) {

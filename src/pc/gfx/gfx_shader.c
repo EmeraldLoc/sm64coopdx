@@ -190,7 +190,7 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     if (opt_fog) {
         append_line(vs_buf, &vs_len, "out float vFogZ;");
     }
-    append_line(vs_buf, &vs_len, "uniform mat4 uModelProjectionMatrix;");
+    append_line(vs_buf, &vs_len, "uniform mat4 uModelViewProjectionMatrix;");
     append_line(vs_buf, &vs_len, "uniform float uXAdjustRatio;");
     append_line(vs_buf, &vs_len, "uniform float uFogMul;");
     append_line(vs_buf, &vs_len, "uniform float uFogIntensity;");
@@ -209,8 +209,7 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     }
     append_line(vs_buf, &vs_len, "vNormal = aNormal;");
     append_line(vs_buf, &vs_len, "vBarycentric = aBarycentric;");
-    append_line(vs_buf, &vs_len, "vec4 objectPos = aVtxPos;");
-    append_line(vs_buf, &vs_len, "vec4 clipPos = uModelProjectionMatrix * objectPos;");
+    append_line(vs_buf, &vs_len, "vec4 clipPos = uModelViewProjectionMatrix * aVtxPos;");
     append_line(vs_buf, &vs_len, "clipPos.x *= uXAdjustRatio;");
     append_line(vs_buf, &vs_len, "gl_Position = clipPos;");
 
