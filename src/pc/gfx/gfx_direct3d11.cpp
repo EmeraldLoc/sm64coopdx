@@ -1051,7 +1051,7 @@ static void gfx_d3d11_set_use_alpha(bool use_alpha) {
     // Already part of the pipeline state from shader info
 }
 
-static void gfx_d3d11_set_cull_mode(GfxCullMode mode) {
+static void gfx_d3d11_set_cull_mode(int mode) {
     d3d.cull_mode = mode;
 }
 
@@ -1138,7 +1138,6 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
     }
 
     gfx_set_builtin_uniforms();
-
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
 
     // Set vertex uniform buffers
