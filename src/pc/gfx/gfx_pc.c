@@ -107,11 +107,11 @@ static struct RenderingState {
     struct ShaderProgram *shader_program;
     struct TextureHashmapNode *textures[2];
     ALIGNED16 Mat4 mp_matrix;
-} rendering_state;
+} sRenderingState;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
 
-static bool dropped_frame = false;
+static bool sDroppedFrame = false;
 
 static float buf_vbo[VERTEX_STRIDE] = { 0.0f };
 static size_t buf_vbo_len = 0;
@@ -229,9 +229,9 @@ static void color_combiner_update_hash(struct ColorCombiner* cc) {
 static struct ShaderProgram *gfx_lookup_or_create_shader_program(struct ColorCombiner* cc) {
     struct ShaderProgram *prg = gfx_rapi->lookup_shader(cc);
     if (prg == NULL) {
-        gfx_rapi->unload_shader(rendering_state.shader_program);
+        gfx_rapi->unload_shader(sRenderingState.shader_program);
         prg = gfx_rapi->create_and_load_new_shader(cc);
-        rendering_state.shader_program = prg;
+        sRenderingState.shader_program = prg;
     }
     return prg;
 }
@@ -578,7 +578,7 @@ static void import_texture_ci8(int tile) {
 static void import_texture(int tile) {
     tile = tile % MAX_TILES;
     extern s32 dynos_tex_import(void **output, void *ptr, s32 tile, void *grapi, void **hashmap, void *pool, s32 *poolpos, s32 poolsize);
-    if (dynos_tex_import((void **) &rendering_state.textures[tile], (void *) rdp.loaded_texture[tile].addr, tile, gfx_rapi, (void **) gfx_texture_cache.hashmap, (void *) gfx_texture_cache.pool, (int *) &gfx_texture_cache.pool_pos, MAX_CACHED_TEXTURES)) { return; }
+    if (dynos_tex_import((void **) &sRenderingState.textures[tile], (void *) rdp.loaded_texture[tile].addr, tile, gfx_rapi, (void **) gfx_texture_cache.hashmap, (void *) gfx_texture_cache.pool, (int *) &gfx_texture_cache.pool_pos, MAX_CACHED_TEXTURES)) { return; }
     uint8_t fmt = rdp.texture_tile[tile].fmt;
     uint8_t siz = rdp.texture_tile[tile].siz;
 
@@ -592,7 +592,7 @@ static void import_texture(int tile) {
         return;
     }
 
-    if (gfx_texture_cache_lookup(tile, &rendering_state.textures[tile], rdp.loaded_texture[tile].addr, fmt, siz)) {
+    if (gfx_texture_cache_lookup(tile, &sRenderingState.textures[tile], rdp.loaded_texture[tile].addr, fmt, siz)) {
         return;
     }
 
@@ -989,104 +989,104 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v_arr[3] = {v1, v2, v3};
 
     int cull_mode = (rsp.geometry_mode & G_CULL_BOTH);
-    if (cull_mode != rendering_state.cull_mode) {
+    if (cull_mode != sRenderingState.cull_mode) {
         gfx_flush();
         gfx_rapi->set_cull_mode(cull_mode);
-        rendering_state.cull_mode = cull_mode;
+        sRenderingState.cull_mode = cull_mode;
     }
 
     bool depth_test = (rsp.geometry_mode & G_ZBUFFER) == G_ZBUFFER;
-    if (depth_test != rendering_state.depth_test) {
+    if (depth_test != sRenderingState.depth_test) {
         gfx_flush();
         gfx_rapi->set_depth_test(depth_test);
-        rendering_state.depth_test = depth_test;
+        sRenderingState.depth_test = depth_test;
     }
 
     bool z_upd = (rdp.other_mode_l & Z_UPD) == Z_UPD;
-    if (z_upd != rendering_state.depth_mask) {
+    if (z_upd != sRenderingState.depth_mask) {
         gfx_flush();
         gfx_rapi->set_depth_mask(z_upd);
-        rendering_state.depth_mask = z_upd;
+        sRenderingState.depth_mask = z_upd;
     }
 
     bool zmode_decal = (rdp.other_mode_l & ZMODE_DEC) == ZMODE_DEC;
-    if (zmode_decal != rendering_state.decal_mode) {
+    if (zmode_decal != sRenderingState.decal_mode) {
         gfx_flush();
         gfx_rapi->set_zmode_decal(zmode_decal);
-        rendering_state.decal_mode = zmode_decal;
+        sRenderingState.decal_mode = zmode_decal;
     }
 
     bool fog_enabled = (rsp.geometry_mode & G_FOG) == G_FOG;
-    if (fog_enabled != rendering_state.fog_enabled) {
+    if (fog_enabled != sRenderingState.fog_enabled) {
         gfx_flush();
-        rendering_state.fog_enabled = fog_enabled;
+        sRenderingState.fog_enabled = fog_enabled;
     }
 
-    if (sDepthZAdd != rendering_state.depth_z_add) {
+    if (sDepthZAdd != sRenderingState.depth_z_add) {
         gfx_flush();
-        rendering_state.depth_z_add = sDepthZAdd;
+        sRenderingState.depth_z_add = sDepthZAdd;
     }
 
-    if (sDepthZMult != rendering_state.depth_z_mult) {
+    if (sDepthZMult != sRenderingState.depth_z_mult) {
         gfx_flush();
-        rendering_state.depth_z_mult = sDepthZMult;
+        sRenderingState.depth_z_mult = sDepthZMult;
     }
 
-    if (sDepthZSub != rendering_state.depth_z_sub) {
+    if (sDepthZSub != sRenderingState.depth_z_sub) {
         gfx_flush();
-        rendering_state.depth_z_sub = sDepthZSub;
+        sRenderingState.depth_z_sub = sDepthZSub;
     }
 
-    if (rsp.fog_mul != rendering_state.fog_mul) {
+    if (rsp.fog_mul != sRenderingState.fog_mul) {
         gfx_flush();
-        rendering_state.fog_mul = rsp.fog_mul;
+        sRenderingState.fog_mul = rsp.fog_mul;
     }
 
-    if (gFogIntensity != rendering_state.fog_intensity) {
+    if (gFogIntensity != sRenderingState.fog_intensity) {
         gfx_flush();
-        rendering_state.fog_intensity = gFogIntensity;
+        sRenderingState.fog_intensity = gFogIntensity;
     }
 
-    if (rsp.fog_offset != rendering_state.fog_offset) {
+    if (rsp.fog_offset != sRenderingState.fog_offset) {
         gfx_flush();
-        rendering_state.fog_offset = rsp.fog_offset;
+        sRenderingState.fog_offset = rsp.fog_offset;
     }
 
-    if (gFogColor[0] != rendering_state.fog_color_r ||
-        gFogColor[1] != rendering_state.fog_color_g ||
-        gFogColor[2] != rendering_state.fog_color_b ||
-        rdp.fog_color.r != rendering_state.rdp_fog_color_r ||
-        rdp.fog_color.g != rendering_state.rdp_fog_color_g ||
-        rdp.fog_color.b != rendering_state.rdp_fog_color_b) {
+    if (gFogColor[0] != sRenderingState.fog_color_r ||
+        gFogColor[1] != sRenderingState.fog_color_g ||
+        gFogColor[2] != sRenderingState.fog_color_b ||
+        rdp.fog_color.r != sRenderingState.rdp_fog_color_r ||
+        rdp.fog_color.g != sRenderingState.rdp_fog_color_g ||
+        rdp.fog_color.b != sRenderingState.rdp_fog_color_b) {
 
         gfx_flush();
 
-        rendering_state.fog_color_r = gFogColor[0];
-        rendering_state.fog_color_g = gFogColor[1];
-        rendering_state.fog_color_b = gFogColor[2];
-        rendering_state.rdp_fog_color_r = rdp.fog_color.r;
-        rendering_state.rdp_fog_color_g = rdp.fog_color.g;
-        rendering_state.rdp_fog_color_b = rdp.fog_color.b;
+        sRenderingState.fog_color_r = gFogColor[0];
+        sRenderingState.fog_color_g = gFogColor[1];
+        sRenderingState.fog_color_b = gFogColor[2];
+        sRenderingState.rdp_fog_color_r = rdp.fog_color.r;
+        sRenderingState.rdp_fog_color_g = rdp.fog_color.g;
+        sRenderingState.rdp_fog_color_b = rdp.fog_color.b;
     }
 
-    if (memcmp(v1->MP_matrix, rendering_state.mp_matrix, sizeof(rendering_state.mp_matrix)) != 0) {
+    if (memcmp(v1->MP_matrix, sRenderingState.mp_matrix, sizeof(sRenderingState.mp_matrix)) != 0) {
         gfx_flush();
-        mtxf_copy(rendering_state.mp_matrix, v1->MP_matrix);
+        mtxf_copy(sRenderingState.mp_matrix, v1->MP_matrix);
     }
 
     if (rdp.viewport_or_scissor_changed) {
         static uint32_t x_adjust_4by3_prev;
-        if (memcmp(&rdp.viewport, &rendering_state.viewport, sizeof(rdp.viewport)) != 0
+        if (memcmp(&rdp.viewport, &sRenderingState.viewport, sizeof(rdp.viewport)) != 0
             || x_adjust_4by3_prev != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
             gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width, rdp.viewport.height);
-            rendering_state.viewport = rdp.viewport;
+            sRenderingState.viewport = rdp.viewport;
         }
-        if (memcmp(&rdp.scissor, &rendering_state.scissor, sizeof(rdp.scissor)) != 0
+        if (memcmp(&rdp.scissor, &sRenderingState.scissor, sizeof(rdp.scissor)) != 0
             || x_adjust_4by3_prev != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
             gfx_rapi->set_scissor(rdp.scissor.x + gfx_current_dimensions.x_adjust_4by3, rdp.scissor.y, rdp.scissor.width, rdp.scissor.height);
-            rendering_state.scissor = rdp.scissor;
+            sRenderingState.scissor = rdp.scissor;
         }
         rdp.viewport_or_scissor_changed = false;
         x_adjust_4by3_prev = gfx_current_dimensions.x_adjust_4by3;
@@ -1118,16 +1118,16 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     cm = &comb->cm;
 
     struct ShaderProgram *prg = comb->prg;
-    if (prg != rendering_state.shader_program) {
+    if (prg != sRenderingState.shader_program) {
         gfx_flush();
-        gfx_rapi->unload_shader(rendering_state.shader_program);
+        gfx_rapi->unload_shader(sRenderingState.shader_program);
         gfx_rapi->load_shader(prg);
-        rendering_state.shader_program = prg;
+        sRenderingState.shader_program = prg;
     }
-    if (cm->use_alpha != rendering_state.alpha_blend) {
+    if (cm->use_alpha != sRenderingState.alpha_blend) {
         gfx_flush();
         gfx_rapi->set_use_alpha(cm->use_alpha);
-        rendering_state.alpha_blend = cm->use_alpha;
+        sRenderingState.alpha_blend = cm->use_alpha;
     }
     uint8_t num_inputs;
     bool used_textures[2];
@@ -1141,9 +1141,9 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                 rdp.textures_changed[i] = false;
             }
             bool linear_filter = configFiltering && ((rdp.other_mode_h & (3U << G_MDSFT_TEXTFILT)) != G_TF_POINT);
-            struct TextureHashmapNode* tex = rendering_state.textures[i];
+            struct TextureHashmapNode* tex = sRenderingState.textures[i];
             if (tex) {
-                if (linear_filter != tex->linear_filter || rdp.texture_tile[i].cms != tex->cms || rdp.texture_tile[i].cmt != rendering_state.textures[i]->cmt) {
+                if (linear_filter != tex->linear_filter || rdp.texture_tile[i].cms != tex->cms || rdp.texture_tile[i].cmt != sRenderingState.textures[i]->cmt) {
                     gfx_flush();
                     gfx_rapi->set_sampler_parameters(i, linear_filter, rdp.texture_tile[i].cms, rdp.texture_tile[i].cmt);
                     tex->linear_filter = linear_filter;
@@ -1666,9 +1666,9 @@ static void gfx_draw_fullscreen_quad() {
     gfx_rapi->create_or_load_post_process_shader();
 
     gfx_rapi->set_use_alpha(false);
-    rendering_state.alpha_blend = false;
+    sRenderingState.alpha_blend = false;
     gfx_rapi->set_depth_test(false);
-    rendering_state.depth_test = false;
+    sRenderingState.depth_test = false;
     gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
 }
 
@@ -2150,10 +2150,10 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
     sHasInverseCameraMatrix = false;
 
     if (!gfx_wapi->start_frame()) {
-        dropped_frame = true;
+        sDroppedFrame = true;
         return;
     }
-    dropped_frame = false;
+    sDroppedFrame = false;
 
     gfx_rapi->reset_framebuffer();
     gfx_rapi->start_frame();
@@ -2167,10 +2167,10 @@ void gfx_run(Gfx *commands) {
         return;
     }*/
     if (!gfx_wapi->start_frame()) {
-        dropped_frame = true;
+        sDroppedFrame = true;
         return;
     }
-    dropped_frame = false;
+    sDroppedFrame = false;
 
     bool isLuaPassesActive = false;
     gfx_process_lua_passes(commands, &isLuaPassesActive);
@@ -2240,7 +2240,7 @@ void gfx_end_frame_render(void) {
 
 void gfx_display_frame(void) {
     gfx_wapi->swap_buffers_begin();
-    if (!dropped_frame) {
+    if (!sDroppedFrame) {
         gfx_rapi->finish_render();
         gfx_wapi->swap_buffers_end();
     }
@@ -2275,26 +2275,26 @@ void gfx_set_builtin_uniforms(void) {
 
     gfx_rapi->set_uniform(NULL, "uFilter", SHADER_UNIFORM_TYPE_INT, &configFiltering, 1);
 
-    float fog_mul = (float)rendering_state.fog_mul;
+    float fog_mul = (float)sRenderingState.fog_mul;
     gfx_rapi->set_uniform(NULL, "uFogMul", SHADER_UNIFORM_TYPE_FLOAT, &fog_mul, 1);
 
-    gfx_rapi->set_uniform(NULL, "uFogIntensity", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.fog_intensity, 1);
+    gfx_rapi->set_uniform(NULL, "uFogIntensity", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.fog_intensity, 1);
 
-    float fog_offset = (float)rendering_state.fog_offset;
+    float fog_offset = (float)sRenderingState.fog_offset;
     gfx_rapi->set_uniform(NULL, "uFogOffset", SHADER_UNIFORM_TYPE_FLOAT, &fog_offset, 1);
 
     float fogColor[3] = {
-        (rendering_state.rdp_fog_color_r / 255.0f) * (rendering_state.fog_color_r / 255.0f),
-        (rendering_state.rdp_fog_color_g / 255.0f) * (rendering_state.fog_color_g / 255.0f),
-        (rendering_state.rdp_fog_color_b / 255.0f) * (rendering_state.fog_color_b / 255.0f)
+        (sRenderingState.rdp_fog_color_r / 255.0f) * (sRenderingState.fog_color_r / 255.0f),
+        (sRenderingState.rdp_fog_color_g / 255.0f) * (sRenderingState.fog_color_g / 255.0f),
+        (sRenderingState.rdp_fog_color_b / 255.0f) * (sRenderingState.fog_color_b / 255.0f)
     };
     gfx_rapi->set_uniform(NULL, "uFogColor", SHADER_UNIFORM_TYPE_VEC3, &fogColor, 1);
 
-    gfx_rapi->set_uniform(NULL, "uDepthZSub", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.depth_z_sub, 1);
-    gfx_rapi->set_uniform(NULL, "uDepthZMult", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.depth_z_mult, 1);
-    gfx_rapi->set_uniform(NULL, "uDepthZAdd", SHADER_UNIFORM_TYPE_FLOAT, &rendering_state.depth_z_add, 1);
+    gfx_rapi->set_uniform(NULL, "uDepthZSub", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.depth_z_sub, 1);
+    gfx_rapi->set_uniform(NULL, "uDepthZMult", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.depth_z_mult, 1);
+    gfx_rapi->set_uniform(NULL, "uDepthZAdd", SHADER_UNIFORM_TYPE_FLOAT, &sRenderingState.depth_z_add, 1);
 
-    gfx_rapi->set_uniform(NULL, "uFogEnabled", SHADER_UNIFORM_TYPE_BOOL, &rendering_state.fog_enabled, 1);
+    gfx_rapi->set_uniform(NULL, "uFogEnabled", SHADER_UNIFORM_TYPE_BOOL, &sRenderingState.fog_enabled, 1);
 
     if (rsp.modelview_matrix_stack_size > 0) {
         gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);
@@ -2308,7 +2308,7 @@ void gfx_set_builtin_uniforms(void) {
         gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)gInverseCameraMatrix.m, 1);
     }
 
-    gfx_rapi->set_uniform(NULL, "uModelProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rendering_state.mp_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mp_matrix, 1);
     gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
 
     Mat4 invProjectionMatrix;

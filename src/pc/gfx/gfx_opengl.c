@@ -112,7 +112,6 @@ static void gfx_opengl_load_shader(struct ShaderProgram *new_prg) {
     opengl_prg = new_prg;
     glUseProgram(new_prg->opengl_program_id);
     gfx_opengl_vertex_array_set_attribs(new_prg);
-    gfx_opengl_set_shader_uniforms();
     gfx_opengl_set_texture_uniforms(new_prg, 0);
     gfx_opengl_set_texture_uniforms(new_prg, 1);
 }
@@ -136,14 +135,29 @@ static void gfx_opengl_remove_shaders(void) {
     }
 }
 
-static void cache_uniform_locations(int shaderProgram, struct Shader *shader) {
+static void cache_uniform_locations(GLint shaderProgram, struct Shader *shader) {
+    int count = 0;
+
     for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
-        if (shader->shaderUniforms[i].size == 0) { continue; }
+        struct ShaderUniform *shaderUniform = &shader->shaderUniforms[i];
 
-        int loc = glGetUniformLocation(shaderProgram, shader->shaderUniforms[i].name);
-        if (loc == -1) { continue; }
+        if (shaderUniform->size == 0) continue;
 
-        shader->shaderUniforms[i].location = loc;
+        GLint loc = glGetUniformLocation(shaderProgram, shaderUniform->name);
+        if (loc == -1) continue;
+
+        shaderUniform->location = loc;
+
+        if (count != i) {
+            shader->shaderUniforms[count] = *shaderUniform;
+            memset(&shader->shaderUniforms[i], 0, sizeof(struct ShaderUniform));
+        }
+
+        count++;
+    }
+
+    for (int i = count; i < MAX_SHADER_UNIFORMS; i++) {
+        shader->shaderUniforms[i].size = 0;
     }
 }
 
@@ -351,8 +365,8 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         glUniform1i(passTexLoc, 10);
     }
 
-    cache_uniform_locations(prg->opengl_program_id, vertexShader);
-    cache_uniform_locations(prg->opengl_program_id, fragmentShader);
+    cache_uniform_locations(shader_program, vertexShader);
+    cache_uniform_locations(shader_program, fragmentShader);
 
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
@@ -485,8 +499,6 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
 
-    glUseProgram(shader_program);
-
     size_t cnt = 0;
     size_t num_floats = 0;
 
@@ -505,8 +517,10 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     prg->num_floats = num_floats;
     prg->num_attribs = cnt;
 
-    cache_uniform_locations(prg->opengl_program_id, vertexShader);
-    cache_uniform_locations(prg->opengl_program_id, fragmentShader);
+    glUseProgram(shader_program);
+
+    cache_uniform_locations(shader_program, vertexShader);
+    cache_uniform_locations(shader_program, fragmentShader);
 
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
@@ -602,18 +616,18 @@ static void gfx_opengl_reset_framebuffer(void) {
 static void gfx_opengl_set_uniform_for_shader(struct Shader *shader, const char* name, ShaderUniformType type, const void *data, uint32_t numElements) {
     if (!shader) { return; }
     for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
-        if (shader->shaderUniforms[i].size == 0) { break; }
+        if (shader->shaderUniforms[i].size == 0) { return; }
 
         if (strcmp(shader->shaderUniforms[i].name, name) == 0) {
             GLint loc = shader->shaderUniforms[i].location;
             switch (type) {
-                case SHADER_UNIFORM_TYPE_BOOL:  glUniform1iv(loc, numElements, (const GLint*)data); break;
-                case SHADER_UNIFORM_TYPE_INT:   glUniform1iv(loc, numElements, (const GLint*)data); break;
-                case SHADER_UNIFORM_TYPE_FLOAT: glUniform1fv(loc, numElements, (const GLfloat*)data); break;
-                case SHADER_UNIFORM_TYPE_VEC2:  glUniform2fv(loc, numElements, (const GLfloat*)data); break;
-                case SHADER_UNIFORM_TYPE_VEC3:  glUniform3fv(loc, numElements, (const GLfloat*)data); break;
-                case SHADER_UNIFORM_TYPE_VEC4:  glUniform4fv(loc, numElements, (const GLfloat*)data); break;
-                case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); break;
+                case SHADER_UNIFORM_TYPE_BOOL:  glUniform1iv(loc, numElements, (const GLint*)data); return;
+                case SHADER_UNIFORM_TYPE_INT:   glUniform1iv(loc, numElements, (const GLint*)data); return;
+                case SHADER_UNIFORM_TYPE_FLOAT: glUniform1fv(loc, numElements, (const GLfloat*)data); return;
+                case SHADER_UNIFORM_TYPE_VEC2:  glUniform2fv(loc, numElements, (const GLfloat*)data); return;
+                case SHADER_UNIFORM_TYPE_VEC3:  glUniform3fv(loc, numElements, (const GLfloat*)data); return;
+                case SHADER_UNIFORM_TYPE_VEC4:  glUniform4fv(loc, numElements, (const GLfloat*)data); return;
+                case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); return;
             }
         }
     }
