@@ -2138,13 +2138,21 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
         gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
 
-        // bind pass textures if they exists
+        // bind pass textures if they exist
         if (i > 0) {
             int textureSlotOffset = 10;
+            uintptr_t lastValidPassTexture = 0;
+
             for (int j = 0; j < i; j++) {
                 if (gFramePasses[j].active && gFramePasses[j].passTexture != 0) {
                     gfx_rapi->bind_texture_raw(textureSlotOffset + j, gFramePasses[j].passTexture);
+                    lastValidPassTexture = gFramePasses[j].passTexture;
                 }
+            }
+
+            // make the last valid pass texture always bind to slot 10
+            if (lastValidPassTexture != 0) {
+                gfx_rapi->bind_texture_raw(textureSlotOffset, lastValidPassTexture);
             }
         }
 
@@ -2181,11 +2189,6 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
-    // Shader TODO: Give directx support for frame passes
-    /*if (gRenderApi == &gfx_direct3d11_api) {
-        gfx_run_basic(commands);
-        return;
-    }*/
     if (!gfx_wapi->start_frame()) {
         sDroppedFrame = true;
         return;
@@ -2246,6 +2249,18 @@ void gfx_run(Gfx *commands) {
             if (gFramePasses[i].active && gFramePasses[i].passTexture != 0) {
                 gfx_rapi->bind_texture_raw(textureSlotOffset + i, gFramePasses[i].passTexture);
             }
+        }
+
+        uintptr_t lastValidPassTexture = 0;
+        for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
+            if (gFramePasses[i].active && gFramePasses[i].passTexture != 0) {
+                lastValidPassTexture = gFramePasses[i].passTexture;
+                break;
+            }
+        }
+
+        if (lastValidPassTexture != 0) {
+            gfx_rapi->bind_texture_raw(textureSlotOffset, lastValidPassTexture);
         }
     }
 
