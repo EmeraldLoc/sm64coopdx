@@ -25,6 +25,8 @@ struct GfxWindowManagerAPI;
 
 struct RSP {
     ALIGNED16 Mat4 MVP_matrix;
+    ALIGNED16 Mat4 M_matrix;
+    ALIGNED16 Mat4 V_matrix;
     ALIGNED16 Mat4 P_matrix;
     ALIGNED16 Mat4 modelview_matrix_stack[MAX_MATRIX_STACK_SIZE];
     uint32_t modelview_matrix_stack_size;

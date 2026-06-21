@@ -48,7 +48,6 @@ struct GfxVertex {
     float x, y, z, w;
     float u, v;
     struct RGBA color;
-    ALIGNED16 Mat4 MVP_matrix;
     uint8_t fog_z;
     uint8_t world_geometry;
 };

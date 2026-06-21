@@ -107,6 +107,10 @@ static struct RenderingState {
     struct ShaderProgram *shader_program;
     struct TextureHashmapNode *textures[2];
     ALIGNED16 Mat4 mvp_matrix;
+    ALIGNED16 Mat4 mv_matrix;
+    ALIGNED16 Mat4 m_matrix;
+    ALIGNED16 Mat4 v_matrix;
+    ALIGNED16 Mat4 p_matrix;
 } sRenderingState;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
@@ -708,6 +712,8 @@ static void OPTIMIZE_O3 gfx_sp_matrix(uint8_t parameters, const int32_t *addr) {
         }
         rsp.lights_changed = 1;
     }
+    mtxf_inverse(rsp.V_matrix, gInverseCameraMatrix.m);
+    mtxf_mul(rsp.M_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], gInverseCameraMatrix.m);
     mtxf_mul(rsp.MVP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
 }
 
@@ -716,6 +722,7 @@ static void gfx_sp_pop_matrix(uint32_t count) {
         if (rsp.modelview_matrix_stack_size > 0) {
             --rsp.modelview_matrix_stack_size;
             if (rsp.modelview_matrix_stack_size > 0) {
+                mtxf_mul(rsp.M_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], gInverseCameraMatrix.m);
                 mtxf_mul(rsp.MVP_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], rsp.P_matrix);
             }
         }
@@ -971,8 +978,6 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         d->z = v->ob[2];
         d->w = 1.0;
 
-        mtxf_copy(d->MVP_matrix, rsp.MVP_matrix);
-
         if (!(rsp.geometry_mode & G_FRESNEL_ALPHA_EXT)) {
             d->color.a = v->cn[3];
         }
@@ -1068,9 +1073,29 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         sRenderingState.rdp_fog_color_b = rdp.fog_color.b;
     }
 
-    if (memcmp(v1->MVP_matrix, sRenderingState.mvp_matrix, sizeof(sRenderingState.mvp_matrix)) != 0) {
+    if (memcmp(rsp.MVP_matrix, sRenderingState.mvp_matrix, sizeof(sRenderingState.mvp_matrix)) != 0) {
         gfx_flush();
-        mtxf_copy(sRenderingState.mvp_matrix, v1->MVP_matrix);
+        mtxf_copy(sRenderingState.mvp_matrix, rsp.MVP_matrix);
+    }
+
+    if (rsp.modelview_matrix_stack_size > 0 && memcmp(rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], sRenderingState.mv_matrix, sizeof(sRenderingState.mv_matrix)) != 0) {
+        gfx_flush();
+        mtxf_copy(sRenderingState.mv_matrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1]);
+    }
+
+    if (memcmp(rsp.M_matrix, sRenderingState.m_matrix, sizeof(sRenderingState.m_matrix)) != 0) {
+        gfx_flush();
+        mtxf_copy(sRenderingState.m_matrix, rsp.M_matrix);
+    }
+
+    if (memcmp(rsp.V_matrix, sRenderingState.v_matrix, sizeof(sRenderingState.v_matrix)) != 0) {
+        gfx_flush();
+        mtxf_copy(sRenderingState.v_matrix, rsp.V_matrix);
+    }
+
+    if (memcmp(rsp.P_matrix, sRenderingState.p_matrix, sizeof(sRenderingState.p_matrix)) != 0) {
+        gfx_flush();
+        mtxf_copy(sRenderingState.p_matrix, rsp.P_matrix);
     }
 
     if (rdp.viewport_or_scissor_changed) {
@@ -1601,25 +1626,26 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     ul->y = ulyf;
     ul->z = 0.0f;
     ul->w = 1.0f;
-    mtxf_identity(ul->MVP_matrix);
 
     ll->x = ulxf;
     ll->y = lryf;
     ll->z = 0.0f;
     ll->w = 1.0f;
-    mtxf_identity(ll->MVP_matrix);
 
     lr->x = lrxf;
     lr->y = lryf;
     lr->z = 0.0f;
     lr->w = 1.0f;
-    mtxf_identity(lr->MVP_matrix);
 
     ur->x = lrxf;
     ur->y = ulyf;
     ur->z = 0.0f;
     ur->w = 1.0f;
-    mtxf_identity(ur->MVP_matrix);
+
+    mtxf_identity(rsp.MVP_matrix);
+    mtxf_identity(rsp.M_matrix);
+    mtxf_identity(rsp.V_matrix);
+    mtxf_identity(rsp.P_matrix);
 
     // The coordinates for texture rectangle shall bypass the viewport setting
     struct Box default_viewport = {0, 0, gfx_current_dimensions.width, gfx_current_dimensions.height};
@@ -2289,20 +2315,11 @@ void gfx_set_builtin_uniforms(void) {
 
     gfx_rapi->set_uniform(NULL, "uFogEnabled", SHADER_UNIFORM_TYPE_BOOL, &sRenderingState.fog_enabled, 1);
 
-    if (rsp.modelview_matrix_stack_size > 0) {
-        gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);
-        Mat4 cameraMatrix;
-        mtxf_inverse(cameraMatrix, gInverseCameraMatrix.m);
-
-        Mat4 modelMatrix;
-        mtxf_mul(modelMatrix, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size-1], cameraMatrix);
-
-        gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)modelMatrix, 1);
-        gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, (const float *)gInverseCameraMatrix.m, 1);
-    }
-
     gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mvp_matrix, 1);
-    gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mv_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.m_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.v_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.p_matrix, 1);
 
     float aspectRatio = (float)gfx_current_dimensions.aspect_ratio;
     float xAdjustRatio = (float)gfx_current_dimensions.x_adjust_ratio;
