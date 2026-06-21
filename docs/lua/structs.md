@@ -17,6 +17,7 @@
 - [DialogEntry](#DialogEntry)
 - [DisplayListNode](#DisplayListNode)
 - [DjuiColor](#DjuiColor)
+- [DjuiDeprecatedTheme](#DjuiDeprecatedTheme)
 - [DjuiTheme](#DjuiTheme)
 - [ExclamationBoxContent](#ExclamationBoxContent)
 - [FirstPersonCamera](#FirstPersonCamera)
@@ -770,6 +771,15 @@
 
 <br />
 
+## [DjuiDeprecatedTheme](#DjuiDeprecatedTheme)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [DjuiTheme](#DjuiTheme)
 
 | Field | Type | Access |
@@ -779,6 +789,9 @@
 | headerFont | `integer` |  |
 | useRainbowColor | `boolean` |  |
 | gradients | `boolean` |  |
+| interactables | [DjuiDeprecatedTheme](structs.md#DjuiDeprecatedTheme) | read-only |
+| threePanels | [DjuiDeprecatedTheme](structs.md#DjuiDeprecatedTheme) | read-only |
+| panels | [DjuiDeprecatedTheme](structs.md#DjuiDeprecatedTheme) | read-only |
 
 [:arrow_up_small:](#)
 

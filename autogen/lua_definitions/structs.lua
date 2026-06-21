@@ -553,12 +553,17 @@
 --- @field public b integer
 --- @field public a integer
 
+--- @class DjuiDeprecatedTheme
+
 --- @class DjuiTheme
 --- @field public name string
 --- @field public elements DjuiColor[]
 --- @field public headerFont integer
 --- @field public useRainbowColor boolean
 --- @field public gradients boolean
+--- @field public interactables DjuiDeprecatedTheme
+--- @field public threePanels DjuiDeprecatedTheme
+--- @field public panels DjuiDeprecatedTheme
 
 --- @class ExclamationBoxContent
 --- @field public id integer

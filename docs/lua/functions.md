@@ -827,6 +827,20 @@
 
 <br />
 
+- djui_theme.h
+   - [djui_theme_get_text_color](functions-3.md#djui_theme_get_text_color)
+   - [djui_theme_get_default_rect_color](functions-3.md#djui_theme_get_default_rect_color)
+   - [djui_theme_get_cursor_down_rect_color](functions-3.md#djui_theme_get_cursor_down_rect_color)
+   - [djui_theme_get_hovered_rect_color](functions-3.md#djui_theme_get_hovered_rect_color)
+   - [djui_theme_get_default_border_color](functions-3.md#djui_theme_get_default_border_color)
+   - [djui_theme_get_cursor_down_border_color](functions-3.md#djui_theme_get_cursor_down_border_color)
+   - [djui_theme_get_hovered_border_color](functions-3.md#djui_theme_get_hovered_border_color)
+   - [djui_theme_get_rect_color](functions-3.md#djui_theme_get_rect_color)
+   - [djui_theme_get_border_color](functions-3.md#djui_theme_get_border_color)
+   - [djui_theme_get_hud_font_header](functions-3.md#djui_theme_get_hud_font_header)
+
+<br />
+
 - external.h
    - [play_sound](functions-3.md#play_sound)
    - [play_sound_with_freq_scale](functions-3.md#play_sound_with_freq_scale)
@@ -970,16 +984,16 @@
 <br />
 
 - level_update.h
-   - [level_control_timer_running](functions-3.md#level_control_timer_running)
-   - [pressed_pause](functions-3.md#pressed_pause)
-   - [fade_into_special_warp](functions-3.md#fade_into_special_warp)
-   - [get_instant_warp](functions-3.md#get_instant_warp)
-   - [get_painting_warp_node](functions-3.md#get_painting_warp_node)
-   - [initiate_painting_warp](functions-3.md#initiate_painting_warp)
-   - [level_trigger_warp](functions-3.md#level_trigger_warp)
-   - [warp_special](functions-3.md#warp_special)
-   - [initiate_warp](functions-3.md#initiate_warp)
-   - [lvl_set_current_level](functions-3.md#lvl_set_current_level)
+   - [level_control_timer_running](functions-4.md#level_control_timer_running)
+   - [pressed_pause](functions-4.md#pressed_pause)
+   - [fade_into_special_warp](functions-4.md#fade_into_special_warp)
+   - [get_instant_warp](functions-4.md#get_instant_warp)
+   - [get_painting_warp_node](functions-4.md#get_painting_warp_node)
+   - [initiate_painting_warp](functions-4.md#initiate_painting_warp)
+   - [level_trigger_warp](functions-4.md#level_trigger_warp)
+   - [warp_special](functions-4.md#warp_special)
+   - [initiate_warp](functions-4.md#initiate_warp)
+   - [lvl_set_current_level](functions-4.md#lvl_set_current_level)
 
 <br />
 

@@ -354,3 +354,43 @@ void djui_theme_delete(struct DjuiTheme* theme) {
 
     remove(filePath);
 }
+
+struct DjuiColor *djui_theme_get_text_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_TEXT];
+}
+
+struct DjuiColor *djui_theme_get_default_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY];
+}
+
+struct DjuiColor *djui_theme_get_cursor_down_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_DOWN];
+}
+
+struct DjuiColor *djui_theme_get_hovered_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_HOVER];
+}
+
+struct DjuiColor *djui_theme_get_default_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_BORDER];
+}
+
+struct DjuiColor *djui_theme_get_cursor_down_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_BORDER_DOWN];
+}
+
+struct DjuiColor *djui_theme_get_hovered_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_PRIMARY_BORDER_HOVER];
+}
+
+struct DjuiColor *djui_theme_get_rect_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_THREE_PANEL];
+}
+
+struct DjuiColor *djui_theme_get_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return &configDjuiTheme.elements[DJUI_THEME_ELEMENT_THREE_PANEL_BORDER];
+}
+
+bool djui_theme_get_hud_font_header(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme) {
+    return configDjuiTheme.headerFont == FONT_CUSTOM_HUD;
+}

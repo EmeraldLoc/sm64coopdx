@@ -115,6 +115,7 @@ override_field_hidden = {
     "Camera": [ "filler31", "filler3C", "unusedVec1" ],
     "LakituState": [ "filler30", "filler3E", "filler72", "unusedVec1", "unusedVec2" ],
     "SpawnInfo": [ "unk18" ],
+    "DjuiDeprecatedTheme": [ "textColor", "defaultRectColor", "cursorDownRectColor", "hoveredRectColor", "defaultBorderColor", "cursorDownBorderColor", "hoveredBorderColor", "rectColor", "borderColor", "hudFontHeader" ]
 }
 
 override_field_immutable = {
