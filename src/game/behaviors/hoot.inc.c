@@ -85,7 +85,7 @@ void hoot_free_step(s16 fastOscY, s32 speed) {
     }
 
     if (animFrame == 0) {
-        cur_obj_play_sound_2(SOUND_GENERAL_SWISH_WATER);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_SWISH_WATER);
     }
 }
 
@@ -119,7 +119,7 @@ void hoot_carry_step(s32 speed, UNUSED f32 xPrev, UNUSED f32 zPrev) {
     o->oPosZ += o->oVelZ;
 
     if (animFrame == 0) {
-        cur_obj_play_sound_2(SOUND_GENERAL_SWISH_WATER);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_SWISH_WATER);
     }
 }
 
@@ -151,10 +151,10 @@ void hoot_surface_collision(f32 xPrev, UNUSED f32 yPrev, f32 zPrev) {
         return;
     }
 
-    if (absf_2(o->oPosX) > 8000.0f) {
+    if (absf(o->oPosX) > 8000.0f) {
         o->oPosX = xPrev;
     }
-    if (absf_2(o->oPosZ) > 8000.0f) {
+    if (absf(o->oPosZ) > 8000.0f) {
         o->oPosZ = zPrev;
     }
 
@@ -172,7 +172,7 @@ void hoot_act_ascent(f32 xPrev, f32 zPrev) {
     o->oMoveAnglePitch = 0xCE38;
 
     if (o->oTimer >= 29) {
-        cur_obj_play_sound_1(SOUND_ENV_WIND2);
+        cur_obj_play_sound_if_visible(SOUND_ENV_WIND2);
         o->header.gfx.animInfo.animFrame = 1;
     }
 

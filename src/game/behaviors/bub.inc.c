@@ -93,7 +93,7 @@ void bub_act_2(void) {
         o->oInteractStatus = 0;
     }
     if (o->oTimer == 0) {
-        cur_obj_play_sound_2(SOUND_GENERAL_MOVING_WATER);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_MOVING_WATER);
     }
     if (o->oForwardVel == 0.0f) {
         o->oForwardVel = 6.0f;

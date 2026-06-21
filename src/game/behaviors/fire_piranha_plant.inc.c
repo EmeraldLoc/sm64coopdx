@@ -70,7 +70,7 @@ static void fire_piranha_plant_act_hide(void) {
 
         if (cur_obj_check_if_near_animation_end()) {
             if (--o->oFirePiranhaPlantDeathSpinTimer == 0) {
-                cur_obj_play_sound_2(SOUND_OBJ_ENEMY_DEFEAT_SHRINK);
+                cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_ENEMY_DEFEAT_SHRINK);
             }
         }
     } else if (approach_f32_ptr(&o->oFirePiranhaPlantScale, 0.0f, 0.04f * o->oFirePiranhaPlantNeutralScale)) {
@@ -89,7 +89,7 @@ static void fire_piranha_plant_act_hide(void) {
                 set_object_respawn_info_bits(o, 1);
             }
         } else if (active_fire_piranha_plant_count() < 2 && o->oTimer > 100 && distanceToPlayer > 100.0f && distanceToPlayer < 800.0f) {
-            cur_obj_play_sound_2(SOUND_OBJ_PIRANHA_PLANT_APPEAR);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_PIRANHA_PLANT_APPEAR);
 
             o->oFirePiranhaPlantActive = TRUE;
 
@@ -112,14 +112,14 @@ static void fire_piranha_plant_act_grow(void) {
 
     if (approach_f32_ptr(&o->oFirePiranhaPlantScale, o->oFirePiranhaPlantNeutralScale, 0.04f * o->oFirePiranhaPlantNeutralScale)) {
         if (o->oTimer > 80) {
-            cur_obj_play_sound_2(SOUND_OBJ_PIRANHA_PLANT_SHRINK);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_PIRANHA_PLANT_SHRINK);
             o->oAction = FIRE_PIRANHA_PLANT_ACT_HIDE;
             cur_obj_init_animation_with_sound(0);
         } else if (o->oTimer < 50) {
             cur_obj_rotate_yaw_toward(angleToPlayer, 0x400);
         } else {
             if (obj_is_rendering_enabled() && cur_obj_check_anim_frame(56)) {
-                cur_obj_play_sound_2(SOUND_OBJ_FLAME_BLOWN);
+                cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_FLAME_BLOWN);
                 obj_spit_fire(0, (s32)(30.0f * o->oFirePiranhaPlantNeutralScale),
                                 (s32)(140.0f * o->oFirePiranhaPlantNeutralScale),
                                 2.5f * o->oFirePiranhaPlantNeutralScale, MODEL_RED_FLAME_SHADOW,

@@ -28,9 +28,9 @@ void tox_box_move(f32 forwardVel, f32 leftVel, s16 deltaPitch, s16 deltaRoll) {
     if (o->oTimer == 7) {
         o->oAction = cur_obj_progress_direction_table();
 #ifndef VERSION_JP
-        cur_obj_play_sound_2(SOUND_GENERAL_UNK46);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_UNK46);
 #else
-        cur_obj_play_sound_2(SOUND_GENERAL_UNK46_LOWPRIO);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_UNK46_LOWPRIO);
 #endif
     }
 }

@@ -5,5 +5,5 @@ void bhv_sand_sound_loop(void) {
         return;
     }
 
-    cur_obj_play_sound_1(SOUND_ENV_MOVINGSAND);
+    cur_obj_play_sound_if_visible(SOUND_ENV_MOVINGSAND);
 }

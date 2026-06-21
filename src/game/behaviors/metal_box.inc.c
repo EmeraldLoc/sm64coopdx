@@ -12,13 +12,13 @@ struct ObjectHitbox sMetalBoxHitbox = {
     .hurtboxHeight = 300,
 };
 
-s32 check_if_moving_over_floor(f32 maxDist, f32 offset) {
+s32 check_if_moving_over_floor(f32 maxDistToFloor, f32 offset) {
     if (!o) { return 0; }
     struct Surface *surface;
     f32 x = o->oPosX + sins(o->oMoveAngleYaw) * offset;
     f32 z = o->oPosZ + coss(o->oMoveAngleYaw) * offset;
     f32 floorHeight = find_floor(x, o->oPosY, z, &surface);
-    if (absf(floorHeight - o->oPosY) < maxDist) { // abs
+    if (absf(floorHeight - o->oPosY) < maxDistToFloor) { // abs
         return 1;
     } else {
         return 0;
@@ -44,7 +44,7 @@ void bhv_pushable_loop(void) {
                 o->oMoveAngleYaw = (s16)((player->oMoveAngleYaw + 0x2000) & 0xc000);
                 if (check_if_moving_over_floor(8.0f, 150.0f)) {
                     o->oForwardVel = 4.0f;
-                    cur_obj_play_sound_1(SOUND_ENV_METAL_BOX_PUSH);
+                    cur_obj_play_sound_if_visible(SOUND_ENV_METAL_BOX_PUSH);
                 }
             }
         }

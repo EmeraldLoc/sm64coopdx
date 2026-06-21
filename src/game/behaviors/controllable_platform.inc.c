@@ -36,7 +36,7 @@ void bhv_controllable_platform_sub_loop(void) {
                 if (o->parentObj) { o->parentObj->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE; }
 #endif
                 o->oAction = 1;
-                cur_obj_play_sound_2(SOUND_GENERAL_MOVING_PLATFORM_SWITCH);
+                cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_MOVING_PLATFORM_SWITCH);
                 if (o->parentObj) { network_send_object(o->parentObj); }
             }
             break;
@@ -124,7 +124,7 @@ void controllable_platform_hit_wall(s8 nextDir) {
     o->oTimer = 0;
     sControllablePlatformDirectionState = 5;
 
-    cur_obj_play_sound_2(SOUND_GENERAL_QUIET_POUND1);
+    cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_QUIET_POUND1);
 #ifdef VERSION_SH
     queue_rumble_data(50, 80);
 #endif
@@ -301,7 +301,7 @@ void bhv_controllable_platform_loop(void) {
     o->oPosX += o->oVelX;
     o->oPosZ += o->oVelZ;
     if (sControllablePlatformDirectionState != 0 && sControllablePlatformDirectionState != 6) {
-        cur_obj_play_sound_1(SOUND_ENV_ELEVATOR2);
+        cur_obj_play_sound_if_visible(SOUND_ENV_ELEVATOR2);
     }
 
     if (sync_object_is_owned_locally(o->oSyncID) && sOldControllablePlatformDirectionState != sControllablePlatformDirectionState) {

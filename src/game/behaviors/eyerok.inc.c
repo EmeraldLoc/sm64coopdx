@@ -130,7 +130,7 @@ static void eyerok_boss_act_sleep(void) {
     struct Object *player = marioState ? marioState->marioObj : NULL;
     s32 distanceToPlayer = player ? dist_between_objects(o, player) : 10000;
     if (o->oTimer != 0 && distanceToPlayer < 500.0f && marioState->playerIndex == 0) {
-        cur_obj_play_sound_2(SOUND_OBJ_EYEROK_EXPLODE);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_EYEROK_EXPLODE);
         o->oAction = EYEROK_BOSS_ACT_WAKE_UP;
         o->globalPlayerIndex = network_global_index_from_local(marioState->playerIndex);
         network_send_object_reliability(o, TRUE);
@@ -312,7 +312,7 @@ static s32 eyerok_hand_check_attacked(void) {
     struct Object *player = marioState ? marioState->marioObj : NULL;
     s32 angleToPlayer = player ? obj_angle_to_object(o, player) : 0;
     if (o->oEyerokReceivedAttack != 0 && abs_angle_diff(angleToPlayer, o->oFaceAngleYaw) < 0x3000) {
-        cur_obj_play_sound_2(SOUND_OBJ2_EYEROK_SOUND_SHORT);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ2_EYEROK_SOUND_SHORT);
 
         if (--o->oHealth >= 2 || !sync_object_is_owned_locally(o->parentObj->oSyncID)) {
             o->oAction = EYEROK_HAND_ACT_ATTACKED;
@@ -342,7 +342,7 @@ static s32 eyerok_hand_check_attacked(void) {
 }
 
 static void eyerok_hand_pound_ground(void) {
-    cur_obj_play_sound_2(SOUND_OBJ_POUNDING_LOUD);
+    cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_POUNDING_LOUD);
     set_camera_shake_from_point(SHAKE_POS_SMALL, o->oPosX, o->oPosY, o->oPosZ);
     spawn_mist_from_global();
 }
@@ -534,7 +534,7 @@ static void eyerok_hand_act_die(void) {
     }
 
     if (o->oMoveFlags & OBJ_MOVE_MASK_ON_GROUND) {
-        cur_obj_play_sound_2(SOUND_OBJ_POUNDING_LOUD);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_POUNDING_LOUD);
         o->oForwardVel = 0.0f;
     }
 }

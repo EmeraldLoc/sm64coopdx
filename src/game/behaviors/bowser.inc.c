@@ -52,7 +52,7 @@ void bhv_bowser_tail_anchor_init(void) {
     // this is where mario can grab bowser from. This code pretty much tells bowser to sync
     // this objects fields. That way we don't create 2 sync objects and can only rely on one, bowser
     // this allows things like ownership overrides or ignores to carry over
-    if (!o->parentObj) { mark_obj_for_deletion(o); return; }
+    if (!o->parentObj) { obj_mark_for_deletion(o); return; }
     sync_object_init_field(o->parentObj, o->oAction);
     sync_object_init_field(o->parentObj, o->oPrevAction);
     sync_object_init_field(o->parentObj, o->oTimer);
@@ -90,7 +90,7 @@ void bhv_bowser_flame_spawn_loop(void) {
             nextAnimFrame = 0;
         }
         if (nextAnimFrame > 45 && nextAnimFrame < 85) {
-            cur_obj_play_sound_1(SOUND_AIR_BOWSER_SPIT_FIRE);
+            cur_obj_play_sound_if_visible(SOUND_AIR_BOWSER_SPIT_FIRE);
             f32 posX = data[5 * nextAnimFrame];
             f32 posZ = data[5 * nextAnimFrame + 2];
             o->oPosX = bowser->oPosX + (posZ * yawSine + posX * yawCosine);
@@ -111,7 +111,7 @@ void bhv_bowser_flame_spawn_loop(void) {
 }
 
 void bhv_bowser_body_anchor_init(void) {
-    if (!o->parentObj) { mark_obj_for_deletion(o); return; }
+    if (!o->parentObj) { obj_mark_for_deletion(o); return; }
     sync_object_init_field(o->parentObj, o->oInteractType);
     sync_object_init_field(o->parentObj, o->oInteractStatus);
     sync_object_init_field(o->parentObj, o->oIntangibleTimer);
@@ -168,7 +168,7 @@ void bowser_bounce(s32 *timer) {
         if (*timer < 4) {
             cur_obj_start_cam_event(o, CAM_EVENT_BOWSER_THROW_BOUNCE);
             spawn_mist_particles_variable(0, 0, 60.0f);
-            cur_obj_play_sound_2(SOUND_OBJ_BOWSER_WALK);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOWSER_WALK);
         }
     }
 }
@@ -416,7 +416,7 @@ void bowser_act_default(void) { // only lasts one frame
 void bowser_act_breath_fire(void) {
     o->oForwardVel = 0.0f;
     if (o->oTimer == 0) {
-        cur_obj_play_sound_2(SOUND_OBJ_BOWSER_INHALING);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOWSER_INHALING);
     }
     if (cur_obj_init_animation_and_check_if_near_end(6)) {
         o->oAction = BOWSER_ACT_DEFAULT;
@@ -473,7 +473,7 @@ void bowser_act_teleport(void) {
             o->oBowserUnk1AC = 0;
             o->oBowserUnkF8 = 30;
             if (o->oTimer == 0) {
-                cur_obj_play_sound_2(SOUND_OBJ2_BOWSER_TELEPORT);
+                cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ2_BOWSER_TELEPORT);
             }
             if (o->oOpacity == 0) {
                 o->oSubAction++;
@@ -491,7 +491,7 @@ void bowser_act_teleport(void) {
                 if (distanceToPlayer > 500.0f) {
                     o->oSubAction = 2;
                     o->oMoveAngleYaw = angleToPlayer; // large change in angle?
-                    cur_obj_play_sound_2(SOUND_OBJ2_BOWSER_TELEPORT);
+                    cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ2_BOWSER_TELEPORT);
                 }
             break;
         case 2:
@@ -509,7 +509,7 @@ void bowser_act_spit_fire_into_sky(void) { // only in BITS
     cur_obj_init_animation_with_sound(11);
     s32 frame = o->header.gfx.animInfo.animFrame;
     if (frame > 24 && frame < 36) {
-        cur_obj_play_sound_1(SOUND_AIR_BOWSER_SPIT_FIRE);
+        cur_obj_play_sound_if_visible(SOUND_AIR_BOWSER_SPIT_FIRE);
         struct MarioState *marioState = nearest_mario_state_to_object(o);
         if (marioState && marioState->playerIndex == 0) {
             struct Object *flame = NULL;
@@ -916,7 +916,7 @@ void bowser_act_jump_onto_stage(void) {
 
 void bowser_act_dance(void) {
     if (is_item_in_array(o->oTimer, sDanceSoundTimerIntervals)) {
-        cur_obj_play_sound_2(SOUND_OBJ_BOWSER_WALK);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOWSER_WALK);
     }
 
     if (cur_obj_init_animation_and_check_if_near_end(10)) {
@@ -947,7 +947,7 @@ void bowser_spawn_grand_star_key(void) {
         struct Object *prevReward = cur_obj_nearest_object_with_behavior(bhvBowserKey);
         reward = (prevReward != NULL) ? prevReward : spawn_object(o, MODEL_BOWSER_KEY, bhvBowserKey);
         gSecondCameraFocus = reward;
-        cur_obj_play_sound_2(SOUND_GENERAL2_BOWSER_KEY);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL2_BOWSER_KEY);
 
         if (prevReward == NULL && reward != NULL) {
             // set the home position
@@ -981,7 +981,7 @@ void bowser_dead_bounce(void) {
     o->oBowserEyesShut = 1;
     bowser_bounce(&o->oBowserUnkF8);
     if (o->oMoveFlags & OBJ_MOVE_LANDED) {
-        cur_obj_play_sound_2(SOUND_OBJ_BOWSER_WALK);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOWSER_WALK);
     }
 
     if (o->oMoveFlags & OBJ_MOVE_ON_GROUND) {
@@ -1054,7 +1054,7 @@ s32 bowser_dead_not_bits_end(void) {
         }
         if (!marioState || (should_start_or_continue_dialog(marioState, o) && cur_obj_update_dialog(marioState, 2, 18, *sBowserDefeatedDialogText[o->oBehParams2ndByte], 0, bowser_dead_not_bits_end_continue_dialog))) {
             o->oBowserUnkF8++;
-            cur_obj_play_sound_2(SOUND_GENERAL2_BOWSER_EXPLODE);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL2_BOWSER_EXPLODE);
             seq_player_unlower_volume(SEQ_PLAYER_LEVEL, 60);
             seq_player_fade_out(SEQ_PLAYER_LEVEL, 1);
             network_send_object(o);
@@ -1324,7 +1324,7 @@ void bowser_held_update(void) {
 
     switch (o->oBowserUnk10E) {
         case 0:
-            cur_obj_play_sound_2(SOUND_OBJ_BOWSER_TAIL_PICKUP);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOWSER_TAIL_PICKUP);
             cur_obj_unrender_and_reset_state(3, 1);
             o->oBowserUnk10E++;
             break;
@@ -1761,7 +1761,7 @@ void falling_bowser_plat_act_1(void) {
 
 void falling_bowser_plat_act_2(void) {
     if (o->oTimer == 0 || o->oTimer == 22)
-        cur_obj_play_sound_2(SOUND_GENERAL_BOWSER_PLATFORM_2);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_BOWSER_PLATFORM_2);
     if (o->oTimer < 22) {
         set_environmental_camera_shake(SHAKE_ENV_FALLING_BITS_PLAT);
         o->oVelY = 8.0f;

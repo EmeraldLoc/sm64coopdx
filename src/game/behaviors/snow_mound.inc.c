@@ -9,7 +9,7 @@ void bhv_sliding_snow_mound_loop(void) {
                 o->oAction = 1;
             }
 
-            cur_obj_play_sound_1(SOUND_ENV_SINK_QUICKSAND);
+            cur_obj_play_sound_if_visible(SOUND_ENV_SINK_QUICKSAND);
             break;
 
         case 1:

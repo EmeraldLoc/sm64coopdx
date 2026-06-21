@@ -192,7 +192,7 @@ void tuxies_mother_act_0(void) {
     } else {
         switch (o->oSubAction) {
             case 0:
-                if (!cur_obj_can_mario_activate_textbox_2(marioState, 300.0f, 100.0f)) break;
+                if (!cur_obj_can_mario_activate_textbox(marioState, 300.0f, 100.0f, 0)) break;
                 if (inRangeOfPenguin != 0) break;
                 if (another_mario_talking_to_tuxie_mother()) break;
                 o->oSubAction++;
@@ -211,7 +211,7 @@ void tuxies_mother_act_0(void) {
     }
 
     if (cur_obj_check_anim_frame(1)) {
-        cur_obj_play_sound_2(SOUND_OBJ_BIG_PENGUIN_YELL);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BIG_PENGUIN_YELL);
     }
 }
 
@@ -289,7 +289,7 @@ void small_penguin_act_1(void) {
 void small_penguin_act_3(void) {
     if (o->oTimer > 5) {
         if (o->oTimer == 6) {
-            cur_obj_play_sound_2(SOUND_OBJ_BABY_PENGUIN_DIVE);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BABY_PENGUIN_DIVE);
         }
         cur_obj_init_animation_with_sound(1);
         if (o->oTimer > 25) {

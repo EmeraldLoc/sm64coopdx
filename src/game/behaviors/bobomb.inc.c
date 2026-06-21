@@ -93,7 +93,7 @@ void bobomb_act_chase_mario(void) {
     s16 collisionFlags = object_step();
 
     if (animFrame == 5 || animFrame == 16) {
-        cur_obj_play_sound_2(SOUND_OBJ_BOBOMB_WALK);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOBOMB_WALK);
     }
 
     struct Object* player = nearest_player_to_object(o);
@@ -208,7 +208,7 @@ void bobomb_dropped_loop(void) {
 }
 
 void bobomb_thrown_loop(void) {
-    cur_obj_enable_rendering_2();
+    cur_obj_enable_rendering();
 
     o->header.gfx.node.flags &= ~GRAPH_RENDER_INVISIBLE;
     o->oHeldState = 0;
@@ -273,7 +273,7 @@ void bhv_bobomb_loop(void) {
             spawn_object(o, MODEL_SMOKE, bhvBobombFuseSmoke);
         }
 
-        cur_obj_play_sound_1(SOUND_AIR_BOBOMB_LIT_FUSE);
+        cur_obj_play_sound_if_visible(SOUND_AIR_BOBOMB_LIT_FUSE);
 
         o->oBobombFuseTimer++;
     }
@@ -315,7 +315,7 @@ void bobomb_buddy_act_idle(void) {
     object_step();
 
     if ((animFrame == 5) || (animFrame == 16)) {
-        cur_obj_play_sound_2(SOUND_OBJ_BOBOMB_WALK);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOBOMB_WALK);
     }
 
     struct MarioState *marioState = &gMarioStates[0];
@@ -438,7 +438,7 @@ void bobomb_buddy_act_talk(void) {
 void bobomb_buddy_act_turn_to_talk(void) {
     s16 animFrame = o->header.gfx.animInfo.animFrame;
     if ((animFrame == 5) || (animFrame == 16)) {
-        cur_obj_play_sound_2(SOUND_OBJ_BOBOMB_WALK);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_BOBOMB_WALK);
     }
 
     if (o->globalPlayerIndex >= MAX_PLAYERS) { o->globalPlayerIndex = 0; }
@@ -459,7 +459,7 @@ void bobomb_buddy_act_turn_to_talk(void) {
     }
 
     if (o->globalPlayerIndex == gNetworkPlayerLocal->globalIndex && o->oTimer <= 0) {
-        cur_obj_play_sound_2(SOUND_ACTION_READ_SIGN);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_ACTION_READ_SIGN);
     }
 }
 

@@ -50,7 +50,7 @@ void spawn_mr_i_particle(void) {
         network_send_spawn_objects(spawn_objects, models, 1);
     }
 
-    cur_obj_play_sound_2(SOUND_OBJ_MRI_SHOOT);
+    cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_MRI_SHOOT);
 }
 
 void bhv_mr_i_body_loop(void) {
@@ -98,13 +98,13 @@ void mr_i_act_3(void) {
         s16 prevMoveAngleYaw = o->oMoveAngleYaw;
         o->oMoveAngleYaw += spinDir * coss(0x4000 * spinAmount);
         if (prevMoveAngleYaw < 0 && o->oMoveAngleYaw >= 0) {
-            cur_obj_play_sound_2(SOUND_OBJ2_MRI_SPINNING);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ2_MRI_SPINNING);
         }
         o->oMoveAnglePitch = (1.0 - coss(0x4000 * spinAmount)) * -0x4000;
         cur_obj_shake_y(4.0f);
     } else if (o->oTimer < 96) {
         if (o->oTimer == 64) {
-            cur_obj_play_sound_2(SOUND_OBJ_MRI_DEATH);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_OBJ_MRI_DEATH);
         }
         f32 shakeY = (f32)(o->oTimer - 63) / 32;
         o->oMoveAngleYaw += spinDir * coss(0x4000 * spinAmount);

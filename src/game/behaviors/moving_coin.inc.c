@@ -32,7 +32,7 @@ s32 coin_step(s16 *collisionFlagsPtr) {
     obj_check_floor_death(*collisionFlagsPtr, sObjFloor);
 
     if ((*collisionFlagsPtr & 0x1) != 0 && (*collisionFlagsPtr & 0x8) == 0) { /* bit 0, bit 3 */
-        cur_obj_play_sound_2(SOUND_GENERAL_COIN_DROP);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_COIN_DROP);
         return 1;
     }
 
@@ -117,7 +117,7 @@ void bhv_moving_blue_coin_loop(void) {
             if ((collisionFlags & OBJ_COL_FLAG_GROUNDED)) { /* bit 0 */
                 o->oForwardVel += 25.0f;
                 if (!(collisionFlags & OBJ_COL_FLAG_NO_Y_VEL)) {
-                    cur_obj_play_sound_2(SOUND_GENERAL_COIN_DROP); /* bit 3 */
+                    cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_COIN_DROP); /* bit 3 */
                 }
             } else {
                 o->oForwardVel *= 0.98;

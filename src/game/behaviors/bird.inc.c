@@ -20,7 +20,7 @@ static void bird_act_inactive(void) {
         // If the object is a spawner bird, play the sound of birds flying away,
         // and spawn 6 spawned birds (which will start flying on the next frame).
         if (o->oBehParams2ndByte != BIRD_BP_SPAWNED) {
-            cur_obj_play_sound_2(SOUND_GENERAL_BIRDS_FLY_AWAY);
+            cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_BIRDS_FLY_AWAY);
 
             for (s32 i = 0; i < 6; i++) {
                 spawn_object(o, MODEL_BIRDS, bhvBird);

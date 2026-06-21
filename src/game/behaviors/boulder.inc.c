@@ -13,7 +13,7 @@ void bhv_big_boulder_init(void) {
 void boulder_act_1(void) {
     s16 step = object_step_without_floor_orient();
     if ((step & 0x09) == 0x01 && o->oVelY > 10.0f) {
-        cur_obj_play_sound_2(SOUND_GENERAL_GRINDEL_ROLL);
+        cur_obj_play_sound_and_rumble_if_visible(SOUND_GENERAL_GRINDEL_ROLL);
         spawn_mist_particles();
     }
 
@@ -43,7 +43,7 @@ void bhv_big_boulder_loop(void) {
         case 1:
             boulder_act_1();
             adjust_rolling_face_pitch(1.5f);
-            cur_obj_play_sound_1(SOUND_ENV_UNKNOWN2);
+            cur_obj_play_sound_if_visible(SOUND_ENV_UNKNOWN2);
             break;
     }
 
