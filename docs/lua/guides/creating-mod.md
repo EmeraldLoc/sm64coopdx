@@ -28,11 +28,11 @@ If you are just starting out, I'd recommend learning to create a folder mod firs
 
 ## Section 3a: Creating a file mod
 
-First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet. On windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
+First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet. On Windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
 
 <img width="613" height="349" alt="Screenshot 2026-06-23 223738" src="https://github.com/user-attachments/assets/f128b1af-5abf-4214-b29e-0f9b437af64d" />
 
-Linux will vary depending on your file explorer, but if you're on Linux you should already know how to. In the worst case scenario, open up your terminal and navigate to `~/.local/share/sm64coopdx/mods` and create the file with `touch modname.lua`.
+Linux will vary depending on your file explorer, but if you're on Linux you should already know how to. In the worst-case scenario, open up your terminal and navigate to `~/.local/share/sm64coopdx/mods` and create the file with `touch modname.lua`.
 
 ## Section 3b: Creating a folder mod
 
@@ -50,8 +50,8 @@ There are a few fields that exist for mods. Fields can be set at the very top of
 | -------- | ----- |
 | `name` | The name of the mod. This name is the name used in game |
 | `description` | A description of the mod. Appears when hovering over a mod to turn it on/off |
-| `incompatible` | A list of tags to be marked as incompatible. This is an opt in system. If 2 mods contain an equivalent incompatible tag, then they both won't be able to be enabled together. Tags are separated with a space character, or a whitespace.
-| `category` | The category of a mod. Leaving this empty will have the mod be in the `misc` category. The list of categories can be found in game by going to Host, Mods, then looping through the Categories select box. Do not categories are all lowercase, they are also only in English. So for category Utility, you want to put in your mod `-- category utility`
+| `incompatible` | A list of tags to be marked as incompatible. This is an opt-in system. If 2 mods contain an equivalent incompatible tag, then they both won't be able to be enabled together. Tags are separated with a space character, or a whitespace.
+| `category` | The category of a mod. Leaving this empty will have the mod be in the `misc` category. The list of categories can be found in game by going to Host, Mods, then looping through the Categories select box. Note that categories are all lowercase, they are also only in English. So for category Utility, you want to put in your mod `-- category utility`
 | `pausable` | A boolean of whether or not to allow the game to be frozen when paused in singleplayer. By default this is true, so by default you can pause in singleplayer and become frozen. To make this not the case, use `-- pausable false`.
 | `ignore-script-warnings` | A boolean of whether or not to ignore script warnings. Don't touch this for your mods, but for documentation sake, this will suppress warnings that your script may have. This does not suppress errors, it only suppresses warnings, which are quite rare.
 
