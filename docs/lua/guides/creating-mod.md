@@ -18,6 +18,9 @@ If you are just starting out, I'd recommend learning to create a folder mod firs
 
 First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet. On windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
 
+<img width="613" height="349" alt="Screenshot 2026-06-23 223738" src="https://github.com/user-attachments/assets/f128b1af-5abf-4214-b29e-0f9b437af64d" />
+
+
 Linux will vary depending on your file explorer, but if you're on Linux you should already know how to. In the worst case scenario, open up your terminal and navigate to `~/.local/share/sm64coopdx/mods` and create the file with `touch modname.lua`.
 
 ## Section 2c: Creating a folder mod
