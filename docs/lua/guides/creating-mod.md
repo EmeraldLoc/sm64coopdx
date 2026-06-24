@@ -4,7 +4,19 @@
 
 ## Section 1: Navigating to the mods folder
 
-To start, open up sm64coopdx, and navigate to Options -> Misc -> Open User/Appdata Folder. From there, open up the `mods` folder. If the `mods` folder does not exist, create it.
+To start, open up sm64coopdx, and navigate to Options -> Misc -> Open User/Appdata Folder.
+
+<img width="300" height="351" alt="SCR-20260623-sudg-2" src="https://github.com/user-attachments/assets/40fd9cb4-69a7-451c-9d9c-e063f9c854e7" />
+<br>
+<img width="300" height="418" alt="SCR-20260623-sufe-2" src="https://github.com/user-attachments/assets/59c9ff95-28bb-4d14-a47a-7222f248b869" />
+<br>
+<img width="300" height="372" alt="SCR-20260623-suhc-2" src="https://github.com/user-attachments/assets/ac108b5f-d421-4aa8-8272-ae96b476fdb5" />
+
+Now, in your file browser, open up the `mods` folder. If the `mods` folder does not exist, create it.
+
+<img width="327" height="104" alt="SCR-20260623-susk-2" src="https://github.com/user-attachments/assets/ebd211e6-7398-43ec-9b38-0f465dcaaa48" />
+
+You can move on to the next section with this done.
 
 ## Section 2: Picking a file mod or a folder mod
 
@@ -19,7 +31,6 @@ If you are just starting out, I'd recommend learning to create a folder mod firs
 First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet. On windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
 
 <img width="613" height="349" alt="Screenshot 2026-06-23 223738" src="https://github.com/user-attachments/assets/f128b1af-5abf-4214-b29e-0f9b437af64d" />
-
 
 Linux will vary depending on your file explorer, but if you're on Linux you should already know how to. In the worst case scenario, open up your terminal and navigate to `~/.local/share/sm64coopdx/mods` and create the file with `touch modname.lua`.
 
