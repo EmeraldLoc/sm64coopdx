@@ -6,7 +6,7 @@
 
 To start, open up sm64coopdx, and navigate to Options -> Misc -> Open User/Appdata Folder.
 
-<img width="300" height="351" alt="SCR-20260623-sudg-2" src="https://github.com/user-attachments/assets/40fd9cb4-69a7-451c-9d9c-e063f9c854e7" />
+<img width="300" height="359" alt="SCR-20260623-trjb-2" src="https://github.com/user-attachments/assets/390ac087-b46b-411b-b04e-712aa9cb529b" />
 <br>
 <img width="300" height="418" alt="SCR-20260623-sufe-2" src="https://github.com/user-attachments/assets/59c9ff95-28bb-4d14-a47a-7222f248b869" />
 <br>
