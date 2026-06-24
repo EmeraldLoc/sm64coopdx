@@ -26,7 +26,7 @@ A folder mod is a mod that allows for multiple code files, actors, textures, lev
 
 If you are just starting out, I'd recommend learning to create a folder mod first so you won't be limited in the future.
 
-## Section 2b: Creating a file mod
+## Section 3a: Creating a file mod
 
 First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet. On windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
 
@@ -34,11 +34,11 @@ First, you need to create a `.lua` file. This is a code file where your code wil
 
 Linux will vary depending on your file explorer, but if you're on Linux you should already know how to. In the worst case scenario, open up your terminal and navigate to `~/.local/share/sm64coopdx/mods` and create the file with `touch modname.lua`.
 
-## Section 2c: Creating a folder mod
+## Section 3b: Creating a folder mod
 
 Create a folder and give it your mods name all lowercased with `-` as space. Next up, create a file and name it `main.lua`. This is a requirement. Folder mods require a `main.lua` file or else sm64coopdx will not know what file to load into.
 
-## Section 3: Configuring the mod
+## Section 4: Configuring the mod
 
 Before continuing, if you haven't, I would highly advise reading up on the [Visual Studio Code setup guide](vs-code-setup.md) as it will provide autocomplete and docs when writing mods.
 
