@@ -25,8 +25,8 @@ Save file locations:
 - [Structs](structs.md)
 
 ### Guides
-- [Creating a mod](guides/creating-mod.md)
 - [Setting up Visual Studio Code](guides/vs-code-setup.md)
+- [Creating a mod](guides/creating-mod.md)
 - [Hooks](guides/hooks.md)
 - [gMarioStates](guides/mario-state.md)
 - [Behavior Object Lists](guides/object-lists.md)
