@@ -1897,6 +1897,25 @@ void render_dialog_entries(void) {
         return;
     }
 
+    s16 dialogLen = (s16)strlen((char *)dialog->str);
+    // this is only triggered if we are oob. That means that technically
+    // only a handful, or even a single character could be rendered on a switch
+    if (gDialogTextPos >= dialogLen) {
+        // look for the last valid page start tex pos index
+        gLastDialogPageStrPos  = 0;
+        s16 strIdx = 0;
+        while (true) { 
+            u8 strChar = dialog->str[strIdx];
+
+            if (strChar == DIALOG_CHAR_TERMINATOR) {
+                gLastDialogPageStrPos = strIdx;
+            }
+            strIdx++;
+            if (strIdx >= dialogLen - 1) { break; }
+        }
+        gDialogTextPos = gLastDialogPageStrPos;
+    }
+
 #ifdef VERSION_EU
     gDialogX = 0;
     gDialogY = 0;
