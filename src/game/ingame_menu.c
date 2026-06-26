@@ -1902,18 +1902,24 @@ void render_dialog_entries(void) {
     // only a handful, or even a single character could be rendered on a switch
     if (gDialogTextPos >= dialogLen) {
         // look for the last valid page start tex pos index
-        gLastDialogPageStrPos  = 0;
+        s16 textPos = 0;
+        s16 lineNum = 0;
         s16 strIdx = 0;
         while (true) { 
             u8 strChar = dialog->str[strIdx];
 
-            if (strChar == DIALOG_CHAR_TERMINATOR) {
-                gLastDialogPageStrPos = strIdx;
+            if (strChar == DIALOG_CHAR_NEWLINE) {
+                lineNum++;
+                if (lineNum > dialog->linesPerBox) {
+                    textPos = strIdx + 1;
+                    lineNum = 0;
+                }
             }
             strIdx++;
             if (strIdx >= dialogLen - 1) { break; }
         }
-        gDialogTextPos = gLastDialogPageStrPos;
+        gDialogTextPos = textPos;
+        gLastDialogPageStrPos = -1;
     }
 
 #ifdef VERSION_EU
