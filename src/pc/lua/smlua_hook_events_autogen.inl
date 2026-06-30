@@ -1982,7 +1982,7 @@ bool smlua_call_event_hooks_HOOK_ON_REFRESH_SHADERS() {
     return hookResult;
 }
 
-bool smlua_call_event_hooks_HOOK_ON_VERTEX_SHADER_CREATE(struct ColorCombiner *cc, u8 shaderIndex, const char **vertexShader) {
+bool smlua_call_event_hooks_HOOK_ON_VERTEX_SHADER_CREATE(struct ColorCombiner *cc, const char **vertexShader) {
     lua_State *L = gLuaState;
     if (L == NULL) { return false; }
 
@@ -1996,11 +1996,8 @@ bool smlua_call_event_hooks_HOOK_ON_VERTEX_SHADER_CREATE(struct ColorCombiner *c
         // push cc
         smlua_push_object(L, LOT_COLORCOMBINER, cc, NULL);
 
-        // push shaderIndex
-        lua_pushinteger(L, shaderIndex);
-
         // call the callback
-        if (0 != smlua_call_hook(L, 2, 1, 0, hook->mod[i], hook->modFile[i])) {
+        if (0 != smlua_call_hook(L, 1, 1, 0, hook->mod[i], hook->modFile[i])) {
             LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_VERTEX_SHADER_CREATE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }
@@ -2017,7 +2014,7 @@ bool smlua_call_event_hooks_HOOK_ON_VERTEX_SHADER_CREATE(struct ColorCombiner *c
     return false;
 }
 
-bool smlua_call_event_hooks_HOOK_ON_FRAGMENT_SHADER_CREATE(struct ColorCombiner *cc, u8 shaderIndex, const char **fragmentShader) {
+bool smlua_call_event_hooks_HOOK_ON_FRAGMENT_SHADER_CREATE(struct ColorCombiner *cc, const char **fragmentShader) {
     lua_State *L = gLuaState;
     if (L == NULL) { return false; }
 
@@ -2031,11 +2028,8 @@ bool smlua_call_event_hooks_HOOK_ON_FRAGMENT_SHADER_CREATE(struct ColorCombiner 
         // push cc
         smlua_push_object(L, LOT_COLORCOMBINER, cc, NULL);
 
-        // push shaderIndex
-        lua_pushinteger(L, shaderIndex);
-
         // call the callback
-        if (0 != smlua_call_hook(L, 2, 1, 0, hook->mod[i], hook->modFile[i])) {
+        if (0 != smlua_call_hook(L, 1, 1, 0, hook->mod[i], hook->modFile[i])) {
             LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_FRAGMENT_SHADER_CREATE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }

@@ -9,6 +9,7 @@
 #include "gfx_pc.h"
 #include "gfx_shader.h"
 
+#include "pc/lua/smlua.h"
 #include "pc/debuglog.h"
 
 struct ShaderInput *gShaderInputs = NULL;
@@ -36,6 +37,7 @@ const char *gDefaultPostProcessFragmentShader = "#version 410 core\n"
     "    fragColor = texture(uPassTex, vTexCoord);\n"
     "}\n";
 
+static int sShaderInputCount = 0;
 static int sShaderOutputCount = 0;
 static int sShaderBindingCount = 0;
 static int sShaderUniformCount = 0;
@@ -160,7 +162,7 @@ static void append_formula(char *buf, size_t *len, uint8_t* cmd, bool do_single,
     }
 }
 
-char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
+char *gfx_get_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     struct CCFeatures ccf = { 0 };
     gfx_cc_get_features(cc, &ccf);
 
@@ -233,7 +235,7 @@ char *gfx_generate_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     return vs_buf;
 }
 
-char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
+char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     struct CCFeatures ccf = { 0 };
     gfx_cc_get_features(cc, &ccf);
 
@@ -259,6 +261,9 @@ char *gfx_generate_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     for (int i = 0; i < CC_MAX_INPUTS; i++) {
         fs_len += sprintf(fs_buf + fs_len, "in vec4 vInput%d;\n", i + 1);
     }
+
+    append_line(fs_buf, &fs_len, "in vec3 vNormal;");
+    append_line(fs_buf, &fs_len, "in vec3 vBarycentric;");
 
     if (opt_fog) {
         append_line(fs_buf, &fs_len, "in float vFogZ;");
@@ -605,6 +610,13 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
                 char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
                 snprintf(layoutLine, sizeof(layoutLine), "layout(location=%d) %s in %s %s", referenceInputs[i].location, qualifier, type, name);
                 strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+                if (shader) {
+                    snprintf(shader->shaderInputs[sShaderInputCount].name, MAX_SHADER_VARIABLE_NAME, "%s", referenceInputs[i].name);
+                    shader->shaderInputs[sShaderInputCount].location = referenceInputs[i].location;
+                    shader->shaderInputs[sShaderInputCount].size = referenceInputs[i].size;
+
+                    if (sShaderInputCount < MAX_SHADER_INPUTS - 1) { sShaderInputCount++; }
+                }
                 return;
             }
         }
@@ -616,6 +628,13 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
                 char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
                 snprintf(layoutLine, sizeof(layoutLine), "layout(location=%d) in %s %s", referenceInputs[i].location, type, name);
                 strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+                if (shader) {
+                    snprintf(shader->shaderInputs[sShaderInputCount].name, MAX_SHADER_VARIABLE_NAME, "%s", referenceInputs[i].name);
+                    shader->shaderInputs[sShaderInputCount].location = referenceInputs[i].location;
+                    shader->shaderInputs[sShaderInputCount].size = referenceInputs[i].size;
+
+                    if (sShaderInputCount < MAX_SHADER_INPUTS - 1) { sShaderInputCount++; }
+                }
                 return;
             }
         }
@@ -681,14 +700,15 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
 }
 
 static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
-    if (!shaderCode || !*shaderCode) return;
+    if (!shaderCode || !*shaderCode) { return; }
 
     char *sanitized = (char *)calloc(1, MAX_SHADER_CODE);
-    if (!sanitized) return;
+    if (!sanitized) { return; }
 
     char *sourceCopy = strdup(*shaderCode);
     char *line = sourceCopy;
 
+    sShaderInputCount = 0;
     sShaderOutputCount = 0;
     sShaderBindingCount = 0;
     sShaderUniformCount = 0;
@@ -721,20 +741,20 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
 
     free(sourceCopy);
 
-    // copy reference inputs and reference bindings to shader input
+    // copy reference bindings to shader input
     if (shader) {
-        memcpy(&shader->shaderInputs, referenceInputs, sizeof(struct ShaderInput[MAX_SHADER_INPUTS]));
         memcpy(&shader->shaderBindings, referenceBindings, sizeof(struct ShaderBinding[MAX_SHADER_BINDINGS]));
     }
 
     *shaderCode = sanitized;
 }
 
-void gfx_sanitize_vertex_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
+bool gfx_sanitize_vertex_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
     gfx_sanitize_shader(shader, referenceInputs, referenceBindings, shaderCode);
+    return true;
 }
 
-void gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *outputsFromVertexShader, struct ShaderBinding *referenceBindings, char **shaderCode) {
+bool gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *outputsFromVertexShader, struct ShaderBinding *referenceBindings, char **shaderCode) {
     // convert outputs to inputs for fragment shader
     struct ShaderInput inputs[MAX_SHADER_INPUTS] = { 0 };
     for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
@@ -742,6 +762,15 @@ void gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *ou
         inputs[i].location = outputsFromVertexShader[i].location;
     }
     gfx_sanitize_shader(shader, inputs, referenceBindings, shaderCode);
+    // double check we are not missing any inputs, if we are, error out
+    for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
+        if (strncmp(inputs[i].name, shader->shaderInputs[i].name, MAX_SHADER_VARIABLE_NAME) != 0 || inputs[i].location != shader->shaderInputs[i].location) {
+            // mismatched! tell the shader code this is not a valid shader
+            LOG_ERROR("Failed to sanitize fragment shader! Mismatch between vertex outputs and fragment inputs");
+            return false;
+        }
+    }
+    return true;
 }
 
 static bool process_conversion_410_to_450_line(struct ShaderBinding *referenceBindings, char *output, const char *line) {
@@ -791,6 +820,7 @@ static void gfx_convert_410_to_450(struct ShaderBinding *referenceBindings, char
     char *sourceCopy = strdup(*shaderCode);
     char *line = sourceCopy;
 
+    sShaderInputCount = 0;
     sShaderOutputCount = 0;
     sShaderBindingCount = 0;
     sShaderUniformCount = 0;
@@ -1021,9 +1051,140 @@ void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
 
 #undef SPVC_CHECK
 
+static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *vertexShader, struct Shader *fragmentShader, struct ShaderInput *shaderInputs, struct ShaderBinding *shaderBindings, char *vsCode, char *fsCode, bool isCustom)  {
+    vertexShader->stage = GLSLANG_STAGE_VERTEX;
+    fragmentShader->stage = GLSLANG_STAGE_FRAGMENT;
+
+    if (!gfx_sanitize_vertex_shader(vertexShader, shaderInputs, shaderBindings, &vsCode)) {
+        if (isCustom) {
+            LOG_LUA_LINE("Failed to sanitize vertex shader!");
+            return false;
+        } else {
+            sys_fatal("Failed to sanitize vertex shader!");
+            return false;
+        }
+    }
+
+    if (!gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, shaderBindings, &fsCode)) {
+        if (isCustom) {
+            LOG_LUA_LINE("Failed to sanitize fragment shader!");
+            return false;
+        } else {
+            sys_fatal("Failed to sanitize fragment shader!");
+            return false;
+        }
+    }
+
+    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsCode, vertexShader)) {
+        if (isCustom) {
+            LOG_LUA_LINE("Failed to compile custom vertex shader to SPIR-V!");
+            return false;
+        } else {
+            sys_fatal("Failed to compile vertex shader to SPIR-V!");
+            return false;
+        }
+    }
+
+    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsCode, fragmentShader)) {
+        if (isCustom) {
+            LOG_LUA_LINE("Failed to compile custom fragment shader to SPIR-V!");
+            return false;
+        } else {
+            sys_fatal("Failed to compile fragment shader to SPIR-V!");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static bool gfx_generate_vertex_and_fragment_shader(struct Shader *vertexShader, struct Shader *fragmentShader, struct ShaderInput *shaderInputs, struct ShaderBinding *shaderBindings, char *vsCode, char *fsCode, char *fallbackVsCode, char *fallbackFsCode, char **outVertShader, char **outFragShader) {
+    // clear shader contents
+    gfx_destroy_shader_contents(vertexShader);
+    gfx_destroy_shader_contents(fragmentShader);
+
+    bool isCustom = (strcmp(vsCode, fallbackVsCode) != 0 || strcmp(fsCode, fallbackFsCode) != 0);
+
+    if (!gfx_generate_vertex_and_fragment_shader_no_fallback(vertexShader, fragmentShader, shaderInputs, shaderBindings, vsCode, fsCode, isCustom)) {
+        if (isCustom) {
+            // clear shader contents of old garbage data and try again with fallback
+            gfx_destroy_shader_contents(vertexShader);
+            gfx_destroy_shader_contents(fragmentShader);
+
+            // setup fallback code
+            free(vsCode);
+            free(fsCode);
+            vsCode = fallbackVsCode;
+            fsCode = fallbackFsCode;
+            fallbackVsCode = NULL;
+            fallbackFsCode = NULL;
+            if (!gfx_generate_vertex_and_fragment_shader_no_fallback(vertexShader, fragmentShader, shaderInputs, shaderBindings, vsCode, fsCode, false)) {
+                sys_fatal("Failed to generate vertex and fragment shader!"); // should technically never be reached
+                return false;
+            }
+        } else {
+            sys_fatal("Failed to generate vertex and fragment shader!"); // should technically never be reached
+            return false;
+        }
+    }
+
+
+    if (outVertShader) {
+        *outVertShader = vsCode;
+    } else {
+        free(vsCode);
+        vsCode = NULL;
+    }
+    free(fallbackVsCode);
+    fallbackVsCode = NULL;
+
+    if (outFragShader) {
+        *outFragShader = fsCode;
+    } else {
+        free(fsCode);
+        fsCode = NULL;
+    }
+    free(fallbackFsCode);
+    fallbackFsCode = NULL;
+
+    return true;
+}
+
+bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader, struct Shader *fragmentShader, struct ColorCombiner *cc, char **outVertShader, char **outFragShader) {
+    char *defaultVsCode = gfx_get_default_vertex_shader_from_cc(cc);
+    char *defaultFsCode = gfx_get_default_fragment_shader_from_cc(cc);
+
+    char *fallbackVsCode = strdup(defaultVsCode);
+    char *fallbackFsCode = strdup(defaultFsCode);
+    char *vsShaderCode = strdup(fallbackVsCode);
+    char *fsShaderCode = strdup(fallbackFsCode);
+    if (!fallbackVsCode || !fallbackFsCode || !vsShaderCode || !fsShaderCode) {
+        sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
+    }
+
+    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, (const char **)&vsShaderCode);
+    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, (const char **)&fsShaderCode);
+
+    return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gShaderInputs, gShaderBindings, vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
+}
+
+bool gfx_generate_post_process_vertex_and_fragment_shader(struct Shader *vertexShader, struct Shader *fragmentShader, char **outVertShader, char **outFragShader) {
+    char *fallbackVsCode = strdup(gDefaultPostProcessVertexShader);
+    char *fallbackFsCode = strdup(gDefaultPostProcessFragmentShader);
+    char *vsShaderCode = strdup(fallbackVsCode);
+    char *fsShaderCode = strdup(fallbackFsCode);
+    if (!fallbackVsCode || !fallbackFsCode || !vsShaderCode || !fsShaderCode) {
+        sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
+    }
+
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, (const char **)&vsShaderCode);
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
+
+    return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gPostProcessShaderInputs, gPostProcessShaderBindings, vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
+}
+
 void gfx_destroy_shader_contents(struct Shader *shader) {
     if (!shader) { return; }
-
     free(shader->spirVShader.words);
     memset(shader, 0, sizeof(struct Shader));
 }

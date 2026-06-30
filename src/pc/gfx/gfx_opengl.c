@@ -165,79 +165,19 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     bool world_geometry = cc->cm.world_geometry;
     bool opt_dither = cc->cm.use_dither;
 
-    char *vs_buf = gfx_generate_default_vertex_shader_from_cc(cc);
-    char *fs_buf = gfx_generate_default_fragment_shader_from_cc(cc);
-
-    /*puts("Vertex shader:");
-    puts(vs_buf);
-    puts("Fragment shader:");
-    puts(fs_buf);
-    puts("End");*/
-
-    char *vsShaderCode = strdup(vs_buf);
-    if (!vsShaderCode) {
-        sys_fatal("Failed to allocate vertex shader, ran out of memory!");
-    }
-    char *fsShaderCode = strdup(fs_buf);
-    if (!fsShaderCode) {
-        sys_fatal("Failed to allocate fragment shader, ran out of memory!");
-    }
-
-    bool usingCustomVertexShader = false;
-    bool usingCustomFragmentShader = false;
-
-    int framePassIndex = gCurrentFramePassIndex + 1;
-
-    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], (const char **)&vsShaderCode);
-    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, shader_program_pool_index[framePassIndex], (const char **)&fsShaderCode);
-
-    if (strcmp(vsShaderCode, vs_buf) != 0) { usingCustomVertexShader = true; }
-    if (strcmp(fsShaderCode, fs_buf) != 0) { usingCustomFragmentShader = true; }
-
     struct Shader *vertexShader = calloc(1, sizeof(struct Shader));
-    if (!vertexShader) {
-        sys_fatal("Failed to allocate vertex shader, ran out of memory!");
-    }
-    vertexShader->stage = GLSLANG_STAGE_VERTEX;
-
-    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
-    gfx_sanitize_vertex_shader(vertexShader, gShaderInputs, gShaderBindings, &vsShaderCode);
-
     struct Shader *fragmentShader = calloc(1, sizeof(struct Shader));
-    if (!fragmentShader) {
-        sys_fatal("Failed to allocate fragment shader, ran out of memory!");
-    }
-    fragmentShader->stage = GLSLANG_STAGE_FRAGMENT;
-
-    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
-    gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, gShaderBindings, &fsShaderCode);
-
-    if (usingCustomVertexShader) {
-        // make sure it compiles with glslang first
-        if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-            LOG_ERROR("Failed to compile custom vertex shader to SPIR-V!");
-            usingCustomVertexShader = false;
-            free(vsShaderCode);
-            vsShaderCode = (char*)vs_buf;
-        }
+    if (!vertexShader || !fragmentShader) {
+        sys_fatal("Failed to allocate shaders, ran out of memory!");
     }
 
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-        sys_fatal("Failed to compile vertex shader to SPIR-V!");
-    }
+    char *vsShaderCode = NULL;
+    char *fsShaderCode = NULL;
 
-    if (usingCustomFragmentShader) {
-        // make sure it compiles with glslang first
-        if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
-            LOG_ERROR("Failed to compile custom fragment shader to SPIR-V!");
-            usingCustomFragmentShader = false;
-            free(fsShaderCode);
-            fsShaderCode = (char*)fs_buf;
-        }
-    }
+    gfx_generate_vertex_and_fragment_shader_from_cc(vertexShader, fragmentShader, cc, &vsShaderCode, &fsShaderCode);
 
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
-        sys_fatal("Failed to compile fragment shader to SPIR-V!");
+    if (!vsShaderCode || !fsShaderCode) {
+        sys_fatal("Failed to generate vertex and fragment shader for new shader program!");
     }
 
     const GLchar *sources[2] = { vsShaderCode, fsShaderCode };
@@ -252,26 +192,10 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         GLint max_length = 0;
         glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
         char error_log[1024];
+        fprintf(stderr, "Vertex shader compilation failed\n");
         glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
-        if (!usingCustomVertexShader) {
-            fprintf(stderr, "Vertex shader compilation failed\n");
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("vertex shader compilation failed (see terminal)");
-        } else {
-            LOG_LUA_LINE("Vertex Shader: %s", error_log);
-        }
-        usingCustomVertexShader = false;
-        sources[0] = vs_buf;
-        lengths[0] = strlen(vs_buf);
-        glShaderSource(vertex_shader, 1, &sources[0], &lengths[0]);
-        glCompileShader(vertex_shader);
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            fprintf(stderr, "Vertex shader compilation failed\n");
-            glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("vertex shader compilation failed (see terminal)");
-        }
+        fprintf(stderr, "%s\n", &error_log[0]);
+        sys_fatal("vertex shader compilation failed (see terminal)");
     }
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -282,33 +206,18 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         GLint max_length = 0;
         glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
         char error_log[1024];
+        fprintf(stderr, "Fragment shader compilation failed\n");
         glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
-        if (!usingCustomFragmentShader) {
-            fprintf(stderr, "Fragment shader compilation failed\n");
-            fprintf(stderr, "%s\n", &error_log[0]);
-            fprintf(stderr, "%s\n", fsShaderCode);
-            sys_fatal("fragment shader compilation failed (see terminal)");
-        } else {
-            LOG_LUA_LINE("Fragment Shader: %s", &error_log[0]);
-        }
-        usingCustomFragmentShader = false;
-        sources[1] = fs_buf;
-        lengths[1] = strlen(fs_buf);
-        glShaderSource(fragment_shader, 1, &sources[1], &lengths[1]);
-        glCompileShader(fragment_shader);
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            fprintf(stderr, "Fragment shader compilation failed\n");
-            glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("fragment shader compilation failed (see terminal)");
-        }
+        fprintf(stderr, "%s\n", &error_log[0]);
+        sys_fatal("fragment shader compilation failed (see terminal)");
     }
 
     GLuint shader_program = glCreateProgram();
     glAttachShader(shader_program, vertex_shader);
     glAttachShader(shader_program, fragment_shader);
     glLinkProgram(shader_program);
+
+    int framePassIndex = gCurrentFramePassIndex + 1;
 
     struct ShaderProgram *prg = &shader_program_pool[framePassIndex][shader_program_pool_index[framePassIndex]];
     shader_program_pool_index[framePassIndex] = (shader_program_pool_index[framePassIndex] + 1) % CC_MAX_SHADERS;
@@ -319,7 +228,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
         if (gShaderInputs[i].size == 0) { continue; }
-        prg->attrib_locations[i] = gShaderInputs[i].location;
+        prg->attrib_locations[i] = glGetAttribLocation(shader_program, gShaderInputs[i].name);
         prg->attrib_sizes[i] = gShaderInputs[i].size;
         num_floats += gShaderInputs[i].size;
         cnt++;
@@ -377,6 +286,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     gfx_opengl_load_shader(prg);
 
+    free(vsShaderCode);
+    free(fsShaderCode);
+
     return prg;
 }
 
@@ -388,50 +300,19 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
         return &post_process_shader_program_pool[framePassIndex];
     }
 
-    char *vsShaderCode = (char*)gDefaultPostProcessVertexShader;
-    char *fsShaderCode = (char*)gDefaultPostProcessFragmentShader;
-
-    // let lua override the shader
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, (const char **)&vsShaderCode);
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
-
-    bool usingCustomVertexShader = (strcmp(vsShaderCode, gDefaultPostProcessVertexShader) != 0);
-    bool usingCustomFragmentShader = (strcmp(fsShaderCode, gDefaultPostProcessFragmentShader) != 0);
-
     struct Shader *vertexShader = calloc(1, sizeof(struct Shader));
-    if (!vertexShader) {
-        sys_fatal("Failed to allocate vertex shader, ran out of memory!");
-    }
-    vertexShader->stage = GLSLANG_STAGE_VERTEX;
-
-    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
-    gfx_sanitize_vertex_shader(vertexShader, gPostProcessShaderInputs, gPostProcessShaderBindings, &vsShaderCode);
-
     struct Shader *fragmentShader = calloc(1, sizeof(struct Shader));
-    if (!fragmentShader) {
-        sys_fatal("Failed to allocate fragment shader, ran out of memory!");
-    }
-    fragmentShader->stage = GLSLANG_STAGE_FRAGMENT;
-
-    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
-    gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, gPostProcessShaderBindings, &fsShaderCode);
-
-    if (usingCustomVertexShader) {
-        // make sure it compiles with glslang first
-        if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-            LOG_ERROR("Failed to compile post process vertex shader!");
-            usingCustomVertexShader = false;
-            vsShaderCode = (char*)gDefaultPostProcessVertexShader;
-        }
+    if (!vertexShader || !fragmentShader) {
+        sys_fatal("Failed to allocate shaders, ran out of memory!");
     }
 
-    if (usingCustomFragmentShader) {
-        // make sure it compiles with glslang first
-        if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
-            LOG_ERROR("Failed to compile post process fragment shader!");
-            usingCustomFragmentShader = false;
-            fsShaderCode = (char*)gDefaultPostProcessFragmentShader;
-        }
+    char *vsShaderCode = NULL;
+    char *fsShaderCode = NULL;
+
+    gfx_generate_post_process_vertex_and_fragment_shader(vertexShader, fragmentShader, &vsShaderCode, &fsShaderCode);
+
+    if (!vsShaderCode || !fsShaderCode) {
+        sys_fatal("Failed to generate vertex and fragment shader for new shader program!");
     }
 
     const GLchar *sources[2] = { vsShaderCode, fsShaderCode };
@@ -446,26 +327,10 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
         GLint max_length = 0;
         glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
         char error_log[1024];
+        fprintf(stderr, "Vertex shader compilation failed\n");
         glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
-        if (!usingCustomVertexShader) {
-            fprintf(stderr, "Vertex shader compilation failed\n");
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("vertex shader compilation failed (see terminal)");
-        } else {
-            LOG_LUA_LINE("Vertex Shader: %s", error_log);
-        }
-        usingCustomVertexShader = false;
-        sources[0] = gDefaultPostProcessVertexShader;
-        lengths[0] = strlen(gDefaultPostProcessVertexShader);
-        glShaderSource(vertex_shader, 1, &sources[0], &lengths[0]);
-        glCompileShader(vertex_shader);
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            fprintf(stderr, "Vertex shader compilation failed\n");
-            glGetShaderInfoLog(vertex_shader, max_length, &max_length, &error_log[0]);
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("vertex shader compilation failed (see terminal)");
-        }
+        fprintf(stderr, "%s\n", &error_log[0]);
+        sys_fatal("vertex shader compilation failed (see terminal)");
     }
 
     GLuint fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -476,26 +341,10 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
         GLint max_length = 0;
         glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
         char error_log[1024];
+        fprintf(stderr, "Fragment shader compilation failed\n");
         glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
-        if (!usingCustomFragmentShader) {
-            fprintf(stderr, "Fragment shader compilation failed\n");
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("fragment shader compilation failed (see terminal)");
-        } else {
-            LOG_LUA_LINE("Fragment Shader: %s", &error_log[0]);
-        }
-        usingCustomFragmentShader = false;
-        sources[1] = gDefaultPostProcessFragmentShader;
-        lengths[1] = strlen(gDefaultPostProcessFragmentShader);
-        glShaderSource(fragment_shader, 1, &sources[1], &lengths[1]);
-        glCompileShader(fragment_shader);
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            fprintf(stderr, "Fragment shader compilation failed\n");
-            glGetShaderInfoLog(fragment_shader, max_length, &max_length, &error_log[0]);
-            fprintf(stderr, "%s\n", &error_log[0]);
-            sys_fatal("fragment shader compilation failed (see terminal)");
-        }
+        fprintf(stderr, "%s\n", &error_log[0]);
+        sys_fatal("fragment shader compilation failed (see terminal)");
     }
 
     GLuint shader_program = glCreateProgram();
@@ -510,7 +359,7 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
 
     for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
         if (gPostProcessShaderInputs[i].size == 0) continue;
-        prg->attrib_locations[i] = gPostProcessShaderInputs[i].location;
+        prg->attrib_locations[i] = glGetAttribLocation(shader_program, gPostProcessShaderInputs[i].name);
         prg->attrib_sizes[i] = gPostProcessShaderInputs[i].size;
         num_floats += gPostProcessShaderInputs[i].size;
         cnt++;
@@ -555,6 +404,9 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
             glUniform1i(loc, 10 + i);
         }
     }
+
+    free(vsShaderCode);
+    free(fsShaderCode);
 
     return prg;
 }
@@ -810,6 +662,7 @@ static void gfx_opengl_init(void) {
 
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // force opengl to use dx11 clip space (0, 1)
 }
 
 static void gfx_opengl_on_resize(void) {

@@ -434,72 +434,13 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     CCFeatures cc_features = { 0 };
     gfx_cc_get_features(cc, &cc_features);
 
-    char *vs_buf = gfx_generate_default_vertex_shader_from_cc(cc);
-    char *fs_buf = gfx_generate_default_fragment_shader_from_cc(cc);
-
-    char *vsShaderCode = strdup(vs_buf);
-    if (!vsShaderCode) {
-        sys_fatal("Failed to allocate vertex shader, ran out of memory!");
-    }
-    char *fsShaderCode = strdup(fs_buf);
-    if (!fsShaderCode) {
-        sys_fatal("Failed to allocate fragment shader, ran out of memory!");
-    }
-
-    bool usingCustomVertexShader = false;
-    bool usingCustomFragmentShader = false;
-
-    int framePassIndex = gCurrentFramePassIndex + 1;
-
-    smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, d3d.shader_program_pool_index[framePassIndex], (const char **)&vsShaderCode);
-    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, d3d.shader_program_pool_index[framePassIndex], (const char **)&fsShaderCode);
-
-    if (strcmp(vsShaderCode, vs_buf) != 0) { usingCustomVertexShader = true; }
-    if (strcmp(fsShaderCode, fs_buf) != 0) { usingCustomFragmentShader = true; }
-
     struct Shader *vertexShader = (struct Shader *)calloc(1, sizeof(struct Shader));
-    if (!vertexShader) {
-        sys_fatal("Failed to allocate vertex shader, ran out of memory!");
-    }
-    vertexShader->stage = GLSLANG_STAGE_VERTEX;
-
-    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
-    gfx_sanitize_vertex_shader(vertexShader, gShaderInputs, gShaderBindings, &vsShaderCode);
-
     struct Shader *fragmentShader = (struct Shader *)calloc(1, sizeof(struct Shader));
-    if (!fragmentShader) {
-        sys_fatal("Failed to allocate fragment shader, ran out of memory!");
-    }
-    fragmentShader->stage = GLSLANG_STAGE_FRAGMENT;
-
-    // !! memory leak? Shader TODO: Verify lua handles it's string memory. It may need to be freed
-    gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, gShaderBindings, &fsShaderCode);
-
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-        if (usingCustomVertexShader) {
-            usingCustomVertexShader = false;
-            free(vsShaderCode);
-            vsShaderCode = (char*)vs_buf;
-            if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-                sys_fatal("Failed to compile vertex shader to SPIR-V! Please see terminal!");
-            }
-        } else {
-            sys_fatal("Failed to compile vertex shader to SPIR-V! PLease see terminal!");
-        }
+    if (!vertexShader || !fragmentShader) {
+        sys_fatal("Failed to allocate shaders, ran out of memory!");
     }
 
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
-        if (usingCustomFragmentShader) {
-            usingCustomFragmentShader = false;
-            free(fsShaderCode);
-            fsShaderCode = (char*)fs_buf;
-            if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, fsShaderCode, fragmentShader)) {
-                sys_fatal("Failed to compile fragment shader to SPIR-V! Please see terminal!");
-            }
-        } else {
-            sys_fatal("Failed to compile fragment shader to SPIR-V! Please see terminal!");
-        }
-    }
+    gfx_generate_vertex_and_fragment_shader_from_cc(vertexShader, fragmentShader, cc, nullptr, nullptr);
 
     char *vs_hlsl = nullptr;
     char *ps_hlsl = nullptr;
@@ -536,6 +477,8 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
 
     free(vs_hlsl);
     free(ps_hlsl);
+
+    int framePassIndex = gCurrentFramePassIndex + 1;
 
     struct ShaderProgramD3D11 *prg = &d3d.shader_program_pool[framePassIndex][d3d.shader_program_pool_index[framePassIndex]];
     d3d.shader_program_pool_index[framePassIndex] = (d3d.shader_program_pool_index[framePassIndex] + 1) % CC_MAX_SHADERS;
@@ -646,42 +589,13 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
         return (struct ShaderProgram *)prg;
     }
 
-    char *vsShaderCode = (char*)gDefaultPostProcessVertexShader;
-    char *fsShaderCode = (char*)gDefaultPostProcessFragmentShader;
-
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, (const char **)&vsShaderCode);
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
-
-    bool usingCustomVertexShader = (strcmp(vsShaderCode, gDefaultPostProcessVertexShader) != 0);
-    bool usingCustomFragmentShader = (strcmp(fsShaderCode, gDefaultPostProcessFragmentShader) != 0);
-
     struct Shader *vertexShader = (struct Shader *)calloc(1, sizeof(struct Shader));
-    if (!vertexShader) { sys_fatal("Failed to allocate vertex shader, ran out of memory!"); }
-    vertexShader->stage = GLSLANG_STAGE_VERTEX;
-    gfx_sanitize_vertex_shader(vertexShader, gPostProcessShaderInputs, gPostProcessShaderBindings, &vsShaderCode);
-
     struct Shader *fragmentShader = (struct Shader *)calloc(1, sizeof(struct Shader));
-    if (!fragmentShader) { sys_fatal("Failed to allocate fragment shader, ran out of memory!"); }
-    fragmentShader->stage = GLSLANG_STAGE_FRAGMENT;
-    gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, gPostProcessShaderBindings, &fsShaderCode);
-
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader)) {
-        if (usingCustomVertexShader) {
-            vsShaderCode = (char*)gDefaultPostProcessVertexShader;
-            gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsShaderCode, vertexShader);
-        } else {
-            sys_fatal("Failed to compile default post process vertex shader to SPIR-V!");
-        }
+    if (!vertexShader || !fragmentShader) {
+        sys_fatal("Failed to allocate shaders, ran out of memory!");
     }
 
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader)) {
-        if (usingCustomFragmentShader) {
-            fsShaderCode = (char*)gDefaultPostProcessFragmentShader;
-            gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsShaderCode, fragmentShader);
-        } else {
-            sys_fatal("Failed to compile default post process fragment shader to SPIR-V!");
-        }
-    }
+    gfx_generate_post_process_vertex_and_fragment_shader(vertexShader, fragmentShader, nullptr, nullptr);
 
     // get hlsl shader from spirv
     char *vs_hlsl = nullptr;
@@ -933,6 +847,28 @@ static void gfx_d3d11_bind_texture_raw(int tile, u64 texture_id) {
     d3d.context->PSSetShaderResources(tile, 1, &srv);
     if (tile < MAX_TEXTURES) {
         d3d.last_resource_views[tile] = srv;
+    } else {
+        // need to bind sampler or else it points to the last valid one, causing pure chaos
+        static ComPtr<ID3D11SamplerState> textureSampler;
+
+        // only create sampler once to save performance since it can't be customized
+        if (!textureSampler) {
+            D3D11_SAMPLER_DESC desc = {};
+            desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+            desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+            desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+            desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+            desc.MinLOD = 0.0f;
+            desc.MaxLOD = D3D11_FLOAT32_MAX;
+            desc.MaxAnisotropy = 1;
+            desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+
+            ThrowIfFailed(d3d.device->CreateSamplerState(&desc, textureSampler.GetAddressOf()));
+        }
+
+        // set sampler
+        ID3D11SamplerState *sampler = textureSampler.Get();
+        d3d.context->PSSetSamplers(tile, 1, &sampler);
     }
 }
 
@@ -1105,7 +1041,7 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
         d3d.context->RSSetState(d3d.rasterizer_state.Get());
     }
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < MAX_TEXTURES; i++) {
         if (d3d.shader_program->used_textures[i]) {
             TextureData &texture_data = d3d.textures[d3d.current_texture_ids[i]];
             bool resource_changed = d3d.last_resource_views[i].Get() != texture_data.resource_view.Get();

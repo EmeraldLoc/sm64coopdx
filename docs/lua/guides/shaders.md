@@ -223,3 +223,10 @@ The vertex position (`aVtxPos`) provided by C is in clip space. As shown in the 
 - DirectX is not supported.
 
 While these limitations may improve in the future, this is where we are stuck for right now.
+
+
+
+
+NDC Z clip range (dk the proper name please figure out) is 0-1 on both opengl and directx
+
+Fragment inputs MUST match vertex outputs or else inputs will not be set properly
