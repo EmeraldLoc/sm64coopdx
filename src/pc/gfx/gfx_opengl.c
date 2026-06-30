@@ -662,7 +662,12 @@ static void gfx_opengl_init(void) {
 
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE); // force opengl to use dx11 clip space (0, 1)
+
+#ifndef OSX_BUILD
+    // force opengl to use dx11 clip space (0, 1)
+    // TODO: Build Metal renderer
+    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+#endif
 }
 
 static void gfx_opengl_on_resize(void) {

@@ -766,7 +766,7 @@ bool gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *ou
     for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
         if (strncmp(inputs[i].name, shader->shaderInputs[i].name, MAX_SHADER_VARIABLE_NAME) != 0 || inputs[i].location != shader->shaderInputs[i].location) {
             // mismatched! tell the shader code this is not a valid shader
-            LOG_ERROR("Failed to sanitize fragment shader! Mismatch between vertex outputs and fragment inputs");
+            LOG_ERROR("Failed to sanitize fragment shader! Mismatch between vertex outputs and fragment inputs! Index is %d, vertex output is %s, fragment input is %s", i, inputs[i].name, shader->shaderInputs[i].name);
             return false;
         }
     }
@@ -1156,14 +1156,30 @@ bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader
 
     char *fallbackVsCode = strdup(defaultVsCode);
     char *fallbackFsCode = strdup(defaultFsCode);
-    char *vsShaderCode = strdup(fallbackVsCode);
-    char *fsShaderCode = strdup(fallbackFsCode);
-    if (!fallbackVsCode || !fallbackFsCode || !vsShaderCode || !fsShaderCode) {
+    char *vsShaderCode = NULL;
+    char *fsShaderCode = NULL;
+    if (!fallbackVsCode || !fallbackFsCode) {
         sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
     }
 
     smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, (const char **)&vsShaderCode);
     smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, (const char **)&fsShaderCode);
+
+    if (!vsShaderCode) {
+        vsShaderCode = strdup(fallbackVsCode);
+    } else {
+        vsShaderCode = strdup(vsShaderCode); // lua handles its own memory, we need to escape it
+    }
+
+    if (!fsShaderCode) {
+        fsShaderCode = strdup(fallbackFsCode);
+    } else {
+        fsShaderCode = strdup(fsShaderCode); // lua handles its own memory, we need to escape it
+    }
+
+    if (!vsShaderCode || !fsShaderCode) {
+        sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
+    }
 
     return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gShaderInputs, gShaderBindings, vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
 }
