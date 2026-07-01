@@ -370,17 +370,17 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     prg->usedTextures[1] = cc_features.used_textures[1];
     prg->usedLightmap = cc->cm.light_map;
     
-    if (prg->vertexShader) free(prg->vertexShader);
-    if (prg->fragmentShader) free(prg->fragmentShader);
+    if (prg->vertexShader) { free(prg->vertexShader); }
+    if (prg->fragmentShader) { free(prg->fragmentShader); }
     
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->worldGeometry = cc->cm.world_geometry;
 
-    if (prg->vertexConstantBuffer) prg->vertexConstantBuffer->release();
-    if (prg->fragmentConstantBuffer) prg->fragmentConstantBuffer->release();
-    if (prg->vertexUniformBuffer) free(prg->vertexUniformBuffer);
-    if (prg->fragmentUniformBuffer) free(prg->fragmentUniformBuffer);
+    if (prg->vertexConstantBuffer) { prg->vertexConstantBuffer->release(); }
+    if (prg->fragmentConstantBuffer) { prg->fragmentConstantBuffer->release(); }
+    if (prg->vertexUniformBuffer) { free(prg->vertexUniformBuffer); }
+    if (prg->fragmentUniformBuffer) { free(prg->fragmentUniformBuffer); }
 
     generate_uniform_buffer_metal(prg, vertexShader, fragmentShader);
 
