@@ -669,7 +669,7 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
 
 static struct ShaderProgram *gfx_d3d11_lookup_shader(struct ColorCombiner* cc) {
     int framePassIndex = gCurrentFramePassIndex + 1;
-    if (framePassIndex == 0) { return NULL; }
+    if (framePassIndex < 0 || framePassIndex >= MAX_FRAME_PASSES) { return nullptr; }
     for (size_t i = 0; i < d3d.shader_program_pool_size[framePassIndex]; i++) {
         if (d3d.shader_program_pool[framePassIndex][i].hash == cc->hash) {
             return (struct ShaderProgram *)&d3d.shader_program_pool[framePassIndex][i];

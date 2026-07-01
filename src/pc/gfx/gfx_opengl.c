@@ -413,10 +413,10 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
 
 static struct ShaderProgram *gfx_opengl_lookup_shader(struct ColorCombiner *cc) {
     int framePassIndex = gCurrentFramePassIndex + 1;
-    if (framePassIndex == 0) { return NULL; }
+    if (framePassIndex < 0 || framePassIndex >= MAX_FRAME_PASSES) { return NULL; }
     for (size_t i = 0; i < shader_program_pool_size[framePassIndex]; i++) {
         if (shader_program_pool[framePassIndex][i].hash == cc->hash) {
-             return &shader_program_pool[framePassIndex][i];
+            return &shader_program_pool[framePassIndex][i];
         }
     }
     return NULL;
