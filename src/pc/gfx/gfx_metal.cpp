@@ -910,9 +910,7 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
         metal.encoder->setFrontFacingWinding(MTL::WindingCounterClockwise);
 
         if (metal.zModeDecal) {
-            // dx11 units of -2.0f on a 24-bit fixed pass are going to be larger here
-            // todo: should be fine tuned
-            metal.encoder->setDepthBias(-4.0f, -1.5f, 0.0f);
+            metal.encoder->setDepthBias(0.0f, -2.0f, 0.0f);
         } else {
             metal.encoder->setDepthBias(0.0f, 0.0f, 0.0f);
         }
