@@ -235,6 +235,6 @@ Good knowledge:
 
 Current Bugs:
 
-- Painting transition to bitdw doesnt work in dx11, opengl, or metal
+- ~~Painting transition to bitdw doesnt work in dx11, opengl, or metal~~
 - Particles only spawn in certain levels. Most likely cause is particles inheriting garbage data, have not looked into deeply
-- Flickering in Metal
+- ~~Flickering in Metal~~

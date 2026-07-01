@@ -32,7 +32,7 @@ extern "C" {
 // TODO: Fix pause screen
 // TODO: Fix act select (probably related to issue above)
 
-#define MAX_RING_BUFFER_SIZE 32 * 1024 * 1024
+#define MAX_RING_BUFFER_SIZE 4 * 1024 * 1024
 
 struct TextureData {
     MTL::Texture *texture = NULL;
@@ -82,8 +82,8 @@ static struct {
     MTL::Buffer *vertexBuffer;
     MTL::Library *library;
 
-    MTL::Buffer *dynamicRingBuffer;
-    size_t ringBufferOffset;
+    MTL::Buffer *dynamicRingBuffer[MAX_FRAME_PASSES];
+    size_t ringBufferOffset[MAX_FRAME_PASSES];
 
     struct ShaderProgramMetal shaderProgramPool[MAX_FRAME_PASSES][CC_MAX_SHADERS];
     u8 shaderProgramPoolSize[MAX_FRAME_PASSES] = { 0 };
@@ -114,6 +114,7 @@ static struct {
     MTL::RenderPipelineState *lastPipelineState;
     MTL::Texture *lastTextures[2];
     MTL::SamplerState *lastSamplers[2];
+    MTL::SamplerState *defaultSampler;
     s8 lastDepthTest = -1;
     s8 lastDepthMask = -1;
     s8 lastZModeDecal = -1;
@@ -591,7 +592,7 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     if (!metal.commandBuffer) {
         metal.drawable = metal.layer->nextDrawable();
         metal.commandBuffer = metal.commandQueue->commandBuffer();
-        metal.ringBufferOffset = 0;
+        memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
     }
 
     if (metal.encoder) {
@@ -645,7 +646,7 @@ void gfx_metal_reset_framebuffer(void) {
     if (!metal.commandBuffer) {
         metal.drawable = metal.layer->nextDrawable();
         metal.commandBuffer = metal.commandQueue->commandBuffer();
-        metal.ringBufferOffset = 0;
+        memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
     }
     
     if (metal.encoder) {
@@ -752,25 +753,11 @@ void gfx_metal_bind_texture_raw(int tile, uint64_t texture_id) {
     if (texture == NULL) { return; }
 
     metal.encoder->setFragmentTexture(texture, tile);
+    MTL::SamplerState *sampler = (tile < 2) ? metal.textures[metal.currentTextureIds[tile]].sampler : metal.defaultSampler;
+    metal.encoder->setFragmentSamplerState(sampler, tile);
 
     if (tile < 2) {
         metal.lastTextures[tile] = texture;
-    } else {
-        static MTL::SamplerState *defaultSampler = NULL;
-
-        if (defaultSampler == NULL) {
-            auto desc = MTL::SamplerDescriptor::alloc()->init();
-            desc->setMinFilter(MTL::SamplerMinMagFilterLinear);
-            desc->setMagFilter(MTL::SamplerMinMagFilterLinear);
-            desc->setSAddressMode(MTL::SamplerAddressModeClampToEdge);
-            desc->setTAddressMode(MTL::SamplerAddressModeClampToEdge);
-            desc->setRAddressMode(MTL::SamplerAddressModeClampToEdge);
-            
-            defaultSampler = metal.device->newSamplerState(desc);
-            desc->release();
-        }
-
-        metal.encoder->setFragmentSamplerState(defaultSampler, tile);
     }
 }
 
@@ -881,6 +868,7 @@ void gfx_metal_set_vsync(bool enabled) {
 
 void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     if (metal.shaderProgram == NULL) { return; }
+    int framePassIndex = gCurrentFramePassIndex + 1;
 
     // handle depth and stencil changes
     if (metal.lastDepthTest != metal.depthTest || metal.lastDepthMask != metal.depthMask) {
@@ -898,17 +886,6 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     if (metal.lastZModeDecal != metal.zModeDecal) {
         metal.lastZModeDecal = metal.zModeDecal;
 
-        MTL::CullMode metalCullMode = MTL::CullModeNone;
-        if (metal.cullMode == G_CULL_FRONT) {
-            metalCullMode = MTL::CullModeFront;
-        } else if (metal.cullMode == G_CULL_BACK) {
-            metalCullMode = MTL::CullModeBack;
-        }
-
-        metal.encoder->setCullMode(metalCullMode);
-        
-        metal.encoder->setFrontFacingWinding(MTL::WindingCounterClockwise);
-
         if (metal.zModeDecal) {
             metal.encoder->setDepthBias(0.0f, -2.0f, 0.0f);
         } else {
@@ -916,25 +893,29 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
         }
     }
 
+    MTL::CullMode metalCullMode = MTL::CullModeNone;
+    if (metal.cullMode == G_CULL_FRONT) {
+        metalCullMode = MTL::CullModeFront;
+    } else if (metal.cullMode == G_CULL_BACK) {
+        metalCullMode = MTL::CullModeBack;
+    }
+
+    metal.encoder->setCullMode(metalCullMode);
+    metal.encoder->setFrontFacingWinding(MTL::WindingCounterClockwise);
+
     // bind texture data
     for (int i = 0; i < 2; i++) {
         if (metal.shaderProgram->usedTextures[i]) {
             struct TextureData &textureData = metal.textures[metal.currentTextureIds[i]];
 
-            if (textureData.texture == NULL) {
-                struct TextureData &fallback = metal.textures[0];
-                metal.encoder->setFragmentTexture(fallback.texture, i);
-                metal.encoder->setFragmentSamplerState(fallback.sampler, i);
-            } else {
-                if (metal.lastTextures[i] != textureData.texture) {
-                    metal.lastTextures[i] = textureData.texture;
-                    metal.encoder->setFragmentTexture(textureData.texture, i);
-                }
+            if (metal.lastTextures[i] != textureData.texture) {
+                metal.lastTextures[i] = textureData.texture;
+                metal.encoder->setFragmentTexture(textureData.texture, i);
+            }
 
-                if (metal.lastSamplers[i] != textureData.sampler) {
-                    metal.lastSamplers[i] = textureData.sampler;
-                    metal.encoder->setFragmentSamplerState(textureData.sampler, i);
-                }
+            if (metal.lastSamplers[i] != textureData.sampler) {
+                metal.lastSamplers[i] = textureData.sampler;
+                metal.encoder->setFragmentSamplerState(textureData.sampler, i);
             }
 
             if (metal.lastTextures[i] == textureData.texture || metal.lastSamplers[i] == textureData.sampler) {
@@ -957,14 +938,14 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     // upload uniform data
     if (metal.shaderProgram->vertexUboSize > 0 && metal.shaderProgram->vertexUniformBuffer != NULL) {
         size_t size = metal.shaderProgram->vertexUboSize;        
-        size_t alignedOffset = (metal.ringBufferOffset + 15) & ~15; 
+        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15; 
         
         if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer->contents() + alignedOffset;
+            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
             memcpy(dst, metal.shaderProgram->vertexUniformBuffer, size);
             
-            metal.encoder->setVertexBuffer(metal.dynamicRingBuffer, alignedOffset, 0);
-            metal.ringBufferOffset = alignedOffset + size;
+            metal.encoder->setVertexBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 0);
+            metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
             printf("Metal: Ring buffer is full!\n");
@@ -973,14 +954,14 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
 
     if (metal.shaderProgram->fragmentUboSize > 0 && metal.shaderProgram->fragmentUniformBuffer != NULL) {
         size_t size = metal.shaderProgram->fragmentUboSize;
-        size_t alignedOffset = (metal.ringBufferOffset + 15) & ~15;
+        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
         
         if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer->contents() + alignedOffset;
+            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
             memcpy(dst, metal.shaderProgram->fragmentUniformBuffer, size);
             
-            metal.encoder->setFragmentBuffer(metal.dynamicRingBuffer, alignedOffset, 0);
-            metal.ringBufferOffset = alignedOffset + size;
+            metal.encoder->setFragmentBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 0);
+            metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
             printf("Metal: Ring buffer is full!\n");
@@ -989,14 +970,14 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
 
     if (buf_vbo_len > 0) {
         size_t size = buf_vbo_len * sizeof(float);
-        size_t alignedOffset = (metal.ringBufferOffset + 15) & ~15;
+        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
         
         if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer->contents() + alignedOffset;
+            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
             memcpy(dst, buf_vbo, size);
             
-            metal.encoder->setVertexBuffer(metal.dynamicRingBuffer, alignedOffset, 1);
-            metal.ringBufferOffset = alignedOffset + size;
+            metal.encoder->setVertexBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 1);
+            metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
             printf("Metal: Ring buffer is full!\n");
@@ -1046,21 +1027,34 @@ void gfx_metal_init(void) {
         sys_fatal("Failed to create Metal vertex buffer.");
     }
 
-    metal.dynamicRingBuffer = metal.device->newBuffer(MAX_RING_BUFFER_SIZE, MTL::ResourceStorageModeShared);
-    if (!metal.dynamicRingBuffer) {
-        sys_fatal("Failed to create Metal dynamic ring buffer pool.");
+    for (int i = 0; i < MAX_FRAME_PASSES; i++) {
+        metal.dynamicRingBuffer[i] = metal.device->newBuffer(MAX_RING_BUFFER_SIZE, MTL::ResourceStorageModeShared);
+        if (!metal.dynamicRingBuffer[i]) {
+            sys_fatal("Failed to create Metal dynamic ring buffer pool.");
+        }
+        metal.ringBufferOffset[i] = 0;
     }
-    metal.ringBufferOffset = 0;
 
     // setup depth stencil
-    MTL::DepthStencilDescriptor *desc = MTL::DepthStencilDescriptor::alloc()->init();
-    desc->setDepthCompareFunction(MTL::CompareFunctionLessEqual);
-    desc->setDepthWriteEnabled(true);
-    metal.depthStencilState = metal.device->newDepthStencilState(desc);
-    desc->release();
+    MTL::DepthStencilDescriptor *depthStencilDesc = MTL::DepthStencilDescriptor::alloc()->init();
+    depthStencilDesc->setDepthCompareFunction(MTL::CompareFunctionLessEqual);
+    depthStencilDesc->setDepthWriteEnabled(true);
+    metal.depthStencilState = metal.device->newDepthStencilState(depthStencilDesc);
+    depthStencilDesc->release();
     if (!metal.depthStencilState) {
         sys_fatal("Failed to create Metal depth stencil state.");
     }
+    
+    // setup default sampler
+    MTL::SamplerDescriptor *samplerDesc = MTL::SamplerDescriptor::alloc()->init();
+    samplerDesc->setMinFilter(MTL::SamplerMinMagFilterLinear);
+    samplerDesc->setMagFilter(MTL::SamplerMinMagFilterLinear);
+    samplerDesc->setSAddressMode(MTL::SamplerAddressModeClampToEdge);
+    samplerDesc->setTAddressMode(MTL::SamplerAddressModeClampToEdge);
+    samplerDesc->setRAddressMode(MTL::SamplerAddressModeClampToEdge);
+    
+    metal.defaultSampler = metal.device->newSamplerState(samplerDesc);
+    samplerDesc->release();
 
     create_depth_texture();
 }
@@ -1082,7 +1076,7 @@ void gfx_metal_start_frame(void) {
     if (!metal.commandBuffer) {
         metal.drawable = metal.layer->nextDrawable();
         metal.commandBuffer = metal.commandQueue->commandBuffer();
-        metal.ringBufferOffset = 0;
+        memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
     }
 
     // clear cache for frame
@@ -1113,6 +1107,8 @@ void gfx_metal_finish_render(void) {
             metal.drawable = NULL;
         }
         metal.commandBuffer->commit();
+        // TODO: Figure out what is causing the gpu to lose data, this shouldnt be here
+        metal.commandBuffer->waitUntilCompleted();
         metal.commandBuffer = NULL;
     }
 }
