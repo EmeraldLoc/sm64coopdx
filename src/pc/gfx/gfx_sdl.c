@@ -68,7 +68,10 @@ static void (*m_scroll)(float, float) = NULL;
 #define IS_FULLSCREEN() ((SDL_GetWindowFlags(wnd) & SDL_WINDOW_FULLSCREEN_DESKTOP) != 0)
 
 static inline void gfx_sdl_set_vsync(const bool enabled) {
-    SDL_GL_SetSwapInterval(enabled);
+    if (gRenderApi == &gfx_opengl_api) {
+        SDL_GL_SetSwapInterval(enabled);
+    }
+    gRenderApi->set_vsync(enabled);
 }
 
 static void gfx_sdl_set_fullscreen(void) {
@@ -119,35 +122,57 @@ static void gfx_sdl_init(const char *window_title) {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_StartTextInput();
 
-    if (configWindow.msaa > 0) {
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, configWindow.msaa);
-    } else {
-        SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+    if (gRenderApi == &gfx_opengl_api) {
+        if (configWindow.msaa > 0) {
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, configWindow.msaa);
+        } else {
+            SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+        }
+
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    #ifdef USE_GLES
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);  // These attributes allow for hardware acceleration on RPis.
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+    #else
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    #endif
     }
-
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-
-#ifdef USE_GLES
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);  // These attributes allow for hardware acceleration on RPis.
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-#else
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#endif
 
     int xpos = (configWindow.x == WAPI_WIN_CENTERPOS) ? SDL_WINDOWPOS_CENTERED : configWindow.x;
     int ypos = (configWindow.y == WAPI_WIN_CENTERPOS) ? SDL_WINDOWPOS_CENTERED : configWindow.y;
 
+    Uint32 flags = SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+
+#ifdef OSX_BUILD
+    if (gRenderApi == &gfx_metal_api) {
+        flags |= SDL_WINDOW_METAL;
+    } else {
+        flags |= SDL_WINDOW_OPENGL;
+    }
+#else
+    flags |= SDL_WINDOW_OPENGL;
+#endif
+
     wnd = SDL_CreateWindow(
         window_title,
-        xpos, ypos, configWindow.w, configWindow.h,
-        SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
+        xpos, ypos,
+        configWindow.w,
+        configWindow.h,
+        flags
     );
+#ifdef OSX_BUILD
+    if (gRenderApi != &gfx_metal_api) {
+        ctx = SDL_GL_CreateContext(wnd);
+    }
+#else
     ctx = SDL_GL_CreateContext(wnd);
+#endif
 
     gfx_sdl_set_vsync(configWindow.vsync);
 
@@ -282,7 +307,9 @@ static bool gfx_sdl_start_frame(void) {
 }
 
 static void gfx_sdl_swap_buffers_begin(void) {
-    SDL_GL_SwapWindow(wnd);
+    if (gRenderApi == &gfx_opengl_api) {
+        SDL_GL_SwapWindow(wnd);
+    }
 }
 
 static void gfx_sdl_swap_buffers_end(void) {
@@ -297,10 +324,20 @@ static void gfx_sdl_delay(u32 ms) {
 }
 
 static int gfx_sdl_get_max_msaa(void) {
-    int maxSamples = 0;
-    glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
-    if (maxSamples > 16) { maxSamples = 16; }
-    return maxSamples;
+    if (gRenderApi == &gfx_opengl_api) {
+        int maxSamples = 0;
+        glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
+        if (maxSamples > 16) { maxSamples = 16; }
+        return maxSamples;
+    }
+    return 0;
+}
+
+// hacky, but need this for metal. Should probably be added to the render api but would need
+// to define a new struct type for window to be cast into, bit of a pain, so doing this for now
+// I apologize for any future garbage this may entail
+SDL_Window *gfx_sdl_get_window() {
+    return wnd;
 }
 
 static void gfx_sdl_set_window_title(const char* title) {

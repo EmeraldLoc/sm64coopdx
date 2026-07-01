@@ -438,7 +438,7 @@ static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
     glGenFramebuffers(1, &framePass->fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
 
-    glGenTextures(1, &framePass->passTexture);
+    glGenTextures(1, (GLuint *)&framePass->passTexture);
     glBindTexture(GL_TEXTURE_2D, framePass->passTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framePass->width, framePass->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
@@ -463,7 +463,7 @@ static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
 static void gfx_opengl_delete_framebuffer(struct FramePass *framePass) {
     if (framePass->fbo > 0) { glDeleteFramebuffers(1, &framePass->fbo); }
     if (framePass->depthBuffer > 0) { glDeleteRenderbuffers(1, &framePass->depthBuffer); }
-    if (framePass->passTexture > 0) { glDeleteTextures(1, &framePass->passTexture); }
+    if (framePass->passTexture > 0) { glDeleteTextures(1, (GLuint *)&framePass->passTexture); }
 }
 
 static void gfx_opengl_set_framebuffer(struct FramePass *framePass) {
@@ -609,6 +609,9 @@ static void gfx_opengl_set_cull_mode(int mode) {
     }
 }
 
+static void gfx_opengl_set_vsync(UNUSED bool enabled) {
+}
+
 static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
     gfx_set_builtin_uniforms();
@@ -729,6 +732,7 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_set_scissor,
     gfx_opengl_set_use_alpha,
     gfx_opengl_set_cull_mode,
+    gfx_opengl_set_vsync,
     gfx_opengl_draw_triangles,
     gfx_opengl_init,
     gfx_opengl_on_resize,

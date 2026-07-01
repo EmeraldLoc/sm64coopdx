@@ -704,6 +704,10 @@ ifeq ($(TARGET_N64),1)
   INCLUDE_DIRS += include/libc
 else
   INCLUDE_DIRS += sound lib/lua/include lib/coopnet/include $(EXTRA_INCLUDES)
+
+  ifeq ($(OSX_BUILD),1)
+    INCLUDE_DIRS += include/metal-cpp
+  endif
 endif
 
 # Configure backend flags
@@ -725,7 +729,7 @@ else ifeq ($(TARGET_RPI),1)
 else ifeq ($(TARGET_RK3588),1)
   BACKEND_LDFLAGS += -lGLESv2
 else ifeq ($(OSX_BUILD),1)
-  BACKEND_LDFLAGS += -framework OpenGL `pkg-config --libs glew` -mmacosx-version-min=$(MIN_MACOS_VERSION)
+  BACKEND_LDFLAGS += -framework OpenGL -framework Metal -framework Foundation -framework QuartzCore `pkg-config --libs glew` -mmacosx-version-min=$(MIN_MACOS_VERSION)
   EXTRA_CPP_FLAGS += -stdlib=libc++ -std=c++17 -mmacosx-version-min=$(MIN_MACOS_VERSION)
 else
   BACKEND_LDFLAGS += -lGL

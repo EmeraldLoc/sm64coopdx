@@ -1178,8 +1178,6 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         }
     }
 
-    bool z_is_from_0_to_1 = gfx_rapi->z_is_from_0_to_1();
-
     for (int32_t i = 0; i < 3; i++) {
         // send triangle data
         buf_vbo[buf_vbo_len++] = v_arr[i]->x;
@@ -1679,8 +1677,12 @@ static void gfx_draw_fullscreen_quad() {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
-#ifdef WIN32
+#if defined(WIN32) || defined(OSX_BUILD)
+#if defined(WIN32)
     if (gRenderApi == &gfx_direct3d11_api) {
+#else
+    if (gRenderApi == &gfx_metal_api) {
+#endif
         // flip y coordinates on texture
         for (int i = 0; i < 6; i++) {
             quadVerticies[i * 6 + 5] = 1.0f - quadVerticies[i * 6 + 5];
@@ -2169,6 +2171,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
             gfx_draw_fullscreen_quad();
+            gfx_end_frame_render();
         }
     }
 }
@@ -2189,6 +2192,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
+    //gfx_run_basic(commands); return;
     if (!gfx_wapi->start_frame()) {
         sDroppedFrame = true;
         return;
@@ -2230,16 +2234,16 @@ void gfx_run(Gfx *commands) {
         gfx_end_frame_render();
         smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
     }
-
+    
     gfx_rapi->reset_framebuffer();
-
+    
     gfx_rapi->start_frame(); // resets color and depth
-
+    
     gfx_sp_reset(); // resets the rsp
     sHasInverseCameraMatrix = false;
-
+    
     int textureSlotOffset = 10;
-
+    
     if (gDefaultGeoFramePass.active) {
         if (gDefaultGeoFramePass.passTexture != 0) {
             gfx_rapi->bind_texture_raw(textureSlotOffset, gDefaultGeoFramePass.passTexture);
@@ -2250,7 +2254,7 @@ void gfx_run(Gfx *commands) {
                 gfx_rapi->bind_texture_raw(textureSlotOffset + i, gFramePasses[i].passTexture);
             }
         }
-
+        
         uintptr_t lastValidPassTexture = 0;
         for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
             if (gFramePasses[i].active && gFramePasses[i].passTexture != 0) {
@@ -2258,12 +2262,12 @@ void gfx_run(Gfx *commands) {
                 break;
             }
         }
-
+        
         if (lastValidPassTexture != 0) {
             gfx_rapi->bind_texture_raw(textureSlotOffset, lastValidPassTexture);
         }
     }
-
+    
     gfx_draw_fullscreen_quad();  // draw final quad
 }
 

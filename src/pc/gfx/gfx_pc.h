@@ -53,7 +53,7 @@ struct FramePass {
     // opengl
     u32 fbo;
     u32 depthBuffer;
-    u32 passTexture;
+    u64 passTexture;
 
     // d3d
     void *d3dTexture;

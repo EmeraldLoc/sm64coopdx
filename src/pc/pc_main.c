@@ -239,6 +239,13 @@ static void select_graphics_backend(void) {
             gAudioApi  = &audio_sdl;
             break;
 #endif
+#ifdef OSX_BUILD
+        case GAPI_METAL:
+            gWindowApi = &gfx_sdl;
+            gRenderApi = &gfx_metal_api;
+            gAudioApi  = &audio_sdl;
+            break;
+#endif
         default:
             gWindowApi = &gfx_sdl;
             gRenderApi = &gfx_opengl_api;

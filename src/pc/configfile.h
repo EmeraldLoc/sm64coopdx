@@ -48,6 +48,9 @@ enum GraphicsBackend {
 #if defined(_WIN32)
     GAPI_D3D11,
 #endif
+#if defined(OSX_BUILD)
+    GAPI_METAL,
+#endif
     GAPI_MAX
 };
 

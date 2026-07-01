@@ -37,7 +37,7 @@ struct CLIOptions {
     int enabledModsCount;
     char** enableMods;
     bool headless;
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(OSX_BUILD)
     int backend;
 #endif
 };

@@ -206,6 +206,9 @@ static void gfx_dummy_renderer_set_use_alpha(UNUSED bool use_alpha) {
 static void gfx_dummy_renderer_set_cull_mode(UNUSED int mode) {
 }
 
+static void gfx_dummy_renderer_set_vsync(UNUSED bool enabled) {
+}
+
 static void gfx_dummy_renderer_draw_triangles(UNUSED float buf_vbo[], UNUSED size_t buf_vbo_len, UNUSED size_t buf_vbo_num_tris) {
 }
 
@@ -282,6 +285,7 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_set_scissor,
     gfx_dummy_renderer_set_use_alpha,
     gfx_dummy_renderer_set_cull_mode,
+    gfx_dummy_renderer_set_vsync,
     gfx_dummy_renderer_draw_triangles,
     gfx_dummy_renderer_init,
     gfx_dummy_renderer_on_resize,

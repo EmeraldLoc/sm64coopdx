@@ -977,18 +977,19 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
 }
 
 #define SPVC_CHECK(x) \
-    _macroResult = (x); \
-    if (_macroResult != SPVC_SUCCESS) { \
-        LOG_ERROR("SPIRV-Cross Error: %d at %s:%d", _macroResult, __FILE__, __LINE__); \
-        spvc_context_destroy(context); \
-        return; \
-    } \
+    do { \
+        spvc_result result = (x); \
+        if (result != SPVC_SUCCESS) { \
+            LOG_ERROR("SPIRV-Cross Error: %d at %s:%d", result, __FILE__, __LINE__); \
+            if (context) { spvc_context_destroy(context); } \
+            return; \
+        } \
+    } while(0)
 
 void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
     spvc_context context = NULL;
     spvc_compiler compiler = NULL;
     spvc_parsed_ir ir = NULL;
-    spvc_result _macroResult; // Shader TODO: There must be a better way for the SPVC_CHECK macro
     const char *hlsl_code = NULL;
 
     SpirVShader *spirvShader = &shader->spirVShader;
@@ -1047,6 +1048,75 @@ void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
     *shaderCode = strdup(hlsl_code);
 
     spvc_context_destroy(context);
+}
+
+void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
+    spvc_context context = NULL;
+    spvc_compiler compiler = NULL;
+    spvc_parsed_ir ir = NULL;
+    const char *msl_code = NULL;
+
+    SpirVShader *spirvShader = &shader->spirVShader;
+
+    SPVC_CHECK(spvc_context_create(&context));
+    SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
+    SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_MSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
+
+    spvc_resources resources;
+    spvc_compiler_create_shader_resources(compiler, &resources);
+
+    // get list of uniforms
+    const spvc_reflected_resource *list;
+    size_t count;
+    SPVC_CHECK(spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &list, &count));
+
+    int uniformIndex = 0;
+
+    for (size_t i = 0; i < count; i++) {
+        // get the type and block size for the entry in the list
+        spvc_type type = spvc_compiler_get_type_handle(compiler, list[i].type_id);
+
+        size_t block_size = 0;
+        spvc_compiler_get_declared_struct_size(compiler, type, &block_size);
+
+        shader->uboTotalSize = (block_size + 15) & ~15;
+
+        // iterate through all members, or individual uniforms
+        u32 memberCount = spvc_type_get_num_member_types(type);
+        for (u32 m = 0; m < memberCount; m++) {
+            if (uniformIndex >= MAX_SHADER_UNIFORMS) break;
+
+            const char *memberName = spvc_compiler_get_member_name(compiler, list[i].base_type_id, m);
+
+            size_t memberSize = 0;
+            spvc_compiler_get_declared_struct_member_size(compiler, type, m, &memberSize);
+
+            u32 memberOffset = 0;
+            spvc_compiler_type_struct_member_offset(compiler, type, m, &memberOffset);
+
+            strncpy(shader->shaderUniforms[uniformIndex].name, memberName, MAX_SHADER_VARIABLE_NAME - 1);
+            shader->shaderUniforms[uniformIndex].location = memberOffset;
+            shader->shaderUniforms[uniformIndex].size = memberSize;
+
+            uniformIndex++;
+        }
+    }
+
+    // set compilations options
+    spvc_compiler_options options;
+    spvc_compiler_create_compiler_options(compiler, &options);    
+    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_MSL_VERSION, 20100); // 2.1    
+    spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS, true);
+    spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_MSL_ENABLE_DECORATION_BINDING, true);
+    
+    SPVC_CHECK(spvc_compiler_install_compiler_options(compiler, options));
+
+    SPVC_CHECK(spvc_compiler_compile(compiler, &msl_code));
+
+    *shaderCode = strdup(msl_code);
+
+    spvc_context_destroy(context);
+    return;
 }
 
 #undef SPVC_CHECK

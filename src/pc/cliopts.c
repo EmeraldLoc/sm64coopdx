@@ -37,6 +37,8 @@ static void print_help(void) {
     printf("--headless                Enable Headless mode.\n");
 #if defined(_WIN32)
     printf("--backend                 Sets the backend to either 'opengl' or 'directx'.");
+#elif defined(OSX_BUILD)
+    printf("--backend                 Sets the backend to either 'opengl' or 'metal'.");
 #endif
 }
 
@@ -121,12 +123,17 @@ bool parse_cli_opts(int argc, char* argv[]) {
             gCLIOpts.enableMods[gCLIOpts.enabledModsCount - 1] = strdup(argv[++i]);
         } else if (!strcmp(argv[i], "--headless")) {
             gCLIOpts.headless = true;
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(OSX_BUILD)
         } else if (!strcmp(argv[i], "--backend") && (i + 1) < argc) {
             if (!strcmp(argv[i + 1], "opengl")) {
                 gCLIOpts.backend = GAPI_GL;
+#if defined(_WIN32)
             } else if (!strcmp(argv[i + 1], "directx")) {
                 gCLIOpts.backend = GAPI_D3D11;
+#else
+            } else if (!strcmp(argv[i + 1], "metal")) {
+                gCLIOpts.backend = GAPI_METAL;
+#endif
             }
 #endif
         } else if (!strcmp(argv[i], "--help")) {

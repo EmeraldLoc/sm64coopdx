@@ -48,29 +48,6 @@ using namespace Microsoft::WRL; // For ComPtr
 
 namespace {
 
-struct PerFrameCB {
-    uint32_t noise_frame;
-    float noise_scale_x;
-    float noise_scale_y;
-    uint32_t padding;
-};
-
-struct PerDrawCB {
-    struct Texture {
-        uint32_t width;
-        uint32_t height;
-        uint32_t linear_filtering;
-        uint32_t padding;
-    } textures[2];
-    uint32_t filter;
-    uint32_t padding[3];
-};
-
-struct LightmapCB {
-    float color[3];
-    float padding;
-};
-
 struct TextureData {
     ComPtr<ID3D11ShaderResourceView> resource_view;
     ComPtr<ID3D11SamplerState> sampler_state;
@@ -122,19 +99,12 @@ static struct {
     ComPtr<ID3D11RasterizerState> rasterizer_state;
     ComPtr<ID3D11DepthStencilState> depth_stencil_state;
     ComPtr<ID3D11Buffer> vertex_buffer;
-    ComPtr<ID3D11Buffer> per_frame_cb;
-    ComPtr<ID3D11Buffer> per_draw_cb;
-    ComPtr<ID3D11Buffer> lightmap_cb;
 
 #if DEBUG_D3D
     ComPtr<ID3D11Debug> debug;
 #endif
 
     DXGI_SAMPLE_DESC sample_description;
-
-    PerFrameCB per_frame_cb_data;
-    PerDrawCB per_draw_cb_data;
-    LightmapCB lightmap_cb_data;
 
     struct ShaderProgramD3D11 shader_program_pool[MAX_FRAME_PASSES][CC_MAX_SHADERS];
     u8 shader_program_pool_size[MAX_FRAME_PASSES] = { 0 };
@@ -991,6 +961,9 @@ static void gfx_d3d11_set_cull_mode(int mode) {
     d3d.cull_mode = mode;
 }
 
+static void gfx_d3d11_set_vsync(bool enabled) {
+}
+
 static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     if (d3d.last_depth_test != d3d.depth_test || d3d.last_depth_mask != d3d.depth_mask) {
         d3d.last_depth_test = d3d.depth_test;
@@ -1223,6 +1196,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_set_scissor,
     gfx_d3d11_set_use_alpha,
     gfx_d3d11_set_cull_mode,
+    gfx_d3d11_set_vsync,
     gfx_d3d11_draw_triangles,
     gfx_d3d11_init,
     gfx_d3d11_on_resize,
