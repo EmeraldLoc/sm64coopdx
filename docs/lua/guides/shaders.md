@@ -238,4 +238,3 @@ Current Bugs:
 - Painting transition to bitdw doesnt work in dx11, opengl, or metal
 - Particles only spawn in certain levels. Most likely cause is particles inheriting garbage data, have not looked into deeply
 - Flickering in Metal
-- Depth calculation still appears to be incorrect in Metal, most likely has to do with depth res being 32, not 24
