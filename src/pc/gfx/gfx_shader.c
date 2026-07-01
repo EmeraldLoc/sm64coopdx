@@ -390,7 +390,7 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
 
     append_str(fs_buf, &fs_len, (opt_alpha) ? "vec4 texel = " : "vec3 texel = ");
     for (int i = 0; i < (opt_2cycle + 1); i++) {
-        u8* cmd = &cc->shader_commands[i * 8];
+        u8 *cmd = &cc->shader_commands[i * 8];
         if (!ccf.color_alpha_same[i] && opt_alpha) {
             append_str(fs_buf, &fs_len, "vec4(");
             append_formula(fs_buf, &fs_len, cmd, ccf.do_single[i*2+0], ccf.do_multiply[i*2+0], ccf.do_mix[i*2+0], false, false);

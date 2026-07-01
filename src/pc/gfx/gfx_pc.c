@@ -1218,7 +1218,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         }
 
         // send lightmap info
-        struct RGBA* col = &v_arr[i]->color;
+        struct RGBA *col = &v_arr[i]->color;
         buf_vbo[buf_vbo_len++] = ( (((uint16_t)col->g) << 8) | ((uint16_t)col->r) ) / 65535.0f;
         buf_vbo[buf_vbo_len++] = 1.0f - (( (((uint16_t)col->a) << 8) | ((uint16_t)col->b) ) / 65535.0f);
 
@@ -1245,9 +1245,11 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                     color = &tmp;
                     break;
                 case CC_LOD: {
-                    float distance_frac = (v_arr[i]->w - 3000.0f) / 3000.0f;
-                    if (distance_frac < 0.0f) distance_frac = 0.0f;
-                    if (distance_frac > 1.0f) distance_frac = 1.0f;
+                    // Shader TODO: Please please please please PLEASE fix whatever NIGHTMARE this is
+                    float w = v_arr[i]->x * rsp.MVP_matrix[0][3] + v_arr[i]->y * rsp.MVP_matrix[1][3] + v_arr[i]->z * rsp.MVP_matrix[2][3] + rsp.MVP_matrix[3][3];
+                    float distance_frac = (w - 3000.0f) / 3000.0f;
+                    if (distance_frac < 0.0f) { distance_frac = 0.0f; }
+                    if (distance_frac > 1.0f) { distance_frac = 1.0f; }
                     tmp.r = tmp.g = tmp.b = tmp.a = distance_frac * 255.0f;
                     color = &tmp;
                     break;
