@@ -1640,12 +1640,21 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     ur->z = 0.0f;
     ur->w = 1.0f;
 
+    // The coordinates for texture rectangle shall bypass the viewport setting
+    Mat4 oldMatrixMVP;
+    Mat4 oldMatrixM;
+    Mat4 oldMatrixV;
+    Mat4 oldMatrixP;
+    mtxf_copy(oldMatrixMVP, rsp.MVP_matrix);
+    mtxf_copy(oldMatrixM, rsp.M_matrix);
+    mtxf_copy(oldMatrixV, rsp.V_matrix);
+    mtxf_copy(oldMatrixP, rsp.P_matrix);
+
     mtxf_identity(rsp.MVP_matrix);
     mtxf_identity(rsp.M_matrix);
     mtxf_identity(rsp.V_matrix);
     mtxf_identity(rsp.P_matrix);
 
-    // The coordinates for texture rectangle shall bypass the viewport setting
     struct Box default_viewport = {0, 0, gfx_current_dimensions.width, gfx_current_dimensions.height};
     struct Box viewport_saved = rdp.viewport;
     uint32_t geometry_mode_saved = rsp.geometry_mode;
@@ -1656,6 +1665,11 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
 
     gfx_sp_tri1(MAX_VERTICES + 0, MAX_VERTICES + 1, MAX_VERTICES + 3);
     gfx_sp_tri1(MAX_VERTICES + 1, MAX_VERTICES + 2, MAX_VERTICES + 3);
+
+    mtxf_copy(rsp.MVP_matrix, oldMatrixMVP);
+    mtxf_copy(rsp.M_matrix, oldMatrixM);
+    mtxf_copy(rsp.V_matrix, oldMatrixV);
+    mtxf_copy(rsp.P_matrix, oldMatrixP);
 
     rsp.geometry_mode = geometry_mode_saved;
     rdp.viewport = viewport_saved;
@@ -2234,16 +2248,16 @@ void gfx_run(Gfx *commands) {
         gfx_end_frame_render();
         smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
     }
-    
+
     gfx_rapi->reset_framebuffer();
-    
+
     gfx_rapi->start_frame(); // resets color and depth
-    
+
     gfx_sp_reset(); // resets the rsp
     sHasInverseCameraMatrix = false;
-    
+
     int textureSlotOffset = 10;
-    
+
     if (gDefaultGeoFramePass.active) {
         if (gDefaultGeoFramePass.passTexture != 0) {
             gfx_rapi->bind_texture_raw(textureSlotOffset, gDefaultGeoFramePass.passTexture);
@@ -2254,7 +2268,7 @@ void gfx_run(Gfx *commands) {
                 gfx_rapi->bind_texture_raw(textureSlotOffset + i, gFramePasses[i].passTexture);
             }
         }
-        
+
         uintptr_t lastValidPassTexture = 0;
         for (int i = MAX_CUSTOM_FRAME_PASSES - 1; i >= 0; i--) {
             if (gFramePasses[i].active && gFramePasses[i].passTexture != 0) {
@@ -2262,12 +2276,12 @@ void gfx_run(Gfx *commands) {
                 break;
             }
         }
-        
+
         if (lastValidPassTexture != 0) {
             gfx_rapi->bind_texture_raw(textureSlotOffset, lastValidPassTexture);
         }
     }
-    
+
     gfx_draw_fullscreen_quad();  // draw final quad
 }
 
