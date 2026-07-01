@@ -411,9 +411,6 @@ struct ShaderProgram *gfx_metal_create_or_load_post_process_shader(void) {
     gfx_convert_spirv_to_msl(&vs_msl, vertexShader);
     gfx_convert_spirv_to_msl(&fs_msl, fragmentShader);
 
-    puts(vs_msl);
-    puts(fs_msl);
-
     // compile vertex and fragment shader "libraries"
     MTL::Library *vsLibrary = metal_compile_source(vs_msl, "Vertex Shader");
     MTL::Library *fsLibrary = metal_compile_source(fs_msl, "Fragment Shader");
