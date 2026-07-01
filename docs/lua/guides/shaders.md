@@ -1,5 +1,7 @@
 # Shaders
 
+# Please skip to [dev progress](#dev-progress)
+
 ## Resources
 
 - [Default C Shader in Lua](../examples/shader-demo/default-shader.lua)
@@ -224,9 +226,16 @@ The vertex position (`aVtxPos`) provided by C is in clip space. As shown in the 
 
 While these limitations may improve in the future, this is where we are stuck for right now.
 
+## Dev Progress
 
+Good knowledge:
 
+- NDC Z depth range is 0-1 on both opengl and directx, unlike before where it was -1 to 1 on opengl. This removes the need for seeing if the z pos is -1 to 1 or 0 to 1
+- Fragment inputs MUST match vertex outputs in shaders or else inputs will not be set properly. That is not what opengl normally does because it is pretty lax, but for anything like dx11, and metal, it is much more strict
 
-NDC Z clip range (dk the proper name please figure out) is 0-1 on both opengl and directx
+Current Bugs:
 
-Fragment inputs MUST match vertex outputs or else inputs will not be set properly
+- Painting transition to bitdw doesnt work in dx11, opengl, or metal
+- Particles only spawn in certain levels. Most likely cause is particles inheriting garbage data, have not looked into deeply
+- Flickering in Metal
+- Depth calculation still appears to be incorrect in Metal, most likely has to do with depth res being 32, not 24
