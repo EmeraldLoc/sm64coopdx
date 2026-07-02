@@ -961,6 +961,27 @@ Deletes a display list created by `gfx_create`
 
 <br />
 
+## [gfx_delete_all](#gfx_delete_all)
+
+### Description
+Deletes all display lists created by `gfx_create`
+
+### Lua Example
+`gfx_delete_all()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_delete_all();`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_set_culling_enabled](#gfx_set_culling_enabled)
 
 ### Description
@@ -1005,22 +1026,43 @@ Get if culling is enabled or not
 
 <br />
 
-## [gfx_delete_all](#gfx_delete_all)
+## [gfx_get_render_api_name](#gfx_get_render_api_name)
 
 ### Description
-Deletes all display lists created by `gfx_create`
+Gets the name of the active render api
 
 ### Lua Example
-`gfx_delete_all()`
+`local stringValue = gfx_get_render_api_name()`
 
 ### Parameters
 - None
 
 ### Returns
-- None
+- `string`
 
 ### C Prototype
-`void gfx_delete_all();`
+`const char *gfx_get_render_api_name();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_is_legacy_renderer](#gfx_is_legacy_renderer)
+
+### Description
+Checks if a renderer is legacy. If it is, then that means the NDC Z range is -1 to 1, not 0 to 1
+
+### Lua Example
+`local booleanValue = gfx_is_legacy_renderer()`
+
+### Parameters
+- None
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool gfx_is_legacy_renderer();`
 
 [:arrow_up_small:](#)
 

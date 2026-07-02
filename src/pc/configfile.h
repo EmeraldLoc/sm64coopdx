@@ -44,13 +44,13 @@ enum RefreshRateMode {
 };
 
 enum GraphicsBackend {
-    GAPI_GL,
 #if defined(_WIN32)
     GAPI_D3D11,
 #endif
 #if defined(OSX_BUILD)
     GAPI_METAL,
 #endif
+    GAPI_GL,
     GAPI_MAX
 };
 

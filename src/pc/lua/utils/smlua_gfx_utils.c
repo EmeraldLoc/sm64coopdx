@@ -405,6 +405,14 @@ bool gfx_is_culling_enabled() {
     return gCullingEnabled;
 }
 
+const char *gfx_get_render_api_name() {
+    return gfx_get_current_rendering_api()->get_name();
+}
+
+bool gfx_is_legacy_renderer() {
+    return gfx_get_current_rendering_api()->is_legacy();
+}
+
 void gfx_reload_shaders() {
     gfx_remove_all_color_combiners();
     gfx_get_current_rendering_api()->remove_shaders();

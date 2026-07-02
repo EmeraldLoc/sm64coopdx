@@ -11069,6 +11069,11 @@ function gfx_delete(gfx)
     -- ...
 end
 
+--- Deletes all display lists created by `gfx_create`
+function gfx_delete_all()
+    -- ...
+end
+
 --- @param enable boolean
 --- Sets culling for all triangles. Set to false to disable culling, set to true to use normal preset
 function gfx_set_culling_enabled(enable)
@@ -11081,8 +11086,15 @@ function gfx_is_culling_enabled()
     -- ...
 end
 
---- Deletes all display lists created by `gfx_create`
-function gfx_delete_all()
+--- @return string
+--- Gets the name of the active render api
+function gfx_get_render_api_name()
+    -- ...
+end
+
+--- @return boolean
+--- Checks if a renderer is legacy. If it is, then that means the NDC Z range is -1 to 1, not 0 to 1
+function gfx_is_legacy_renderer()
     -- ...
 end
 

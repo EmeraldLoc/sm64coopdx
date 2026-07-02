@@ -72,12 +72,12 @@ void djui_panel_display_create(struct DjuiBase* caller) {
 
         if (GAPI_MAX > 1) {
             char* gfxBackendChoices[2] = {
-                "OpenGL",
 #ifdef OSX_BUILD
-                "Metal"
+                gfx_metal_api.get_name(),
 #else
-                "DirectX 11"
+                gfx_d3d11_api.get_name()
 #endif
+                gfx_opengl_api.get_name(),
             };
             djui_selectionbox_create(body, DLANG(DISPLAY, GRAPHICS_BACKEND), gfxBackendChoices, 2, &configGraphicsBackend, djui_panel_display_update_restart_text);
         }

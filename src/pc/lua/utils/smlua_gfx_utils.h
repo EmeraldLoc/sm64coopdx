@@ -106,12 +106,16 @@ Gfx *gfx_create(const char *name, u32 length);
 void gfx_resize(Gfx *gfx, u32 newLength);
 /* |description|Deletes a display list created by `gfx_create`|descriptionEnd| */
 void gfx_delete(Gfx *gfx);
+/* |description|Deletes all display lists created by `gfx_create`|descriptionEnd| */
+void gfx_delete_all();
 /* |description|Sets culling for all triangles. Set to false to disable culling, set to true to use normal preset|descriptionEnd| */
 void gfx_set_culling_enabled(bool enable);
 /* |description|Get if culling is enabled or not|descriptionEnd| */
 bool gfx_is_culling_enabled();
-/* |description|Deletes all display lists created by `gfx_create`|descriptionEnd| */
-void gfx_delete_all();
+/* |description|Gets the name of the active render api|descriptionEnd| */
+const char *gfx_get_render_api_name();
+/* |description|Checks if a renderer is legacy. If it is, then that means the NDC Z range is -1 to 1, not 0 to 1|descriptionEnd| */
+bool gfx_is_legacy_renderer();
 /* |description|Reloads all shaders|descriptionEnd| */
 void gfx_reload_shaders();
 /* |description|Gets features from a color combiner|descriptionEnd| */

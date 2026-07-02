@@ -1107,6 +1107,10 @@ const char *gfx_metal_get_name(void) {
     return "Metal";
 }
 
+bool gfx_metal_is_legacy(void) {
+    return false;
+}
+
 void gfx_metal_shutdown(void) {
 }
 
@@ -1144,6 +1148,7 @@ struct GfxRenderingAPI gfx_metal_api = {
     gfx_metal_end_frame,
     gfx_metal_finish_render,
     gfx_metal_get_name,
+    gfx_metal_is_legacy,
     gfx_metal_shutdown
 };
 

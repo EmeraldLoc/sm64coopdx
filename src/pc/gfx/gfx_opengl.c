@@ -61,6 +61,7 @@ static struct ShaderProgram *opengl_prg = NULL;
 static struct GLTexture *opengl_tex[2];
 static int opengl_curtex = 0;
 
+static bool sIsLegacy = true;
 
 static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
@@ -649,6 +650,10 @@ static void gfx_opengl_init(void) {
         sys_fatal("OpenGL 4.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
     }
 
+    if ((vmajor >= 4 && (vmajor > 4 || vminor < 5)) && !is_es) {
+        sIsLegacy = true;
+    }
+
     glGenBuffers(1, &opengl_vbo);
 
     glBindBuffer(GL_ARRAY_BUFFER, opengl_vbo);
@@ -661,11 +666,10 @@ static void gfx_opengl_init(void) {
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-#ifndef OSX_BUILD
-    // force opengl to use dx11 clip space (0, 1)
-    // Shader TODO: Implement hack fix for devices that dont support opengl 4.5
-    glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
-#endif
+    if (!sIsLegacy) {
+        // force opengl to use dx11 clip space (0, 1)
+        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+    }
 }
 
 static void gfx_opengl_on_resize(void) {
@@ -694,7 +698,11 @@ static void gfx_opengl_finish_render(void) {
 }
 
 static const char* gfx_opengl_get_name(void) {
-    return "OpenGL";
+    return sIsLegacy ? "OpenGL (Legacy)" : "OpenGL";
+}
+
+static bool gfx_opengl_is_legacy(void) {
+    return sIsLegacy;
 }
 
 static void gfx_opengl_shutdown(void) {
@@ -734,5 +742,6 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_end_frame,
     gfx_opengl_finish_render,
     gfx_opengl_get_name,
+    gfx_opengl_is_legacy,
     gfx_opengl_shutdown
 };

@@ -786,8 +786,7 @@ NEXT_OPTION:
 
     fs_close(file);
 
-    if (configGraphicsBackend < GAPI_GL || configGraphicsBackend > GAPI_MAX) { configGraphicsBackend = GAPI_GL; }
-
+    if (configGraphicsBackend < 0 || configGraphicsBackend > GAPI_MAX) { configGraphicsBackend = 0; }
     if (configFramerateMode < 0 || configFramerateMode > RRM_MAX) { configFramerateMode = 0; }
     if (configFrameLimit < 30)   { configFrameLimit = 30; }
     if (configFrameLimit > 3000) { configFrameLimit = 3000; }

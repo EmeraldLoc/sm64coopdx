@@ -1157,6 +1157,10 @@ static const char* gfx_d3d11_get_name(void) {
     return "DirectX 11";
 }
 
+static bool gfx_d3d11_is_legacy(void) {
+    return false;
+}
+
 static void gfx_d3d11_finish_render(void) {
 }
 
@@ -1195,6 +1199,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_start_frame,
     gfx_d3d11_end_frame,
     gfx_d3d11_finish_render,
+    gfx_d3d11_is_legacy,
     gfx_d3d11_get_name,
 };
 

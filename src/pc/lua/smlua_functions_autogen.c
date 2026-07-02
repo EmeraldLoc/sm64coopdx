@@ -32845,6 +32845,21 @@ int smlua_func_gfx_delete(lua_State* L) {
     return 1;
 }
 
+int smlua_func_gfx_delete_all(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_delete_all", 0, top);
+        return 0;
+    }
+
+
+    gfx_delete_all();
+
+    return 1;
+}
+
 int smlua_func_gfx_set_culling_enabled(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -32877,17 +32892,32 @@ int smlua_func_gfx_is_culling_enabled(UNUSED lua_State* L) {
     return 1;
 }
 
-int smlua_func_gfx_delete_all(UNUSED lua_State* L) {
+int smlua_func_gfx_get_render_api_name(UNUSED lua_State* L) {
     if (L == NULL) { return 0; }
 
     int top = lua_gettop(L);
     if (top != 0) {
-        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_delete_all", 0, top);
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_get_render_api_name", 0, top);
         return 0;
     }
 
 
-    gfx_delete_all();
+    lua_pushstring(L, gfx_get_render_api_name());
+
+    return 1;
+}
+
+int smlua_func_gfx_is_legacy_renderer(UNUSED lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_is_legacy_renderer", 0, top);
+        return 0;
+    }
+
+
+    lua_pushboolean(L, gfx_is_legacy_renderer());
 
     return 1;
 }
@@ -39283,9 +39313,11 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_create", smlua_func_gfx_create);
     smlua_bind_function(L, "gfx_resize", smlua_func_gfx_resize);
     smlua_bind_function(L, "gfx_delete", smlua_func_gfx_delete);
+    smlua_bind_function(L, "gfx_delete_all", smlua_func_gfx_delete_all);
     smlua_bind_function(L, "gfx_set_culling_enabled", smlua_func_gfx_set_culling_enabled);
     smlua_bind_function(L, "gfx_is_culling_enabled", smlua_func_gfx_is_culling_enabled);
-    smlua_bind_function(L, "gfx_delete_all", smlua_func_gfx_delete_all);
+    smlua_bind_function(L, "gfx_get_render_api_name", smlua_func_gfx_get_render_api_name);
+    smlua_bind_function(L, "gfx_is_legacy_renderer", smlua_func_gfx_is_legacy_renderer);
     smlua_bind_function(L, "gfx_reload_shaders", smlua_func_gfx_reload_shaders);
     smlua_bind_function(L, "gfx_color_combiner_get_features", smlua_func_gfx_color_combiner_get_features);
     smlua_bind_function(L, "gfx_shader_set_bool", smlua_func_gfx_shader_set_bool);
