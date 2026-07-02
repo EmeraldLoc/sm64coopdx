@@ -2388,9 +2388,18 @@ void gfx_update_fog_uniforms(void) {
 void gfx_update_matrices(void) {
     gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mvp_matrix, 1);
     gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mv_matrix, 1);
+    Mat4 inverseModelMatrix;
+    mtxf_inverse(inverseModelMatrix, sRenderingState.m_matrix);
     gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.m_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uInverseModelMatrix", SHADER_UNIFORM_TYPE_MAT4, inverseModelMatrix, 1);
+    Mat4 inverseViewMatrix;
+    mtxf_inverse(inverseViewMatrix, sRenderingState.v_matrix);
     gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.v_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uInverseViewMatrix", SHADER_UNIFORM_TYPE_MAT4, inverseViewMatrix, 1);
+    Mat4 inversePerspectiveMatrix;
+    mtxf_inverse_non_affine(inversePerspectiveMatrix, sRenderingState.p_matrix);
     gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.p_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uInverseProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, inversePerspectiveMatrix, 1);
 }
 
 void gfx_set_builtin_uniforms(void) {
