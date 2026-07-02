@@ -120,6 +120,7 @@ static void gfx_sdl_init(const char *window_title) {
 
     SDL_SetHint(SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR, "0");
     SDL_Init(SDL_INIT_VIDEO);
+    SDL_StopTextInput();
 
     if (gRenderApi == &gfx_opengl_api) {
         if (configWindow.msaa > 0) {

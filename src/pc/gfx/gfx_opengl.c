@@ -651,8 +651,9 @@ static void gfx_opengl_init(void) {
     int vminor = 0;
     bool is_es = false;
     gl_get_version(&vmajor, &vminor, &is_es);
-    if (vmajor < 2 && vminor < 1 && !is_es)
-        sys_fatal("OpenGL 2.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
+    if (vmajor < 4 && vminor < 1 && !is_es) {
+        sys_fatal("OpenGL 4.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
+    }
 
     glGenBuffers(1, &opengl_vbo);
 
@@ -668,7 +669,7 @@ static void gfx_opengl_init(void) {
 
 #ifndef OSX_BUILD
     // force opengl to use dx11 clip space (0, 1)
-    // TODO: Build Metal renderer
+    // Shader TODO: Implement hack fix for devices that dont support opengl 4.5
     glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 #endif
 }
