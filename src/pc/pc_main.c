@@ -222,7 +222,7 @@ static void select_graphics_backend(void) {
     }
 
     int backend = configGraphicsBackend;
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(OSX_BUILD)
     if (gCLIOpts.backend != -1) { backend = gCLIOpts.backend; }
 #endif
 

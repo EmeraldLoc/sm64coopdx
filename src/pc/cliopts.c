@@ -62,7 +62,7 @@ bool parse_cli_opts(int argc, char* argv[]) {
     // initialize options with false values
     memset(&gCLIOpts, 0, sizeof(gCLIOpts));
     gCLIOpts.enableMods = NULL;
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(OSX_BUILD)
     gCLIOpts.backend = -1;
 #endif
 
