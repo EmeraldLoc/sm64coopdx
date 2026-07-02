@@ -33145,8 +33145,8 @@ int smlua_func_gfx_shader_get_frame_pass_viewport(lua_State* L) {
     int framePassIndex = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_get_frame_pass_viewport"); return 0; }
 
-    int width;
-    int height;
+    u32 width;
+    u32 height;
 
     gfx_shader_get_frame_pass_viewport(framePassIndex, &width, &height);
 
@@ -33167,9 +33167,9 @@ int smlua_func_gfx_shader_set_frame_pass_viewport(lua_State* L) {
 
     int framePassIndex = smlua_to_integer(L, 1);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_set_frame_pass_viewport"); return 0; }
-    int width = smlua_to_integer(L, 2);
+    u32 width = smlua_to_integer(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_shader_set_frame_pass_viewport"); return 0; }
-    int height = smlua_to_integer(L, 3);
+    u32 height = smlua_to_integer(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "gfx_shader_set_frame_pass_viewport"); return 0; }
 
     gfx_shader_set_frame_pass_viewport(framePassIndex, width, height);

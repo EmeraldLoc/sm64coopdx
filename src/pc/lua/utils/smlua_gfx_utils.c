@@ -467,7 +467,6 @@ int gfx_shader_create_frame_pass() {
 
         // set default values
         framePass->active = true;
-        gfx_get_dimensions(&framePass->width, &framePass->height);
         framePass->clearColor[3] = 255; // clear color is black from memset, set alpha to 255
 
         return i;
@@ -487,17 +486,15 @@ void gfx_shader_remove_frame_pass(int framePassIndex) {
     memset(framePass, 0, sizeof(struct FramePass));
 }
 
-void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET int *width, RET int *height) {
+void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET u32 *width, RET u32 *height) {
     if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) { return; }
 
     struct FramePass *framePass = &gFramePasses[framePassIndex];
     if (!framePass->active) { return; }
-
-    *width = framePass->width;
-    *height = framePass->height;
+    gfx_get_frame_pass_viewport_dimensions(framePass, width, height);
 }
 
-void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height) {
+void gfx_shader_set_frame_pass_viewport(int framePassIndex, u32 width, u32 height) {
     if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) { return; }
 
     struct FramePass *framePass = &gFramePasses[framePassIndex];
@@ -508,9 +505,6 @@ void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int heigh
 
     // needs to be recreated
     gfx_get_current_rendering_api()->delete_framebuffer(framePass);
-    framePass->fbo = 0;
-    framePass->depthBuffer = 0;
-    framePass->passTexture = 0;
 }
 
 void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry) {

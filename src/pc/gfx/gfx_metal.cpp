@@ -525,12 +525,16 @@ void gfx_metal_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, b
 }
 
 void gfx_metal_create_framebuffer(struct FramePass *framePass) {
-    if (!framePass) return;
+    if (!framePass) { return; }
+
+    u32 viewportWidth;
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
 
     auto colorDesc = MTL::TextureDescriptor::texture2DDescriptor(
         MTL::PixelFormatBGRA8Unorm,
-        framePass->width,
-        framePass->height,
+        viewportWidth,
+        viewportHeight,
         false
     );
     colorDesc->setUsage(MTL::TextureUsageRenderTarget | MTL::TextureUsageShaderRead);
@@ -545,8 +549,8 @@ void gfx_metal_create_framebuffer(struct FramePass *framePass) {
 
     auto depthDesc = MTL::TextureDescriptor::texture2DDescriptor(
         MTL::PixelFormatDepth32Float,
-        framePass->width,
-        framePass->height,
+        viewportWidth,
+        viewportHeight,
         false
     );
     depthDesc->setUsage(MTL::TextureUsageRenderTarget);
@@ -629,11 +633,15 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     memset(metal.lastTextures, 0, sizeof(metal.lastTextures));
     memset(metal.lastSamplers, 0, sizeof(metal.lastSamplers));
 
+    u32 viewportWidth;
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
+
     MTL::Viewport vp;
     vp.originX = 0.0;
     vp.originY = 0.0;
-    vp.width   = (double)framePass->width;
-    vp.height  = (double)framePass->height;
+    vp.width   = (double)viewportWidth;
+    vp.height  = (double)viewportHeight;
     vp.znear   = 0.0;
     vp.zfar    = 1.0;
     metal.encoder->setViewport(vp);
@@ -1050,6 +1058,16 @@ void gfx_metal_init(void) {
 }
 
 void gfx_metal_on_resize(void) {
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        struct FramePass *framePass = &gFramePasses[i];
+        if (!framePass->active) { continue; }
+
+        if (framePass->width == 0 || framePass->height == 0) {
+            // needs to be recreated to redo viewport size
+            gfx_metal_delete_framebuffer(framePass);
+        }
+    }
+
     uint32_t w, h;
     gWindowApi->get_dimensions(&w, &h);
 

@@ -28,6 +28,7 @@
 
 #include "../platform.h"
 #include "../configfile.h"
+#include "pc/pc_main.h"
 #include "gfx_cc.h"
 #include "gfx_rendering_api.h"
 #include "gfx_shader.h"
@@ -441,9 +442,13 @@ static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
     glGenFramebuffers(1, &framePass->fbo);
     glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
 
+    u32 viewportWidth;
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
+
     glGenTextures(1, (GLuint *)&framePass->passTexture);
     glBindTexture(GL_TEXTURE_2D, framePass->passTexture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, framePass->width, framePass->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, viewportWidth, viewportHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -453,7 +458,7 @@ static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
     // create depth buffer
     glGenRenderbuffers(1, &framePass->depthBuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, framePass->depthBuffer);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, framePass->width, framePass->height);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, viewportWidth, viewportHeight);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, framePass->depthBuffer);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -464,14 +469,17 @@ static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
 }
 
 static void gfx_opengl_delete_framebuffer(struct FramePass *framePass) {
-    if (framePass->fbo > 0) { glDeleteFramebuffers(1, &framePass->fbo); }
-    if (framePass->depthBuffer > 0) { glDeleteRenderbuffers(1, &framePass->depthBuffer); }
-    if (framePass->passTexture > 0) { glDeleteTextures(1, (GLuint *)&framePass->passTexture); }
+    if (framePass->fbo > 0) { glDeleteFramebuffers(1, &framePass->fbo); framePass->fbo = 0; }
+    if (framePass->depthBuffer > 0) { glDeleteRenderbuffers(1, &framePass->depthBuffer); framePass->depthBuffer = 0; }
+    if (framePass->passTexture > 0) { glDeleteTextures(1, (GLuint *)&framePass->passTexture); framePass->passTexture = 0; }
 }
 
 static void gfx_opengl_set_framebuffer(struct FramePass *framePass) {
+    u32 viewportWidth;
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
     glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
-    glViewport(0, 0, framePass->width, framePass->height);
+    glViewport(0, 0, viewportWidth, viewportHeight);
 }
 
 static void gfx_opengl_reset_framebuffer(void) {
@@ -673,6 +681,15 @@ static void gfx_opengl_init(void) {
 }
 
 static void gfx_opengl_on_resize(void) {
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        struct FramePass *framePass = &gFramePasses[i];
+        if (!framePass->active) { continue; }
+
+        if (framePass->width == 0 || framePass->height == 0) {
+            // needs to be recreated to redo viewport size
+            gfx_opengl_delete_framebuffer(framePass);
+        }
+    }
 }
 
 static void gfx_opengl_start_frame(void) {

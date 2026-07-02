@@ -697,10 +697,14 @@ static void gfx_d3d11_shader_get_info(struct ShaderProgram *prg, uint8_t *num_in
 static void gfx_d3d11_delete_framebuffer(struct FramePass *framePass);
 
 static void gfx_d3d11_create_framebuffer(struct FramePass *framePass) {
+    u32 viewportWidth;
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
+
     // create frame pass texture
     D3D11_TEXTURE2D_DESC texDesc = {};
-    texDesc.Width = framePass->width;
-    texDesc.Height = framePass->height;
+    texDesc.Width = viewportWidth;
+    texDesc.Height = viewportHeight;
     texDesc.MipLevels = 1;
     texDesc.ArraySize = 1;
     texDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -725,8 +729,8 @@ static void gfx_d3d11_create_framebuffer(struct FramePass *framePass) {
 
     // create depth texture
     D3D11_TEXTURE2D_DESC depthDesc = {};
-    depthDesc.Width = framePass->width;
-    depthDesc.Height = framePass->height;
+    depthDesc.Width = viewportWidth;
+    depthDesc.Height = viewportHeight;
     depthDesc.MipLevels = 1;
     depthDesc.ArraySize = 1;
     depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -756,6 +760,10 @@ static void gfx_d3d11_delete_framebuffer(struct FramePass *framePass) {
 }
 
 static void gfx_d3d11_set_framebuffer(struct FramePass *framePass) {
+    u32 viewportWidth;
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
+
     ID3D11RenderTargetView *rtv = (ID3D11RenderTargetView*)framePass->d3dRtv;
     ID3D11DepthStencilView *dsv = (ID3D11DepthStencilView*)framePass->d3dDsv;
 
@@ -766,8 +774,8 @@ static void gfx_d3d11_set_framebuffer(struct FramePass *framePass) {
     D3D11_VIEWPORT vp;
     vp.TopLeftX = 0.0f;
     vp.TopLeftY = 0.0f;
-    vp.Width = (float)framePass->width;
-    vp.Height = (float)framePass->height;
+    vp.Width = (float)viewportWidth;
+    vp.Height = (float)viewportHeight;
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     d3d.context->RSSetViewports(1, &vp);
@@ -1122,6 +1130,15 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
 }
 
 static void gfx_d3d11_on_resize(void) {
+    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+        struct FramePass *framePass = &gFramePasses[i];
+        if (!framePass->active) { continue; }
+
+        if (framePass->width == 0 || framePass->height == 0) {
+            // needs to be recreated to redo viewport size
+            gfx_metal_delete_framebuffer(framePass);
+        }
+    }
     create_render_target_views(true);
 }
 

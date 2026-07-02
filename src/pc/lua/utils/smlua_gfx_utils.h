@@ -139,9 +139,9 @@ int gfx_shader_create_frame_pass();
 /* |description|Deletes a frame pass using `framePassIndex`|descriptionEnd| */
 void gfx_shader_remove_frame_pass(int framePassIndex);
 /* |description|Gets a frame passes viewport size|descriptionEnd| */
-void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET int *width, RET int *height);
+void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET u32 *width, RET u32 *height);
 /* |description|Sets a frame passes viewport size|descriptionEnd| */
-void gfx_shader_set_frame_pass_viewport(int framePassIndex, int width, int height);
+void gfx_shader_set_frame_pass_viewport(int framePassIndex, u32 width, u32 height);
 /* |description|Configures whether a frame pass should redraw the whole scene or use a fullscreen quad|descriptionEnd| */
 void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry);
 /* |description|Gets the current active frame pass index. If there is no active frame pass, it returns -1|descriptionEnd| */

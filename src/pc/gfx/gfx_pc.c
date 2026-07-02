@@ -2168,6 +2168,17 @@ void gfx_start_frame(void) {
     gfx_current_dimensions.x_adjust_ratio = (4.0f / 3.0f) / gfx_current_dimensions.aspect_ratio;
 }
 
+void gfx_get_frame_pass_viewport_dimensions(struct FramePass *framePass, u32 *width, u32 *height) {
+    *width = framePass->width;
+    if (*width == 0) {
+        gfx_get_dimensions(width, NULL);
+    }
+    *height = framePass->height;
+    if (*height == 0) {
+        gfx_get_dimensions(NULL, height);
+    }
+}
+
 struct FramePass *gfx_get_current_frame_pass(void) {
     if (gCurrentFramePassIndex < 0) {
         return &gDefaultGeoFramePass;

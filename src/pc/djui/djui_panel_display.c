@@ -71,13 +71,13 @@ void djui_panel_display_create(struct DjuiBase* caller) {
         djui_checkbox_create(body, DLANG(DISPLAY, VSYNC), &configWindow.vsync, djui_panel_display_apply);
 
         if (GAPI_MAX > 1) {
-            char* gfxBackendChoices[2] = {
+            char *gfxBackendChoices[2] = {
 #ifdef OSX_BUILD
-                gfx_metal_api.get_name(),
+                (char *)gfx_metal_api.get_name(),
 #else
                 gfx_d3d11_api.get_name()
 #endif
-                gfx_opengl_api.get_name(),
+                (char *)gfx_opengl_api.get_name(),
             };
             djui_selectionbox_create(body, DLANG(DISPLAY, GRAPHICS_BACKEND), gfxBackendChoices, 2, &configGraphicsBackend, djui_panel_display_update_restart_text);
         }

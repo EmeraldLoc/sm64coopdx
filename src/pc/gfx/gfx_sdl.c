@@ -266,9 +266,11 @@ static void gfx_sdl_handle_events(void) {
                             }
                             break;
                         case SDL_WINDOWEVENT_SIZE_CHANGED:
-                            configWindow.w = event.window.data1;
-                            configWindow.h = event.window.data2;
-                            break;
+                            if ((int)configWindow.w != event.window.data1 || (int)configWindow.h != event.window.data2) {
+                                configWindow.w = event.window.data1;
+                                configWindow.h = event.window.data2;
+                                break;
+                            }
                     }
                 }
                 break;
@@ -303,6 +305,17 @@ static void gfx_sdl_set_scroll_callback(void (*on_scroll)(float, float)) {
 }
 
 static bool gfx_sdl_start_frame(void) {
+    u32 w, h;
+    gfx_sdl_get_dimensions(&w, &h);
+
+    static u32 lastW = 0;
+    static u32 lastH = 0;
+
+    if (w != lastW || h != lastH) {
+        lastW = w;
+        lastH = h;
+        gfx_get_current_rendering_api()->on_resize();
+    }
     return true;
 }
 
