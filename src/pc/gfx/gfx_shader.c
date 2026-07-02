@@ -196,7 +196,6 @@ char *gfx_get_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
         append_line(vs_buf, &vs_len, "uniform float uDepthZMult;");
         append_line(vs_buf, &vs_len, "uniform float uDepthZAdd;");
     }
-    append_line(vs_buf, &vs_len, "uniform mat4 uModelViewProjectionMatrix;");
     append_line(vs_buf, &vs_len, "void main() {");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "vTexCoord%d = aTexCoord%d;\n", t, t);

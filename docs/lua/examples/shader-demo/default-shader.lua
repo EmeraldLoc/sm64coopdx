@@ -124,16 +124,13 @@ local function on_vertex_shader_create(cc, shaderIndex)
 
     if opt_fog then
         table.insert(vs, "out float vFogZ;")
+        table.insert(vs, "uniform float uFogMul;")
+        table.insert(vs, "uniform float uFogIntensity;")
+        table.insert(vs, "uniform float uFogOffset;")
+        table.insert(vs, "uniform float uDepthZSub;")
+        table.insert(vs, "uniform float uDepthZMult;")
+        table.insert(vs, "uniform float uDepthZAdd;")
     end
-
-    table.insert(vs, "uniform mat4 uModelViewProjectionMatrix;")
-    table.insert(vs, "uniform float uXAdjustRatio;")
-    table.insert(vs, "uniform float uFogMul;")
-    table.insert(vs, "uniform float uFogIntensity;")
-    table.insert(vs, "uniform float uFogOffset;")
-    table.insert(vs, "uniform float uDepthZSub;")
-    table.insert(vs, "uniform float uDepthZMult;")
-    table.insert(vs, "uniform float uDepthZAdd;")
 
     table.insert(vs, "void main() {")
 
@@ -150,17 +147,13 @@ local function on_vertex_shader_create(cc, shaderIndex)
     table.insert(vs, "vNormal = aNormal;")
     table.insert(vs, "vBarycentric = aBarycentric;")
 
-    table.insert(vs, "vec4 clipPos = uModelViewProjectionMatrix * aVtxPos;")
-    table.insert(vs, "clipPos.x *= uXAdjustRatio;")
-    table.insert(vs, "gl_Position = clipPos;")
+    table.insert(vs, "gl_Position = aVtxPos;")
 
     if opt_fog then
-        table.insert(vs, "float w = clipPos.w;")
-        table.insert(vs, "if (abs(w) < 0.001) w = 0.001;")
+        table.insert(vs, "float w = max(abs(aVtxPos.w), 0.001);")
         table.insert(vs, "float winv = 1.0 / w;")
-        table.insert(vs, "if (winv < 0.0) winv = 32767.0;")
 
-        table.insert(vs, "float adjClipZ = clipPos.z;")
+        table.insert(vs, "float adjClipZ = aVtxPos.z;")
         table.insert(vs, "adjClipZ -= uDepthZSub;")
         table.insert(vs, "adjClipZ *= uDepthZMult;")
         table.insert(vs, "adjClipZ += uDepthZAdd;")
