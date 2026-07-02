@@ -85,7 +85,6 @@ static struct GfxState gfx_states[MAX_GFX_STATES];
 static size_t num_gfx_states;
 
 static struct RenderingState {
-    int cull_mode;
     bool depth_test;
     bool depth_mask;
     bool decal_mode;
@@ -781,10 +780,36 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         }
     }
 
+#ifdef __SSE__
+    __m128 mat0 = _mm_load_ps(rsp.MP_matrix[0]);
+    __m128 mat1 = _mm_load_ps(rsp.MP_matrix[1]);
+    __m128 mat2 = _mm_load_ps(rsp.MP_matrix[2]);
+    __m128 mat3 = _mm_load_ps(rsp.MP_matrix[3]);
+#endif
+
     for (size_t i = 0; i < n_vertices; i++, dest_index++) {
         const Vtx_t *v = &vertices[i].v;
         const Vtx_tn *vn = &vertices[i].n;
         struct GfxVertex *d = &rsp.loaded_vertices[dest_index];
+
+#ifdef __SSE__
+        __m128 ob0 = _mm_set1_ps(v->ob[0]);
+        __m128 ob1 = _mm_set1_ps(v->ob[1]);
+        __m128 ob2 = _mm_set1_ps(v->ob[2]);
+
+        __m128 pos = _mm_add_ps(_mm_add_ps(_mm_add_ps(_mm_mul_ps(ob0, mat0), _mm_mul_ps(ob1, mat1)), _mm_mul_ps(ob2, mat2)), mat3);
+        float x = pos[0];
+        float y = pos[1];
+        float z = pos[2];
+        float w = pos[3];
+#else
+        float x = v->ob[0] * rsp.MVP_matrix[0][0] + v->ob[1] * rsp.MVP_matrix[1][0] + v->ob[2] * rsp.MVP_matrix[2][0] + rsp.MVP_matrix[3][0];
+        float y = v->ob[0] * rsp.MVP_matrix[0][1] + v->ob[1] * rsp.MVP_matrix[1][1] + v->ob[2] * rsp.MVP_matrix[2][1] + rsp.MVP_matrix[3][1];
+        float z = v->ob[0] * rsp.MVP_matrix[0][2] + v->ob[1] * rsp.MVP_matrix[1][2] + v->ob[2] * rsp.MVP_matrix[2][2] + rsp.MVP_matrix[3][2];
+        float w = v->ob[0] * rsp.MVP_matrix[0][3] + v->ob[1] * rsp.MVP_matrix[1][3] + v->ob[2] * rsp.MVP_matrix[2][3] + rsp.MVP_matrix[3][3];
+#endif
+
+        x *= gfx_current_dimensions.x_adjust_ratio;
 
         short U = v->tc[0] * rsp.texture_scaling_factor.s >> 16;
         short V = v->tc[1] * rsp.texture_scaling_factor.t >> 16;
@@ -975,16 +1000,18 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         d->u = U;
         d->v = V;
 
-        d->x = v->ob[0];
-        d->y = v->ob[1];
-        d->z = v->ob[2];
-        d->w = 1.0;
+        d->clip_rej = 0;
+        if (x < -w) d->clip_rej |= 1;
+        if (x > w) d->clip_rej |= 2;
+        if (y < -w) d->clip_rej |= 4;
+        if (y > w) d->clip_rej |= 8;
+        if (z < -w) d->clip_rej |= 16;
+        if (z > w) d->clip_rej |= 32;
 
-        d->clipX = v->ob[0] * rsp.MVP_matrix[0][0] + v->ob[1] * rsp.MVP_matrix[1][0] + v->ob[2] * rsp.MVP_matrix[2][0] + rsp.MVP_matrix[3][0];
-        d->clipX *= gfx_current_dimensions.x_adjust_ratio;
-        d->clipY = v->ob[0] * rsp.MVP_matrix[0][1] + v->ob[1] * rsp.MVP_matrix[1][1] + v->ob[2] * rsp.MVP_matrix[2][1] + rsp.MVP_matrix[3][1];
-        d->clipZ = v->ob[0] * rsp.MVP_matrix[0][2] + v->ob[1] * rsp.MVP_matrix[1][2] + v->ob[2] * rsp.MVP_matrix[2][2] + rsp.MVP_matrix[3][2];
-        d->clipW = v->ob[0] * rsp.MVP_matrix[0][3] + v->ob[1] * rsp.MVP_matrix[1][3] + v->ob[2] * rsp.MVP_matrix[2][3] + rsp.MVP_matrix[3][3];
+        d->x = x;
+        d->y = y;
+        d->z = z;
+        d->w = w;
 
         if (!(rsp.geometry_mode & G_FRESNEL_ALPHA_EXT)) {
             d->color.a = v->cn[3];
@@ -1000,11 +1027,42 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
     struct GfxVertex *v_arr[3] = { v1, v2, v3 };
 
-    int cull_mode = (rsp.geometry_mode & G_CULL_BOTH);
-    if (cull_mode != sRenderingState.cull_mode) {
-        gfx_flush();
-        gfx_rapi->set_cull_mode(cull_mode);
-        sRenderingState.cull_mode = cull_mode;
+    if (v1->clip_rej & v2->clip_rej & v3->clip_rej) {
+        // The whole triangle lies outside the visible area
+        return;
+    }
+
+    if ((rsp.geometry_mode & G_CULL_BOTH) != 0) {
+        float dx1 = v1->x / (v1->w) - v2->x / (v2->w);
+        float dy1 = v1->y / (v1->w) - v2->y / (v2->w);
+        float dx2 = v3->x / (v3->w) - v2->x / (v2->w);
+        float dy2 = v3->y / (v3->w) - v2->y / (v2->w);
+        float cross = dx1 * dy2 - dy1 * dx2;
+
+        if ((v1->w < 0) ^ (v2->w < 0) ^ (v3->w < 0)) {
+            // If one vertex lies behind the eye, negating cross will give the correct result.
+            // If all vertices lie behind the eye, the triangle will be rejected anyway.
+            cross = -cross;
+        }
+
+        // Invert culling: back becomes front and front becomes back
+        if (rsp.geometry_mode & G_CULL_INVERT_EXT) {
+            cross = -cross;
+        }
+
+        switch (rsp.geometry_mode & G_CULL_BOTH) {
+            case G_CULL_FRONT:
+                if (cross <= 0) { return; }
+                break;
+            case G_CULL_BACK:
+                if (cross >= 0) { return; }
+                break;
+            case G_CULL_BOTH:
+                // Why is this even an option?
+                // HACK: Instead of culling both sides and displaying nothing, cull nothing and display everything
+                // this is needed because of the mirror room... some custom models will set/clear cull values resulting in cull both
+                break;
+        }
     }
 
     bool depth_test = (rsp.geometry_mode & G_ZBUFFER) == G_ZBUFFER;
@@ -1099,7 +1157,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         x_adjust_4by3_prev = gfx_current_dimensions.x_adjust_4by3;
     }
 
-    struct CombineMode* cm = &rdp.combine_mode;
+    struct CombineMode *cm = &rdp.combine_mode;
 
     cm->use_alpha      = (rdp.other_mode_l  & (G_BL_A_MEM << 18))        == 0;
     cm->texture_edge   = (rdp.other_mode_l  & CVG_X_ALPHA)               == CVG_X_ALPHA;
@@ -1163,17 +1221,11 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     }
 
     for (int32_t i = 0; i < 3; i++) {
-        // send position in local space
+        // send position in clip space
         buf_vbo[buf_vbo_len++] = v_arr[i]->x;
         buf_vbo[buf_vbo_len++] = v_arr[i]->y;
         buf_vbo[buf_vbo_len++] = v_arr[i]->z;
         buf_vbo[buf_vbo_len++] = v_arr[i]->w;
-
-        // send position in clip space
-        buf_vbo[buf_vbo_len++] = v_arr[i]->clipX;
-        buf_vbo[buf_vbo_len++] = v_arr[i]->clipY;
-        buf_vbo[buf_vbo_len++] = v_arr[i]->clipZ;
-        buf_vbo[buf_vbo_len++] = v_arr[i]->clipW;
 
         // send texture data
         for (int32_t j = 0; j < 2; j++) {
@@ -1237,7 +1289,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
                     color = &tmp;
                     break;
                 case CC_LOD: {
-                    float distance_frac = (v_arr[i]->clipW - 3000.0f) / 3000.0f;
+                    float distance_frac = (v_arr[i]->w - 3000.0f) / 3000.0f;
                     if (distance_frac < 0.0f) { distance_frac = 0.0f; }
                     if (distance_frac > 1.0f) { distance_frac = 1.0f; }
                     tmp.r = tmp.g = tmp.b = tmp.a = distance_frac * 255.0f;
@@ -1619,25 +1671,21 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     ul->y = ulyf;
     ul->z = 0.0f;
     ul->w = 1.0f;
-    memcpy(&ul->clipX, &ul->x, 4 * sizeof(float));
 
     ll->x = ulxf;
     ll->y = lryf;
     ll->z = 0.0f;
     ll->w = 1.0f;
-    memcpy(&ll->clipX, &ll->x, 4 * sizeof(float));
 
     lr->x = lrxf;
     lr->y = lryf;
     lr->z = 0.0f;
     lr->w = 1.0f;
-    memcpy(&lr->clipX, &lr->x, 4 * sizeof(float));
 
     ur->x = lrxf;
     ur->y = ulyf;
     ur->z = 0.0f;
     ur->w = 1.0f;
-    memcpy(&ur->clipX, &ur->x, 4 * sizeof(float));
 
     // The coordinates for texture rectangle shall bypass the viewport setting
     Mat4 oldMatrixMVP;

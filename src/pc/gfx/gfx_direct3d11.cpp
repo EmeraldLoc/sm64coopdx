@@ -126,7 +126,6 @@ static struct {
     s8 depth_test;
     s8 depth_mask;
     s8 zmode_decal;
-    int cull_mode;
 
     // Previous states (to prevent setting states needlessly)
 
@@ -960,10 +959,6 @@ static void gfx_d3d11_set_use_alpha(bool use_alpha) {
     // Already part of the pipeline state from shader info
 }
 
-static void gfx_d3d11_set_cull_mode(int mode) {
-    d3d.cull_mode = mode;
-}
-
 static void gfx_d3d11_set_vsync(bool enabled) {
 }
 
@@ -995,15 +990,7 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
         ZeroMemory(&rasterizer_desc, sizeof(D3D11_RASTERIZER_DESC));
 
         rasterizer_desc.FillMode = D3D11_FILL_SOLID;
-
-        if (d3d.cull_mode == G_CULL_FRONT) {
-            rasterizer_desc.CullMode = D3D11_CULL_FRONT;
-        } else if (d3d.cull_mode == G_CULL_BACK) {
-            rasterizer_desc.CullMode = D3D11_CULL_BACK;
-        } else {
-            rasterizer_desc.CullMode = D3D11_CULL_NONE;
-        }
-
+        rasterizer_desc.CullMode = D3D11_CULL_NONE;
         rasterizer_desc.FrontCounterClockwise = true;
         rasterizer_desc.DepthBias = 0;
         rasterizer_desc.SlopeScaledDepthBias = d3d.zmode_decal ? -2.0f : 0.0f;
@@ -1201,7 +1188,6 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_set_viewport,
     gfx_d3d11_set_scissor,
     gfx_d3d11_set_use_alpha,
-    gfx_d3d11_set_cull_mode,
     gfx_d3d11_set_vsync,
     gfx_d3d11_draw_triangles,
     gfx_d3d11_init,

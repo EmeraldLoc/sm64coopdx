@@ -203,9 +203,6 @@ static void gfx_dummy_renderer_set_scissor(UNUSED int x, UNUSED int y, UNUSED in
 static void gfx_dummy_renderer_set_use_alpha(UNUSED bool use_alpha) {
 }
 
-static void gfx_dummy_renderer_set_cull_mode(UNUSED int mode) {
-}
-
 static void gfx_dummy_renderer_set_vsync(UNUSED bool enabled) {
 }
 
@@ -284,7 +281,6 @@ struct GfxRenderingAPI gfx_dummy_renderer_api = {
     gfx_dummy_renderer_set_viewport,
     gfx_dummy_renderer_set_scissor,
     gfx_dummy_renderer_set_use_alpha,
-    gfx_dummy_renderer_set_cull_mode,
     gfx_dummy_renderer_set_vsync,
     gfx_dummy_renderer_draw_triangles,
     gfx_dummy_renderer_init,

@@ -174,7 +174,6 @@ char *gfx_get_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
 
     append_line(vs_buf, &vs_len, "#version 410 core");
     append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
-    append_line(vs_buf, &vs_len, "in vec4 aClipPos;");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "in vec2 aTexCoord%d;\n", t);
         if (!opt_tex_persp) { append_str(vs_buf, &vs_len, "noperspective "); }
@@ -207,12 +206,12 @@ char *gfx_get_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
     for (int i = 0; i < CC_MAX_INPUTS; i++) {
         vs_len += sprintf(vs_buf + vs_len, "vInput%d = aInput%d;\n", i + 1, i + 1);
     }
-    append_line(vs_buf, &vs_len, "gl_Position = aClipPos;");
+    append_line(vs_buf, &vs_len, "gl_Position = aVtxPos;");
 
     if (opt_fog) {
-        append_line(vs_buf, &vs_len, "float w = max(abs(aClipPos.w), 0.001);");
+        append_line(vs_buf, &vs_len, "float w = max(abs(aVtxPos.w), 0.001);");
         append_line(vs_buf, &vs_len, "float winv = 1.0 / w;");
-        append_line(vs_buf, &vs_len, "float adjClipZ = aClipPos.z;");
+        append_line(vs_buf, &vs_len, "float adjClipZ = aVtxPos.z;");
         append_line(vs_buf, &vs_len, "adjClipZ -= uDepthZSub;");
         append_line(vs_buf, &vs_len, "adjClipZ *= uDepthZMult;");
         append_line(vs_buf, &vs_len, "adjClipZ += uDepthZAdd;");
@@ -494,11 +493,6 @@ static void gfx_init_shader_inputs() {
     int cnt = 0;
 
     snprintf(gShaderInputs[cnt].name, MAX_SHADER_VARIABLE_NAME, "aVtxPos");
-    gShaderInputs[cnt].location = cnt;
-    gShaderInputs[cnt].size = 4;
-    cnt++;
-
-    snprintf(gShaderInputs[cnt].name, MAX_SHADER_VARIABLE_NAME, "aClipPos");
     gShaderInputs[cnt].location = cnt;
     gShaderInputs[cnt].size = 4;
     cnt++;

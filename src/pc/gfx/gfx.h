@@ -30,7 +30,7 @@
 #define MAX_TEXTURES 2
 #define MAX_CACHED_TEXTURES 4096 // for preloading purposes
 #define MAX_GFX_STATES 8
-#define VERTEX_STRIDE MAX_BUFFERED * ((16 + (CC_MAX_INPUTS * 4) + (2 * MAX_TEXTURES)) * 3) // 3 vertices in a triangle and 16 floats per verticies plus the 4 floats per input for verticies plus the 2 per texture
+#define VERTEX_STRIDE MAX_BUFFERED * ((12 + (CC_MAX_INPUTS * 4) + (2 * MAX_TEXTURES)) * 3) // 3 vertices in a triangle and 12 floats per verticies plus the 4 floats per input for verticies plus the 2 per texture
 
 #define HASH_SHIFT 0
 #define HASHMAP_LEN (MAX_CACHED_TEXTURES * 2)
@@ -46,10 +46,10 @@ struct Box {
 
 struct GfxVertex {
     float x, y, z, w;
-    float clipX, clipY, clipZ, clipW;
     float u, v;
     struct RGBA color;
     uint8_t fog_z;
+    uint8_t clip_rej;
     uint8_t world_geometry;
 };
 

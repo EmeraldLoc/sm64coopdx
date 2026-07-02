@@ -28,10 +28,6 @@ extern "C" {
     #include "gfx_sdl.h"
 }
 
-// TODO: Get painting for BITDW working
-// TODO: Fix pause screen
-// TODO: Fix act select (probably related to issue above)
-
 #define MAX_RING_BUFFER_SIZE 4 * 1024 * 1024
 
 struct TextureData {
@@ -105,7 +101,6 @@ static struct {
     s8 depthTest;
     s8 depthMask;
     s8 zModeDecal;
-    int cullMode;
     bool useAlpha;
 
     // Previous states (to prevent setting states needlessly)
@@ -859,10 +854,6 @@ void gfx_metal_set_use_alpha(bool use_alpha) {
     metal.useAlpha = use_alpha;
 }
 
-void gfx_metal_set_cull_mode(int mode) {
-    metal.cullMode = mode;
-}
-
 void gfx_metal_set_vsync(bool enabled) {
     if (metal.layer) {
         metal.layer->setDisplaySyncEnabled(enabled);
@@ -896,14 +887,7 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
         }
     }
 
-    MTL::CullMode metalCullMode = MTL::CullModeNone;
-    if (metal.cullMode == G_CULL_FRONT) {
-        metalCullMode = MTL::CullModeFront;
-    } else if (metal.cullMode == G_CULL_BACK) {
-        metalCullMode = MTL::CullModeBack;
-    }
-
-    metal.encoder->setCullMode(metalCullMode);
+    metal.encoder->setCullMode(MTL::CullModeNone);
     metal.encoder->setFrontFacingWinding(MTL::WindingCounterClockwise);
 
     // bind texture data
@@ -1152,7 +1136,6 @@ struct GfxRenderingAPI gfx_metal_api = {
     gfx_metal_set_viewport,
     gfx_metal_set_scissor,
     gfx_metal_set_use_alpha,
-    gfx_metal_set_cull_mode,
     gfx_metal_set_vsync,
     gfx_metal_draw_triangles,
     gfx_metal_init,
