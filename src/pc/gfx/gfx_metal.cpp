@@ -65,6 +65,7 @@ struct ShaderProgramMetal {
 
     bool usedTextures[2];
     bool usedLightmap;
+    bool usedFog;
     bool worldGeometry;
 };
 
@@ -141,7 +142,7 @@ static MTL::Library *metal_compile_source(const char *sourceCode, const char *st
 static MTL::RenderPipelineState *metal_create_pipeline(MTL::RenderPipelineDescriptor *desc) {
     NS::Error *error = NULL;
     MTL::RenderPipelineState *pipeline = metal.device->newRenderPipelineState(desc, &error);
-    
+
     if (error) {
         // TODO: When possible, make printf LOG_ERROR
         const char *errorString = error->localizedDescription()->utf8String();
@@ -155,7 +156,7 @@ static MTL::DepthStencilState *get_or_create_depth_stencil_state(bool depthTest,
     auto desc = MTL::DepthStencilDescriptor::alloc()->init();
     desc->setDepthCompareFunction(depthTest ? MTL::CompareFunctionLessEqual : MTL::CompareFunctionAlways);
     desc->setDepthWriteEnabled(depthMask);
-    
+
     MTL::DepthStencilState *state = metal.device->newDepthStencilState(desc);
     desc->release();
     return state;
@@ -184,7 +185,7 @@ static void create_depth_texture() {
 static void generate_uniform_buffer_metal(struct ShaderProgramMetal *prg, struct Shader *vertexShader, struct Shader *fragmentShader) {
     prg->vertexUboSize = vertexShader->uboTotalSize;
     prg->vertexUboSize = (prg->vertexUboSize + 15) & ~15;
-    
+
     prg->fragmentUboSize = fragmentShader->uboTotalSize;
     prg->fragmentUboSize = (prg->fragmentUboSize + 15) & ~15;
 
@@ -285,7 +286,7 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     uint8_t poolIndex = metal.shaderProgramPoolIndex[framePassIndex];
 
     struct ShaderProgramMetal *prg = &metal.shaderProgramPool[framePassIndex][poolIndex];
-    
+
     metal.shaderProgramPoolIndex[framePassIndex] = (poolIndex + 1) % CC_MAX_SHADERS;
     if (metal.shaderProgramPoolSize[framePassIndex] < CC_MAX_SHADERS) {
         metal.shaderProgramPoolSize[framePassIndex]++;
@@ -370,10 +371,11 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     prg->usedTextures[0] = cc_features.used_textures[0];
     prg->usedTextures[1] = cc_features.used_textures[1];
     prg->usedLightmap = cc->cm.light_map;
-    
+    prg->usedFog = cc->cm.use_fog;
+
     if (prg->vertexShader) { free(prg->vertexShader); }
     if (prg->fragmentShader) { free(prg->fragmentShader); }
-    
+
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->worldGeometry = cc->cm.world_geometry;
@@ -432,7 +434,7 @@ struct ShaderProgram *gfx_metal_create_or_load_post_process_shader(void) {
     pipelineDesc->setVertexFunction(vertFunc);
     pipelineDesc->setFragmentFunction(fragFunc);
     pipelineDesc->setDepthAttachmentPixelFormat(MTL::PixelFormatDepth32Float);
-    
+
     // setup color attatchments
     auto colorAttachment = pipelineDesc->colorAttachments()->object(0);
     colorAttachment->setPixelFormat(MTL::PixelFormatBGRA8Unorm);
@@ -491,6 +493,7 @@ struct ShaderProgram *gfx_metal_create_or_load_post_process_shader(void) {
     prg->usedTextures[0] = true;
     prg->usedTextures[1] = false;
     prg->usedLightmap = false;
+    prg->usedFog = false;
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->worldGeometry = false;
@@ -530,9 +533,9 @@ void gfx_metal_create_framebuffer(struct FramePass *framePass) {
     if (!framePass) return;
 
     auto colorDesc = MTL::TextureDescriptor::texture2DDescriptor(
-        MTL::PixelFormatBGRA8Unorm, 
-        framePass->width, 
-        framePass->height, 
+        MTL::PixelFormatBGRA8Unorm,
+        framePass->width,
+        framePass->height,
         false
     );
     colorDesc->setUsage(MTL::TextureUsageRenderTarget | MTL::TextureUsageShaderRead);
@@ -546,9 +549,9 @@ void gfx_metal_create_framebuffer(struct FramePass *framePass) {
     }
 
     auto depthDesc = MTL::TextureDescriptor::texture2DDescriptor(
-        MTL::PixelFormatDepth32Float, 
-        framePass->width, 
-        framePass->height, 
+        MTL::PixelFormatDepth32Float,
+        framePass->width,
+        framePass->height,
         false
     );
     depthDesc->setUsage(MTL::TextureUsageRenderTarget);
@@ -607,7 +610,7 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     colorAttachment->setTexture((MTL::Texture *)framePass->d3dRtv);
     colorAttachment->setLoadAction(MTL::LoadActionClear);
     colorAttachment->setStoreAction(MTL::StoreActionStore);
-    
+
     float r = framePass->clearColor[0] / 255.0f;
     float g = framePass->clearColor[1] / 255.0f;
     float b = framePass->clearColor[2] / 255.0f;
@@ -648,7 +651,7 @@ void gfx_metal_reset_framebuffer(void) {
         metal.commandBuffer = metal.commandQueue->commandBuffer();
         memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
     }
-    
+
     if (metal.encoder) {
         metal.encoder->endEncoding();
         metal.encoder = NULL;
@@ -763,7 +766,7 @@ void gfx_metal_bind_texture_raw(int tile, uint64_t texture_id) {
 
 void gfx_metal_upload_texture(const uint8_t *rgba32_buf, int width, int height) {
     auto desc = MTL::TextureDescriptor::texture2DDescriptor(MTL::PixelFormatRGBA8Unorm, (NS::UInteger)width, (NS::UInteger)height, false);
-    
+
     desc->setUsage(MTL::TextureUsageShaderRead);
     desc->setStorageMode(MTL::StorageModeShared);
 
@@ -776,7 +779,7 @@ void gfx_metal_upload_texture(const uint8_t *rgba32_buf, int width, int height) 
 
     MTL::Region region = MTL::Region::Make2D(0, 0, width, height);
     NS::UInteger bytesPerRow = (NS::UInteger)(width * 4);
-    
+
     texture->replaceRegion(region, 0, rgba32_buf, bytesPerRow);
 
     struct TextureData *textureData = &metal.textures[metal.currentTextureIds[metal.currentTile]];
@@ -802,7 +805,7 @@ void gfx_metal_set_sampler_parameters(int tile, bool linear_filter, uint32_t cms
 
     desc->setMinFilter(linear_filter ? MTL::SamplerMinMagFilterLinear : MTL::SamplerMinMagFilterNearest);
     desc->setMagFilter(linear_filter ? MTL::SamplerMinMagFilterLinear : MTL::SamplerMinMagFilterNearest);
-    
+
     desc->setSAddressMode(gfx_cm_to_metal(cms));
     desc->setTAddressMode(gfx_cm_to_metal(cmt));
     desc->setRAddressMode(MTL::SamplerAddressModeRepeat);
@@ -932,18 +935,21 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
         }
     }
 
-    gfx_set_builtin_uniforms();
+    gfx_update_matrices();
+    if (metal.shaderProgram->usedFog) {
+        gfx_update_fog_uniforms();
+    }
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
 
     // upload uniform data
     if (metal.shaderProgram->vertexUboSize > 0 && metal.shaderProgram->vertexUniformBuffer != NULL) {
-        size_t size = metal.shaderProgram->vertexUboSize;        
-        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15; 
-        
+        size_t size = metal.shaderProgram->vertexUboSize;
+        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
+
         if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
             uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
             memcpy(dst, metal.shaderProgram->vertexUniformBuffer, size);
-            
+
             metal.encoder->setVertexBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 0);
             metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
@@ -955,11 +961,11 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     if (metal.shaderProgram->fragmentUboSize > 0 && metal.shaderProgram->fragmentUniformBuffer != NULL) {
         size_t size = metal.shaderProgram->fragmentUboSize;
         size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
-        
+
         if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
             uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
             memcpy(dst, metal.shaderProgram->fragmentUniformBuffer, size);
-            
+
             metal.encoder->setFragmentBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 0);
             metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
@@ -971,11 +977,11 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     if (buf_vbo_len > 0) {
         size_t size = buf_vbo_len * sizeof(float);
         size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
-        
+
         if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
             uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
             memcpy(dst, buf_vbo, size);
-            
+
             metal.encoder->setVertexBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 1);
             metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
@@ -1015,7 +1021,7 @@ void gfx_metal_init(void) {
     metal.currentHeight = h;
 
     metal.layer->setDrawableSize(CGSizeMake(w, h));
-    
+
     // init command queue and vertex buffer
     metal.commandQueue = metal.device->newCommandQueue();
     if (!metal.commandQueue) {
@@ -1044,7 +1050,7 @@ void gfx_metal_init(void) {
     if (!metal.depthStencilState) {
         sys_fatal("Failed to create Metal depth stencil state.");
     }
-    
+
     // setup default sampler
     MTL::SamplerDescriptor *samplerDesc = MTL::SamplerDescriptor::alloc()->init();
     samplerDesc->setMinFilter(MTL::SamplerMinMagFilterLinear);
@@ -1052,7 +1058,7 @@ void gfx_metal_init(void) {
     samplerDesc->setSAddressMode(MTL::SamplerAddressModeClampToEdge);
     samplerDesc->setTAddressMode(MTL::SamplerAddressModeClampToEdge);
     samplerDesc->setRAddressMode(MTL::SamplerAddressModeClampToEdge);
-    
+
     metal.defaultSampler = metal.device->newSamplerState(samplerDesc);
     samplerDesc->release();
 

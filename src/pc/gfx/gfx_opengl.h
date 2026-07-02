@@ -18,6 +18,7 @@ struct ShaderProgram {
     u8 num_attribs;
     bool used_noise;
     bool used_lightmap;
+    bool used_fog;
     bool world_geometry;
 };
 

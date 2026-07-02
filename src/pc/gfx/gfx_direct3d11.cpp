@@ -79,6 +79,7 @@ struct ShaderProgramD3D11 {
     uint8_t num_floats;
     bool used_textures[2];
     bool used_lightmap;
+    bool used_fog;
     bool world_geometry;
 };
 
@@ -540,6 +541,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     prg->used_textures[0] = cc_features.used_textures[0];
     prg->used_textures[1] = cc_features.used_textures[1];
     prg->used_lightmap = cc->cm.light_map;
+    prg->used_fog = cc->cm.used_fog;
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->world_geometry = cc->cm.world_geometry;
@@ -657,6 +659,7 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
     prg->used_textures[0] = true;
     prg->used_textures[1] = false;
     prg->used_lightmap = false;
+    prg->used_fog = false;
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->world_geometry = false;
@@ -1046,7 +1049,10 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
         }
     }
 
-    gfx_set_builtin_uniforms();
+    gfx_update_matrices();
+    if (d3d.shader_program->used_fog) {
+        gfx_update_fog_uniforms();
+    }
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
 
     // Set vertex uniform buffers

@@ -164,6 +164,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     bool opt_light_map = cc->cm.light_map;
     bool world_geometry = cc->cm.world_geometry;
     bool opt_dither = cc->cm.use_dither;
+    bool opt_fog = cc->cm.use_fog;
 
     struct Shader *vertexShader = calloc(1, sizeof(struct Shader));
     struct Shader *fragmentShader = calloc(1, sizeof(struct Shader));
@@ -263,6 +264,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     prg->used_lightmap = opt_light_map;
     prg->world_geometry = world_geometry;
+    prg->used_fog = opt_fog;
 
     GLint passTexLoc = glGetUniformLocation(shader_program, "uPassTex");
     if (passTexLoc != -1) {
@@ -614,7 +616,10 @@ static void gfx_opengl_set_vsync(UNUSED bool enabled) {
 
 static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
-    gfx_set_builtin_uniforms();
+    gfx_update_matrices();
+    if (opengl_prg->used_fog) {
+        gfx_update_fog_uniforms();
+    }
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
