@@ -753,6 +753,15 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
 
 bool gfx_sanitize_vertex_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
     gfx_sanitize_shader(shader, referenceInputs, referenceBindings, shaderCode);
+    // double check we are not missing any inputs, if we are, error out since it can cause
+    // issues in certain render apis
+    for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
+        if (strncmp(referenceInputs[i].name, shader->shaderInputs[i].name, MAX_SHADER_VARIABLE_NAME) != 0 || referenceInputs[i].location != shader->shaderInputs[i].location) {
+            // mismatched! tell the shader code this is not a valid shader
+            LOG_ERROR("Failed to sanitize vertex shader! Mismatch between expected inputs and inputs in the vertex shader! Index is %d, expected output is %s, vertex output is %s", i, referenceInputs[i].name, shader->shaderInputs[i].name);
+            return false;
+        }
+    }
     return true;
 }
 
@@ -764,7 +773,8 @@ bool gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *ou
         inputs[i].location = outputsFromVertexShader[i].location;
     }
     gfx_sanitize_shader(shader, inputs, referenceBindings, shaderCode);
-    // double check we are not missing any inputs, if we are, error out
+    // double check we are not missing any inputs, if we are, error out since it can cause
+    // issues in certain render apis
     for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
         if (strncmp(inputs[i].name, shader->shaderInputs[i].name, MAX_SHADER_VARIABLE_NAME) != 0 || inputs[i].location != shader->shaderInputs[i].location) {
             // mismatched! tell the shader code this is not a valid shader

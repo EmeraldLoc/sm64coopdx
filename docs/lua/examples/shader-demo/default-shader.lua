@@ -118,9 +118,7 @@ local function on_vertex_shader_create(cc, shaderIndex)
     end
 
     table.insert(vs, "in vec3 aNormal;")
-    table.insert(vs, "out vec3 vNormal;")
     table.insert(vs, "in vec3 aBarycentric;")
-    table.insert(vs, "out vec3 vBarycentric;")
 
     if opt_fog then
         table.insert(vs, "out float vFogZ;")
@@ -143,9 +141,6 @@ local function on_vertex_shader_create(cc, shaderIndex)
     for i = 1, CC_MAX_INPUTS do
         table.insert(vs, string.format("vInput%d = aInput%d;", i, i))
     end
-
-    table.insert(vs, "vNormal = aNormal;")
-    table.insert(vs, "vBarycentric = aBarycentric;")
 
     table.insert(vs, "gl_Position = aVtxPos;")
 
