@@ -600,11 +600,19 @@ void gfx_init_shaders() {
     gfx_init_shader_bindings();
 }
 
+static void strip_array_from_name(char *name) {
+    char *bracket = strchr(name, '[');
+    if (bracket) {
+        *bracket = '\0';
+    }
+}
+
 static void process_shader_line(struct Shader *shader, struct ShaderInput *referenceInputs, char *output, const char *line) {
     char qualifier[32] = { 0 }, type[32] = { 0 }, name[MAX_SHADER_VARIABLE_NAME] = { 0 };
 
     // parse inputs for inputs equivalent to reference inputs
     if (sscanf(line, "%31s in %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+        strip_array_from_name(name);
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
                 char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
@@ -623,6 +631,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
     }
 
     if (sscanf(line, " in %31s %31[^; \t\n]", type, name) == 2) {
+        strip_array_from_name(name);
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
                 char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
@@ -642,6 +651,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
 
     // look for and parse outputs
     if (sscanf(line, "%31s out %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+        strip_array_from_name(name);
         // add name to our shader outputs
         if (shader) {
             snprintf(shader->shaderOutputs[sShaderOutputCount].name, MAX_SHADER_VARIABLE_NAME, "%s", name);
@@ -655,6 +665,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
     }
 
     if (sscanf(line, " out %31s %31[^; \t\n]", type, name) == 2) {
+        strip_array_from_name(name);
         // add name to our shader outputs
         if (shader) {
             snprintf(shader->shaderOutputs[sShaderOutputCount].name, MAX_SHADER_VARIABLE_NAME, "%s", name);
@@ -669,6 +680,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
 
     // look for and parse shader uniforms
     if (sscanf(line, " uniform %31s %31[^; \t\n]", type, name) == 2) {
+        strip_array_from_name(name);
         if (strncmp(type, "sampler", 7) == 0 || strncmp(type, "image", 5) == 0) {
             if (shader) {
                 // add to shader bindings
@@ -1104,11 +1116,11 @@ void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
 
     // set compilations options
     spvc_compiler_options options;
-    spvc_compiler_create_compiler_options(compiler, &options);    
-    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_MSL_VERSION, 20100); // 2.1    
+    spvc_compiler_create_compiler_options(compiler, &options);
+    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_MSL_VERSION, 20100); // 2.1
     spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_MSL_PAD_FRAGMENT_OUTPUT_COMPONENTS, true);
     spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_MSL_ENABLE_DECORATION_BINDING, true);
-    
+
     SPVC_CHECK(spvc_compiler_install_compiler_options(compiler, options));
 
     SPVC_CHECK(spvc_compiler_compile(compiler, &msl_code));
