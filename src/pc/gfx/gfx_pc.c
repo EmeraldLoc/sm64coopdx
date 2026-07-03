@@ -1166,7 +1166,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     cm->use_fog        = (rdp.other_mode_l  >> 30)                       == G_BL_CLR_FOG;
     cm->light_map      = (rsp.geometry_mode & G_LIGHT_MAP_EXT)           == G_LIGHT_MAP_EXT;
     cm->tex_persp      = (rdp.other_mode_h  & G_TP_PERSP)                == G_TP_PERSP;
-    cm->world_geometry = gShaderFlagsEnabled && (v1->world_geometry && v2->world_geometry && v3->world_geometry);
+    cm->world_geometry = (v1->world_geometry && v2->world_geometry && v3->world_geometry);
 
     if (cm->texture_edge) {
         cm->use_alpha = true;
@@ -2430,6 +2430,8 @@ void gfx_set_builtin_uniforms(void) {
     gfx_rapi->set_uniform(NULL, "uAspectRatio", SHADER_UNIFORM_TYPE_FLOAT, &aspectRatio, 1);
     gfx_rapi->set_uniform(NULL, "uXAdjustRatio", SHADER_UNIFORM_TYPE_FLOAT, &xAdjustRatio, 1);
 
+    int shaderFlagEnabled = gShaderFlagsEnabled ? 1 : 0;
+    gfx_rapi->set_uniform(NULL, "uShaderFlagsEnabled", SHADER_UNIFORM_TYPE_BOOL, &shaderFlagEnabled, 1);
     gfx_rapi->set_uniform(NULL, "uShaderFlags", SHADER_UNIFORM_TYPE_INT, gShaderFlags, SHADER_FLAG_MAX);
     gfx_rapi->set_uniform(NULL, "uShaderFlagValues", SHADER_UNIFORM_TYPE_FLOAT, gShaderFlagValues, SHADER_FLAG_MAX);
     gfx_update_matrices();

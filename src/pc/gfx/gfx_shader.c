@@ -349,6 +349,7 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     }
 
     if (world_geometry) {
+        append_line(fs_buf, &fs_len, "uniform bool uShaderFlagsEnabled;");
         fs_len += sprintf(fs_buf + fs_len, "uniform int uShaderFlags[%d];\n", SHADER_FLAG_MAX);
         fs_len += sprintf(fs_buf + fs_len, "uniform float uShaderFlagValues[%d];\n", SHADER_FLAG_MAX);
     }
@@ -404,6 +405,8 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     // TODO discard if alpha is 0?
 
     if (world_geometry) {
+        append_line(fs_buf, &fs_len, "if (uShaderFlagsEnabled == true) {");
+
         // hue
         append_line(fs_buf, &fs_len, "if (uShaderFlags[0] == 1) {");
         append_line(fs_buf, &fs_len, "vec3 hsv = rgb2hsv(texel.rgb);");
@@ -449,6 +452,8 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
         append_line(fs_buf, &fs_len, "if (uShaderFlags[7] == 1) {");
         append_line(fs_buf, &fs_len, "float scan = sin(gl_FragCoord.y * 1.5) * 0.04;");
         append_line(fs_buf, &fs_len, "texel.rgb -= scan * uShaderFlagValues[7];");
+        append_line(fs_buf, &fs_len, "}");
+
         append_line(fs_buf, &fs_len, "}");
     }
 
