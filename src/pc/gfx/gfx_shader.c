@@ -174,6 +174,7 @@ char *gfx_get_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
 
     append_line(vs_buf, &vs_len, "#version 410 core");
     append_line(vs_buf, &vs_len, "in vec4 aVtxPos;");
+    append_line(vs_buf, &vs_len, "in vec4 aLocalPos;");
     for (int t = 0; t < 2; t++) {
         vs_len += sprintf(vs_buf + vs_len, "in vec2 aTexCoord%d;\n", t);
         if (!opt_tex_persp) { append_str(vs_buf, &vs_len, "noperspective "); }
@@ -497,6 +498,11 @@ static void gfx_init_shader_inputs() {
     int cnt = 0;
 
     snprintf(gShaderInputs[cnt].name, MAX_SHADER_VARIABLE_NAME, "aVtxPos");
+    gShaderInputs[cnt].location = cnt;
+    gShaderInputs[cnt].size = 4;
+    cnt++;
+
+    snprintf(gShaderInputs[cnt].name, MAX_SHADER_VARIABLE_NAME, "aLocalPos");
     gShaderInputs[cnt].location = cnt;
     gShaderInputs[cnt].size = 4;
     cnt++;

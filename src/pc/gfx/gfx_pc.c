@@ -1047,6 +1047,11 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         d->z = z;
         d->w = w;
 
+        d->localX = v->ob[0];
+        d->localY = v->ob[1];
+        d->localZ = v->ob[2];
+        d->localW = 1.0;
+
         if (!(rsp.geometry_mode & G_FRESNEL_ALPHA_EXT)) {
             d->color.a = v->cn[3];
         }
@@ -1260,6 +1265,12 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         buf_vbo[buf_vbo_len++] = v_arr[i]->y;
         buf_vbo[buf_vbo_len++] = v_arr[i]->z;
         buf_vbo[buf_vbo_len++] = v_arr[i]->w;
+
+        // send position in local space
+        buf_vbo[buf_vbo_len++] = v_arr[i]->localX;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->localY;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->localZ;
+        buf_vbo[buf_vbo_len++] = v_arr[i]->localW;
 
         // send texture data
         for (int32_t j = 0; j < 2; j++) {
@@ -2431,20 +2442,10 @@ void gfx_update_fog_uniforms(void) {
 }
 
 void gfx_update_matrices(void) {
-    gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mvp_matrix, 1);
-    gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.mv_matrix, 1);
-    Mat4 inverseModelMatrix;
-    mtxf_inverse(inverseModelMatrix, sRenderingState.m_matrix);
-    gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.m_matrix, 1);
-    gfx_rapi->set_uniform(NULL, "uInverseModelMatrix", SHADER_UNIFORM_TYPE_MAT4, inverseModelMatrix, 1);
-    Mat4 inverseViewMatrix;
-    mtxf_inverse(inverseViewMatrix, sRenderingState.v_matrix);
-    gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.v_matrix, 1);
-    gfx_rapi->set_uniform(NULL, "uInverseViewMatrix", SHADER_UNIFORM_TYPE_MAT4, inverseViewMatrix, 1);
-    Mat4 inversePerspectiveMatrix;
-    mtxf_inverse_non_affine(inversePerspectiveMatrix, sRenderingState.p_matrix);
-    gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, sRenderingState.p_matrix, 1);
-    gfx_rapi->set_uniform(NULL, "uInverseProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, inversePerspectiveMatrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.MVP_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.M_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.V_matrix, 1);
+    gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
 }
 
 void gfx_set_builtin_uniforms(void) {
