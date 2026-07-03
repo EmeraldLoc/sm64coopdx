@@ -372,6 +372,8 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if world_geometry then
+        table.insert(fs, "if (uShaderFlags) {")
+
         table.insert(fs, "if (uShaderFlags[0] == 1) {")
         table.insert(fs, "vec3 hsv = rgb2hsv(texel.rgb);")
         table.insert(fs, "hsv.x = fract(hsv.x + uShaderFlagValues[0]);")
@@ -409,6 +411,8 @@ local function on_fragment_shader_create(cc, shaderIndex)
         table.insert(fs, "if (uShaderFlags[7] == 1) {")
         table.insert(fs, "float scan = sin(gl_FragCoord.y * 1.5) * 0.04;")
         table.insert(fs, "texel.rgb -= scan * uShaderFlagValues[7];")
+        table.insert(fs, "}")
+
         table.insert(fs, "}")
     end
 
