@@ -2443,6 +2443,9 @@ void gfx_update_fog_uniforms(void) {
 
 void gfx_update_matrices(void) {
     gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.MVP_matrix, 1);
+    if (rsp.modelview_matrix_stack_size > 0) {
+        gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);
+    }
     gfx_rapi->set_uniform(NULL, "uModelMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.M_matrix, 1);
     gfx_rapi->set_uniform(NULL, "uViewMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.V_matrix, 1);
     gfx_rapi->set_uniform(NULL, "uProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.P_matrix, 1);
