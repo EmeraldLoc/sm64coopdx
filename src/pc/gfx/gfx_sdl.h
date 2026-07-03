@@ -8,4 +8,6 @@
 extern struct GfxWindowManagerAPI gfx_sdl;
 SDL_Window *gfx_sdl_get_window();
 
+bool gfx_sdl_check_opengl_compatibility(void);
+
 #endif

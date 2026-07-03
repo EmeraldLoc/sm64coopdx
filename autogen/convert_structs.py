@@ -90,7 +90,6 @@ override_field_mutable = {
 override_field_invisible = {
     "Mod": [ "files", "showedScriptWarning" ],
     "Camera": [ "paletteEditorCapState" ],
-    "MarioState": [ "visibleToEnemies" ],
     "NetworkPlayer": [ "gag", "moderator", "discordId", "rxPacketHash", "rxSeqIds" ],
     "GraphNode": [ "_guard1", "_guard2", "padding" ],
     "GraphNodeRoot": ["unk15", "views"],
@@ -98,7 +97,7 @@ override_field_invisible = {
     "FnGraphNode": [ "luaTokenIndex" ],
     "Object": [ "firstSurface" ],
     "Animation": [ "unusedBoneCount" ],
-    "ModAudio": [ "sound", "decoder", "buffer", "bufferSize", "sampleCopiesTail", "volChannel" ],
+    "ModAudio": [ "alive", "sound", "decoder", "buffer", "bufferSize", "sampleCopiesTail", "volChannel" ],
     "Painting": [ "normalDisplayList", "textureMaps", "rippleDisplayList", "ripples" ],
     "DialogEntry": [ "str" ],
     "ModFsFile": [ "data", "capacity" ],
@@ -108,7 +107,6 @@ override_field_invisible = {
 
 override_field_deprecated = {
     "NetworkPlayer": [ "paletteIndex", "overridePaletteIndex", "overridePaletteIndexLp" ],
-    "StaticObjectCollision": [ "index" ],
     "ModAudio": [ "file", "relativePath" ], # compatibility band-aid
 }
 

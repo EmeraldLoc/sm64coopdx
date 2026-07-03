@@ -62,8 +62,6 @@ static struct ShaderProgram *opengl_prg = NULL;
 static struct GLTexture *opengl_tex[2];
 static int opengl_curtex = 0;
 
-static bool sIsLegacy = false;
-
 static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
 }
@@ -412,6 +410,8 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     free(vsShaderCode);
     free(fsShaderCode);
 
+    gfx_opengl_load_shader(prg);
+
     return prg;
 }
 
@@ -623,6 +623,13 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }
 
+static inline bool gl_version_is_supported(int major, int minor, bool is_es) {
+    if (is_es) {
+        return major >= 2;
+    }
+    return (major > 4) || (major == 4 && minor >= 1);
+}
+
 static inline bool gl_get_version(int *major, int *minor, bool *is_es) {
     const char *vstr = (const char *)glGetString(GL_VERSION);
     if (!vstr || !vstr[0]) return false;
@@ -638,6 +645,7 @@ static inline bool gl_get_version(int *major, int *minor, bool *is_es) {
     return (sscanf(vstr, "%d.%d", major, minor) == 2);
 }
 
+static bool gfx_opengl_is_legacy(void);
 static void gfx_opengl_init(void) {
 #if FOR_WINDOWS || defined(OSX_BUILD)
     GLenum err;
@@ -645,7 +653,6 @@ static void gfx_opengl_init(void) {
         sys_fatal("could not init GLEW:\n%s", glewGetErrorString(err));
 #endif
 
-    sIsLegacy = false;
     tex_cache_size = TEX_CACHE_STEP;
     tex_cache = calloc(tex_cache_size, sizeof(struct GLTexture));
     if (!tex_cache) { sys_fatal("out of memory allocating texture cache"); }
@@ -654,13 +661,8 @@ static void gfx_opengl_init(void) {
     int vmajor = 0;
     int vminor = 0;
     bool is_es = false;
-    gl_get_version(&vmajor, &vminor, &is_es);
-    if (!is_es && (vmajor < 4 || (vmajor == 4 && vminor < 1))) {
-        sys_fatal("OpenGL 4.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
-    }
-
-    if (is_es || (vmajor == 4 && vminor < 5)) {
-        sIsLegacy = true;
+    if (!gl_get_version(&vmajor, &vminor, &is_es) || !gl_version_is_supported(vmajor, vminor, is_es)) {
+        sys_fatal("OpenGL 2.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
     }
 
     glGenBuffers(1, &opengl_vbo);
@@ -675,10 +677,21 @@ static void gfx_opengl_init(void) {
     glDepthFunc(GL_LEQUAL);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    if (!sIsLegacy) {
+    if (!gfx_opengl_is_legacy()) {
         // force opengl to use dx11 clip space (0, 1)
         glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
     }
+}
+
+bool gfx_opengl_check_compatibility(void) {
+    // check GL version
+    int vmajor = 0;
+    int vminor = 0;
+    bool is_es = false;
+    if (!gl_get_version(&vmajor, &vminor, &is_es)) {
+        return false;
+    }
+    return gl_version_is_supported(vmajor, vminor, is_es);
 }
 
 static void gfx_opengl_on_resize(void) {
@@ -716,11 +729,20 @@ static void gfx_opengl_finish_render(void) {
 }
 
 static const char *gfx_opengl_get_name(void) {
-    return sIsLegacy ? "OpenGL (Legacy)" : "OpenGL";
+    return gfx_opengl_is_legacy() ? "OpenGL (Legacy)" : "OpenGL";
 }
 
 static bool gfx_opengl_is_legacy(void) {
-    return sIsLegacy;
+    int vmajor = 0;
+    int vminor = 0;
+    bool is_es = false;
+    if (!gl_get_version(&vmajor, &vminor, &is_es)) {
+        return true;
+    }
+    if (is_es) {
+        return true;
+    }
+    return !(vmajor > 4) || (vmajor == 4 && vminor >= 5);
 }
 
 static void gfx_opengl_shutdown(void) {

@@ -630,6 +630,7 @@
    - [obj_update_gfx_pos_and_angle](functions-3.md#obj_update_gfx_pos_and_angle)
    - [position_based_random_u16](functions-3.md#position_based_random_u16)
    - [position_based_random_float_position](functions-3.md#position_based_random_float_position)
+   - [draw_distance_scalar_is_infinite](functions-3.md#draw_distance_scalar_is_infinite)
    - [draw_distance_scalar](functions-3.md#draw_distance_scalar)
 
 <br />
@@ -638,6 +639,7 @@
    - [get_id_from_behavior](functions-3.md#get_id_from_behavior)
    - [get_id_from_vanilla_behavior](functions-3.md#get_id_from_vanilla_behavior)
    - [get_behavior_from_id](functions-3.md#get_behavior_from_id)
+   - [get_vanilla_behavior_from_id](functions-3.md#get_vanilla_behavior_from_id)
    - [get_behavior_name_from_id](functions-3.md#get_behavior_name_from_id)
    - [get_id_from_behavior_name](functions-3.md#get_id_from_behavior_name)
 
@@ -756,6 +758,12 @@
 
 - djui_console.h
    - [djui_console_toggle](functions-3.md#djui_console_toggle)
+   - [djui_console_is_open](functions-3.md#djui_console_is_open)
+
+<br />
+
+- djui_gfx.h
+   - [djui_gfx_get_scale](functions-3.md#djui_gfx_get_scale)
 
 <br />
 
@@ -1189,7 +1197,6 @@
    - [stopping_step](functions-4.md#stopping_step)
    - [landing_step](functions-4.md#landing_step)
    - [check_common_landing_cancels](functions-4.md#check_common_landing_cancels)
-   - [mario_exit_palette_editor](functions-4.md#mario_exit_palette_editor)
    - [check_common_stationary_cancels](functions-4.md#check_common_stationary_cancels)
    - [mario_execute_stationary_action](functions-4.md#mario_execute_stationary_action)
 
@@ -1212,6 +1219,7 @@
    - [bhv_unlock_door_star_loop](functions-4.md#bhv_unlock_door_star_loop)
    - [geo_get_mario_state](functions-4.md#geo_get_mario_state)
    - [geo_get_body_state](functions-4.md#geo_get_body_state)
+   - [geo_get_mario_object](functions-4.md#geo_get_mario_object)
 
 <br />
 
@@ -1872,7 +1880,7 @@
    - [camera_is_frozen](functions-6.md#camera_is_frozen)
    - [camera_romhack_allow_only_mods](functions-6.md#camera_romhack_allow_only_mods)
    - [camera_set_romhack_override](functions-6.md#camera_set_romhack_override)
-   - [camera_romhack_allow_centering](functions-6.md#camera_romhack_allow_centering)
+   - [camera_romhack_allow_switchable](functions-6.md#camera_romhack_allow_switchable)
    - [camera_allow_toxic_gas_camera](functions-6.md#camera_allow_toxic_gas_camera)
    - [camera_romhack_allow_dpad_usage](functions-6.md#camera_romhack_allow_dpad_usage)
    - [camera_romhack_set_collisions](functions-6.md#camera_romhack_set_collisions)
@@ -1885,7 +1893,7 @@
    - [camera_romhack_get_zoomed_in_height](functions-6.md#camera_romhack_get_zoomed_in_height)
    - [camera_romhack_get_zoomed_out_height](functions-6.md#camera_romhack_get_zoomed_out_height)
    - [camera_get_romhack_override](functions-6.md#camera_get_romhack_override)
-   - [camera_romhack_get_allow_centering](functions-6.md#camera_romhack_get_allow_centering)
+   - [camera_romhack_get_allow_switchable](functions-6.md#camera_romhack_get_allow_switchable)
    - [camera_get_allow_toxic_gas_camera](functions-6.md#camera_get_allow_toxic_gas_camera)
    - [camera_romhack_get_allow_dpad_usage](functions-6.md#camera_romhack_get_allow_dpad_usage)
    - [camera_romhack_get_collisions](functions-6.md#camera_romhack_get_collisions)
@@ -1917,25 +1925,26 @@
    - [camera_config_set_deceleration](functions-6.md#camera_config_set_deceleration)
    - [camera_get_checking_surfaces](functions-6.md#camera_get_checking_surfaces)
    - [camera_set_checking_surfaces](functions-6.md#camera_set_checking_surfaces)
+   - [center_free_camera](functions-6.md#center_free_camera)
 
 <br />
 
 - smlua_collision_utils.h
-   - [collision_find_floor](functions-6.md#collision_find_floor)
-   - [collision_find_ceil](functions-6.md#collision_find_ceil)
-   - [get_water_surface_pseudo_floor](functions-6.md#get_water_surface_pseudo_floor)
-   - [smlua_collision_util_get](functions-6.md#smlua_collision_util_get)
-   - [collision_get_temp_wall_collision_data](functions-6.md#collision_get_temp_wall_collision_data)
-   - [get_surface_from_wcd_index](functions-6.md#get_surface_from_wcd_index)
-   - [smlua_collision_util_get_current_terrain_collision](functions-6.md#smlua_collision_util_get_current_terrain_collision)
-   - [smlua_collision_util_get_level_collision](functions-6.md#smlua_collision_util_get_level_collision)
-   - [smlua_collision_util_find_surface_types](functions-6.md#smlua_collision_util_find_surface_types)
-   - [smlua_collision_add_surface](functions-6.md#smlua_collision_add_surface)
-   - [smlua_collision_move_surface](functions-6.md#smlua_collision_move_surface)
-   - [smlua_collision_delete_surface](functions-6.md#smlua_collision_delete_surface)
-   - [surface_is_quicksand](functions-6.md#surface_is_quicksand)
-   - [surface_is_not_hard](functions-6.md#surface_is_not_hard)
-   - [surface_is_painting_warp](functions-6.md#surface_is_painting_warp)
+   - [collision_find_floor](functions-7.md#collision_find_floor)
+   - [collision_find_ceil](functions-7.md#collision_find_ceil)
+   - [get_water_surface_pseudo_floor](functions-7.md#get_water_surface_pseudo_floor)
+   - [smlua_collision_util_get](functions-7.md#smlua_collision_util_get)
+   - [collision_get_temp_wall_collision_data](functions-7.md#collision_get_temp_wall_collision_data)
+   - [get_surface_from_wcd_index](functions-7.md#get_surface_from_wcd_index)
+   - [smlua_collision_util_get_current_terrain_collision](functions-7.md#smlua_collision_util_get_current_terrain_collision)
+   - [smlua_collision_util_get_level_collision](functions-7.md#smlua_collision_util_get_level_collision)
+   - [smlua_collision_util_find_surface_types](functions-7.md#smlua_collision_util_find_surface_types)
+   - [smlua_collision_add_surface](functions-7.md#smlua_collision_add_surface)
+   - [smlua_collision_move_surface](functions-7.md#smlua_collision_move_surface)
+   - [smlua_collision_delete_surface](functions-7.md#smlua_collision_delete_surface)
+   - [surface_is_quicksand](functions-7.md#surface_is_quicksand)
+   - [surface_is_not_hard](functions-7.md#surface_is_not_hard)
+   - [surface_is_painting_warp](functions-7.md#surface_is_painting_warp)
 
 <br />
 
@@ -1951,6 +1960,8 @@
    - [get_global_shader_flags_enabled](functions-7.md#get_global_shader_flags_enabled)
    - [set_global_shader_flags_enabled](functions-7.md#set_global_shader_flags_enabled)
    - [clear_all_shader_flags](functions-7.md#clear_all_shader_flags)
+   - [get_shading_fullbright_enabled](functions-7.md#get_shading_fullbright_enabled)
+   - [set_shading_fullbright_enabled](functions-7.md#set_shading_fullbright_enabled)
    - [set_override_fov](functions-7.md#set_override_fov)
    - [set_override_near](functions-7.md#set_override_near)
    - [set_override_far](functions-7.md#set_override_far)
@@ -2080,6 +2091,8 @@
    - [game_pause](functions-7.md#game_pause)
    - [game_unpause](functions-7.md#game_unpause)
    - [is_transition_playing](functions-7.md#is_transition_playing)
+   - [get_current_play_mode](functions-7.md#get_current_play_mode)
+   - [get_delayed_warp_op](functions-7.md#get_delayed_warp_op)
    - [allocate_mario_action](functions-7.md#allocate_mario_action)
    - [get_hand_foot_pos_x](functions-7.md#get_hand_foot_pos_x)
    - [get_hand_foot_pos_y](functions-7.md#get_hand_foot_pos_y)
@@ -3046,7 +3059,8 @@ Derives a `MARIO_SPAWN_*` constant from `o`
 ## [area_get_warp_node](#area_get_warp_node)
 
 ### Description
-Finds a warp node in the current area by its ID. The warp node must exist in the list of warp nodes for the current area. Useful for locating a specific warp point in the level, such as teleportation zones or connections to other areas
+Finds a warp node in the current area by its ID. The warp node must exist in the list of warp nodes for the current area.
+Useful for locating a specific warp point in the level, such as teleportation zones or connections to other areas
 
 ### Lua Example
 `local objectWarpNodeValue = area_get_warp_node(id)`
@@ -3090,7 +3104,8 @@ Gets the first warp node found in the area, otherwise returns nil
 ## [area_get_warp_node_from_params](#area_get_warp_node_from_params)
 
 ### Description
-Finds a warp node in the current area using parameters from the provided object. The object's behavior parameters are used to determine the warp node ID. Useful for associating an object (like a door or warp pipe) with its corresponding warp node in the area
+Finds a warp node in the current area using parameters from the provided object. The object's behavior parameters are used to determine the warp node ID.
+Useful for associating an object (like a door or warp pipe) with its corresponding warp node in the area
 
 ### Lua Example
 `local objectWarpNodeValue = area_get_warp_node_from_params(o)`

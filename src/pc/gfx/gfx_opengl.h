@@ -24,4 +24,6 @@ struct ShaderProgram {
 
 extern struct GfxRenderingAPI gfx_opengl_api;
 
+bool gfx_opengl_check_compatibility(void);
+
 #endif
