@@ -851,7 +851,7 @@ void gfx_metal_set_viewport(int x, int y, int width, int height) {
 void gfx_metal_set_scissor(int x, int y, int width, int height) {
     MTL::ScissorRect r;
     r.x = x;
-    r.y = y;
+    r.y = metal.currentHeight - y - height;
     r.width = width;
     r.height = height;
 
