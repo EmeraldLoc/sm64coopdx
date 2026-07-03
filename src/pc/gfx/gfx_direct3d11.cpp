@@ -62,7 +62,6 @@ struct ShaderProgramD3D11 {
     ComPtr<ID3D11InputLayout> input_layout;
     ComPtr<ID3D11BlendState> blend_state;
 
-    // Shader TODO: Confusing naming, look above at vertex_shader and pixel_shader
     struct Shader *vertexShader;
     struct Shader *fragmentShader;
 

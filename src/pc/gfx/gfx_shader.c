@@ -868,7 +868,6 @@ static void gfx_convert_410_to_450(struct ShaderBinding *referenceBindings, char
 
     // readd the uniforms into a block
     if (sShaderUniformCode[0] != '\0' && strncmp(sanitized, versionText, 17) == 0) {
-        // Shader TODO: is this a good method?
         char *sanitizedSource = strdup(sanitized);
         if (!sanitizedSource) {
             free(sourceCopy);
