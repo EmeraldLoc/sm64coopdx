@@ -139,7 +139,7 @@ static void gfx_sdl_init(const char *window_title) {
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     #endif
     }
@@ -172,6 +172,12 @@ static void gfx_sdl_init(const char *window_title) {
     }
 #else
     ctx = SDL_GL_CreateContext(wnd);
+    if (!ctx) {
+        // try again with 4.1
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+        ctx = SDL_GL_CreateContext(wnd);
+    }
 #endif
 
     gfx_sdl_set_vsync(configWindow.vsync);

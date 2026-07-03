@@ -62,7 +62,7 @@ static struct ShaderProgram *opengl_prg = NULL;
 static struct GLTexture *opengl_tex[2];
 static int opengl_curtex = 0;
 
-static bool sIsLegacy = true;
+static bool sIsLegacy = false;
 
 static bool gfx_opengl_z_is_from_0_to_1(void) {
     return false;
@@ -645,20 +645,21 @@ static void gfx_opengl_init(void) {
         sys_fatal("could not init GLEW:\n%s", glewGetErrorString(err));
 #endif
 
+    sIsLegacy = false;
     tex_cache_size = TEX_CACHE_STEP;
     tex_cache = calloc(tex_cache_size, sizeof(struct GLTexture));
-    if (!tex_cache) sys_fatal("out of memory allocating texture cache");
+    if (!tex_cache) { sys_fatal("out of memory allocating texture cache"); }
 
     // check GL version
     int vmajor = 0;
     int vminor = 0;
     bool is_es = false;
     gl_get_version(&vmajor, &vminor, &is_es);
-    if (vmajor < 4 && vminor < 1 && !is_es) {
+    if (!is_es && (vmajor < 4 || (vmajor == 4 && vminor < 1))) {
         sys_fatal("OpenGL 4.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
     }
 
-    if ((vmajor >= 4 && (vmajor > 4 || vminor < 5)) && !is_es) {
+    if (is_es || (vmajor == 4 && vminor < 5)) {
         sIsLegacy = true;
     }
 
@@ -714,7 +715,7 @@ static void gfx_opengl_end_frame(void) {
 static void gfx_opengl_finish_render(void) {
 }
 
-static const char* gfx_opengl_get_name(void) {
+static const char *gfx_opengl_get_name(void) {
     return sIsLegacy ? "OpenGL (Legacy)" : "OpenGL";
 }
 

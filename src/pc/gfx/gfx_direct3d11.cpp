@@ -532,7 +532,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     prg->used_textures[0] = cc_features.used_textures[0];
     prg->used_textures[1] = cc_features.used_textures[1];
     prg->used_lightmap = cc->cm.light_map;
-    prg->used_fog = cc->cm.used_fog;
+    prg->used_fog = cc->cm.use_fog;
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->world_geometry = cc->cm.world_geometry;
@@ -1128,7 +1128,7 @@ static void gfx_d3d11_on_resize(void) {
 
         if (framePass->width == 0 || framePass->height == 0) {
             // needs to be recreated to redo viewport size
-            gfx_metal_delete_framebuffer(framePass);
+            gfx_d3d11_delete_framebuffer(framePass);
         }
     }
     create_render_target_views(true);
@@ -1162,7 +1162,7 @@ static void gfx_d3d11_start_frame(void) {
 static void gfx_d3d11_end_frame(void) {
 }
 
-static const char* gfx_d3d11_get_name(void) {
+static const char *gfx_d3d11_get_name(void) {
     return "DirectX 11";
 }
 
@@ -1208,8 +1208,8 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_start_frame,
     gfx_d3d11_end_frame,
     gfx_d3d11_finish_render,
-    gfx_d3d11_is_legacy,
     gfx_d3d11_get_name,
+    gfx_d3d11_is_legacy,
 };
 
 #endif
