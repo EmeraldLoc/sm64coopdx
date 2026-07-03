@@ -18,7 +18,7 @@ jobs:
             - name: Install dependencies
               run: |
                 sudo apt update
-                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev zip
+                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev libspirv-cross-c-shared0 glslang-dev zip
 
             - name: Build the game
               run: make -j$(nproc)
@@ -50,7 +50,7 @@ jobs:
             - name: Install dependencies
               run: |
                 sudo apt update
-                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev zip
+                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev libspirv-cross-c-shared0 glslang-dev zip
 
             - name: Build the game
               run: make -j$(nproc) HANDHELD=1
@@ -94,6 +94,8 @@ jobs:
                     mingw-w64-x86_64-gcc
                     mingw-w64-x86_64-glew
                     mingw-w64-x86_64-SDL2
+                    mingw-w64-x86_64-glslang
+                    mingw-w64-x86_64-spirv-cross
                     python3
                     zip
 
@@ -126,7 +128,7 @@ jobs:
 
             - name: Install dependencies
               run: |
-                brew install make mingw-w64 pkg-config glfw3 coreutils
+                brew install make mingw-w64 pkg-config glfw3 coreutils glslang spirv-cross spirv-tools
 
             - name: Compile glew
               run: |
@@ -181,7 +183,7 @@ jobs:
 
             - name: Install dependencies
               run: |
-                brew install make mingw-w64 pkg-config glfw3 coreutils
+                brew install make mingw-w64 pkg-config glfw3 coreutils glslang spirv-cross spirv-tools
 
             - name: Compile glew
               run: |
