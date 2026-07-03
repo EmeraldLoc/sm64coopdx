@@ -1,6 +1,3 @@
-// This is a file to abstract a shader string into a standard structure. It's used to convert GLSL to
-// HLSL as well as allow mods to modify uniforms and such by name
-
 #include <stdlib.h>
 #include <string.h>
 
