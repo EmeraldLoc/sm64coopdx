@@ -277,7 +277,6 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     char *fs_msl = NULL;
     gfx_convert_spirv_to_msl(&vs_msl, vertexShader);
     gfx_convert_spirv_to_msl(&fs_msl, fragmentShader);
-    puts(fs_msl);
 
     // compile shader code to shader libraries
     MTL::Library *vsLibrary = metal_compile_source(vs_msl, "Vertex Shader");
