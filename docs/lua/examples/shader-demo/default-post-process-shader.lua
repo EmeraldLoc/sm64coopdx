@@ -1,7 +1,7 @@
 local function on_post_process_vertex_shader_create()
     local vertexShader = {}
 
-    table.insert(vertexShader, "#version 150")
+    table.insert(vertexShader, "#version 410 core")
     table.insert(vertexShader, "in vec4 aVtxPos;")
     table.insert(vertexShader, "in vec2 aTexCoord;")
     table.insert(vertexShader, "out vec2 vTexCoord;")
@@ -16,7 +16,7 @@ end
 local function on_post_process_fragment_shader_create(cc)
     local fragmentShader = {}
 
-    table.insert(fragmentShader, "#version 150")
+    table.insert(fragmentShader, "#version 410 core")
     table.insert(fragmentShader, "uniform sampler2D uPassTex;")
     table.insert(fragmentShader, "in vec2 vTexCoord;")
     table.insert(fragmentShader, "out vec4 fragColor;")
