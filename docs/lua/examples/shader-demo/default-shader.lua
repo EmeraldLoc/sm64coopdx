@@ -224,9 +224,62 @@ local function on_fragment_shader_create(cc, shaderIndex)
         table.insert(fs, "}")
 
         table.insert(fs, "vec4 sampleTex(in sampler2D tex, in vec2 uv, in vec2 texSize, in bool dofilter, in int filterType) {")
-        table.insert(fs, "    if (dofilter && filterType == 2)")
+        table.insert(fs, "    if (dofilter && filterType == 2) {")
         table.insert(fs, "        return filter3point(tex, uv, texSize);")
+        table.insert(fs, "    }")
         table.insert(fs, "    return texture(tex, uv);")
+        table.insert(fs, "}")
+    end
+
+    if world_geometry then
+        table.insert(fs, "float dither4x4(vec2 position, float brightness) {")
+        table.insert(fs, "    int x = int(mod(position.x, 4.0));")
+        table.insert(fs, "    int y = int(mod(position.y, 4.0));")
+        table.insert(fs, "    int index = x + y * 4;")
+        table.insert(fs, "    float limit = 0.0;")
+        table.insert(fs, "    if (x < 8) {")
+        table.insert(fs, "        if (index == 0) limit = 0.0625;")
+        table.insert(fs, "        if (index == 1) limit = 0.5625;")
+        table.insert(fs, "        if (index == 2) limit = 0.1875;")
+        table.insert(fs, "        if (index == 3) limit = 0.6875;")
+        table.insert(fs, "        if (index == 4) limit = 0.8125;")
+        table.insert(fs, "        if (index == 5) limit = 0.3125;")
+        table.insert(fs, "        if (index == 6) limit = 0.9375;")
+        table.insert(fs, "        if (index == 7) limit = 0.4375;")
+        table.insert(fs, "        if (index == 8) limit = 0.25;")
+        table.insert(fs, "        if (index == 9) limit = 0.75;")
+        table.insert(fs, "        if (index == 10) limit = 0.125;")
+        table.insert(fs, "        if (index == 11) limit = 0.625;")
+        table.insert(fs, "        if (index == 12) limit = 1.0;")
+        table.insert(fs, "        if (index == 13) limit = 0.5;")
+        table.insert(fs, "        if (index == 14) limit = 0.875;")
+        table.insert(fs, "        if (index == 15) limit = 0.375;")
+        table.insert(fs, "    }")
+        table.insert(fs, "    return brightness < limit ? 0.0 : 1.0;")
+        table.insert(fs, "}")
+
+        table.insert(fs, "vec3 rgb2hsv(vec3 c) {")
+        table.insert(fs, "    vec4 K = vec4(0.0, -1.0/3.0, 2.0/3.0, -1.0);")
+        table.insert(fs, "    vec4 p = mix(vec4(c.bg, K.wz),")
+        table.insert(fs, "                 vec4(c.gb, K.xy),")
+        table.insert(fs, "                 step(c.b, c.g));")
+        table.insert(fs, "    vec4 q = mix(vec4(p.xyw, c.r),")
+        table.insert(fs, "                 vec4(c.r, p.yzx),")
+        table.insert(fs, "                 step(p.x, c.r));")
+        table.insert(fs, "    float d = q.x - min(q.w, q.y);")
+        table.insert(fs, "    float e = 1.0e-10;")
+        table.insert(fs, "    return vec3(")
+        table.insert(fs, "        abs(q.z + (q.w - q.y) / (6.0 * d + e)),")
+        table.insert(fs, "        d / (q.x + e),")
+        table.insert(fs, "        q.x")
+        table.insert(fs, "    );")
+        table.insert(fs, "}")
+
+        table.insert(fs, "")
+
+        table.insert(fs, "vec3 hsv2rgb(vec3 c) {")
+        table.insert(fs, "    vec3 p = abs(fract(c.xxx + vec3(0.0, 2.0/3.0, 1.0/3.0)) * 6.0 - 3.0);")
+        table.insert(fs, "    return c.z * mix(vec3(1.0), clamp(p - 1.0, 0.0, 1.0), c.y);")
         table.insert(fs, "}")
     end
 
@@ -242,6 +295,11 @@ local function on_fragment_shader_create(cc, shaderIndex)
         table.insert(fs, "uniform vec3 uLightmapColor;")
     end
 
+    if world_geometry then
+        table.insert(fs, "uniform int uShaderFlags[" .. SHADER_FLAG_MAX .. "];")
+        table.insert(fs, "uniform float uShaderFlagValues[" .. SHADER_FLAG_MAX .. "];")
+    end
+
     if opt_fog then
         table.insert(fs, "uniform vec3 uFogColor;")
     end
@@ -251,7 +309,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     table.insert(fs, "void main() {")
 
     if (opt_alpha and opt_dither) or ccf.do_noise then
-        table.insert(fs, "float noise = floor(random(vec3(gl_FragCoord.xy, uFrameCount)) + 0.5);")
+        table.insert(fs, "float noise = floor(random(floor(vec3(gl_FragCoord.xy, uFrameCount))) + 0.5);")
     end
 
     if ccf.used_textures[1] then
@@ -311,6 +369,47 @@ local function on_fragment_shader_create(cc, shaderIndex)
 
     if opt_texture_edge and opt_alpha then
         table.insert(fs, "if (texel.a > 0.3) texel.a = 1.0; else discard;")
+    end
+
+    if world_geometry then
+        table.insert(fs, "if (uShaderFlags[0] == 1) {")
+        table.insert(fs, "vec3 hsv = rgb2hsv(texel.rgb);")
+        table.insert(fs, "hsv.x = fract(hsv.x + uShaderFlagValues[0]);")
+        table.insert(fs, "vec3 finalColor = hsv2rgb(hsv);")
+        table.insert(fs, "texel.rgb = finalColor;")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[1] == 1) {")
+        table.insert(fs, "const vec3 w = vec3(0.2125, 0.7154, 0.0721);")
+        table.insert(fs, "vec3 intensity = vec3(dot(texel.rgb, w));")
+        table.insert(fs, "texel.rgb = mix(intensity, texel.rgb, uShaderFlagValues[1]);")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[2] == 1) {")
+        table.insert(fs, "texel.rgb *= uShaderFlagValues[2];")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[3] == 1) {")
+        table.insert(fs, "texel.rgb = 0.5 + uShaderFlagValues[3] * (texel.rgb - 0.5);")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[4] == 1) {")
+        table.insert(fs, "texel.rgb = texel.rgb + (uShaderFlagValues[4] - 2) * texel.rgb + texel.rgb;")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[5] == 1) {")
+        table.insert(fs, "texel.rgb *= dither4x4(gl_FragCoord.xy, dot(texel.rgb, vec3(0.299, 0.587, 0.114)));")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[6] == 1) {")
+        table.insert(fs, "int levels = int(max(1.0, uShaderFlagValues[6]));")
+        table.insert(fs, "texel.rgb = floor(texel.rgb * levels) / levels;")
+        table.insert(fs, "}")
+
+        table.insert(fs, "if (uShaderFlags[7] == 1) {")
+        table.insert(fs, "float scan = sin(gl_FragCoord.y * 1.5) * 0.04;")
+        table.insert(fs, "texel.rgb -= scan * uShaderFlagValues[7];")
+        table.insert(fs, "}")
     end
 
     if opt_fog then
