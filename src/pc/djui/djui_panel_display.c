@@ -75,7 +75,7 @@ void djui_panel_display_create(struct DjuiBase* caller) {
 #ifdef OSX_BUILD
                 (char *)gfx_metal_api.get_name(),
 #else
-                gfx_direct3d11_api.get_name()
+                (char *)gfx_direct3d11_api.get_name(),
 #endif
                 (char *)gfx_opengl_api.get_name(),
             };
