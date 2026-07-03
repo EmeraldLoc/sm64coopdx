@@ -2034,15 +2034,18 @@ bool smlua_call_event_hooks_HOOK_ON_VERTEX_SHADER_CREATE(struct ColorCombiner *c
             LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_VERTEX_SHADER_CREATE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }
+        bool outputSet = false;
 
         // return vertexShader
         if (lua_type(L, -1) == LUA_TSTRING) {
             *vertexShader = smlua_to_string(L, -1);
-            lua_settop(L, prevTop);
-            return true;
+            outputSet = true;
         }
 
         lua_settop(L, prevTop);
+        if (outputSet) {
+            return true;
+        }
     }
     return false;
 }
@@ -2066,15 +2069,18 @@ bool smlua_call_event_hooks_HOOK_ON_FRAGMENT_SHADER_CREATE(struct ColorCombiner 
             LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_FRAGMENT_SHADER_CREATE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }
+        bool outputSet = false;
 
         // return fragmentShader
         if (lua_type(L, -1) == LUA_TSTRING) {
             *fragmentShader = smlua_to_string(L, -1);
-            lua_settop(L, prevTop);
-            return true;
+            outputSet = true;
         }
 
         lua_settop(L, prevTop);
+        if (outputSet) {
+            return true;
+        }
     }
     return false;
 }
@@ -2095,15 +2101,18 @@ bool smlua_call_event_hooks_HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE(const char
             LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }
+        bool outputSet = false;
 
         // return vertexShader
         if (lua_type(L, -1) == LUA_TSTRING) {
             *vertexShader = smlua_to_string(L, -1);
-            lua_settop(L, prevTop);
-            return true;
+            outputSet = true;
         }
 
         lua_settop(L, prevTop);
+        if (outputSet) {
+            return true;
+        }
     }
     return false;
 }
@@ -2124,15 +2133,18 @@ bool smlua_call_event_hooks_HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE(const ch
             LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }
+        bool outputSet = false;
 
         // return fragmentShader
         if (lua_type(L, -1) == LUA_TSTRING) {
             *fragmentShader = smlua_to_string(L, -1);
-            lua_settop(L, prevTop);
-            return true;
+            outputSet = true;
         }
 
         lua_settop(L, prevTop);
+        if (outputSet) {
+            return true;
+        }
     }
     return false;
 }
