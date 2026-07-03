@@ -1,7 +1,5 @@
 # Shaders
 
-# Please skip to [dev progress](#dev-progress)
-
 ## Resources
 
 - [Default C Shader in Lua](../examples/shader-demo/default-shader.lua)
@@ -10,23 +8,40 @@
 
 ## Before Starting...
 
-You should have some basic knowledge on how writing mods in Lua works, and for more advanced shaders you should know how to work with shaders. But even if you are a beginner, you may find use in this guide.
+You should have some basic knowledge on how writing mods in Lua works, and for more advanced shaders you should know how to work with shaders, specifically GLSL 410 or even GLSL 330. But even if you are a beginner, you may find use in this guide.
 
 When testing shaders, it is recommended to launch your game with the terminal. While technically the game will fallback on default shaders if a shader fails to compile, there are multiple cases that are common enough to where you will appreciate running the game via a terminal since the console will be unavailable/invisible.
 
 ## Types of Shaders
 
-There are two types of shaders, post process shaders and "scene" shaders. Post process shaders are significantly easier than scene shaders, but scene shaders give you significantly more power. We will mainly be going over post process shaders in this guide.
+There are two types of shaders, post process shaders and "scene" shaders. Post process shaders are significantly easier than scene shaders, but scene shaders give you significantly more power since they run on each triangle rendered in the scene. We will mainly be going over post process shaders in this guide.
 
 The [default C scene shader converted to Lua can be found here](../examples/shader-demo/default-shader.lua). It does all of the boilerplate for you.
+The [default C post process shader converted to Lua can be found here](../examples/shader-demo/default-post-process-shader.lua)
 
 ## Creating Shaders
 
-Scene shaders can be created via the `HOOK_ON_VERTEX_SHADER_CREATE` and `HOOK_ON_FRAGMENT_SHADER_CREATE` hooks. These hooks provides a [ColorCombiner](../structs.md#ColorCombiner) and shader index, and the hooks expects you to return a shader back.
+Scene shaders can be created via the `HOOK_ON_VERTEX_SHADER_CREATE` and `HOOK_ON_FRAGMENT_SHADER_CREATE` hooks. These hooks provides a [ColorCombiner](../structs.md#ColorCombiner), and the hooks expects you to return a shader back.
 
 Post process shaders can be created via the `HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE` and `HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE` hooks. These hooks provide no parameters, and expect you to return a shader back.
 
 The vertex shader allows for manipulating vertex data, whereas the fragment shader allows for manipulating color data. You do not have to provide both, but if you only use one, you are expected to send/receive data back as expected by their respective default shaders.
+
+## Shader Language
+
+Coop uses GLSL 410 core, or GLSL 4.1 core, or `#version 410 core`. It uses a custom system that does a lot of work for you to ensure shaders work on DirectX, Metal, and any other render apis that get added in the future. The custom system automatically assigns input locations, uniform buffers, uniform bindings, and other backend-specific details so that the same GLSL works across OpenGL, DirectX 11, and Metal. Because of this, you should avoid manually specifying input/uniform/sampler locations or uniform blocks.
+
+As a list, things **not** to do are:
+
+- Define explicit locations
+- Define custom uniform blocks
+
+And as a list of things to **always** do:
+
+- Define every input passed from C to the vertex shader (see [inputs](#inputs))
+- For every output in the vertex shader must be a corresponding input in the fragment shader. They must have matching names
+
+Failure in any of the above will result in either a failed to sanitize shader error or a failed to compile shader to SPIR-V cross error.
 
 ## Vertex Shaders
 
@@ -54,14 +69,14 @@ For a post process vertex shader example, we are going to mirror the entire worl
 gl_Position = aVtxPos;
 ```
 
-This sets the vertex position in opengl to our vertex position provided by C. There are 4 main components to this position:
+This sets the vertex position to be passed to the GPU to our vertex position provided by C. There are 4 main components to this position:
 
 - `x` being the X coordinate
 - `y` being the Y coordinate
 - `z` being the Z coordinate
 - `w` being the depth coordinate
 
-Importantly, this position is not in world space, it is instead in clip space, but that does not matter for our example.
+This position in clip space, which means that it is already ready to be inserted into the GPU which is why we send it with no modifications. Go [here](#coordinate-spaces) for a more detailed explanation on coordinate spaces.
 
 To get our mirror effect, we need to flip the `x` coordinate. So we need to create a vector 4 that flips our `x` component, and passes back our `y`, `z`, and `w` components as-is. This can be done via this syntax:
 
@@ -87,7 +102,7 @@ First, unlike the vertex shader, you have to define the output manually in a fra
 out vec4 fragColor;
 ```
 
-In the fragment shader, we create an output for the fragment color. Unlike the vertex shader, an output does not go to another shader, instead, it goes to OpenGL to be used for color data.
+In the fragment shader, we create an output for the fragment color. Unlike the vertex shader, an output does not go to another shader, instead, it goes to the GPU to be used as the color for the pixel.
 
 All the outputs in the vertex shader can be read in the fragment shader as inputs. This allows data to be carried over from one to the other. What was `out` in the vertex shader becomes `in` in the fragment shader.
 
@@ -115,55 +130,51 @@ And that's it! All colors in your game should now be completely inverted! That's
 
 ## Uniforms
 
-A shader may contain uniforms. As a naming convention, uniform variables typically start with a `u`, for instance, `uFrameCount`. There are multiple different uniforms already updated by C, but you can also update custom uniforms in Lua. First, here is a list of all the uniforms updated in C.
+A shader may contain uniforms. As per the GLSL naming convention, uniform variables typically start with a `u`, for instance, `uFrameCount`. There are multiple different uniforms already updated by C, but you can also update custom uniforms in Lua. First, here is a list of all the uniforms updated in C. You can override these uniforms and shove in your own data, but beware, behavior is undefined.
 
 | Uniform Name | Type | Description |
-| ---- | ---- | ---- |
+| ------------ | ---- | ----------- |
 | `uTex0` | `sampler2D` | The primary texture |
 | `uTex1` | `sampler2D` | The secondary texture |
+| `uPassTex` | `sampler2D` | The rendered output texture produced by the previous frame pass |
+| `uPassTexX` | `sampler2D` | The rendered output texture from frame pass X, where X is the pass index. |
 | `uTex0Size` | `vec2` | The width and height of the primary texture |
 | `uTex1Size` | `vec2` | The width and height of the secondary texture |
-| `uTex0Filter` | `bool` | True if the first texture is using linear filtering |
-| `uTex1Filter` | `bool` | True if the second texture is using linear filtering |
-| `uFilter` | `int` | The current global filtering mode (0 = Point, 1 = Linear, 2 = Three-point) |
-| `uFrameCount` | `float` | A timer that increases every frame |
-| `uLightmapColor` | `vec3` | The RGB color multiplier applied to the environment/lightmap |
-| `uModelViewMatrix` | `mat4` | Both the model and view matrix. Multiply by the `uInverseCameraMatrix` to get the model matrix, and multiply by said model matrix to get the view matrix |
-| `uProjectionMatrix` | `mat4` | Transforms view space to clip space, the inverse of the matrix transforms clip space to view space |
-| `uInverseCameraMatrix` | `mat4` | The inverse of the camera matrix. Transforms view space to world space |
-| `uXAdjustRatio` | `float` | For 16:9. This is the amount the X in clip space is adjusted by. When working with `uInverseCameraMatrix`, you should edit the clip space vector to undo the effects done in source |
-| `uPassTex` | `sampler2D` | The texture from the previous pass |
+| `uTex0Filter` | `bool` | `true` if the primary texture uses linear filtering |
+| `uTex1Filter` | `bool` | `true` if the secondary texture uses linear filtering |
+| `uFilter` | `int` | The current global filtering mode (`0` = Point, `1` = Linear, `2` = Three-point) |
+| `uFrameCount` | `float` | The current frame we are on since the lifetime of the program, acts as a timer |
+| `uLightmapColor` | `vec3` | RGB multiplier applied to the environment/light map |
+| `uAspectRatio` | `float` | The current viewport aspect ratio (`width`/`height`) |
+| `uXAdjustRatio` | `float` | The horizontal clip-space scaling factor used for widescreen rendering |
+| `uModelViewProjectionMatrix` | `mat4` | Transforms local/object space directly to clip space |
+| `uModelViewMatrix` | `mat4` | Transforms local/object space to view space |
+| `uModelMatrix` | `mat4` | Transforms local/object space to world space |
+| `uInverseModelMatrix` | `mat4` | Transforms world space back to local/object space |
+| `uViewMatrix` | `mat4` | Transforms world space to view space |
+| `uInverseViewMatrix` | `mat4` | Transforms view space back to world space |
+| `uProjectionMatrix` | `mat4` | Transforms view space to clip space |
+| `uInverseProjectionMatrix` | `mat4` | Transforms clip space back to view space |
+| `uShaderFlags` | `int[]` | Array of shader feature flags provided by the engine |
+| `uShaderFlagValues` | `float[]` | Array of values associated with `uShaderFlags` |
 
-For defining a custom uniform in lua, first, define the uniform and use the uniform as you intend in your shader code. Next you're going to want to store the shader index given by the hook, and if necessary the frame pass index as well. Create a table and store all your shader indexes. Then in lua, in any hook as seen fit, iterate through the list of shader indexes. Now, create a variable and set it to the returned value of `gfx_get_program_id_from_shader_index`. First, use that program with `gfx_use_program`, then get the uniform with `gfx_shader_get_uniform_location`. You should then set it with the appropriate `gfx_shader_set_` function. Here is an example:
+For defining a custom uniform in lua, use the `HOOK_ON_SET_SHADER_UNIFORMS` hook and use the appropriate `gfx_shader_set_*` function.
 
 ```lua
-local fogColor = { r = 168, g = 175, b = 195 }
--- iterate through the shader indexes
-for _, index in pairs(sShaderIndexes) do
-    -- get the program from the shader index
-    local program = gfx_get_program_id_from_shader_index(index)
-    -- use the program so we can set the uniforms
-    gfx_use_program(program)
+local sceneBrightness = 0.5
 
-    -- get the uniform, which is a color of type vec4
-    local uFogColor = gfx_shader_get_uniform_location(program, "uFogColor")
-    -- set the vector 4 at that uniform location
-    gfx_shader_set_vec4(uFogColor, fogColor.r / 255, fogColor.g / 255, fogColor.b / 255, 1.0)
+local function on_set_shader_uniforms()
+    -- if necessary, check frame pass index using this code
+    -- local framePass = gfx_shader_get_current_frame_pass()
+    -- if framePass ~= FRAME_PASS_REQ then return end
 
-    local uFogIntensity = gfx_shader_get_uniform_location(program, "uFogIntensity")
-    gfx_shader_set_float(uFogIntensity, 5000.0)
+    gfx_shader_set_float("uSceneBrightness", sceneBrightness)
 end
+
+hook_event(HOOK_ON_SET_SHADER_UNIFORMS, on_set_shader_uniforms)
 ```
 
 That allows you to define your own uniforms and set your uniforms in Lua!
-
-Lastly, if you have multiple shaders and find yourself frequently calling `gfx_reload_shaders`, you should cleanup the list of shader indexes on a shader refresh. Use the `HOOK_ON_REFRESH_SHADERS` hook to reset the shader indexes table, or do anything you need to when it comes to refreshing shaders.
-
-```lua
-hook_event(HOOK_ON_REFRESH_SHADERS, function ()
-    sShaderIndexes = {}
-end)
-```
 
 ## Inputs
 
@@ -171,15 +182,14 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 
 ### Scene Shader Inputs
 
-| Input Name | Type | Description |
-| ---- | ---- | ---- |
-| `aVtxPos` | `vec4` | The vertex position in clip space (x, y, z, w) |
-| `aTexCoord0` | `vec2` | The UV mapping for the primary texture |
-| `aTexCoord1` | `vec2` | The UV mapping for the secondary texture |
-| `aNormal` | `vec3` | The direction the surface is facing |
-| `aFog` | `vec4` | Fog data provided by C |
-| `aLightMap` | `vec2` | UV coordinates for a light map |
-| `aInputX` | `vec4` | Color/alpha input from the Color Combiner, with X being the input number |
+| Input Name     | Type   | Description |
+| -------------- | ------ | ----------- |
+| `aVtxPos`      | `vec4` | The vertex position in clip space. Can be transformed using matrices (see TODO add coordinate spaces to guide) |
+| `aTexCoord0`   | `vec2` | UV coordinates for the primary texture |
+| `aTexCoord1`   | `vec2` | UV coordinates for the secondary texture |
+| `aLightMap`    | `vec2` | UV coordinates for the light map |
+| `aInputX`      | `vec4` | Color/alpha input from the Color Combiner, with X being the input number. There are 8 color combiner inputs, or `CC_MAX_INPUTS`. |
+| `aNormal`      | `vec3` | The surface normal |
 | `aBarycentric` | `vec3` | The barycentric coordinates of the vertex within its triangle |
 
 ### Post Process Shader Inputs
@@ -189,9 +199,15 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 | `aVtxPos` | `vec4` | The vertex position in clip space (x, y, z, w) |
 | `aTexCoord` | `vec2` | The UV mapping for the pass texture |
 
-## Dealing with the HUD and Skybox
+## Dealing with the HUD
 
-TODO: Update for uniforms provided in shader presets
+First of all, you can't filter out the HUD in a post process shader, you need to use a scene shader in order to do that. Secondly, the best option is to use the world geometry flag provided by the [ColorCombiner](../structs.md#ColorCombiner)
+
+```lua
+local worldGeometry = cc.cm.flags & CM_FLAG_WORLD_GEOMETRY ~= 0
+```
+
+If it is world geometry, it's not the hud, if it's not world geometry, it is the hud. This is the best solution by far. Other solutions exist, such as checking the depth of the Z coord in the clip pos, but they are a lot more convoluted and less efficent.
 
 ## Multipass Shaders
 
@@ -205,7 +221,7 @@ Frame passes can be configured with their configuration functions.
 
 | Function | Description |
 | -------- | ----------- |
-| `gfx_shader_set_frame_pass_viewport` | Sets the viewport/resolution of the frame pass |
+| `gfx_shader_set_frame_pass_viewport` | Sets the viewport/resolution of the frame pass. A viewport width or height of 0 will cause that value to use whatever the current screen size is |
 | `gfx_shader_set_frame_pass_draw_world` | Configures whether the frame pass should redraw the world or use a quad (quad uses post process shader, redrawing the world uses the scene shader) |
 
 ## Using frame passes
@@ -214,27 +230,28 @@ In your shader hooks, you can access which frame pass you are currently on with 
 
 Sometimes you may need to configure things before you redraw the world. For instance, on some shaders you may want to disable culling before you redraw the world. You can use `HOOK_BEFORE_DRAW_GEOMETRY` to achieve this. Check your current frame pass index using `gfx_shader_get_current_frame_pass`, and run code accordingly in this hook. This hook isn't unique to frame passes, it's called anytime the world geometry is about to be drawn.
 
-## A Note on Matrices
+## Coordinate Spaces
 
-The vertex position (`aVtxPos`) provided by C is in clip space. As shown in the [uniforms](#Uniforms) section, many matrices are provided by C. There are enough matrices to realistically get to any space you need.
+The vertex position (`aVtxPos`) provided by C is in clip space. As shown in the [uniforms](#Uniforms) section, many matrices are provided by C. There are enough matrices to get to any space you need. Each uniform explains what it transforms to, but here are some examples of the most common ones:
 
-## Limitations
+**Getting to view space from clip space:**
 
-- Realistically, no more than a single shader can be used at a time. This means that if 2 mods want to use their own shader, issues will occur.
-- There are only so many inputs. While many are provided, there may still be some missing for your own shaders.
-- DirectX is not supported.
+```lua
+vec4 viewPos = uInverseProjectionMatrix * clipPos;
+```
 
-While these limitations may improve in the future, this is where we are stuck for right now.
+**Getting to world space from view space:**
 
-## Dev Progress
+```lua
+vec4 worldPos = uInverseViewMatrix * viewPos;
+```
 
-Good knowledge:
+**Getting to local/object space from world space:**
 
-- NDC Z depth range is 0-1 on both opengl and directx, unlike before where it was -1 to 1 on opengl. This removes the need for seeing if the z pos is -1 to 1 or 0 to 1
-- Fragment inputs MUST match vertex outputs in shaders or else inputs will not be set properly. That is not what opengl normally does because it is pretty lax, but for anything like dx11, and metal, it is much more strict
+```lua
+vec4 localPos = uInverseModelMatrix * worldPos;
+```
 
-Current Bugs:
+A sweet visualtion of these matrices can be found [here](https://bitly.com/98K8eH)
 
-- ~~Painting transition to bitdw doesnt work in dx11, opengl, or metal~~
-- Particles only spawn in certain levels. Most likely cause is particles inheriting garbage data, have not looked into deeply
-- ~~Flickering in Metal~~
+Some devices are stuck on legacy renderers. That means that the NDC Z range is from -1 to 1 when normally it is from 0 to 1. Lua can detect and modify shaders accordingly with `gfx_is_legacy_renderer`. This is an unfortunate limitation that can't really be fixed unless we stop supporting a bunch of devices. This may change in the future, but for now this is the case.
