@@ -98,6 +98,7 @@ local function on_vertex_shader_create(cc, shaderIndex)
 
     table.insert(vs, "#version 410 core")
     table.insert(vs, "in vec4 aVtxPos;")
+    table.insert(vs, "in vec4 aLocalPos;")
 
     for t = 0, 1 do
         table.insert(vs, string.format("in vec2 aTexCoord%d;", t))
@@ -296,6 +297,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if world_geometry then
+        table.insert(fs, "uniform bool uShaderFlagsEnabled;")
         table.insert(fs, "uniform int uShaderFlags[" .. SHADER_FLAG_MAX .. "];")
         table.insert(fs, "uniform float uShaderFlagValues[" .. SHADER_FLAG_MAX .. "];")
     end
@@ -372,7 +374,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if world_geometry then
-        table.insert(fs, "if (uShaderFlags) {")
+        table.insert(fs, "if (uShaderFlagsEnabled) {")
 
         table.insert(fs, "if (uShaderFlags[0] == 1) {")
         table.insert(fs, "vec3 hsv = rgb2hsv(texel.rgb);")
