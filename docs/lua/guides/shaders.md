@@ -147,14 +147,11 @@ A shader may contain uniforms. As per the GLSL naming convention, uniform variab
 | `uLightmapColor` | `vec3` | RGB multiplier applied to the environment/light map |
 | `uAspectRatio` | `float` | The current viewport aspect ratio (`width`/`height`) |
 | `uXAdjustRatio` | `float` | The horizontal clip-space scaling factor used for widescreen rendering |
-| `uModelViewProjectionMatrix` | `mat4` | Transforms local/object space directly to clip space |
-| `uModelViewMatrix` | `mat4` | Transforms local/object space to view space |
-| `uModelMatrix` | `mat4` | Transforms local/object space to world space |
-| `uInverseModelMatrix` | `mat4` | Transforms world space back to local/object space |
+| `uModelViewProjectionMatrix` | `mat4` | Transforms local space directly to clip space |
+| `uModelViewMatrix` | `mat4` | Transforms local space to view space |
+| `uModelMatrix` | `mat4` | Transforms local space to world space |
 | `uViewMatrix` | `mat4` | Transforms world space to view space |
-| `uInverseViewMatrix` | `mat4` | Transforms view space back to world space |
 | `uProjectionMatrix` | `mat4` | Transforms view space to clip space |
-| `uInverseProjectionMatrix` | `mat4` | Transforms clip space back to view space |
 | `uShaderFlags` | `int[]` | Array of shader feature flags provided by the engine |
 | `uShaderFlagValues` | `float[]` | Array of values associated with `uShaderFlags` |
 
@@ -184,7 +181,8 @@ Inputs are passed into the vertex shader for further use. Here is a list of inpu
 
 | Input Name     | Type   | Description |
 | -------------- | ------ | ----------- |
-| `aVtxPos`      | `vec4` | The vertex position in clip space. Can be transformed using matrices (see TODO add coordinate spaces to guide) |
+| `aVtxPos`      | `vec4` | The vertex position in clip space |
+| `aLocalSpace`  | `vec4` | The vertex position in local space. This is where you should use matrices to transform the space you are currently in. For more info on coordinate spaces, go [here](#coordinate-spaces) |
 | `aTexCoord0`   | `vec2` | UV coordinates for the primary texture |
 | `aTexCoord1`   | `vec2` | UV coordinates for the secondary texture |
 | `aLightMap`    | `vec2` | UV coordinates for the light map |
@@ -232,26 +230,28 @@ Sometimes you may need to configure things before you redraw the world. For inst
 
 ## Coordinate Spaces
 
-The vertex position (`aVtxPos`) provided by C is in clip space. As shown in the [uniforms](#Uniforms) section, many matrices are provided by C. There are enough matrices to get to any space you need. Each uniform explains what it transforms to, but here are some examples of the most common ones:
+The vertex position (`aVtxPos`) provided by C is in clip space stretched for widescreen support, which isn't really suitable for matrix transformations, so instead use `aLocalSpace`, which is in local space, also known as object space, or model space. As shown in the [uniforms](#Uniforms) section, many matrices are provided by C to transform `aLocalSpace` to other spaces. There are enough matrices to get to nearly any space you need. Each uniform explains what it transforms to, but here are some examples of the most common ones:
 
-**Getting to view space from clip space:**
+**Getting to world space from local space:**
 
 ```lua
-vec4 viewPos = uInverseProjectionMatrix * clipPos;
+vec4 worldPos = uModelMatrix * localPos;
 ```
 
-**Getting to world space from view space:**
+**Getting to view space from world space:**
 
 ```lua
-vec4 worldPos = uInverseViewMatrix * viewPos;
+vec4 viewPos = uViewMatrix * worldPos;
 ```
 
-**Getting to local/object space from world space:**
+**Getting to clip space from view space:**
 
 ```lua
-vec4 localPos = uInverseModelMatrix * worldPos;
+vec4 clipPos = uProjectionMatrix * worldPos;
 ```
 
 A sweet visualtion of these matrices can be found [here](https://bitly.com/98K8eH)
+
+To reiterate, `aVtxPos` is in clip space, but it also has adjustments made to it to ensure that it has widescreen adjustments, and accounts for MSAA in the HUD properly. So it's not *pure* clip space. If you were to get to clip space using the `uModelViewProjectionMatrix` on `aLocalPos`, it would be different from `aVtxPos`. Uniforms such as `uXAdjustRatio` exist to help with that if necessary.
 
 Some devices are stuck on legacy renderers. That means that the NDC Z range is from -1 to 1 when normally it is from 0 to 1. Lua can detect and modify shaders accordingly with `gfx_is_legacy_renderer`. This is an unfortunate limitation that can't really be fixed unless we stop supporting a bunch of devices. This may change in the future, but for now this is the case.
