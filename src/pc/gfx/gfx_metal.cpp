@@ -28,7 +28,8 @@ extern "C" {
     #include "gfx_sdl.h"
 }
 
-#define MAX_RING_BUFFER_SIZE 4 * 1024 * 1024
+#define MAX_FRAMES_IN_FLIGHT 3
+#define MAX_STORAGE_BUFFER_SIZE 4 * 1024 * 1024
 
 struct TextureData {
     MTL::Texture *texture = NULL;
@@ -79,8 +80,13 @@ static struct {
     MTL::Buffer *vertexBuffer;
     MTL::Library *library;
 
-    MTL::Buffer *dynamicRingBuffer[MAX_FRAME_PASSES];
-    size_t ringBufferOffset[MAX_FRAME_PASSES];
+    dispatch_semaphore_t frameSemaphore;
+
+    MTL::Buffer *dynamicStorageBuffer[MAX_FRAMES_IN_FLIGHT];
+    size_t storageBufferOffset[MAX_FRAMES_IN_FLIGHT];
+
+    u8 currentFrame;
+    bool startedFrame;
 
     struct ShaderProgramMetal shaderProgramPool[MAX_FRAME_PASSES][CC_MAX_SHADERS];
     u8 shaderProgramPoolSize[MAX_FRAME_PASSES] = { 0 };
@@ -116,6 +122,16 @@ static struct {
     s8 lastZModeDecal = -1;
     MTL::PrimitiveType lastPrimitiveType = MTL::PrimitiveTypeTriangle;
 } metal;
+
+static void setup_command_buffer() {
+    if (metal.commandBuffer) { return; }
+    metal.drawable = metal.layer->nextDrawable();
+    metal.commandBuffer = metal.commandQueue->commandBuffer();
+    metal.commandBuffer->addCompletedHandler(^void( MTL::CommandBuffer *commandBuffer ){
+        dispatch_semaphore_signal(metal.frameSemaphore);
+    });
+    memset(metal.storageBufferOffset, 0, sizeof(metal.storageBufferOffset));
+}
 
 static MTL::Library *metal_compile_source(const char *sourceCode, const char *stageName) {
     auto nsSource = NS::String::string(sourceCode, NS::UTF8StringEncoding);
@@ -591,12 +607,7 @@ void gfx_metal_delete_framebuffer(struct FramePass *framePass) {
 void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     if (!framePass || !framePass->fbo) return;
 
-    // setup command buffer if necessary
-    if (!metal.commandBuffer) {
-        metal.drawable = metal.layer->nextDrawable();
-        metal.commandBuffer = metal.commandQueue->commandBuffer();
-        memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
-    }
+    setup_command_buffer();
 
     if (metal.encoder) {
         metal.encoder->endEncoding();
@@ -649,12 +660,7 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
 }
 
 void gfx_metal_reset_framebuffer(void) {
-    // setup command buffer if necessary
-    if (!metal.commandBuffer) {
-        metal.drawable = metal.layer->nextDrawable();
-        metal.commandBuffer = metal.commandQueue->commandBuffer();
-        memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
-    }
+    setup_command_buffer();
 
     if (metal.encoder) {
         metal.encoder->endEncoding();
@@ -926,49 +932,49 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     // upload uniform data
     if (metal.shaderProgram->vertexUboSize > 0 && metal.shaderProgram->vertexUniformBuffer != NULL) {
         size_t size = metal.shaderProgram->vertexUboSize;
-        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
+        size_t alignedOffset = (metal.storageBufferOffset[framePassIndex] + 15) & ~15;
 
-        if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
+        if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
+            uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
             memcpy(dst, metal.shaderProgram->vertexUniformBuffer, size);
 
-            metal.encoder->setVertexBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 0);
-            metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
+            metal.encoder->setVertexBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 0);
+            metal.storageBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
-            printf("Metal: Ring buffer is full!\n");
+            printf("Metal: Storage buffer is full!\n");
         }
     }
 
     if (metal.shaderProgram->fragmentUboSize > 0 && metal.shaderProgram->fragmentUniformBuffer != NULL) {
         size_t size = metal.shaderProgram->fragmentUboSize;
-        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
+        size_t alignedOffset = (metal.storageBufferOffset[framePassIndex] + 15) & ~15;
 
-        if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
+        if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
+            uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
             memcpy(dst, metal.shaderProgram->fragmentUniformBuffer, size);
 
-            metal.encoder->setFragmentBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 0);
-            metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
+            metal.encoder->setFragmentBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 0);
+            metal.storageBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
-            printf("Metal: Ring buffer is full!\n");
+            printf("Metal: Storage buffer is full!\n");
         }
     }
 
     if (buf_vbo_len > 0) {
         size_t size = buf_vbo_len * sizeof(float);
-        size_t alignedOffset = (metal.ringBufferOffset[framePassIndex] + 15) & ~15;
+        size_t alignedOffset = (metal.storageBufferOffset[framePassIndex] + 15) & ~15;
 
-        if (alignedOffset + size <= MAX_RING_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicRingBuffer[framePassIndex]->contents() + alignedOffset;
+        if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
+            uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
             memcpy(dst, buf_vbo, size);
 
-            metal.encoder->setVertexBuffer(metal.dynamicRingBuffer[framePassIndex], alignedOffset, 1);
-            metal.ringBufferOffset[framePassIndex] = alignedOffset + size;
+            metal.encoder->setVertexBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 1);
+            metal.storageBufferOffset[framePassIndex] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
-            printf("Metal: Ring buffer is full!\n");
+            printf("Metal: Storage buffer is full!\n");
         }
     }
 
@@ -1015,13 +1021,16 @@ void gfx_metal_init(void) {
         sys_fatal("Failed to create Metal vertex buffer.");
     }
 
-    for (int i = 0; i < MAX_FRAME_PASSES; i++) {
-        metal.dynamicRingBuffer[i] = metal.device->newBuffer(MAX_RING_BUFFER_SIZE, MTL::ResourceStorageModeShared);
-        if (!metal.dynamicRingBuffer[i]) {
-            sys_fatal("Failed to create Metal dynamic ring buffer pool.");
+    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+        metal.dynamicStorageBuffer[i] = metal.device->newBuffer(MAX_STORAGE_BUFFER_SIZE, MTL::ResourceStorageModeShared);
+        if (!metal.dynamicStorageBuffer[i]) {
+            sys_fatal("Failed to create Metal dynamic storage buffer pool.");
         }
-        metal.ringBufferOffset[i] = 0;
+        metal.storageBufferOffset[i] = 0;
     }
+
+    // setup semaphore
+    metal.frameSemaphore = dispatch_semaphore_create(MAX_FRAMES_IN_FLIGHT);
 
     // setup depth stencil
     MTL::DepthStencilDescriptor *depthStencilDesc = MTL::DepthStencilDescriptor::alloc()->init();
@@ -1070,12 +1079,14 @@ void gfx_metal_on_resize(void) {
 }
 
 void gfx_metal_start_frame(void) {
-    // setup command buffer
-    if (!metal.commandBuffer) {
-        metal.drawable = metal.layer->nextDrawable();
-        metal.commandBuffer = metal.commandQueue->commandBuffer();
-        memset(metal.ringBufferOffset, 0, sizeof(metal.ringBufferOffset));
+    if (!metal.startedFrame) {
+        dispatch_semaphore_wait(metal.frameSemaphore, DISPATCH_TIME_FOREVER);
+        // increment the current frame
+        metal.currentFrame = (metal.currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        metal.startedFrame = true;
     }
+
+    setup_command_buffer();
 
     // clear cache for frame
     metal.lastShaderProgram = NULL;
@@ -1105,10 +1116,10 @@ void gfx_metal_finish_render(void) {
             metal.drawable = NULL;
         }
         metal.commandBuffer->commit();
-        // TODO: Figure out what is causing the gpu to lose data, this shouldnt be here
-        metal.commandBuffer->waitUntilCompleted();
         metal.commandBuffer = NULL;
     }
+
+    metal.startedFrame = false;
 }
 
 const char *gfx_metal_get_name(void) {
