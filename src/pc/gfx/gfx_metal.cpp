@@ -261,6 +261,7 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     char *fs_msl = NULL;
     gfx_convert_spirv_to_msl(&vs_msl, vertexShader);
     gfx_convert_spirv_to_msl(&fs_msl, fragmentShader);
+    puts(fs_msl);
 
     // compile shader code to shader libraries
     MTL::Library *vsLibrary = metal_compile_source(vs_msl, "Vertex Shader");
@@ -696,38 +697,27 @@ void gfx_metal_reset_framebuffer(void) {
 static void gfx_metal_set_uniform_for_specific_shader(struct ShaderProgramMetal *prg, struct Shader *shader, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
     if (shader == NULL) { return; }
 
-    size_t elementStride = 0;
-
-    switch (type) {
-        case SHADER_UNIFORM_TYPE_BOOL:
-        case SHADER_UNIFORM_TYPE_INT:
-        case SHADER_UNIFORM_TYPE_FLOAT: elementStride = sizeof(float); break;
-        case SHADER_UNIFORM_TYPE_VEC2:  elementStride = sizeof(float) * 2; break;
-        case SHADER_UNIFORM_TYPE_VEC3:  elementStride = sizeof(float) * 3; break;
-        case SHADER_UNIFORM_TYPE_VEC4:  elementStride = sizeof(float) * 4; break;
-        case SHADER_UNIFORM_TYPE_MAT4:  elementStride = sizeof(float) * 16; break;
-    }
-
-    size_t bytesNeeded = elementStride * numElements;
-
     for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
         if (shader->shaderUniforms[i].size == 0) { break; }
 
         if (strcmp(shader->shaderUniforms[i].name, name) == 0) {
-            int location = shader->shaderUniforms[i].location;
-            int allowedSize = shader->shaderUniforms[i].size;
+            struct ShaderUniform *uniform = &shader->shaderUniforms[i];
 
-            size_t bytesToCopy = (bytesNeeded < (size_t)allowedSize) ? bytesNeeded : (size_t)allowedSize;
+            // get starting location of pointer
+            u8 *dst = shader->stage == GLSLANG_STAGE_VERTEX ? prg->vertexUniformBuffer : prg->fragmentUniformBuffer;
+            // increment pointer by our uniform location
+            dst += uniform->location;
 
-            if (shader->stage == GLSLANG_STAGE_VERTEX) {
-                if (prg->vertexUniformBuffer != NULL) {
-                    memcpy(&prg->vertexUniformBuffer[location], data, bytesToCopy);
+            if (uniform->arrayLength > 1) {
+                const u8 *src = (const u8 *)data;
+                u32 count = MIN(numElements, uniform->arrayLength); // don't let numElements write to garbage data
+                for (u32 j = 0; j < count; j++) {
+                    memcpy(dst + j * uniform->arrayStride, src + j * uniform->elementSize, uniform->elementSize);
                 }
             } else {
-                if (prg->fragmentUniformBuffer != NULL) {
-                    memcpy(&prg->fragmentUniformBuffer[location], data, bytesToCopy);
-                }
+                memcpy(dst, data, uniform->size);
             }
+
             return;
         }
     }

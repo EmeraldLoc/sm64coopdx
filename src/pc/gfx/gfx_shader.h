@@ -46,6 +46,9 @@ struct ShaderUniform {
     char name[MAX_SHADER_VARIABLE_NAME];
     int location;
     int size;
+    int arrayStride;
+    int elementSize;
+    int arrayLength;
 };
 
 struct ShaderInput {

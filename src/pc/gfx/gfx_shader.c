@@ -998,22 +998,10 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
         } \
     } while(0)
 
-void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
-    spvc_context context = NULL;
-    spvc_compiler compiler = NULL;
-    spvc_parsed_ir ir = NULL;
-    const char *hlsl_code = NULL;
-
-    SpirVShader *spirvShader = &shader->spirVShader;
-
-    SPVC_CHECK(spvc_context_create(&context));
-    SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
-    SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_HLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
-
+static void reflect_uniform_data(struct Shader *shader, spvc_context context, spvc_compiler compiler) {
     spvc_resources resources;
     spvc_compiler_create_shader_resources(compiler, &resources);
 
-    // get list of uniforms
     const spvc_reflected_resource *list;
     size_t count;
     SPVC_CHECK(spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &list, &count));
@@ -1042,13 +1030,48 @@ void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
             u32 memberOffset = 0;
             spvc_compiler_type_struct_member_offset(compiler, type, m, &memberOffset);
 
+            spvc_type memberType = spvc_compiler_get_type_handle(compiler, spvc_type_get_member_type(type, m));
+
+            u32 arrayLength = 1;
+            u32 arrayStride = 0;
+
+            // get array length and stride if necessary
+            if (spvc_type_get_num_array_dimensions(memberType) > 0) {
+                arrayLength = spvc_type_get_array_dimension(memberType, 0);
+                SPVC_CHECK(spvc_compiler_type_struct_member_array_stride(compiler, type, m, &arrayStride));
+            }
+
+            u32 width = spvc_type_get_bit_width(memberType) / 8;
+            u32 columns = spvc_type_get_columns(memberType);
+            u32 vectorSize = spvc_type_get_vector_size(memberType);
+
+            u32 elementSize = width * columns * vectorSize;
+
             strncpy(shader->shaderUniforms[uniformIndex].name, memberName, MAX_SHADER_VARIABLE_NAME - 1);
             shader->shaderUniforms[uniformIndex].location = memberOffset;
             shader->shaderUniforms[uniformIndex].size = memberSize;
+            shader->shaderUniforms[uniformIndex].arrayStride = arrayStride;
+            shader->shaderUniforms[uniformIndex].elementSize = elementSize;
+            shader->shaderUniforms[uniformIndex].arrayLength = arrayLength;
 
             uniformIndex++;
         }
     }
+}
+
+void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
+    spvc_context context = NULL;
+    spvc_compiler compiler = NULL;
+    spvc_parsed_ir ir = NULL;
+    const char *hlsl_code = NULL;
+
+    SpirVShader *spirvShader = &shader->spirVShader;
+
+    SPVC_CHECK(spvc_context_create(&context));
+    SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
+    SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_HLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
+
+    reflect_uniform_data(shader, context, compiler);
 
     spvc_compiler_options options;
     spvc_compiler_create_compiler_options(compiler, &options);
@@ -1077,42 +1100,7 @@ void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
     spvc_resources resources;
     spvc_compiler_create_shader_resources(compiler, &resources);
 
-    // get list of uniforms
-    const spvc_reflected_resource *list;
-    size_t count;
-    SPVC_CHECK(spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &list, &count));
-
-    int uniformIndex = 0;
-
-    for (size_t i = 0; i < count; i++) {
-        // get the type and block size for the entry in the list
-        spvc_type type = spvc_compiler_get_type_handle(compiler, list[i].type_id);
-
-        size_t block_size = 0;
-        spvc_compiler_get_declared_struct_size(compiler, type, &block_size);
-
-        shader->uboTotalSize = (block_size + 15) & ~15;
-
-        // iterate through all members, or individual uniforms
-        u32 memberCount = spvc_type_get_num_member_types(type);
-        for (u32 m = 0; m < memberCount; m++) {
-            if (uniformIndex >= MAX_SHADER_UNIFORMS) break;
-
-            const char *memberName = spvc_compiler_get_member_name(compiler, list[i].base_type_id, m);
-
-            size_t memberSize = 0;
-            spvc_compiler_get_declared_struct_member_size(compiler, type, m, &memberSize);
-
-            u32 memberOffset = 0;
-            spvc_compiler_type_struct_member_offset(compiler, type, m, &memberOffset);
-
-            strncpy(shader->shaderUniforms[uniformIndex].name, memberName, MAX_SHADER_VARIABLE_NAME - 1);
-            shader->shaderUniforms[uniformIndex].location = memberOffset;
-            shader->shaderUniforms[uniformIndex].size = memberSize;
-
-            uniformIndex++;
-        }
-    }
+    reflect_uniform_data(shader, context, compiler);
 
     // set compilations options
     spvc_compiler_options options;
