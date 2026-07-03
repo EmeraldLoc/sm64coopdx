@@ -781,10 +781,10 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
     }
 
 #ifdef __SSE__
-    __m128 mat0 = _mm_load_ps(rsp.MP_matrix[0]);
-    __m128 mat1 = _mm_load_ps(rsp.MP_matrix[1]);
-    __m128 mat2 = _mm_load_ps(rsp.MP_matrix[2]);
-    __m128 mat3 = _mm_load_ps(rsp.MP_matrix[3]);
+    __m128 mat0 = _mm_load_ps(rsp.MVP_matrix[0]);
+    __m128 mat1 = _mm_load_ps(rsp.MVP_matrix[1]);
+    __m128 mat2 = _mm_load_ps(rsp.MVP_matrix[2]);
+    __m128 mat3 = _mm_load_ps(rsp.MVP_matrix[3]);
 #endif
 
     for (size_t i = 0; i < n_vertices; i++, dest_index++) {
