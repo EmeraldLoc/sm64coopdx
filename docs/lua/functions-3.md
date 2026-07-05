@@ -1,5 +1,3 @@
-## [:rewind: Lua Functions](functions.md)
-
 ---
 
 [< prev](functions-2.md) | [1](functions.md) | [2](functions-2.md) | 3 | [4](functions-4.md) | [5](functions-5.md) | [6](functions-6.md) | [7](functions-7.md) | [next >](functions-4.md)]

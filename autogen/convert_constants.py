@@ -8,12 +8,16 @@ from exposed_lists import \
     constants_blacklist, \
     constants_hidden
 
-verbose = len(sys.argv) > 1 and (sys.argv[1] == "-v" or sys.argv[1] == "--verbose")
+cli_opts = {
+    "rtd": False,
+    "verbose": False,
+}
 
 in_filenames = ['autogen/lua_constants/built-in.lua', 'autogen/lua_constants/math.lua']
 deprecated_filename = 'autogen/lua_constants/deprecated.lua'
 out_filename = 'src/pc/lua/smlua_constants_autogen.c'
 out_filename_docs = 'docs/lua/constants.md'
+out_filename_docs_rtd = 'docs/lua/references/constants.md'
 out_filename_defs = 'autogen/lua_definitions/constants.lua'
 
 ############################################################################
@@ -141,7 +145,7 @@ def process_define(filename, line, inIfBlock):
                 continue
             p = re.sub(r'0x[a-fA-F0-9]+', '', p)
             if re.search(r'[a-z]', p) != None and "VERSION_TEXT" not in line and "SM64COOPDX_VERSION" not in line:
-                if 'gCurrentObject' not in line and verbose:
+                if 'gCurrentObject' not in line and cli_opts['verbose']:
                     print('UNRECOGNIZED DEFINE: ' + line)
                 return None
 
@@ -308,13 +312,16 @@ def build_to_c(built_files):
 ############################################################################
 
 def doc_constant_index(processed_files):
-    s = '# Supported Constants\n'
+    if not cli_opts['rtd']:
+        s = '# Supported Constants\n'
+    else:
+        s = ''
     for processed_file in processed_files:
         s += '- [%s](#%s)\n' % (processed_file['filename'], processed_file['filename'].replace('.', ''))
         constants = [x for x in processed_file['constants'] if 'identifier' in x]
         for c in constants:
             if len(c['constants']) > 0:
-                s += '    - [enum %s](#enum-%s)\n' % (c['identifier'], c['identifier'])
+                s += '    - [enum %s](#enum-%s)\n' % (c['identifier'], c['identifier'].lower())
     s += '\n<br />\n\n'
     return s
 
@@ -329,7 +336,10 @@ def doc_constant(fname, processed_constant):
             return ''
 
         enum = 'enum ' + processed_constant['identifier']
-        s += '\n### [%s](#%s)\n' % (enum, processed_constant['identifier'])
+        if cli_opts['rtd']:
+            s += '\n### %s\n' % enum
+        else:
+            s += '\n### [%s](#%s)\n' % (enum, processed_constant['identifier'].replace('.', ''))
         s += '| Identifier | Value |\n'
         s += '| :--------- | :---- |\n'
         for c in constants:
@@ -346,17 +356,26 @@ def doc_constant(fname, processed_constant):
     return s
 
 def doc_file(processed_file):
-    s = '## [%s](#%s)\n' % (processed_file['filename'], processed_file['filename'])
+    s = '## [%s](#%s)\n' % (processed_file['filename'], processed_file['filename'].replace('.', ''))
     constants = processed_file['constants']
     for c in constants:
         s += doc_constant(processed_file['filename'], c)
 
-    s += '\n[:arrow_up_small:](#)\n'
+    if not cli_opts['rtd']:
+        s += '\n[:arrow_up_small:](#)\n'
     s += '\n<br />\n\n'
     return s
 
 def doc_files(processed_files):
     s = '## [:rewind: Lua Reference](lua.md)\n\n'
+    s += doc_constant_index(processed_files)
+    for file in processed_files:
+        s += doc_file(file)
+
+    return s
+
+def doc_files_for_rtd(processed_files):
+    s = '# Constants Reference\n\n'
     s += doc_constant_index(processed_files)
     for file in processed_files:
         s += doc_file(file)
@@ -441,6 +460,13 @@ def build_to_def(processed_files):
 ############################################################################
 
 def main():
+    # process CLI opts
+    for argument in sys.argv:
+        if argument == '--verbose' or argument == '-v':
+            cli_opts['verbose'] = True
+        if argument == '--read-the-docs' or argument == '-r':
+            cli_opts['rtd'] = True
+
     processed_files = process_files()
     built_files = build_files(processed_files)
     validate_identifiers(built_files)
@@ -450,9 +476,17 @@ def main():
     with open(get_path(out_filename), 'w', encoding='utf-8', newline='\n') as out:
         out.write(built_c)
 
-    doc = doc_files(processed_files)
-    with open(get_path(out_filename_docs), 'w', encoding='utf-8', newline='\n') as out:
-        out.write(doc)
+    if cli_opts['rtd']:
+        doc = doc_files_for_rtd(processed_files)
+    else:
+        doc = doc_files(processed_files)
+
+    if cli_opts['rtd']:
+        with open(get_path(out_filename_docs_rtd), 'w', encoding='utf-8', newline='\n') as out:
+            out.write(doc)
+    else:
+        with open(get_path(out_filename_docs), 'w', encoding='utf-8', newline='\n') as out:
+            out.write(doc)
 
     defs = build_to_def(processed_files)
     with open(get_path(out_filename_defs), 'w', encoding='utf-8', newline='\n') as out:

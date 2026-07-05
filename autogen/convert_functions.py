@@ -11,7 +11,11 @@ from exposed_lists import \
     functions_version_excludes, \
     functions_params_types
 
-verbose = len(sys.argv) > 1 and (sys.argv[1] == "-v" or sys.argv[1] == "--verbose")
+cli_opts = {
+    "rtd": False,
+    "verbose": False,
+    "fuzz": False,
+}
 
 rejects = ""
 integer_types = ["u8", "u16", "u32", "u64", "s8", "s16", "s32", "s64", "int", "lua_Integer"]
@@ -936,7 +940,7 @@ def build_function(function, do_extern):
         if function['description'][0] != "":
             global total_doc_functions
             total_doc_functions += 1
-        elif verbose:
+        elif cli_opts['verbose']:
             print("UNDOCUMENTED: " + function['filename'] + ":     " + function['line'])
 
     return s + "\n"
@@ -1181,7 +1185,7 @@ def doc_function(fname, function):
         return ''
 
     # debug print out lua nuke functions
-    if len(sys.argv) >= 2 and sys.argv[1] == 'fuzz':
+    if cli_opts['fuzz']:
         output_fuzz_function(fname, function)
 
     if not allowed_identifier(None, functions_hidden, fname, function['identifier']):
@@ -1253,7 +1257,8 @@ def doc_function(fname, function):
     s += '\n### C Prototype\n'
     s += '`%s`\n' % function['line'].strip()
 
-    s += '\n[:arrow_up_small:](#)\n\n<br />\n'
+    if not cli_opts['rtd']:
+        s += '\n[:arrow_up_small:](#)\n\n<br />\n'
 
     return s
 
@@ -1320,6 +1325,24 @@ def doc_files(processed_files):
 
         with open(get_path(out_filename_docs % page_name), 'w', encoding='utf-8', newline='\n') as out:
             out.write(buffer)
+
+def doc_files_for_rtd(processed_files):
+    for processed_file in processed_files:
+        for function in processed_file["functions"]:
+            doc = doc_function(processed_file["filename"], function)
+
+            if not doc:
+                continue
+
+            filename = function["identifier"] + ".md"
+
+            with open(
+                get_path(out_filename_docs + filename),
+                "w",
+                encoding="utf-8",
+                newline="\n",
+            ) as out:
+                out.write(doc)
 
 ############################################################################
 
@@ -1395,6 +1418,19 @@ def def_files(processed_files):
 ############################################################################
 
 def main():
+    # process CLI opts
+    for argument in sys.argv:
+        if argument == "--verbose" or argument == "-v":
+            cli_opts['verbose'] = True
+        if argument == "--fuzz" or argument == "-f":
+            cli_opts['fuzz'] = True
+        if argument == "--read-the-docs" or argument == "-r":
+            cli_opts['rtd'] = True
+
+    if cli_opts['rtd']:
+        global out_filename_docs # i hate this stupid language
+        out_filename_docs = "docs/lua/references/functions_reference/"
+
     processed_files = process_files()
 
     built_vec_types = build_vec_types()
@@ -1416,7 +1452,10 @@ def main():
     if rejects != "":
         print(f"REJECTS:\n{rejects}")
 
-    doc_files(processed_files)
+    if cli_opts['rtd']:
+        doc_files_for_rtd(processed_files)
+    else:
+        doc_files(processed_files)
     def_files(processed_files)
 
     global total_functions
@@ -1424,7 +1463,7 @@ def main():
     global total_doc_functions
     print(f"Total documented functions: {total_doc_functions} ({round((total_doc_functions / total_functions) * 100, 2)}%)")
 
-    if len(sys.argv) >= 2 and sys.argv[1] == 'fuzz':
+    if cli_opts['fuzz']:
         output_fuzz_file()
 
 if __name__ == '__main__':
