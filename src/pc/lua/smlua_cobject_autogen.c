@@ -755,18 +755,19 @@ static struct LuaObjectField sDjuiColorFields[LUA_DJUI_COLOR_FIELD_COUNT] = {
     { "r", LVT_U8, offsetof(struct DjuiColor, r), false, LOT_NONE },
 };
 
-#define LUA_DJUI_DEPRECATED_THEME_FIELD_COUNT 10
+#define LUA_DJUI_DEPRECATED_THEME_FIELD_COUNT 11
 static struct LuaObjectField sDjuiDeprecatedThemeFields[LUA_DJUI_DEPRECATED_THEME_FIELD_COUNT] = {
-    { "borderColor",           LVT_PROPERTY, .get = "djui_theme_get_border_color" },
-    { "cursorDownBorderColor", LVT_PROPERTY, .get = "djui_theme_get_cursor_down_border_color" },
-    { "cursorDownRectColor",   LVT_PROPERTY, .get = "djui_theme_get_cursor_down_rect_color" },
-    { "defaultBorderColor",    LVT_PROPERTY, .get = "djui_theme_get_default_border_color" },
-    { "defaultRectColor",      LVT_PROPERTY, .get = "djui_theme_get_default_rect_color" },
-    { "hoveredBorderColor",    LVT_PROPERTY, .get = "djui_theme_get_hovered_border_color" },
-    { "hoveredRectColor",      LVT_PROPERTY, .get = "djui_theme_get_hovered_rect_color" },
-    { "hudFontHeader",         LVT_PROPERTY, .get = "djui_theme_get_hud_font_header" },
-    { "rectColor",             LVT_PROPERTY, .get = "djui_theme_get_rect_color" },
-    { "textColor",             LVT_PROPERTY, .get = "djui_theme_get_text_color" },
+    { "borderColor",           LVT_PROPERTY, .get = "djui_theme_get_border_color"                          },
+    { "cursorDownBorderColor", LVT_PROPERTY, .get = "djui_theme_get_cursor_down_border_color"              },
+    { "cursorDownRectColor",   LVT_PROPERTY, .get = "djui_theme_get_cursor_down_rect_color"                },
+    { "defaultBorderColor",    LVT_PROPERTY, .get = "djui_theme_get_default_border_color"                  },
+    { "defaultRectColor",      LVT_PROPERTY, .get = "djui_theme_get_default_rect_color"                    },
+    { "hoveredBorderColor",    LVT_PROPERTY, .get = "djui_theme_get_hovered_border_color"                  },
+    { "hoveredRectColor",      LVT_PROPERTY, .get = "djui_theme_get_hovered_rect_color"                    },
+    { "hudFontHeader",         LVT_PROPERTY, .get = "djui_theme_get_hud_font_header"                       },
+    { "rectColor",             LVT_PROPERTY, .get = "djui_theme_get_rect_color"                            },
+    { "textColor",             LVT_PROPERTY, .get = "djui_theme_get_text_color"                            },
+    { "unused",                LVT_BOOL,     offsetof(struct DjuiDeprecatedTheme, unused), false, LOT_NONE },
 };
 
 #define LUA_DJUI_THEME_FIELD_COUNT 8
@@ -1590,7 +1591,7 @@ static struct LuaObjectField sNetworkPlayerFields[LUA_NETWORK_PLAYER_FIELD_COUNT
     { "type",                   LVT_U8,      offsetof(struct NetworkPlayer, type),                   true,  LOT_NONE          },
 };
 
-#define LUA_OBJECT_FIELD_COUNT 762
+#define LUA_OBJECT_FIELD_COUNT 763
 static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "activeFlags",                                LVT_S16,                 offsetof(struct Object, activeFlags),                                false, LOT_NONE                                  },
     { "allowRemoteInteractions",                    LVT_U8,                  offsetof(struct Object, allowRemoteInteractions),                    false, LOT_NONE                                  },
@@ -1786,6 +1787,7 @@ static struct LuaObjectField sObjectFields[LUA_OBJECT_FIELD_COUNT] = {
     { "oCloudCenterY",                              LVT_F32,                 offsetof(struct Object, oCloudCenterY),                              false, LOT_NONE                                  },
     { "oCloudFwooshMovementRadius",                 LVT_S16,                 offsetof(struct Object, oCloudFwooshMovementRadius),                 false, LOT_NONE                                  },
     { "oCloudGrowSpeed",                            LVT_F32,                 offsetof(struct Object, oCloudGrowSpeed),                            false, LOT_NONE                                  },
+    { "oCoinBaseYVel",                              LVT_F32,                 offsetof(struct Object, oCoinBaseYVel),                              false, LOT_NONE                                  },
     { "oCoinUnk110",                                LVT_F32,                 offsetof(struct Object, oCoinUnk110),                                false, LOT_NONE                                  },
 #ifndef VERSION_JP
     { "oCoinUnk1B0",                                LVT_S32,                 offsetof(struct Object, oCoinUnk1B0),                                false, LOT_NONE                                  },

@@ -95,6 +95,7 @@ struct DjuiDeprecatedTheme {
     PROPERTY(rectColor,             djui_theme_get_rect_color,               NULL);
     PROPERTY(borderColor,           djui_theme_get_border_color,             NULL);
     PROPERTY(hudFontHeader,         djui_theme_get_hud_font_header,          NULL);
+    bool unused;
 };
 
 struct DjuiTheme {
@@ -136,4 +137,4 @@ struct DjuiColor *djui_theme_get_rect_color(UNUSED struct DjuiDeprecatedTheme *d
 /* |description|Gets the color of the `DJUI_THEME_ELEMENT_THREE_PANEL_BORDER` of the current menu theme|descriptionEnd| */
 struct DjuiColor *djui_theme_get_border_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
 /* |description|Gets whether header font of the theme is `FONT_HUD`|descriptionEnd| */
-bool djui_theme_get_hud_font_header(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme); 
+bool djui_theme_get_hud_font_header(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
