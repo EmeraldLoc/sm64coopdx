@@ -468,7 +468,7 @@ void character_remove_sounds(struct Character* character, enum CharacterSound ch
 
 /* |description|
 Sets animation for `animID` using a registered smlua animation.
-You can register an smlua animation by using `smlua_util_register_animation`.
+You can register an smlua animation by using `smlua_anim_util_register_animation`.
 The animation string you used to register the animation is the `animString` to be passed.
 |descriptionEnd| */
 void character_set_animation(struct Character* character, enum CharacterAnimID animID, const char* animString);
