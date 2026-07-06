@@ -3135,7 +3135,7 @@ Every sound file will get removed from the character.
 
 ### Description
 Sets animation for `animID` using a registered smlua animation.
-You can regjster an smlua animation by using `smlua_util_register_animation`.
+You can register an smlua animation by using `smlua_util_register_animation`.
 The animation string you used to register the animation is the `animString` to be passed.
 
 ### Lua Example

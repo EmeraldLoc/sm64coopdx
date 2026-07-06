@@ -4008,7 +4008,7 @@ end
 --- @param animID CharacterAnimID
 --- @param animString string
 --- Sets animation for `animID` using a registered smlua animation.<br>
---- You can regjster an smlua animation by using `smlua_util_register_animation`.<br>
+--- You can register an smlua animation by using `smlua_util_register_animation`.<br>
 --- The animation string you used to register the animation is the `animString` to be passed.
 function character_set_animation(character, animID, animString)
     -- ...
