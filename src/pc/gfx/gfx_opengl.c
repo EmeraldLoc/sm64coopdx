@@ -618,7 +618,7 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_
     if (opengl_prg->used_fog) {
         gfx_update_fog_uniforms();
     }
-    smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
+    smlua_call_event_hooks(HOOK_ON_DRAW_TRIANGLE);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }

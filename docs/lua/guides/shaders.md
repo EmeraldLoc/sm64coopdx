@@ -155,7 +155,7 @@ A shader may contain uniforms. As per the GLSL naming convention, uniform variab
 | `uShaderFlags` | `int[]` | Array of shader feature flags provided by the engine |
 | `uShaderFlagValues` | `float[]` | Array of values associated with `uShaderFlags` |
 
-For defining a custom uniform in lua, use the `HOOK_ON_SET_SHADER_UNIFORMS` hook and use the appropriate `gfx_shader_set_*` function.
+For defining a custom uniform in lua, use the `HOOK_ON_SET_SHADER_PROGRAM`, hook and use the appropriate `gfx_shader_set_*` function. If you need to set a uniform every triangle draw, do note there is a lot of performance overhead, but if it is necessary, use `HOOK_ON_DRAW_TRIANGLE`.
 
 ```lua
 local sceneBrightness = 0.5

@@ -926,7 +926,7 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     if (metal.shaderProgram->usedFog) {
         gfx_update_fog_uniforms();
     }
-    smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
+    smlua_call_event_hooks(HOOK_ON_DRAW_TRIANGLE);
 
     // upload uniform data
     if (metal.shaderProgram->vertexUboSize > 0 && metal.shaderProgram->vertexUniformBuffer != NULL) {

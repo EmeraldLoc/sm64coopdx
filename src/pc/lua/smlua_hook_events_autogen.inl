@@ -2197,12 +2197,12 @@ bool smlua_call_event_hooks_HOOK_ON_DRAW_GEOMETRY() {
     return hookResult;
 }
 
-bool smlua_call_event_hooks_HOOK_ON_SET_SHADER_UNIFORMS() {
+bool smlua_call_event_hooks_HOOK_ON_DRAW_TRIANGLE() {
     lua_State *L = gLuaState;
     if (L == NULL) { return false; }
     bool hookResult = false;
 
-    struct LuaHookedEvent *hook = &sHookedEvents[HOOK_ON_SET_SHADER_UNIFORMS];
+    struct LuaHookedEvent *hook = &sHookedEvents[HOOK_ON_DRAW_TRIANGLE];
     for (int i = 0; i < hook->count; i++) {
         s32 prevTop = lua_gettop(L);
 
@@ -2211,7 +2211,7 @@ bool smlua_call_event_hooks_HOOK_ON_SET_SHADER_UNIFORMS() {
 
         // call the callback
         if (0 != smlua_call_hook(L, 0, 0, 0, hook->mod[i], hook->modFile[i])) {
-            LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_SET_SHADER_UNIFORMS], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
+            LOG_LUA("Failed to call the callback for hook %s - '%s/%s'", sLuaHookedEventTypeName[HOOK_ON_DRAW_TRIANGLE], hook->mod[i]->relativePath, hook->modFile[i]->relativePath);
             continue;
         }
         hookResult = true;

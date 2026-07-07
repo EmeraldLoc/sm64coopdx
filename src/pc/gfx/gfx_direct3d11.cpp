@@ -1040,7 +1040,7 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
     if (d3d.shader_program->used_fog) {
         gfx_update_fog_uniforms();
     }
-    smlua_call_event_hooks(HOOK_ON_SET_SHADER_UNIFORMS);
+    smlua_call_event_hooks(HOOK_ON_DRAW_TRIANGLE);
 
     // Set vertex uniform buffers
 
