@@ -1364,13 +1364,13 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         }
 
         // calculate normal
-        f32 ux = v2->x - v1->x;
-        f32 uy = v2->y - v1->y;
-        f32 uz = v2->z - v1->z;
+        f32 ux = v2->localX - v1->localX;
+        f32 uy = v2->localY - v1->localY;
+        f32 uz = v2->localZ - v1->localZ;
 
-        f32 vx = v3->x - v1->x;
-        f32 vy = v3->y - v1->y;
-        f32 vz = v3->z - v1->z;
+        f32 vx = v3->localX - v1->localX;
+        f32 vy = v3->localY - v1->localY;
+        f32 vz = v3->localZ - v1->localZ;
 
         f32 nx = uy * vz - uz * vy;
         f32 ny = uz * vx - ux * vz;
