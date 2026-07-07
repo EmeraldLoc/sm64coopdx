@@ -631,22 +631,18 @@ static inline bool gl_version_is_supported(int major, int minor, bool is_es) {
 }
 
 static inline bool gl_get_version(int *major, int *minor, bool *is_es) {
-    if (gRenderApi == &gfx_opengl_api) {
-        const char *vstr = (const char *)glGetString(GL_VERSION);
-        if (!vstr || !vstr[0]) return false;
+    const char *vstr = (const char *)glGetString(GL_VERSION);
+    if (!vstr || !vstr[0]) return false;
 
-        if (!strncmp(vstr, "OpenGL ES ", 10)) {
-            vstr += 10;
-            *is_es = true;
-        } else if (!strncmp(vstr, "OpenGL ES-CM ", 13)) {
-            vstr += 13;
-            *is_es = true;
-        }
-
-        return (sscanf(vstr, "%d.%d", major, minor) == 2);
-    } else {
-        return false;
+    if (!strncmp(vstr, "OpenGL ES ", 10)) {
+        vstr += 10;
+        *is_es = true;
+    } else if (!strncmp(vstr, "OpenGL ES-CM ", 13)) {
+        vstr += 13;
+        *is_es = true;
     }
+
+    return (sscanf(vstr, "%d.%d", major, minor) == 2);
 }
 
 static bool gfx_opengl_is_legacy(void);
@@ -747,7 +743,7 @@ static bool gfx_opengl_is_legacy(void) {
     if (is_es) {
         return true;
     }
-    return !(vmajor > 4) || (vmajor == 4 && vminor >= 5);
+    return (vmajor < 4) || (vmajor == 4 && vminor < 5);
 }
 
 static void gfx_opengl_shutdown(void) {
