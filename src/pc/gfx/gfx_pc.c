@@ -1228,6 +1228,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         gfx_rapi->load_shader(prg);
         sRenderingState.shader_program = prg;
         gfx_set_builtin_uniforms();
+        smlua_call_event_hooks(HOOK_ON_SET_SHADER_PROGRAM);
     }
     if (cm->use_alpha != sRenderingState.alpha_blend) {
         gfx_flush();

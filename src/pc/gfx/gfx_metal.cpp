@@ -193,7 +193,7 @@ static void create_depth_texture() {
     }
 }
 
-static void generate_uniform_buffer_metal(struct ShaderProgramMetal *prg, struct Shader *vertexShader, struct Shader *fragmentShader) {
+static void generate_uniform_buffer(struct ShaderProgramMetal *prg, struct Shader *vertexShader, struct Shader *fragmentShader) {
     prg->vertexUboSize = vertexShader->uboTotalSize;
     prg->vertexUboSize = (prg->vertexUboSize + 15) & ~15;
 
@@ -396,7 +396,7 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     if (prg->vertexUniformBuffer) { free(prg->vertexUniformBuffer); }
     if (prg->fragmentUniformBuffer) { free(prg->fragmentUniformBuffer); }
 
-    generate_uniform_buffer_metal(prg, vertexShader, fragmentShader);
+    generate_uniform_buffer(prg, vertexShader, fragmentShader);
 
     metal.shaderProgram = prg;
     return (struct ShaderProgram *)prg;
@@ -509,7 +509,7 @@ struct ShaderProgram *gfx_metal_create_or_load_post_process_shader(void) {
     prg->fragmentShader = fragmentShader;
     prg->worldGeometry = false;
 
-    generate_uniform_buffer_metal(prg, vertexShader, fragmentShader);
+    generate_uniform_buffer(prg, vertexShader, fragmentShader);
 
     metal.shaderProgram = prg;
     return (struct ShaderProgram *)prg;
