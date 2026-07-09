@@ -65,14 +65,6 @@ struct ShaderProgramD3D11 {
     struct Shader *vertexShader;
     struct Shader *fragmentShader;
 
-    ComPtr<ID3D11Buffer> vertexConstantBuffer;
-    ComPtr<ID3D11Buffer> fragmentConstantBuffer;
-
-    u8 *vertexUniformBuffer;
-    u8 *fragmentUniformBuffer;
-    int vertexUboSize;
-    int fragmentUboSize;
-
     uint64_t hash;
     uint8_t num_inputs;
     uint8_t num_floats;
@@ -199,35 +191,6 @@ static void create_render_target_views(bool is_resize) {
     d3d.current_height = desc1.Height;
 }
 
-static void gfx_d3d11_set_uniform_for_specific_shader(struct ShaderProgramD3D11 *prg, struct Shader *shader, const char *name, ShaderUniformType type, const void *data, u32 numElements) {
-    if (shader == NULL) { return; }
-
-    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
-        if (shader->shaderUniforms[i].size == 0) { break; }
-
-        if (strcmp(shader->shaderUniforms[i].name, name) == 0) {
-            struct ShaderUniform *uniform = &shader->shaderUniforms[i];
-
-            // get starting location of pointer
-            u8 *dst = shader->stage == GLSLANG_STAGE_VERTEX ? prg->vertexUniformBuffer : prg->fragmentUniformBuffer;
-            // increment pointer by our uniform location
-            dst += uniform->location;
-
-            if (uniform->arrayLength > 1) {
-                const u8 *src = (const u8 *)data;
-                u32 count = MIN(numElements, uniform->arrayLength); // don't let numElements write to garbage data
-                for (u32 j = 0; j < count; j++) {
-                    memcpy(dst + j * uniform->arrayStride, src + j * uniform->elementSize, uniform->elementSize);
-                }
-            } else {
-                memcpy(dst, data, uniform->size);
-            }
-
-            return;
-        }
-    }
-}
-
 static void gfx_d3d11_init(void) {
     // Load d3d11.dll
     d3d.d3d11_module = LoadLibraryW(L"d3d11.dll");
@@ -339,57 +302,13 @@ static void gfx_d3d11_remove_shaders(void) {
         }
         d3d.shader_program_pool_index[i] = 0;
         d3d.shader_program_pool_size[i] = 0;
+        gfx_destroy_shader(d3d.post_process_shader_program_pool[i].vertexShader);
+        gfx_destroy_shader(d3d.post_process_shader_program_pool[i].fragmentShader);
         d3d.post_process_shader_program_pool[i] = { 0 };
     }
 
     d3d.shader_program = nullptr;
     d3d.last_shader_program = nullptr;
-}
-
-static void generate_uniform_buffer(struct ShaderProgramD3D11 *prg, struct Shader *vertexShader, struct Shader *fragmentShader) {
-    // store total uniform buffer size and allocate uniform buffer
-    prg->vertexUboSize = vertexShader->uboTotalSize;
-    prg->vertexUboSize = (prg->vertexUboSize + 15) & ~15; // round up to 16-byte boundary
-    prg->fragmentUboSize = fragmentShader->uboTotalSize;
-    prg->fragmentUboSize = (prg->fragmentUboSize + 15) & ~15; // round up to 16-byte boundary
-
-    if (prg->vertexUboSize > 0) {
-        prg->vertexUniformBuffer = (uint8_t*)malloc(prg->vertexUboSize);
-        memset(prg->vertexUniformBuffer, 0, prg->vertexUboSize);
-
-        D3D11_BUFFER_DESC cbd;
-        ZeroMemory(&cbd, sizeof(D3D11_BUFFER_DESC));
-        cbd.Usage = D3D11_USAGE_DYNAMIC;
-        cbd.ByteWidth = prg->vertexUboSize;
-        cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        cbd.MiscFlags = 0;
-
-        ThrowIfFailed(d3d.device->CreateBuffer(&cbd, nullptr, prg->vertexConstantBuffer.GetAddressOf()),
-                    gfx_dxgi_get_h_wnd(), "Failed to create dynamic program constant buffer.");
-    } else {
-        prg->vertexUniformBuffer = nullptr;
-        prg->vertexConstantBuffer = nullptr;
-    }
-
-    if (prg->fragmentUboSize > 0) {
-        prg->fragmentUniformBuffer = (uint8_t*)malloc(prg->fragmentUboSize);
-        memset(prg->fragmentUniformBuffer, 0, prg->fragmentUboSize);
-
-        D3D11_BUFFER_DESC cbd;
-        ZeroMemory(&cbd, sizeof(D3D11_BUFFER_DESC));
-        cbd.Usage = D3D11_USAGE_DYNAMIC;
-        cbd.ByteWidth = prg->fragmentUboSize;
-        cbd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        cbd.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        cbd.MiscFlags = 0;
-
-        ThrowIfFailed(d3d.device->CreateBuffer(&cbd, nullptr, prg->fragmentConstantBuffer.GetAddressOf()),
-                    gfx_dxgi_get_h_wnd(), "Failed to create dynamic program constant buffer.");
-    } else {
-        prg->fragmentUniformBuffer = nullptr;
-        prg->fragmentConstantBuffer = nullptr;
-    }
 }
 
 static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCombiner* cc) {
@@ -537,8 +456,6 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     prg->fragmentShader = fragmentShader;
     prg->world_geometry = cc->cm.world_geometry;
 
-    generate_uniform_buffer(prg, vertexShader, fragmentShader);
-
     return (struct ShaderProgram *)(d3d.shader_program = prg);
 }
 
@@ -654,8 +571,6 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->world_geometry = false;
-
-    generate_uniform_buffer(prg, vertexShader, fragmentShader);
 
     d3d.shader_program = prg;
     return (struct ShaderProgram *)prg;
@@ -794,14 +709,67 @@ static void gfx_d3d11_reset_framebuffer(void) {
     d3d.context->RSSetViewports(1, &vp);
 }
 
-static void gfx_d3d11_set_uniform(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, u32 numElements) {
-    struct ShaderProgramD3D11 *dx_prg = (struct ShaderProgramD3D11 *)prg;
-    if (!dx_prg) {
-        if (!d3d.shader_program) { return; }
-        dx_prg = d3d.shader_program;
+void gfx_d3d11_set_uniform_buffer(enum ShaderStage stage, const char *name) {
+    struct Shader *shader = NULL;
+    int *destination = NULL;
+    if (stage == SHADER_STAGE_VERTEX) {
+        shader = d3d.shader_program->vertexShader;
+        destination = &gSelectedVertexUniformBuffer;
+    } else if (stage == SHADER_STAGE_FRAGMENT) {
+        shader = d3d.shader_program->fragmentShader;
+        destination = &gSelectedFragmentUniformBuffer;
+    } else {
+        return;
     }
-    gfx_d3d11_set_uniform_for_specific_shader(dx_prg, dx_prg->vertexShader, name, type, data, numElements);
-    gfx_d3d11_set_uniform_for_specific_shader(dx_prg, dx_prg->fragmentShader, name, type, data, numElements);
+
+    for (int i = 0; i < MAX_UNIFORM_BLOCKS; i++) {
+        struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
+
+        if (strcmp(uniformBlock->name, name) == 0) {
+            *destination = i;
+        }
+    }
+}
+
+static void gfx_d3d11_set_uniform_for_specific_shader(struct ShaderUniformBlock *uniformBlock, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
+    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
+        struct ShaderUniform *uniform = &uniformBlock->uniforms[i];
+        if (uniform->size == 0) { break; }
+
+        if (strcmp(uniform->name, name) == 0) {
+            // get starting location of pointer
+            u8 *dst = uniformBlock->buffer;
+            // increment pointer by our uniform location
+            dst += uniform->location;
+
+            if (uniform->arrayLength > 1) {
+                const u8 *src = (const u8 *)data;
+                u32 count = MIN(numElements, uniform->arrayLength); // don't let numElements write to garbage data
+                for (u32 j = 0; j < count; j++) {
+                    memcpy(dst + j * uniform->arrayStride, src + j * uniform->elementSize, uniform->elementSize);
+                }
+            } else {
+                memcpy(dst, data, uniform->size);
+            }
+
+            return;
+        }
+    }
+}
+
+void gfx_d3d11_set_uniform(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
+    struct ShaderProgramD3D11 *d3d11_prg = (struct ShaderProgramD3D11 *)prg;
+    if (d3d11_prg == NULL) {
+        if (d3d.shader_program == NULL) { return; }
+        d3d11_prg = d3d.shader_program;
+    }
+
+    if (gfx_shader_stage_is(SHADER_STAGE_VERTEX)) {
+        gfx_d3d11_set_uniform_for_specific_shader(&d3d11_prg->vertexShader->uniformBlocks[gSelectedVertexUniformBuffer], name, type, data, numElements);
+    }
+    if (gfx_shader_stage_is(SHADER_STAGE_FRAGMENT)) {
+        gfx_d3d11_set_uniform_for_specific_shader(&d3d11_prg->fragmentShader->uniformBlocks[gSelectedFragmentUniformBuffer], name, type, data, numElements);
+    }
 }
 
 static uint32_t gfx_d3d11_new_texture(void) {
@@ -962,6 +930,28 @@ static void gfx_d3d11_set_use_alpha(bool use_alpha) {
 static void gfx_d3d11_set_vsync(bool enabled) {
 }
 
+static void upload_uniform_buffers_for_shader(struct Shader *shader) {
+    for (int i = 0; i < shader->uniformBlockCount; i++) {
+        struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
+        if (uniformBlock->size > 0 && uniformBlock->dxConstantBuffer != NULL) {
+            D3D11_MAPPED_SUBRESOURCE ms;
+            ZeroMemory(&ms, sizeof(D3D11_MAPPED_SUBRESOURCE));
+
+            HRESULT hr = d3d.context->Map(uniformBlock->dxConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
+            if (SUCCEEDED(hr)) {
+                memcpy(ms.pData, uniformBlock->buffer, uniformBlock->size);
+                d3d.context->Unmap(uniformBlock->dxConstantBuffer, 0);
+            }
+
+            if (shader->stage == SHADER_STAGE_VERTEX) {
+                d3d.context->VSSetConstantBuffers(uniformBlock->location, 1, uniformBlock->dxConstantBuffer.GetAddressOf());
+            } else if (shader->stage == SHADER_STAGE_FRAGMENT) {
+                d3d.context->PSSetConstantBuffers(uniformBlock->location, 1, uniformBlock->dxConstantBuffer.GetAddressOf());
+            }
+        }
+    }
+}
+
 static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     if (d3d.last_depth_test != d3d.depth_test || d3d.last_depth_mask != d3d.depth_mask) {
         d3d.last_depth_test = d3d.depth_test;
@@ -1042,35 +1032,8 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
     }
     smlua_call_event_hooks(HOOK_ON_DRAW_TRIANGLE);
 
-    // Set vertex uniform buffers
-
-    if (d3d.shader_program->vertexUboSize > 0) {
-        D3D11_MAPPED_SUBRESOURCE ms;
-        ZeroMemory(&ms, sizeof(D3D11_MAPPED_SUBRESOURCE));
-
-        HRESULT hr = d3d.context->Map(d3d.shader_program->vertexConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
-        if (SUCCEEDED(hr)) {
-            memcpy(ms.pData, d3d.shader_program->vertexUniformBuffer, d3d.shader_program->vertexUboSize);
-            d3d.context->Unmap(d3d.shader_program->vertexConstantBuffer.Get(), 0);
-        }
-
-        d3d.context->VSSetConstantBuffers(0, 1, d3d.shader_program->vertexConstantBuffer.GetAddressOf());
-    }
-
-    // Set fragment uniform buffers
-
-    if (d3d.shader_program->fragmentUboSize > 0) {
-        D3D11_MAPPED_SUBRESOURCE ms;
-        ZeroMemory(&ms, sizeof(D3D11_MAPPED_SUBRESOURCE));
-
-        HRESULT hr = d3d.context->Map(d3d.shader_program->fragmentConstantBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &ms);
-        if (SUCCEEDED(hr)) {
-            memcpy(ms.pData, d3d.shader_program->fragmentUniformBuffer, d3d.shader_program->fragmentUboSize);
-            d3d.context->Unmap(d3d.shader_program->fragmentConstantBuffer.Get(), 0);
-        }
-
-        d3d.context->PSSetConstantBuffers(0, 1, d3d.shader_program->fragmentConstantBuffer.GetAddressOf());
-    }
+    upload_uniform_buffers_for_shader(d3d.shader_program->vertexShader);
+    upload_uniform_buffers_for_shader(d3d.shader_program->fragmentShader);
 
     // Set vertex buffer data
 
@@ -1085,7 +1048,7 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
 
     if (d3d.last_vertex_buffer_stride != stride) {
         d3d.last_vertex_buffer_stride = stride;
-        d3d.context->IASetVertexBuffers(0, 1, d3d.vertex_buffer.GetAddressOf(), &stride, &offset);
+        d3d.context->IASetVertexBuffers(0, 0, d3d.vertex_buffer.GetAddressOf(), &stride, &offset);
     }
 
     if (d3d.last_shader_program != d3d.shader_program) {
@@ -1189,6 +1152,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_delete_framebuffer,
     gfx_d3d11_set_framebuffer,
     gfx_d3d11_reset_framebuffer,
+    gfx_d3d11_set_uniform_buffer,
     gfx_d3d11_set_uniform,
     gfx_d3d11_new_texture,
     gfx_d3d11_select_texture,

@@ -11675,6 +11675,25 @@ function gfx_color_combiner_get_features(cc)
     -- ...
 end
 
+--- @param stage ShaderStage
+--- Sets the currently active shader stage. Use SHADER_STAGE_ANY to make both active.<br>
+--- When setting a uniform buffer, or uniforms in general, what stage that gets applied to<br>
+--- is decided by this function
+function gfx_shader_set_shader_stage(stage)
+    -- ...
+end
+
+--- @param name string
+--- Sets the currently selected uniform buffer
+function gfx_shader_set_uniform_buffer(name)
+    -- ...
+end
+
+--- Resets the currently selected uniform buffer
+function gfx_shader_reset_uniform_buffer()
+    -- ...
+end
+
 --- @param name string
 --- @param value boolean
 --- Sets the value of a shader uniform of type bool

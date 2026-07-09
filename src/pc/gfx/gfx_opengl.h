@@ -1,6 +1,4 @@
-#ifndef GFX_OPENGL_H
-#define GFX_OPENGL_H
-
+#pragma once
 #include "gfx_rendering_api.h"
 #include "gfx_shader.h"
 
@@ -25,5 +23,3 @@ struct ShaderProgram {
 extern struct GfxRenderingAPI gfx_opengl_api;
 
 bool gfx_opengl_check_compatibility(void);
-
-#endif

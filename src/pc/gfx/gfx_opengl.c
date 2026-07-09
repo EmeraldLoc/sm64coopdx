@@ -130,29 +130,14 @@ static void gfx_opengl_remove_shaders(void) {
     }
 }
 
-static void cache_uniform_locations(GLint shaderProgram, struct Shader *shader) {
-    int count = 0;
+static void bind_uniform_block_for_shader(u32 programId, struct Shader *shader) {
+    for (int i = 0; i < shader->uniformBlockCount; i++) {
+        struct ShaderUniformBlock *block = &shader->uniformBlocks[i];
 
-    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
-        struct ShaderUniform *shaderUniform = &shader->shaderUniforms[i];
-
-        if (shaderUniform->size == 0) continue;
-
-        GLint loc = glGetUniformLocation(shaderProgram, shaderUniform->name);
-        if (loc == -1) continue;
-
-        shaderUniform->location = loc;
-
-        if (count != i) {
-            shader->shaderUniforms[count] = *shaderUniform;
-            memset(&shader->shaderUniforms[i], 0, sizeof(struct ShaderUniform));
+        GLuint blockIndex = glGetUniformBlockIndex(programId, block->name);
+        if (blockIndex != GL_INVALID_INDEX) {
+            glUniformBlockBinding(programId, blockIndex, block->location);
         }
-
-        count++;
-    }
-
-    for (int i = count; i < MAX_SHADER_UNIFORMS; i++) {
-        shader->shaderUniforms[i].size = 0;
     }
 }
 
@@ -172,14 +157,12 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         sys_fatal("Failed to allocate shaders, ran out of memory!");
     }
 
+    gfx_generate_vertex_and_fragment_shader_from_cc(vertexShader, fragmentShader, cc, NULL, NULL);
+
     char *vsShaderCode = NULL;
     char *fsShaderCode = NULL;
-
-    gfx_generate_vertex_and_fragment_shader_from_cc(vertexShader, fragmentShader, cc, &vsShaderCode, &fsShaderCode);
-
-    if (!vsShaderCode || !fsShaderCode) {
-        sys_fatal("Failed to generate vertex and fragment shader for new shader program!");
-    }
+    gfx_convert_spirv_to_glsl_410(&vsShaderCode, vertexShader);
+    gfx_convert_spirv_to_glsl_410(&fsShaderCode, fragmentShader);
 
     const GLchar *sources[2] = { vsShaderCode, fsShaderCode };
     GLint lengths[2] = { strlen(vsShaderCode), strlen(fsShaderCode) };
@@ -245,6 +228,9 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
 
     glUseProgram(shader_program);
 
+    bind_uniform_block_for_shader(shader_program, vertexShader);
+    bind_uniform_block_for_shader(shader_program, fragmentShader);
+
     for (int t = 0; t < 2; t++) {
         char name[16];
         sprintf(name, "uTex%d", t);
@@ -280,9 +266,6 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
         }
     }
 
-    cache_uniform_locations(shader_program, vertexShader);
-    cache_uniform_locations(shader_program, fragmentShader);
-
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
 
@@ -308,14 +291,12 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
         sys_fatal("Failed to allocate shaders, ran out of memory!");
     }
 
+    gfx_generate_post_process_vertex_and_fragment_shader(vertexShader, fragmentShader, NULL, NULL);
+
     char *vsShaderCode = NULL;
     char *fsShaderCode = NULL;
-
-    gfx_generate_post_process_vertex_and_fragment_shader(vertexShader, fragmentShader, &vsShaderCode, &fsShaderCode);
-
-    if (!vsShaderCode || !fsShaderCode) {
-        sys_fatal("Failed to generate vertex and fragment shader for new shader program!");
-    }
+    gfx_convert_spirv_to_glsl_410(&vsShaderCode, vertexShader);
+    gfx_convert_spirv_to_glsl_410(&fsShaderCode, fragmentShader);
 
     const GLchar *sources[2] = { vsShaderCode, fsShaderCode };
     GLint lengths[2] = { strlen(vsShaderCode), strlen(fsShaderCode) };
@@ -374,8 +355,8 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
 
     glUseProgram(shader_program);
 
-    cache_uniform_locations(shader_program, vertexShader);
-    cache_uniform_locations(shader_program, fragmentShader);
+    bind_uniform_block_for_shader(shader_program, vertexShader);
+    bind_uniform_block_for_shader(shader_program, fragmentShader);
 
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
@@ -489,33 +470,63 @@ static void gfx_opengl_reset_framebuffer(void) {
     glViewport(0, 0, windowWidth, windowHeight);
 }
 
-static void gfx_opengl_set_uniform_for_shader(struct Shader *shader, const char* name, ShaderUniformType type, const void *data, uint32_t numElements) {
-    if (!shader) { return; }
-    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
-        if (shader->shaderUniforms[i].size == 0) { return; }
+void gfx_opengl_set_uniform_buffer(enum ShaderStage stage, const char *name) {
+    struct Shader *shader = NULL;
+    int *destination = NULL;
+    if (stage == SHADER_STAGE_VERTEX) {
+        shader = opengl_prg->vertexShader;
+        destination = &gSelectedVertexUniformBuffer;
+    } else if (stage == SHADER_STAGE_FRAGMENT) {
+        shader = opengl_prg->fragmentShader;
+        destination = &gSelectedFragmentUniformBuffer;
+    } else {
+        return;
+    }
 
-        if (strcmp(shader->shaderUniforms[i].name, name) == 0) {
-            GLint loc = shader->shaderUniforms[i].location;
-            switch (type) {
-                case SHADER_UNIFORM_TYPE_BOOL:  glUniform1iv(loc, numElements, (const GLint*)data); return;
-                case SHADER_UNIFORM_TYPE_INT:   glUniform1iv(loc, numElements, (const GLint*)data); return;
-                case SHADER_UNIFORM_TYPE_FLOAT: glUniform1fv(loc, numElements, (const GLfloat*)data); return;
-                case SHADER_UNIFORM_TYPE_VEC2:  glUniform2fv(loc, numElements, (const GLfloat*)data); return;
-                case SHADER_UNIFORM_TYPE_VEC3:  glUniform3fv(loc, numElements, (const GLfloat*)data); return;
-                case SHADER_UNIFORM_TYPE_VEC4:  glUniform4fv(loc, numElements, (const GLfloat*)data); return;
-                case SHADER_UNIFORM_TYPE_MAT4:  glUniformMatrix4fv(loc, numElements, GL_FALSE, (const GLfloat*)data); return;
-            }
+    for (int i = 0; i < MAX_UNIFORM_BLOCKS; i++) {
+        struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
+
+        if (strcmp(uniformBlock->name, name) == 0) {
+            *destination = i;
         }
     }
 }
 
-static void gfx_opengl_set_uniform(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
-    if (!prg) {
-        if (!opengl_prg) { return; }
+static void gfx_opengl_set_uniform_for_specific_shader(struct ShaderUniformBlock *uniformBlock, const char *name, const void *data, uint32_t numElements) {
+    for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
+        struct ShaderUniform *uniform = &uniformBlock->uniforms[i];
+        if (uniform->size == 0) { break; }
+
+        if (strcmp(uniform->name, name) == 0) {
+            u8 *dst = uniformBlock->buffer;
+            dst += uniform->location;
+
+            if (uniform->arrayLength > 1) {
+                const u8 *src = (const u8 *)data;
+                u32 count = MIN(numElements, uniform->arrayLength);
+                for (u32 j = 0; j < count; j++) {
+                    memcpy(dst + j * uniform->arrayStride, src + j * uniform->elementSize, uniform->elementSize);
+                }
+            } else {
+                memcpy(dst, data, uniform->size);
+            }
+            return;
+        }
+    }
+}
+
+void gfx_opengl_set_uniform(struct ShaderProgram *prg, const char *name, UNUSED ShaderUniformType type, const void *data, uint32_t numElements) {
+    if (prg == NULL) {
+        if (opengl_prg == NULL) { return; }
         prg = opengl_prg;
     }
-    gfx_opengl_set_uniform_for_shader(prg->vertexShader, name, type, data, numElements);
-    gfx_opengl_set_uniform_for_shader(prg->fragmentShader, name, type, data, numElements);
+
+    if (gfx_shader_stage_is(SHADER_STAGE_VERTEX)) {
+        gfx_opengl_set_uniform_for_specific_shader(&prg->vertexShader->uniformBlocks[gSelectedVertexUniformBuffer], name, data, numElements);
+    }
+    if (gfx_shader_stage_is(SHADER_STAGE_FRAGMENT)) {
+        gfx_opengl_set_uniform_for_specific_shader(&prg->fragmentShader->uniformBlocks[gSelectedFragmentUniformBuffer], name, data, numElements);
+    }
 }
 
 static GLuint gfx_opengl_new_texture(void) {
@@ -612,6 +623,19 @@ static void gfx_opengl_set_use_alpha(bool use_alpha) {
 static void gfx_opengl_set_vsync(UNUSED bool enabled) {
 }
 
+static void upload_opengl_uniform_buffers(struct Shader *shader) {
+    for (int i = 0; i < shader->uniformBlockCount; i++) {
+        struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
+        if (uniformBlock->size > 0 && uniformBlock->glBufferId != 0) {
+            glBindBuffer(GL_UNIFORM_BUFFER, uniformBlock->glBufferId);
+            glBufferData(GL_UNIFORM_BUFFER, uniformBlock->size, NULL, GL_STREAM_DRAW); // orphan
+            glBufferSubData(GL_UNIFORM_BUFFER, 0, uniformBlock->size, uniformBlock->buffer);
+            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBlock->location, uniformBlock->glBufferId);
+        }
+    }
+    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+}
+
 static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     //printf("flushing %d tris\n", buf_vbo_num_tris);
     gfx_update_matrices();
@@ -619,6 +643,8 @@ static void gfx_opengl_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_
         gfx_update_fog_uniforms();
     }
     smlua_call_event_hooks(HOOK_ON_DRAW_TRIANGLE);
+    upload_opengl_uniform_buffers(opengl_prg->vertexShader);
+    upload_opengl_uniform_buffers(opengl_prg->fragmentShader);
     glBufferData(GL_ARRAY_BUFFER, sizeof(float) * buf_vbo_len, buf_vbo, GL_STREAM_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 3 * buf_vbo_num_tris);
 }
@@ -763,6 +789,7 @@ struct GfxRenderingAPI gfx_opengl_api = {
     gfx_opengl_delete_framebuffer,
     gfx_opengl_set_framebuffer,
     gfx_opengl_reset_framebuffer,
+    gfx_opengl_set_uniform_buffer,
     gfx_opengl_set_uniform,
     gfx_opengl_new_texture,
     gfx_opengl_select_texture,

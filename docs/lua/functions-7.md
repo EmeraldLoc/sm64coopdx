@@ -1530,6 +1530,75 @@ Gets features from a color combiner
 
 <br />
 
+## [gfx_shader_set_shader_stage](#gfx_shader_set_shader_stage)
+
+### Description
+Sets the currently active shader stage. Use SHADER_STAGE_ANY to make both active.
+When setting a uniform buffer, or uniforms in general, what stage that gets applied to
+is decided by this function
+
+### Lua Example
+`gfx_shader_set_shader_stage(stage)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| stage | [enum ShaderStage](constants.md#enum-ShaderStage) |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_shader_stage(enum ShaderStage stage);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_uniform_buffer](#gfx_shader_set_uniform_buffer)
+
+### Description
+Sets the currently selected uniform buffer
+
+### Lua Example
+`gfx_shader_set_uniform_buffer(name)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| name | `string` |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_uniform_buffer(const char *name);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_reset_uniform_buffer](#gfx_shader_reset_uniform_buffer)
+
+### Description
+Resets the currently selected uniform buffer
+
+### Lua Example
+`gfx_shader_reset_uniform_buffer()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_reset_uniform_buffer(void);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_shader_set_bool](#gfx_shader_set_bool)
 
 ### Description

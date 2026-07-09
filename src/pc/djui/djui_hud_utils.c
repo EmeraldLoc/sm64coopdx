@@ -67,7 +67,15 @@ static struct HudUtilsState sHudUtilsState = {
 static struct DjuiColor sRefColor = { 255, 255, 255, 255 };
 static struct DjuiColor sRefTextColor = { 255, 255, 255, 255 };
 
-f32 gDjuiHudUtilsZ = 0;
+// why does this need to start at -1? I don't know, but what I know is it has to do
+// with the ortho function and normalized device coordinate depth range being between 0 and 1.
+// This is garbage, I am well aware this is garbage, I am well aware this is by no means a
+// proper fix for custom lua hud elements, I am well aware this is a VERY incorrect thing to do
+// but I don't care, I'm tired, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done
+// I'm done, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done
+// I'm done, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done, I'm done
+// I'm done, I'm done, I'm done, I'm done, I'm done
+f32 gDjuiHudUtilsZ = -1;
 bool gDjuiHudLockMouse = false;
 
 extern ALIGNED8 const u8 texture_hud_char_camera[];

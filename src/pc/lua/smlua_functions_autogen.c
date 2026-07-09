@@ -33037,6 +33037,55 @@ int smlua_func_gfx_color_combiner_get_features(lua_State* L) {
     return 1;
 }
 
+int smlua_func_gfx_shader_set_shader_stage(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_set_shader_stage", 1, top);
+        return 0;
+    }
+
+    enum ShaderStage stage = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_set_shader_stage"); return 0; }
+
+    gfx_shader_set_shader_stage(stage);
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_set_uniform_buffer(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 1) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_set_uniform_buffer", 1, top);
+        return 0;
+    }
+
+    const char* name = smlua_to_string(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_set_uniform_buffer"); return 0; }
+
+    gfx_shader_set_uniform_buffer(name);
+
+    return 1;
+}
+
+int smlua_func_gfx_shader_reset_uniform_buffer(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 0) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_reset_uniform_buffer", 0, top);
+        return 0;
+    }
+
+
+    gfx_shader_reset_uniform_buffer();
+
+    return 1;
+}
+
 int smlua_func_gfx_shader_set_bool(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -39442,6 +39491,9 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_is_legacy_renderer", smlua_func_gfx_is_legacy_renderer);
     smlua_bind_function(L, "gfx_reload_shaders", smlua_func_gfx_reload_shaders);
     smlua_bind_function(L, "gfx_color_combiner_get_features", smlua_func_gfx_color_combiner_get_features);
+    smlua_bind_function(L, "gfx_shader_set_shader_stage", smlua_func_gfx_shader_set_shader_stage);
+    smlua_bind_function(L, "gfx_shader_set_uniform_buffer", smlua_func_gfx_shader_set_uniform_buffer);
+    smlua_bind_function(L, "gfx_shader_reset_uniform_buffer", smlua_func_gfx_shader_reset_uniform_buffer);
     smlua_bind_function(L, "gfx_shader_set_bool", smlua_func_gfx_shader_set_bool);
     smlua_bind_function(L, "gfx_shader_set_int", smlua_func_gfx_shader_set_int);
     smlua_bind_function(L, "gfx_shader_set_float", smlua_func_gfx_shader_set_float);

@@ -435,6 +435,43 @@ struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc) {
     return &sCcf;
 }
 
+void gfx_shader_set_shader_stage(enum ShaderStage stage) {
+    if (stage < 0 || stage >= SHADER_STAGE_COUNT) { return; }
+    gSelectedShaderStage = stage;
+}
+
+static void set_vertex_uniform_buffer(const char *name) {
+    char uniqueName[MAX_SHADER_VARIABLE_NAME];
+    snprintf(uniqueName, sizeof(uniqueName), "_VS_%s", name);
+    gfx_get_current_rendering_api()->set_uniform_buffer(SHADER_STAGE_VERTEX, uniqueName);
+}
+
+static void set_fragment_uniform_buffer(const char *name) {
+    char uniqueName[MAX_SHADER_VARIABLE_NAME];
+    snprintf(uniqueName, sizeof(uniqueName), "_FS_%s", name);
+    gfx_get_current_rendering_api()->set_uniform_buffer(SHADER_STAGE_FRAGMENT, uniqueName);
+}
+
+void gfx_shader_set_uniform_buffer(const char *name) {
+    if (gfx_shader_stage_is(SHADER_STAGE_VERTEX)) {
+        set_vertex_uniform_buffer(name);
+    }
+
+    if (gfx_shader_stage_is(SHADER_STAGE_FRAGMENT)) {
+        set_fragment_uniform_buffer(name);
+    }
+}
+
+void gfx_shader_reset_uniform_buffer(void) {
+    if (gfx_shader_stage_is(SHADER_STAGE_VERTEX)) {
+        gSelectedVertexUniformBuffer = 0;
+    }
+
+    if (gfx_shader_stage_is(SHADER_STAGE_FRAGMENT)) {
+        gSelectedFragmentUniformBuffer = 0;
+    }
+}
+
 void gfx_shader_set_bool(const char *name, bool value) {
     int valAsInt = value ? 1 : 0;
     gfx_get_current_rendering_api()->set_uniform(NULL, name, SHADER_UNIFORM_TYPE_BOOL, &valAsInt, 1);

@@ -3193,6 +3193,17 @@ MAX_CUSTOM_FRAME_PASSES = 8
 --- @type integer
 MAX_FRAME_PASSES = MAX_CUSTOM_FRAME_PASSES + 1
 
+SHADER_STAGE_VERTEX   = 0 --- @type ShaderStage
+SHADER_STAGE_FRAGMENT = 1 --- @type ShaderStage
+SHADER_STAGE_ANY      = 2 --- @type ShaderStage
+SHADER_STAGE_COUNT    = 3 --- @type ShaderStage
+
+--- @alias ShaderStage
+--- | `SHADER_STAGE_VERTEX`
+--- | `SHADER_STAGE_FRAGMENT`
+--- | `SHADER_STAGE_ANY`
+--- | `SHADER_STAGE_COUNT`
+
 --- @type integer
 GRAPH_RENDER_ACTIVE = (1 << 0)
 

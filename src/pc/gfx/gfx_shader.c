@@ -3,9 +3,24 @@
 
 #include <PR/ultratypes.h>
 
+#if defined(_WIN32) || defined(OSX_BUILD)
+# define GLEW_STATIC
+# include <GL/glew.h>
+#endif
+
+#define GL_GLEXT_PROTOTYPES 1
+
+#include <SDL2/SDL.h>
+#ifdef USE_GLES
+#include <SDL2/SDL_opengles2.h>
+#else
+#include <SDL2/SDL_opengl.h>
+#endif
+
 #include "gfx_pc.h"
 #include "gfx_shader.h"
 
+#include "pc/pc_main.h"
 #include "pc/lua/smlua.h"
 #include "pc/debuglog.h"
 
@@ -36,10 +51,12 @@ const char *gDefaultPostProcessFragmentShader = "#version 410 core\n"
 
 static int sShaderInputCount = 0;
 static int sShaderOutputCount = 0;
-static int sShaderBindingCount = 0;
-static int sShaderUniformCount = 0;
+static int sShaderUniformBlockCount = 0;
+static bool sShaderInsideCustomUniformBlock = false;
 
 static char sShaderUniformCode[MAX_SHADER_CODE] = { 0 };
+
+static const char *defaultUniformBlockName = "DefaultUniformBufferObject";
 
 static void append_str(char *buf, size_t *len, const char *str) {
     while (*str != '\0') buf[(*len)++] = *str++;
@@ -253,6 +270,12 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     if (opt_fog) {
         append_line(fs_buf, &fs_len, "in float vFogZ;");
     }
+    append_line(fs_buf, &fs_len, "uniform float uFogMul;");
+    append_line(fs_buf, &fs_len, "uniform float uFogIntensity;");
+    append_line(fs_buf, &fs_len, "uniform float uFogOffset;");
+    append_line(fs_buf, &fs_len, "uniform float uDepthZSub;");
+    append_line(fs_buf, &fs_len, "uniform float uDepthZMult;");
+    append_line(fs_buf, &fs_len, "uniform float uDepthZAdd;");
 
     for (int t = 0; t < 2; t++) {
         if (ccf.used_textures[t]) {
@@ -605,8 +628,31 @@ static void strip_array_from_name(char *name) {
     }
 }
 
-static void process_shader_line(struct Shader *shader, struct ShaderInput *referenceInputs, char *output, const char *line) {
+static bool process_shader_line(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char *output, const char *line) {
     char qualifier[32] = { 0 }, type[32] = { 0 }, name[MAX_SHADER_VARIABLE_NAME] = { 0 };
+
+    // parse and update uniform blocks
+    // scan brace because sscanf does scanning from left to right and will succeed even if the
+    // brace is not there
+    char brace = 0;
+    if (!sShaderInsideCustomUniformBlock && (sscanf(line, " uniform %127s %c", name, &brace) == 2 || sscanf(line, "uniform %127s %c", name, &brace) == 2) && brace == '{') {
+        sShaderInsideCustomUniformBlock = true;
+        char layoutLine[128];
+        snprintf(layoutLine, sizeof(layoutLine), "layout(std140, set = 0, binding = %d) uniform %s {\n", sShaderUniformBlockCount++, name);
+        strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+        return true;
+    }
+
+    // exit uniform block when needed
+    if (sShaderInsideCustomUniformBlock && strchr(line, '}')) {
+        sShaderInsideCustomUniformBlock = false;
+        strncat(output, line, MAX_SHADER_CODE - strlen(output) - 1);
+        return true;
+    } else if (sShaderInsideCustomUniformBlock) {
+        // we're in a uniform block, no parsing needed here
+        strncat(output, line, MAX_SHADER_CODE - strlen(output) - 1);
+        return true;
+    }
 
     // parse inputs for inputs equivalent to reference inputs
     if (sscanf(line, "%31s in %31s %31[^; \t\n]", qualifier, type, name) == 3) {
@@ -623,7 +669,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
 
                     if (sShaderInputCount < MAX_SHADER_INPUTS - 1) { sShaderInputCount++; }
                 }
-                return;
+                return true;
             }
         }
     }
@@ -642,7 +688,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
 
                     if (sShaderInputCount < MAX_SHADER_INPUTS - 1) { sShaderInputCount++; }
                 }
-                return;
+                return true;
             }
         }
     }
@@ -659,7 +705,7 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
         snprintf(layoutLine, sizeof(layoutLine), "layout(location=%d) %s out %s %s", sShaderOutputCount, qualifier, type, name);
         strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
         if (sShaderOutputCount < MAX_SHADER_OUTPUTS - 1) { sShaderOutputCount++; }
-        return;
+        return true;
     }
 
     if (sscanf(line, " out %31s %31[^; \t\n]", type, name) == 2) {
@@ -673,25 +719,27 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
         snprintf(layoutLine, sizeof(layoutLine), "layout(location=%d) out %s %s", sShaderOutputCount, type, name);
         strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
         if (sShaderOutputCount < MAX_SHADER_OUTPUTS - 1) { sShaderOutputCount++; }
-        return;
+        return true;
     }
 
-    // look for and parse shader uniforms
-    if (sscanf(line, " uniform %31s %31[^; \t\n]", type, name) == 2) {
-        strip_array_from_name(name);
+    // convert sampler, image, or stray uniforms
+    if (sscanf(line, " uniform %31s %31[^; \t\n]", type, name) == 2 || sscanf(line, "uniform %31s %31[^; \t\n]", type, name) == 2) {
         if (strncmp(type, "sampler", 7) == 0 || strncmp(type, "image", 5) == 0) {
-            if (shader) {
-                // add to shader bindings
-                snprintf(shader->shaderBindings[sShaderBindingCount].name, MAX_SHADER_VARIABLE_NAME, "%s", name);
-                shader->shaderBindings[sShaderBindingCount].binding = sShaderBindingCount;
+            strip_array_from_name(name);
+            for (int i = 0; i < MAX_SHADER_BINDINGS; i++) {
+                if (referenceBindings[i].name[0] != '\0' && strcmp(referenceBindings[i].name, name) == 0) {
+                    char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
+                    snprintf(layoutLine, sizeof(layoutLine), "layout(binding=%d) uniform %s %s", referenceBindings[i].binding, type, name);
+                    strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
+                    return true;
+                }
             }
-            if (sShaderBindingCount < MAX_SHADER_BINDINGS - 1) { sShaderBindingCount++; }
-        } else if (shader) {
-            // add to shader uniforms
-            snprintf(shader->shaderUniforms[sShaderUniformCount].name, MAX_SHADER_VARIABLE_NAME, "%s", name);
-            shader->shaderUniforms[sShaderUniformCount].location = sShaderUniformCount;
-            shader->shaderUniforms[sShaderUniformCount].size = 1;
-            if (sShaderUniformCount < MAX_SHADER_UNIFORMS - 1) { sShaderUniformCount++; }
+        } else {
+            // add uniform to uniform code for inserting into default uniform block
+            char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
+            snprintf(layoutLine, sizeof(layoutLine), "    %s %s;\n", type, name);
+            strncat(sShaderUniformCode, layoutLine, MAX_SHADER_CODE - strlen(sShaderUniformCode) - 1);
+            return false;
         }
     }
 
@@ -701,12 +749,13 @@ static void process_shader_line(struct Shader *shader, struct ShaderInput *refer
     ||  sscanf(line, "#version %31s", type) == 1
     ||  sscanf(line, " #version %31s", type) == 1) {
         char layoutLine[32] = { 0 };
-        snprintf(layoutLine, sizeof(layoutLine), "#version 410 core");
+        snprintf(layoutLine, sizeof(layoutLine), "#version 450 core");
         strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
-        return;
+        return true;
     }
 
     strncat(output, line, MAX_SHADER_CODE - strlen(output) - 1);
+    return true;
 }
 
 static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
@@ -720,15 +769,17 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
 
     sShaderInputCount = 0;
     sShaderOutputCount = 0;
-    sShaderBindingCount = 0;
-    sShaderUniformCount = 0;
+    sShaderUniformBlockCount = UNIFORM_BINDING_SLOT_OFFSET + 1;
+    sShaderInsideCustomUniformBlock = false;
+
+    memset(sShaderUniformCode, 0, sizeof(char) * MAX_SHADER_CODE);
 
     while (line && *line) {
-        char *lineEnd = strpbrk(line, "\n;{");
+        char *lineEnd = strpbrk(line, "\n;");
 
         // if no delimiter was found, process the line and exit
         if (lineEnd == 0) {
-            process_shader_line(shader, referenceInputs, sanitized, line);
+            process_shader_line(shader, referenceInputs, referenceBindings, sanitized, line);
             break;
         }
 
@@ -737,29 +788,57 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
         *lineEnd = '\0';
 
         // process line
-        process_shader_line(shader, referenceInputs, sanitized, line);
-
-        // readd delimiter
-        size_t len = strlen(sanitized);
-        if (len < MAX_SHADER_CODE - 2) {
-            sanitized[len] = delimiter;
-            sanitized[len + 1] = '\0';
+        if (process_shader_line(shader, referenceInputs, referenceBindings, sanitized, line)) {
+            size_t len = strlen(sanitized);
+            if (len < MAX_SHADER_CODE - 2) {
+                sanitized[len] = delimiter;
+                sanitized[len + 1] = '\0';
+            }
         }
 
         line = lineEnd + 1;
     }
 
-    free(sourceCopy);
+    // readd the global uniforms into a global uniform block
+    if (sShaderUniformCode[0] != '\0') {
+        char *sanitizedSource = strdup(sanitized);
+        if (!sanitizedSource) {
+            free(sourceCopy);
+            free(sanitized);
+            return;
+        }
 
-    // copy reference bindings to shader input
-    if (shader) {
-        memcpy(&shader->shaderBindings, referenceBindings, sizeof(struct ShaderBinding[MAX_SHADER_BINDINGS]));
+        // zero out sanitized string
+        memset(sanitized, 0, sizeof(char) * MAX_SHADER_CODE);
+
+        // append version string
+        strncat(sanitized, "#version 450 core", MAX_SHADER_CODE - 1);
+        strncat(sanitized, "\n", MAX_SHADER_CODE - 1);
+
+        // append block
+        char defaultUniformBlockString[MAX_SHADER_VARIABLE_NAME + 128];
+        snprintf(defaultUniformBlockString, sizeof(defaultUniformBlockString), "layout(std140, set = 0, binding = %d) uniform %s {\n", UNIFORM_BINDING_SLOT_OFFSET, defaultUniformBlockName);
+        strncat(sanitized, defaultUniformBlockString, MAX_SHADER_CODE - 1);
+
+        // append uniform code
+        strncat(sanitized, sShaderUniformCode, MAX_SHADER_CODE - 1);
+
+        // cleanup block
+        strncat(sanitized, "};\n", MAX_SHADER_CODE - 1);
+
+        // append rest of code
+        strncat(sanitized, sanitizedSource + 17, MAX_SHADER_CODE - 1); // 17 is length of version text
+
+        // cleanup
+        free(sanitizedSource);
     }
 
+    free(sourceCopy);
+    free(*shaderCode);
     *shaderCode = sanitized;
 }
 
-bool gfx_sanitize_vertex_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
+static bool gfx_sanitize_vertex_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
     gfx_sanitize_shader(shader, referenceInputs, referenceBindings, shaderCode);
     // double check we are not missing any inputs, if we are, error out since it can cause
     // issues in certain render apis
@@ -773,7 +852,7 @@ bool gfx_sanitize_vertex_shader(struct Shader *shader, struct ShaderInput *refer
     return true;
 }
 
-bool gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *outputsFromVertexShader, struct ShaderBinding *referenceBindings, char **shaderCode) {
+static bool gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *outputsFromVertexShader, struct ShaderBinding *referenceBindings, char **shaderCode) {
     // convert outputs to inputs for fragment shader
     struct ShaderInput inputs[MAX_SHADER_INPUTS] = { 0 };
     for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
@@ -793,123 +872,6 @@ bool gfx_sanitize_fragment_shader(struct Shader *shader, struct ShaderOutput *ou
     return true;
 }
 
-static bool process_conversion_410_to_450_line(struct ShaderBinding *referenceBindings, char *output, const char *line) {
-    char type[32], name[MAX_SHADER_VARIABLE_NAME];
-
-    // convert sampler and image to use a uniform binding
-    if (sscanf(line, " uniform %31s %31[^; \t\n]", type, name) == 2) {
-        if (strncmp(type, "sampler", 7) == 0 || strncmp(type, "image", 5) == 0) {
-            for (int i = 0; i < MAX_SHADER_BINDINGS; i++) {
-                if (referenceBindings[i].name[0] != '\0' && strcmp(referenceBindings[i].name, name) == 0) {
-                    char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
-                    snprintf(layoutLine, sizeof(layoutLine), "layout(binding=%d) uniform %s %s", referenceBindings[i].binding, type, name);
-                    strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
-                    return true;
-                }
-            }
-        } else {
-            char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
-            snprintf(layoutLine, sizeof(layoutLine), "uniform %s %s;\n", type, name);
-            strncat(sShaderUniformCode, layoutLine, MAX_SHADER_CODE - strlen(sShaderUniformCode) - 1);
-            if (sShaderUniformCount < MAX_SHADER_UNIFORMS - 1) { sShaderUniformCount++; }
-            return false;
-        }
-    }
-
-    int version = 0;
-
-    // look for and override version number
-    if (sscanf(line, "#version %d %s", &version, name) == 2) {
-        char layoutLine[32] = { 0 };
-        snprintf(layoutLine, sizeof(layoutLine), "#version 450 core");
-        strncat(output, layoutLine, MAX_SHADER_CODE - strlen(output) - 1);
-        return true;
-    }
-
-    strncat(output, line, MAX_SHADER_CODE - strlen(output) - 1);
-    return true;
-}
-
-// this is some wild wizardry just to keep macOS afloat lol
-static void gfx_convert_410_to_450(struct ShaderBinding *referenceBindings, char **shaderCode) {
-    if (!shaderCode || !*shaderCode) { return; }
-
-    char *sanitized = (char *)calloc(1, MAX_SHADER_CODE);
-    if (!sanitized) { return; }
-
-    char *sourceCopy = strdup(*shaderCode);
-    char *line = sourceCopy;
-
-    sShaderInputCount = 0;
-    sShaderOutputCount = 0;
-    sShaderBindingCount = 0;
-    sShaderUniformCount = 0;
-
-    memset(sShaderUniformCode, 0, sizeof(char) * MAX_SHADER_CODE);
-
-    while (line && *line) {
-        char *lineEnd = strpbrk(line, "\n;{");
-
-        // if no delimiter was found, process the line and exit
-        if (lineEnd == 0) {
-            process_conversion_410_to_450_line(referenceBindings, sanitized, line);
-            break;
-        }
-
-        // save delimiter
-        char delimiter = *lineEnd;
-        *lineEnd = '\0';
-
-        // process line and readd delimiter
-        if (process_conversion_410_to_450_line(referenceBindings, sanitized, line)) {
-            size_t len = strlen(sanitized);
-            if (len < MAX_SHADER_CODE - 2) {
-                sanitized[len] = delimiter;
-                sanitized[len + 1] = '\0';
-            }
-        }
-
-        line = lineEnd + 1;
-    }
-
-    char *versionText = "#version 450 core";
-
-    // readd the uniforms into a block
-    if (sShaderUniformCode[0] != '\0' && strncmp(sanitized, versionText, 17) == 0) {
-        char *sanitizedSource = strdup(sanitized);
-        if (!sanitizedSource) {
-            free(sourceCopy);
-            free(sanitized);
-            return;
-        }
-
-        // zero out sanitized string
-        memset(sanitized, 0, sizeof(char) * MAX_SHADER_CODE);
-
-        // append version string
-        strncat(sanitized, versionText, MAX_SHADER_CODE - 1);
-        strncat(sanitized, "\n", MAX_SHADER_CODE - 1);
-
-        // append block
-        strncat(sanitized, "layout(std140, set = 0, binding = 0) uniform ShaderUniforms {\n", MAX_SHADER_CODE - 1);
-
-        // append uniform code
-        strncat(sanitized, sShaderUniformCode, MAX_SHADER_CODE - 1);
-
-        // cleanup block
-        strncat(sanitized, "};\n", MAX_SHADER_CODE - 1);
-
-        // append rest of code
-        strncat(sanitized, sanitizedSource + 17, MAX_SHADER_CODE - 1);
-
-        // cleanup
-        free(sanitizedSource);
-    }
-
-    free(sourceCopy);
-    *shaderCode = sanitized;
-}
-
 bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, struct Shader *shader) {
     // convert shader to version 450
     char *shaderCode450 = strdup(shaderCode);
@@ -917,7 +879,6 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
         LOG_ERROR("Failed to convert shader code to version 450, ran out of memory!");
         return false;
     }
-    gfx_convert_410_to_450(shader->shaderBindings, &shaderCode450);
 
     // target vulkan as it's a bit more stingy then modern opengl
     const glslang_input_t input = {
@@ -949,6 +910,7 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
             glslang_shader_get_info_debug_log(slangShader),
             input.code);
         glslang_shader_delete(slangShader);
+        free(shaderCode450);
         return false;
     }
 
@@ -958,6 +920,7 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
             glslang_shader_get_info_debug_log(slangShader),
             glslang_shader_get_preprocessed_code(slangShader));
         glslang_shader_delete(slangShader);
+        free(shaderCode450);
         return false;
     }
 
@@ -970,6 +933,7 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
             glslang_shader_get_info_debug_log(slangShader));
         glslang_program_delete(program);
         glslang_shader_delete(slangShader);
+        free(shaderCode450);
         return false;
     }
 
@@ -1013,21 +977,101 @@ static void reflect_uniform_data(struct Shader *shader, spvc_context context, sp
     size_t count;
     SPVC_CHECK(spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &list, &count));
 
-    int uniformIndex = 0;
+    shader->uniformBlockCount = 0;
 
     for (size_t i = 0; i < count; i++) {
-        // get the type and block size for the entry in the list
+        if (shader->uniformBlockCount >= MAX_UNIFORM_BLOCKS) {
+            LOG_ERROR("Ran out of space for uniform blocks!\n");
+            break;
+        }
+
         spvc_type type = spvc_compiler_get_type_handle(compiler, list[i].type_id);
+
+        if (spvc_type_get_basetype(type) != SPVC_BASETYPE_STRUCT) {
+            continue;
+        }
+
+        int currentBlockIndex = shader->uniformBlockCount;
+        struct ShaderUniformBlock *block = &shader->uniformBlocks[currentBlockIndex];
+        block->uniformCount = 0;
+
+        const char *blockName = list[i].name;
+        if (blockName == NULL || strlen(blockName) == 0) {
+            blockName = spvc_compiler_get_name(compiler, list[i].base_type_id);
+        }
+
+        // see if it's the default global uniform block
+        if (strcmp(blockName, defaultUniformBlockName) == 0) {
+            block->isGlobalBlock = true;
+        } else {
+            block->isGlobalBlock = false;
+        }
+
+        // prepend stage to uniform name
+        char uniqueName[MAX_SHADER_VARIABLE_NAME];
+
+        if (shader->stage == SHADER_STAGE_VERTEX) {
+            snprintf(uniqueName, sizeof(uniqueName), "_VS_%s", blockName);
+        } else {
+            snprintf(uniqueName, sizeof(uniqueName), "_FS_%s", blockName);
+        }
+        strncpy(block->name, uniqueName, sizeof(block->name) - 1);
+
+        spvc_compiler_set_name(compiler, list[i].base_type_id, uniqueName);
+
+        if (spvc_compiler_has_decoration(compiler, list[i].id, SpvDecorationBinding)) {
+            block->location = spvc_compiler_get_decoration(compiler, list[i].id, SpvDecorationBinding);
+        } else {
+            block->location = UNIFORM_BINDING_SLOT_OFFSET;
+        }
 
         size_t block_size = 0;
         spvc_compiler_get_declared_struct_size(compiler, type, &block_size);
 
-        shader->uboTotalSize = (block_size + 15) & ~15;
+        // align to 16 bytes
+        block->size = (block_size + 15) & ~15;
 
-        // iterate through all members, or individual uniforms
+        block->buffer = (uint8_t *)malloc(block->size);
+        if (block->buffer == NULL) {
+            sys_fatal("Failed to allocate memory for uniform block: %s", block->name);
+        }
+        memset(block->buffer, 0, block->size);
+
+#ifdef _WIN32
+        // in Windows, create the buffer for dx11
+        D3D11_BUFFER_DESC bufferDesc;
+        bufferDesc.ByteWidth = block->size;
+        bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+        bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+        bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+        bufferDesc.MiscFlags = 0;
+        bufferDesc.StructureByteStride = 0;
+
+        HRESULT hr = d3d.device->CreateBuffer(&bufferDesc, NULL, &block->dxConstantBuffer);
+        if (FAILED(hr)) {
+            sys_fatal("Failed to allocate d3d constant buffer for %s", block->name);
+        }
+#endif
+
+        // bind the buffer in opengl
+        if (gRenderApi == &gfx_opengl_api) {
+            glGenBuffers(1, &block->glBufferId);
+            glBindBuffer(GL_UNIFORM_BUFFER, block->glBufferId);
+            glBufferData(GL_UNIFORM_BUFFER, block->size, NULL, GL_DYNAMIC_DRAW);
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+        }
+
+        shader->uniformBlockCount++;
+
+        // get uniforms inside block
         u32 memberCount = spvc_type_get_num_member_types(type);
         for (u32 m = 0; m < memberCount; m++) {
-            if (uniformIndex >= MAX_SHADER_UNIFORMS) break;
+            if (block->uniformCount >= MAX_SHADER_UNIFORMS) {
+                printf("Warning: Ran out of uniform space inside block %s!\n", block->name);
+                break;
+            }
+
+            struct ShaderUniform *uniform = &block->uniforms[block->uniformCount];
 
             const char *memberName = spvc_compiler_get_member_name(compiler, list[i].base_type_id, m);
 
@@ -1042,7 +1086,6 @@ static void reflect_uniform_data(struct Shader *shader, spvc_context context, sp
             u32 arrayLength = 1;
             u32 arrayStride = 0;
 
-            // get array length and stride if necessary
             if (spvc_type_get_num_array_dimensions(memberType) > 0) {
                 arrayLength = spvc_type_get_array_dimension(memberType, 0);
                 SPVC_CHECK(spvc_compiler_type_struct_member_array_stride(compiler, type, m, &arrayStride));
@@ -1051,19 +1094,61 @@ static void reflect_uniform_data(struct Shader *shader, spvc_context context, sp
             u32 width = spvc_type_get_bit_width(memberType) / 8;
             u32 columns = spvc_type_get_columns(memberType);
             u32 vectorSize = spvc_type_get_vector_size(memberType);
-
             u32 elementSize = width * columns * vectorSize;
 
-            strncpy(shader->shaderUniforms[uniformIndex].name, memberName, MAX_SHADER_VARIABLE_NAME - 1);
-            shader->shaderUniforms[uniformIndex].location = memberOffset;
-            shader->shaderUniforms[uniformIndex].size = memberSize;
-            shader->shaderUniforms[uniformIndex].arrayStride = arrayStride;
-            shader->shaderUniforms[uniformIndex].elementSize = elementSize;
-            shader->shaderUniforms[uniformIndex].arrayLength = arrayLength;
+            strncpy(uniform->name, memberName, MAX_SHADER_VARIABLE_NAME - 1);
+            uniform->location = memberOffset;
+            uniform->size = memberSize;
+            uniform->arrayStride = arrayStride;
+            uniform->elementSize = elementSize;
+            uniform->arrayLength = arrayLength;
 
-            uniformIndex++;
+            block->uniformCount++;
         }
     }
+
+    // reorder uniform blocks so the global block is at the bottom for ease of access
+    if (shader->uniformBlockCount > 1 && !shader->uniformBlocks[0].isGlobalBlock) {
+        for (int i = 1; i < shader->uniformBlockCount; i++) {
+            if (shader->uniformBlocks[i].isGlobalBlock) {
+                struct ShaderUniformBlock temp = shader->uniformBlocks[0];
+                shader->uniformBlocks[0] = shader->uniformBlocks[i];
+                shader->uniformBlocks[i] = temp;
+                break;
+            }
+        }
+    }
+}
+
+void gfx_convert_spirv_to_glsl_410(char **shaderCode, struct Shader *shader) {
+    spvc_context context = NULL;
+    spvc_compiler compiler = NULL;
+    spvc_parsed_ir ir = NULL;
+    const char *glsl_code = NULL;
+
+    SpirVShader *spirvShader = &shader->spirVShader;
+
+    SPVC_CHECK(spvc_context_create(&context));
+    SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
+    SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_GLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
+
+    spvc_resources resources;
+    spvc_compiler_create_shader_resources(compiler, &resources);
+
+    reflect_uniform_data(shader, context, compiler);
+
+    spvc_compiler_options options;
+    spvc_compiler_create_compiler_options(compiler, &options);
+    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_GLSL_VERSION, 410);
+    spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ES, false);
+    spvc_compiler_options_set_bool(options, SPVC_COMPILER_OPTION_GLSL_ENABLE_420PACK_EXTENSION, false);
+    spvc_compiler_install_compiler_options(compiler, options);
+
+    spvc_compiler_compile(compiler, &glsl_code);
+
+    *shaderCode = strdup(glsl_code);
+
+    spvc_context_destroy(context);
 }
 
 void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
@@ -1128,11 +1213,11 @@ void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
 
 #undef SPVC_CHECK
 
-static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *vertexShader, struct Shader *fragmentShader, struct ShaderInput *shaderInputs, struct ShaderBinding *shaderBindings, char *vsCode, char *fsCode, bool isCustom)  {
-    vertexShader->stage = GLSLANG_STAGE_VERTEX;
-    fragmentShader->stage = GLSLANG_STAGE_FRAGMENT;
+static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *vertexShader, struct Shader *fragmentShader, struct ShaderInput *shaderInputs, struct ShaderBinding *shaderBindings, char **vsCode, char **fsCode, bool isCustom)  {
+    vertexShader->stage = SHADER_STAGE_VERTEX;
+    fragmentShader->stage = SHADER_STAGE_FRAGMENT;
 
-    if (!gfx_sanitize_vertex_shader(vertexShader, shaderInputs, shaderBindings, &vsCode)) {
+    if (!gfx_sanitize_vertex_shader(vertexShader, shaderInputs, shaderBindings, vsCode)) {
         if (isCustom) {
             LOG_LUA_LINE("Failed to sanitize vertex shader!");
             return false;
@@ -1142,7 +1227,7 @@ static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *v
         }
     }
 
-    if (!gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, shaderBindings, &fsCode)) {
+    if (!gfx_sanitize_fragment_shader(fragmentShader, vertexShader->shaderOutputs, shaderBindings, fsCode)) {
         if (isCustom) {
             LOG_LUA_LINE("Failed to sanitize fragment shader!");
             return false;
@@ -1152,7 +1237,7 @@ static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *v
         }
     }
 
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, vsCode, vertexShader)) {
+    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_VERTEX, *vsCode, vertexShader)) {
         if (isCustom) {
             LOG_LUA_LINE("Failed to compile custom vertex shader to SPIR-V!");
             return false;
@@ -1162,7 +1247,7 @@ static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *v
         }
     }
 
-    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, fsCode, fragmentShader)) {
+    if (!gfx_compile_shader_to_spirv(GLSLANG_STAGE_FRAGMENT, *fsCode, fragmentShader)) {
         if (isCustom) {
             LOG_LUA_LINE("Failed to compile custom fragment shader to SPIR-V!");
             return false;
@@ -1182,7 +1267,7 @@ static bool gfx_generate_vertex_and_fragment_shader(struct Shader *vertexShader,
 
     bool isCustom = (strcmp(vsCode, fallbackVsCode) != 0 || strcmp(fsCode, fallbackFsCode) != 0);
 
-    if (!gfx_generate_vertex_and_fragment_shader_no_fallback(vertexShader, fragmentShader, shaderInputs, shaderBindings, vsCode, fsCode, isCustom)) {
+    if (!gfx_generate_vertex_and_fragment_shader_no_fallback(vertexShader, fragmentShader, shaderInputs, shaderBindings, &vsCode, &fsCode, isCustom)) {
         if (isCustom) {
             // clear shader contents of old garbage data and try again with fallback
             gfx_destroy_shader_contents(vertexShader);
@@ -1195,7 +1280,7 @@ static bool gfx_generate_vertex_and_fragment_shader(struct Shader *vertexShader,
             fsCode = fallbackFsCode;
             fallbackVsCode = NULL;
             fallbackFsCode = NULL;
-            if (!gfx_generate_vertex_and_fragment_shader_no_fallback(vertexShader, fragmentShader, shaderInputs, shaderBindings, vsCode, fsCode, false)) {
+            if (!gfx_generate_vertex_and_fragment_shader_no_fallback(vertexShader, fragmentShader, shaderInputs, shaderBindings, &vsCode, &fsCode, false)) {
                 sys_fatal("Failed to generate vertex and fragment shader!"); // should technically never be reached
                 return false;
             }
@@ -1273,12 +1358,42 @@ bool gfx_generate_post_process_vertex_and_fragment_shader(struct Shader *vertexS
     smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, (const char **)&vsShaderCode);
     smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
 
+    if (!vsShaderCode) {
+        vsShaderCode = strdup(fallbackVsCode);
+    } else {
+        vsShaderCode = strdup(vsShaderCode); // lua handles its own memory, we need to escape it
+    }
+
+    if (!fsShaderCode) {
+        fsShaderCode = strdup(fallbackFsCode);
+    } else {
+        fsShaderCode = strdup(fsShaderCode); // lua handles its own memory, we need to escape it
+    }
+
     return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gPostProcessShaderInputs, gPostProcessShaderBindings, vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
 }
 
 void gfx_destroy_shader_contents(struct Shader *shader) {
     if (!shader) { return; }
+
+    // cleanup uniform blocks
+    for (int i = 0; i < shader->uniformBlockCount; i++) {
+        struct ShaderUniformBlock *block = &shader->uniformBlocks[i];
+        free(block->buffer);
+        block->buffer = NULL;
+
+#ifdef _WIN32
+        block->dxConstantBuffer.Reset();
+#endif
+
+        if (gRenderApi == &gfx_opengl_api) {
+            glDeleteBuffers(1, &block->glBufferId);
+        }
+    }
+
     free(shader->spirVShader.words);
+    shader->spirVShader.words = NULL;
+
     memset(shader, 0, sizeof(struct Shader));
 }
 
@@ -1286,5 +1401,4 @@ void gfx_destroy_shader(struct Shader *shader) {
     if (!shader) { return; }
     gfx_destroy_shader_contents(shader);
     free(shader);
-    shader = NULL;
 }

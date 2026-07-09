@@ -29,7 +29,7 @@ extern "C" {
 }
 
 #define MAX_FRAMES_IN_FLIGHT 3
-#define MAX_STORAGE_BUFFER_SIZE 4 * 1024 * 1024
+#define MAX_STORAGE_BUFFER_SIZE 32 * 1024 * 1024
 
 struct TextureData {
     MTL::Texture *texture = NULL;
@@ -43,17 +43,8 @@ struct TextureData {
 struct ShaderProgramMetal {
     MTL::RenderPipelineState *pipeline;
 
-    MTL::Buffer *vertexConstantBuffer;
-    MTL::Buffer *fragmentConstantBuffer;
-
     struct Shader *vertexShader;
     struct Shader *fragmentShader;
-
-    uint8_t *vertexUniformBuffer;
-    uint8_t *fragmentUniformBuffer;
-
-    int vertexUboSize;
-    int fragmentUboSize;
 
     uint64_t hash;
 
@@ -193,46 +184,6 @@ static void create_depth_texture() {
     }
 }
 
-static void generate_uniform_buffer(struct ShaderProgramMetal *prg, struct Shader *vertexShader, struct Shader *fragmentShader) {
-    prg->vertexUboSize = vertexShader->uboTotalSize;
-    prg->vertexUboSize = (prg->vertexUboSize + 15) & ~15;
-
-    prg->fragmentUboSize = fragmentShader->uboTotalSize;
-    prg->fragmentUboSize = (prg->fragmentUboSize + 15) & ~15;
-
-    if (prg->vertexUboSize > 0) {
-        prg->vertexUniformBuffer = (uint8_t *)malloc(prg->vertexUboSize);
-        if (prg->vertexUniformBuffer == NULL) {
-            sys_fatal("Failed to allocate vertex uniform buffer memory!");
-        }
-        memset(prg->vertexUniformBuffer, 0, prg->vertexUboSize);
-
-        prg->vertexConstantBuffer = metal.device->newBuffer(prg->vertexUboSize, MTL::ResourceStorageModeShared);
-        if (prg->vertexConstantBuffer == NULL) {
-            sys_fatal("Failed to create Metal vertex constant buffer.");
-        }
-    } else {
-        prg->vertexUniformBuffer = NULL;
-        prg->vertexConstantBuffer = NULL;
-    }
-
-    if (prg->fragmentUboSize > 0) {
-        prg->fragmentUniformBuffer = (uint8_t *)malloc(prg->fragmentUboSize);
-        if (prg->fragmentUniformBuffer == NULL) {
-            sys_fatal("Failed to allocate fragment uniform buffer memory!");
-        }
-        memset(prg->fragmentUniformBuffer, 0, prg->fragmentUboSize);
-
-        prg->fragmentConstantBuffer = metal.device->newBuffer(prg->fragmentUboSize, MTL::ResourceStorageModeShared);
-        if (prg->fragmentConstantBuffer == NULL) {
-            sys_fatal("Failed to create Metal fragment constant buffer.");
-        }
-    } else {
-        prg->fragmentUniformBuffer = NULL;
-        prg->fragmentConstantBuffer = NULL;
-    }
-}
-
 bool gfx_metal_z_is_from_0_to_1(void) {
     return true;
 }
@@ -249,10 +200,22 @@ void gfx_metal_remove_shaders(void) {
         for (int j = 0; j < CC_MAX_SHADERS; j++) {
             gfx_destroy_shader(metal.shaderProgramPool[i][j].vertexShader);
             gfx_destroy_shader(metal.shaderProgramPool[i][j].fragmentShader);
+            if (metal.shaderProgramPool[i][j].pipeline) {
+                metal.shaderProgramPool[i][j].pipeline->release();
+                metal.shaderProgramPool[i][j].pipeline = NULL;
+            }
             metal.shaderProgramPool[i][j] = { 0 };
         }
         metal.shaderProgramPoolIndex[i] = 0;
         metal.shaderProgramPoolSize[i] = 0;
+
+        gfx_destroy_shader(metal.postProcessShaderProgramPool[i].vertexShader);
+        gfx_destroy_shader(metal.postProcessShaderProgramPool[i].fragmentShader);
+        if (metal.postProcessShaderProgramPool[i].pipeline) {
+            metal.postProcessShaderProgramPool[i].pipeline->release();
+            metal.postProcessShaderProgramPool[i].pipeline = NULL;
+        }
+
         metal.postProcessShaderProgramPool[i] = { 0 };
     }
 
@@ -348,14 +311,14 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
         auto attribute = vertexDesc->attributes()->object(loc);
         attribute->setFormat(format);
         attribute->setOffset(currentOffset);
-        attribute->setBufferIndex(1);
+        attribute->setBufferIndex(0);
 
         currentOffset += vertexShader->shaderInputs[i].size * sizeof(float);
         iedIndex++;
     }
 
     if (iedIndex > 0) {
-        auto layout = vertexDesc->layouts()->object(1);
+        auto layout = vertexDesc->layouts()->object(0);
         layout->setStride(currentOffset);
         layout->setStepFunction(MTL::VertexStepFunctionPerVertex);
         pipelineDesc->setVertexDescriptor(vertexDesc);
@@ -384,19 +347,12 @@ struct ShaderProgram *gfx_metal_create_and_load_new_shader(struct ColorCombiner 
     prg->usedLightmap = cc->cm.light_map;
     prg->usedFog = cc->cm.use_fog;
 
-    if (prg->vertexShader) { free(prg->vertexShader); }
-    if (prg->fragmentShader) { free(prg->fragmentShader); }
+    if (prg->vertexShader) { gfx_destroy_shader(prg->vertexShader); }
+    if (prg->fragmentShader) { gfx_destroy_shader(prg->fragmentShader); }
 
     prg->vertexShader = vertexShader;
     prg->fragmentShader = fragmentShader;
     prg->worldGeometry = cc->cm.world_geometry;
-
-    if (prg->vertexConstantBuffer) { prg->vertexConstantBuffer->release(); }
-    if (prg->fragmentConstantBuffer) { prg->fragmentConstantBuffer->release(); }
-    if (prg->vertexUniformBuffer) { free(prg->vertexUniformBuffer); }
-    if (prg->fragmentUniformBuffer) { free(prg->fragmentUniformBuffer); }
-
-    generate_uniform_buffer(prg, vertexShader, fragmentShader);
 
     metal.shaderProgram = prg;
     return (struct ShaderProgram *)prg;
@@ -473,14 +429,14 @@ struct ShaderProgram *gfx_metal_create_or_load_post_process_shader(void) {
         auto attribute = vertexDesc->attributes()->object(loc);
         attribute->setFormat(format);
         attribute->setOffset(currentOffset);
-        attribute->setBufferIndex(1);
+        attribute->setBufferIndex(0);
 
         currentOffset += vertexShader->shaderInputs[i].size * sizeof(float);
         iedIndex++;
     }
 
     if (iedIndex > 0) {
-        auto layout = vertexDesc->layouts()->object(1);
+        auto layout = vertexDesc->layouts()->object(0);
         layout->setStride(currentOffset);
         layout->setStepFunction(MTL::VertexStepFunctionPerVertex);
         pipelineDesc->setVertexDescriptor(vertexDesc);
@@ -505,11 +461,13 @@ struct ShaderProgram *gfx_metal_create_or_load_post_process_shader(void) {
     prg->usedTextures[1] = false;
     prg->usedLightmap = false;
     prg->usedFog = false;
-    prg->vertexShader = vertexShader;
-    prg->fragmentShader = fragmentShader;
     prg->worldGeometry = false;
 
-    generate_uniform_buffer(prg, vertexShader, fragmentShader);
+    if (prg->vertexShader) { gfx_destroy_shader(prg->vertexShader); }
+    if (prg->fragmentShader) { gfx_destroy_shader(prg->fragmentShader); }
+
+    prg->vertexShader = vertexShader;
+    prg->fragmentShader = fragmentShader;
 
     metal.shaderProgram = prg;
     return (struct ShaderProgram *)prg;
@@ -699,17 +657,36 @@ void gfx_metal_reset_framebuffer(void) {
     metal.encoder->setViewport(vp);
 }
 
-static void gfx_metal_set_uniform_for_specific_shader(struct ShaderProgramMetal *prg, struct Shader *shader, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
-    if (shader == NULL) { return; }
+void gfx_metal_set_uniform_buffer(enum ShaderStage stage, const char *name) {
+    struct Shader *shader = NULL;
+    int *destination = NULL;
+    if (stage == SHADER_STAGE_VERTEX) {
+        shader = metal.shaderProgram->vertexShader;
+        destination = &gSelectedVertexUniformBuffer;
+    } else if (stage == SHADER_STAGE_FRAGMENT) {
+        shader = metal.shaderProgram->fragmentShader;
+        destination = &gSelectedFragmentUniformBuffer;
+    } else {
+        return;
+    }
 
+    for (int i = 0; i < MAX_UNIFORM_BLOCKS; i++) {
+        struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
+
+        if (strcmp(uniformBlock->name, name) == 0) {
+            *destination = i;
+        }
+    }
+}
+
+static void gfx_metal_set_uniform_for_specific_shader(struct ShaderUniformBlock *uniformBlock, const char *name, ShaderUniformType type, const void *data, uint32_t numElements) {
     for (int i = 0; i < MAX_SHADER_UNIFORMS; i++) {
-        if (shader->shaderUniforms[i].size == 0) { break; }
+        struct ShaderUniform *uniform = &uniformBlock->uniforms[i];
+        if (uniform->size == 0) { break; }
 
-        if (strcmp(shader->shaderUniforms[i].name, name) == 0) {
-            struct ShaderUniform *uniform = &shader->shaderUniforms[i];
-
+        if (strcmp(uniform->name, name) == 0) {
             // get starting location of pointer
-            u8 *dst = shader->stage == GLSLANG_STAGE_VERTEX ? prg->vertexUniformBuffer : prg->fragmentUniformBuffer;
+            u8 *dst = uniformBlock->buffer;
             // increment pointer by our uniform location
             dst += uniform->location;
 
@@ -735,8 +712,12 @@ void gfx_metal_set_uniform(struct ShaderProgram *prg, const char *name, ShaderUn
         metal_prg = metal.shaderProgram;
     }
 
-    gfx_metal_set_uniform_for_specific_shader(metal_prg, metal_prg->vertexShader, name, type, data, numElements);
-    gfx_metal_set_uniform_for_specific_shader(metal_prg, metal_prg->fragmentShader, name, type, data, numElements);
+    if (gfx_shader_stage_is(SHADER_STAGE_VERTEX)) {
+        gfx_metal_set_uniform_for_specific_shader(&metal_prg->vertexShader->uniformBlocks[gSelectedVertexUniformBuffer], name, type, data, numElements);
+    }
+    if (gfx_shader_stage_is(SHADER_STAGE_FRAGMENT)) {
+        gfx_metal_set_uniform_for_specific_shader(&metal_prg->fragmentShader->uniformBlocks[gSelectedFragmentUniformBuffer], name, type, data, numElements);
+    }
 }
 
 uint32_t gfx_metal_new_texture(void) {
@@ -863,6 +844,31 @@ void gfx_metal_set_vsync(bool enabled) {
     }
 }
 
+static void upload_uniform_buffers_for_shader(struct Shader *shader) {
+    for (int i = 0; i < shader->uniformBlockCount; i++) {
+        struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
+        if (uniformBlock->size > 0) {
+            size_t size = uniformBlock->size;
+            size_t alignedOffset = (metal.storageBufferOffset[metal.currentFrame] + 15) & ~15;
+
+            if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
+                uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
+                memcpy(dst, uniformBlock->buffer, size);
+
+                if (shader->stage == SHADER_STAGE_VERTEX) {
+                    metal.encoder->setVertexBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, uniformBlock->location);
+                } else if (shader->stage == SHADER_STAGE_FRAGMENT) {
+                    metal.encoder->setFragmentBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, uniformBlock->location);
+                }
+                metal.storageBufferOffset[metal.currentFrame] = alignedOffset + size;
+            } else {
+                // Todo: Make LOG_ERROR when possible
+                printf("Metal: Storage buffer is full!\n");
+            }
+        }
+    }
+}
+
 void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     if (metal.shaderProgram == NULL) { return; }
     int framePassIndex = gCurrentFramePassIndex + 1;
@@ -929,48 +935,19 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     smlua_call_event_hooks(HOOK_ON_DRAW_TRIANGLE);
 
     // upload uniform data
-    if (metal.shaderProgram->vertexUboSize > 0 && metal.shaderProgram->vertexUniformBuffer != NULL) {
-        size_t size = metal.shaderProgram->vertexUboSize;
-        size_t alignedOffset = (metal.storageBufferOffset[framePassIndex] + 15) & ~15;
-
-        if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
-            memcpy(dst, metal.shaderProgram->vertexUniformBuffer, size);
-
-            metal.encoder->setVertexBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 0);
-            metal.storageBufferOffset[framePassIndex] = alignedOffset + size;
-        } else {
-            // Todo: Make LOG_ERROR when possible
-            printf("Metal: Storage buffer is full!\n");
-        }
-    }
-
-    if (metal.shaderProgram->fragmentUboSize > 0 && metal.shaderProgram->fragmentUniformBuffer != NULL) {
-        size_t size = metal.shaderProgram->fragmentUboSize;
-        size_t alignedOffset = (metal.storageBufferOffset[framePassIndex] + 15) & ~15;
-
-        if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
-            uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
-            memcpy(dst, metal.shaderProgram->fragmentUniformBuffer, size);
-
-            metal.encoder->setFragmentBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 0);
-            metal.storageBufferOffset[framePassIndex] = alignedOffset + size;
-        } else {
-            // Todo: Make LOG_ERROR when possible
-            printf("Metal: Storage buffer is full!\n");
-        }
-    }
+    upload_uniform_buffers_for_shader(metal.shaderProgram->vertexShader);
+    upload_uniform_buffers_for_shader(metal.shaderProgram->fragmentShader);
 
     if (buf_vbo_len > 0) {
         size_t size = buf_vbo_len * sizeof(float);
-        size_t alignedOffset = (metal.storageBufferOffset[framePassIndex] + 15) & ~15;
+        size_t alignedOffset = (metal.storageBufferOffset[metal.currentFrame] + 15) & ~15;
 
         if (alignedOffset + size <= MAX_STORAGE_BUFFER_SIZE) {
             uint8_t *dst = (uint8_t *)metal.dynamicStorageBuffer[metal.currentFrame]->contents() + alignedOffset;
             memcpy(dst, buf_vbo, size);
 
-            metal.encoder->setVertexBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 1);
-            metal.storageBufferOffset[framePassIndex] = alignedOffset + size;
+            metal.encoder->setVertexBuffer(metal.dynamicStorageBuffer[metal.currentFrame], alignedOffset, 0);
+            metal.storageBufferOffset[metal.currentFrame] = alignedOffset + size;
         } else {
             // Todo: Make LOG_ERROR when possible
             printf("Metal: Storage buffer is full!\n");
@@ -1146,6 +1123,7 @@ struct GfxRenderingAPI gfx_metal_api = {
     gfx_metal_delete_framebuffer,
     gfx_metal_set_framebuffer,
     gfx_metal_reset_framebuffer,
+    gfx_metal_set_uniform_buffer,
     gfx_metal_set_uniform,
     gfx_metal_new_texture,
     gfx_metal_select_texture,

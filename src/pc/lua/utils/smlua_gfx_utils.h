@@ -132,6 +132,16 @@ bool gfx_is_legacy_renderer();
 void gfx_reload_shaders();
 /* |description|Gets features from a color combiner|descriptionEnd| */
 struct CCFeatures *gfx_color_combiner_get_features(struct ColorCombiner *cc);
+/* |description|
+Sets the currently active shader stage. Use SHADER_STAGE_ANY to make both active.
+When setting a uniform buffer, or uniforms in general, what stage that gets applied to
+is decided by this function
+|descriptionEnd| */
+void gfx_shader_set_shader_stage(enum ShaderStage stage);
+/* |description|Sets the currently selected uniform buffer|descriptionEnd| */
+void gfx_shader_set_uniform_buffer(const char *name);
+/* |description|Resets the currently selected uniform buffer|descriptionEnd| */
+void gfx_shader_reset_uniform_buffer(void);
 /* |description|Sets the value of a shader uniform of type bool|descriptionEnd| */
 void gfx_shader_set_bool(const char *name, bool value);
 /* |description|Sets the value of a shader uniform of type int|descriptionEnd| */

@@ -26,6 +26,7 @@
 #include "src/game/paintings.h"
 #include "src/pc/djui/djui_types.h"
 #include "src/pc/gfx/gfx_cc.h"
+#include "src/pc/gfx/gfx_shader.h"
 #include "src/game/level_update.h"
 #include "src/game/first_person_cam.h"
 #include "src/game/player_palette.h"

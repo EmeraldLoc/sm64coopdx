@@ -4,6 +4,7 @@
 #include "types.h"
 #include "pc/gfx/gfx.h"
 #include "pc/gfx/gfx_cc.h"
+#include "pc/gfx/gfx_shader.h"
 
 enum ShaderFlag {
     SHADER_FLAG_HUE,
@@ -91,12 +92,17 @@ extern f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX];
 extern f32 gShaderFlagValues[SHADER_FLAG_MAX];
 extern bool gShaderFlagsEnabled;
 
+extern int gSelectedVertexUniformBuffer;
+extern int gSelectedFragmentUniformBuffer;
+extern enum ShaderStage gSelectedShaderStage;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, const char *window_title);
 struct GfxRenderingAPI *gfx_get_current_rendering_api(void);
+bool gfx_shader_stage_is(enum ShaderStage stage);
 void gfx_start_frame(void);
 void gfx_get_frame_pass_viewport_dimensions(struct FramePass *framePass, u32 *width, u32 *height);
 struct FramePass *gfx_get_current_frame_pass(void);

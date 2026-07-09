@@ -150,6 +150,11 @@ f32 gDefaultShaderFlagValues[SHADER_FLAG_MAX] = {
 f32 gShaderFlagValues[SHADER_FLAG_MAX] = { 0 };
 bool gShaderFlagsEnabled = true;
 
+int gSelectedVertexUniformBuffer = 0;
+int gSelectedFragmentUniformBuffer = 0;
+
+enum ShaderStage gSelectedShaderStage = SHADER_STAGE_ANY;
+
 // need inverse camera matrix to compute world space for lighting engine
 static Mat4 sInverseCameraMatrix;
 static bool sHasInverseCameraMatrix = false;
@@ -1803,6 +1808,10 @@ static void gfx_draw_fullscreen_quad() {
     sRenderingState.alpha_blend = false;
     gfx_rapi->set_depth_test(false);
     sRenderingState.depth_test = false;
+
+    gfx_set_builtin_uniforms();
+    smlua_call_event_hooks(HOOK_ON_SET_SHADER_PROGRAM);
+
     gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
 }
 
@@ -2191,6 +2200,10 @@ struct GfxRenderingAPI *gfx_get_current_rendering_api(void) {
     return gfx_rapi;
 }
 
+bool gfx_shader_stage_is(enum ShaderStage stage) {
+    return (gSelectedShaderStage == stage || gSelectedShaderStage == SHADER_STAGE_ANY);
+}
+
 void gfx_start_frame(void) {
     sFrameCount++;
     if (gGfxPcResetTex1 > 0) {
@@ -2420,6 +2433,9 @@ void gfx_shutdown(void) {
 }
 
 void gfx_update_fog_uniforms(void) {
+    gSelectedShaderStage = SHADER_STAGE_ANY;
+    gSelectedVertexUniformBuffer = 0;
+    gSelectedFragmentUniformBuffer = 0;
     float fog_mul = (float)sRenderingState.fog_mul;
     gfx_rapi->set_uniform(NULL, "uFogMul", SHADER_UNIFORM_TYPE_FLOAT, &fog_mul, 1);
 
@@ -2431,7 +2447,7 @@ void gfx_update_fog_uniforms(void) {
     float fogColor[3] = {
         (sRenderingState.rdp_fog_color_r / 255.0f) * (sRenderingState.fog_color_r / 255.0f),
         (sRenderingState.rdp_fog_color_g / 255.0f) * (sRenderingState.fog_color_g / 255.0f),
-        (sRenderingState.rdp_fog_color_b / 255.0f) * (sRenderingState.fog_color_b / 255.0f)
+        (sRenderingState.rdp_fog_color_b / 255.0f) * (sRenderingState.fog_color_b / 255.0f),
     };
     gfx_rapi->set_uniform(NULL, "uFogColor", SHADER_UNIFORM_TYPE_VEC3, &fogColor, 1);
 
@@ -2443,6 +2459,9 @@ void gfx_update_fog_uniforms(void) {
 }
 
 void gfx_update_matrices(void) {
+    gSelectedShaderStage = SHADER_STAGE_ANY;
+    gSelectedVertexUniformBuffer = 0;
+    gSelectedFragmentUniformBuffer = 0;
     gfx_rapi->set_uniform(NULL, "uModelViewProjectionMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.MVP_matrix, 1);
     if (rsp.modelview_matrix_stack_size > 0) {
         gfx_rapi->set_uniform(NULL, "uModelViewMatrix", SHADER_UNIFORM_TYPE_MAT4, rsp.modelview_matrix_stack[rsp.modelview_matrix_stack_size - 1], 1);
@@ -2453,6 +2472,9 @@ void gfx_update_matrices(void) {
 }
 
 void gfx_set_builtin_uniforms(void) {
+    gSelectedShaderStage = SHADER_STAGE_ANY;
+    gSelectedVertexUniformBuffer = 0;
+    gSelectedFragmentUniformBuffer = 0;
     gfx_rapi->set_uniform(NULL, "uFrameCount", SHADER_UNIFORM_TYPE_FLOAT, &sFrameCount, 1);
 
     float lightmapColor[3] = {

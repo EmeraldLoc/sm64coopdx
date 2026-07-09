@@ -1,5 +1,4 @@
-#ifndef GFX_RENDERING_API_H
-#define GFX_RENDERING_API_H
+#pragma once
 
 #include <stddef.h>
 #include <stdint.h>
@@ -25,10 +24,11 @@ struct GfxRenderingAPI {
     void (*delete_framebuffer)(struct FramePass *framePass);
     void (*set_framebuffer)(struct FramePass *framePass);
     void (*reset_framebuffer)(void);
+    void (*set_uniform_buffer)(enum ShaderStage stage, const char *name);
     void (*set_uniform)(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements);
     uint32_t (*new_texture)(void);
     void (*select_texture)(int tile, uint32_t texture_id);
-    void (*bind_texture_raw)(int tile, uint64_t texture_id); // needs to be 64 for dx11 pointer
+    void (*bind_texture_raw)(int tile, uint64_t texture_id);
     void (*upload_texture)(const uint8_t *rgba32_buf, int width, int height);
     void (*set_sampler_parameters)(int sampler, bool linear_filter, uint32_t cms, uint32_t cmt);
     void (*set_depth_test)(bool depth_test);
@@ -48,5 +48,3 @@ struct GfxRenderingAPI {
     bool (*is_legacy)(void);
     void (*shutdown)(void);
 };
-
-#endif

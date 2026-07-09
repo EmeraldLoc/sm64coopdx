@@ -157,6 +157,29 @@ A shader may contain uniforms. As per the GLSL naming convention, uniform variab
 
 For defining a custom uniform in lua, use the `HOOK_ON_SET_SHADER_PROGRAM`, hook and use the appropriate `gfx_shader_set_*` function. If you need to set a uniform every triangle draw, do note there is a lot of performance overhead, but if it is necessary, use `HOOK_ON_DRAW_TRIANGLE`.
 
+You can also define uniform buffers with no explicit locations, such as:
+
+```lua
+uniform LightData {
+    vec3 uLightPositions[64];
+    vec3 uLightColor[64];
+    int uLightCount;
+};
+```
+
+These allow you to pass more data. To utilize this, set the current uniform block to your custom one, and set the data accordingly:
+
+```lua
+function on_set_shader_program() {
+    gfx_shader_set_uniform_buffer("LightData")
+    gfx_shader_set_vec3_array("uLightPositions", lightPositions)
+    gfx_shader_set_vec3_array("uLightColor", lightColors)
+    gfx_shader_set_int("uLightCount", #lightPositions)
+}
+```
+
+If your light data in the vertex shader does not match the light shader in the fragment shader, you can explicitly set uniforms for a specific shader using `gfx_shader_set_shader_stage`.
+
 ```lua
 local sceneBrightness = 0.5
 

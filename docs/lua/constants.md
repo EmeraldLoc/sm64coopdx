@@ -37,6 +37,8 @@
     - [enum CombineModeFlags](#enum-CombineModeFlags)
 - [gfx_pc.h](#gfx_pch)
     - [enum ShaderFlag](#enum-ShaderFlag)
+- [gfx_shader.h](#gfx_shaderh)
+    - [enum ShaderStage](#enum-ShaderStage)
 - [graph_node.h](#graph_nodeh)
 - [interaction.c](#interactionc)
 - [interaction.h](#interactionh)
@@ -1472,6 +1474,20 @@
 | SHADER_FLAG_MAX | 8 |
 - MAX_CUSTOM_FRAME_PASSES
 - MAX_FRAME_PASSES
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader.h](#gfx_shader.h)
+
+### [enum ShaderStage](#ShaderStage)
+| Identifier | Value |
+| :--------- | :---- |
+| SHADER_STAGE_VERTEX | 0 |
+| SHADER_STAGE_FRAGMENT | 1 |
+| SHADER_STAGE_ANY | 2 |
+| SHADER_STAGE_COUNT | 3 |
 
 [:arrow_up_small:](#)
 
