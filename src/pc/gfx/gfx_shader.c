@@ -1038,18 +1038,8 @@ static void reflect_uniform_data(struct Shader *shader, spvc_context context, sp
         memset(block->buffer, 0, block->size);
 
 #ifdef _WIN32
-        // in Windows, create the buffer for dx11
-        D3D11_BUFFER_DESC bufferDesc;
-        bufferDesc.ByteWidth = block->size;
-        bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
-        bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-        bufferDesc.MiscFlags = 0;
-        bufferDesc.StructureByteStride = 0;
-
-        HRESULT hr = d3d.device->CreateBuffer(&bufferDesc, NULL, &block->dxConstantBuffer);
-        if (FAILED(hr)) {
-            sys_fatal("Failed to allocate d3d constant buffer for %s", block->name);
+        if (gRenderApi == &gfx_direct3d11_api) {
+            d3d11_create_buffer_for_block(block);
         }
 #endif
 
@@ -1383,7 +1373,9 @@ void gfx_destroy_shader_contents(struct Shader *shader) {
         block->buffer = NULL;
 
 #ifdef _WIN32
-        block->dxConstantBuffer.Reset();
+        if (gRenderApi == &gfx_direct3d11_api) {
+            ID3D11Buffer_Release(block->dxConstantBuffer);
+        }
 #endif
 
         if (gRenderApi == &gfx_opengl_api) {

@@ -944,9 +944,9 @@ static void upload_uniform_buffers_for_shader(struct Shader *shader) {
             }
 
             if (shader->stage == SHADER_STAGE_VERTEX) {
-                d3d.context->VSSetConstantBuffers(uniformBlock->location, 1, uniformBlock->dxConstantBuffer.GetAddressOf());
+                d3d.context->VSSetConstantBuffers(uniformBlock->location, 1, &uniformBlock->dxConstantBuffer);
             } else if (shader->stage == SHADER_STAGE_FRAGMENT) {
-                d3d.context->PSSetConstantBuffers(uniformBlock->location, 1, uniformBlock->dxConstantBuffer.GetAddressOf());
+                d3d.context->PSSetConstantBuffers(uniformBlock->location, 1, &uniformBlock->dxConstantBuffer);
             }
         }
     }
@@ -1048,7 +1048,7 @@ static void gfx_d3d11_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t
 
     if (d3d.last_vertex_buffer_stride != stride) {
         d3d.last_vertex_buffer_stride = stride;
-        d3d.context->IASetVertexBuffers(0, 0, d3d.vertex_buffer.GetAddressOf(), &stride, &offset);
+        d3d.context->IASetVertexBuffers(0, 1, d3d.vertex_buffer.GetAddressOf(), &stride, &offset);
     }
 
     if (d3d.last_shader_program != d3d.shader_program) {
@@ -1175,5 +1175,20 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_get_name,
     gfx_d3d11_is_legacy,
 };
+
+extern "C" void d3d11_create_buffer_for_block(struct ShaderUniformBlock *block) {
+    D3D11_BUFFER_DESC bufferDesc;
+    bufferDesc.ByteWidth = block->size;
+    bufferDesc.Usage = D3D11_USAGE_DYNAMIC;
+    bufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    bufferDesc.MiscFlags = 0;
+    bufferDesc.StructureByteStride = 0;
+
+    HRESULT hr = d3d.device->CreateBuffer(&bufferDesc, NULL, &block->dxConstantBuffer);
+    if (FAILED(hr)) {
+        sys_fatal("Failed to allocate d3d constant buffer for %s", block->name);
+    }
+}
 
 #endif

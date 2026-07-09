@@ -9,13 +9,17 @@
 #define MAX_SHADER_BINDINGS 64
 
 #ifdef _WIN32
+#define COBJMACROS
 #include <windows.h>
-#include <versionhelpers.h>
-#include <wrl/client.h>
-
-#include <dxgi1_3.h>
 #include <d3d11.h>
-#include <d3dcompiler.h>
+
+// stupid windows crap
+#ifdef near
+#undef near
+#endif
+#ifdef far
+#undef far
+#endif
 #endif
 
 #include <glslang/Include/glslang_c_interface.h>
@@ -79,7 +83,7 @@ struct ShaderUniformBlock {
     int uniformCount;
     bool isGlobalBlock;
 #ifdef _WIN32
-    ComPtr<ID3D11Buffer> dxConstantBuffer; // dx11 doesn't use buffer, it uses a d3d11buffer
+    ID3D11Buffer *dxConstantBuffer; // dx11 doesn't use buffer, it uses a d3d11buffer
 #endif
     unsigned int glBufferId; // opengl uses a buffer id
 };
