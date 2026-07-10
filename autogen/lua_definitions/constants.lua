@@ -3204,17 +3204,6 @@ SHADER_STAGE_COUNT    = 3 --- @type ShaderStage
 --- | `SHADER_STAGE_ANY`
 --- | `SHADER_STAGE_COUNT`
 
-SHADER_OPTIMIZATION_NONE   = 0 --- @type ShaderOptimizationLevel
-SHADER_OPTIMIZATION_LOW    = 1 --- @type ShaderOptimizationLevel
-SHADER_OPTIMIZATION_MEDIUM = 2 --- @type ShaderOptimizationLevel
-SHADER_OPTIMIZATION_HIGH   = 3 --- @type ShaderOptimizationLevel
-
---- @alias ShaderOptimizationLevel
---- | `SHADER_OPTIMIZATION_NONE`
---- | `SHADER_OPTIMIZATION_LOW`
---- | `SHADER_OPTIMIZATION_MEDIUM`
---- | `SHADER_OPTIMIZATION_HIGH`
-
 --- @type integer
 GRAPH_RENDER_ACTIVE = (1 << 0)
 

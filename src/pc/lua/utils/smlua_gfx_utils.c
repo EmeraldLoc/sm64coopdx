@@ -569,11 +569,6 @@ int gfx_shader_get_current_frame_pass() {
     return gCurrentFramePassIndex;
 }
 
-void gfx_shader_set_optimization_level(enum ShaderOptimizationLevel level) {
-    if (level < 0 || level > SHADER_OPTIMIZATION_HIGH) { return; }
-    gShaderOptimizationLevel = level;
-}
-
 ///
 
 Vtx *vtx_get_from_name(const char *name, RET u32 *count) {

@@ -1911,31 +1911,6 @@ Gets the current active frame pass index. If there is no active frame pass, it r
 
 <br />
 
-## [gfx_shader_set_optimization_level](#gfx_shader_set_optimization_level)
-
-### Description
-Sets the renderer's optimization level for compiling shaders if applicable.
-Lower optimization yields faster compilation but slower framerate
-Higher optimization yields slower compilation but faster framerate
-
-### Lua Example
-`gfx_shader_set_optimization_level(level)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| level | [enum ShaderOptimizationLevel](constants.md#enum-ShaderOptimizationLevel) |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_shader_set_optimization_level(enum ShaderOptimizationLevel level);`
-
-[:arrow_up_small:](#)
-
-<br />
-
 ## [vtx_get_from_name](#vtx_get_from_name)
 
 ### Description

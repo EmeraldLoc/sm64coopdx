@@ -335,21 +335,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
 #if DEBUG_D3D
     UINT compile_flags = D3DCOMPILE_DEBUG;
 #else
-    UINT compile_flags = 0;
-    switch (gShaderOptimizationLevel) {
-        case SHADER_OPTIMIZATION_NONE:
-            compile_flags = D3DCOMPILE_SKIP_OPTIMIZATION;
-            break;
-        case SHADER_OPTIMIZATION_LOW:
-            compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL1;
-            break;
-        case SHADER_OPTIMIZATION_MEDIUM:
-            compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
-            break;
-        case SHADER_OPTIMIZATION_HIGH:
-            compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
-            break;
-    }
+    UINT compile_flags = D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
     HRESULT hr = d3d.D3DCompile(vs_hlsl, strlen(vs_hlsl), nullptr, nullptr, nullptr, "main", "vs_5_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
@@ -503,21 +489,7 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
 #if DEBUG_D3D
     UINT compile_flags = D3DCOMPILE_DEBUG;
 #else
-    UINT compile_flags = 0;
-    switch (gShaderOptimizationLevel) {
-        case SHADER_OPTIMIZATION_NONE:
-            compile_flags = D3DCOMPILE_SKIP_OPTIMIZATION;
-            break;
-        case SHADER_OPTIMIZATION_LOW:
-            compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL1;
-            break;
-        case SHADER_OPTIMIZATION_MEDIUM:
-            compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL2;
-            break;
-        case SHADER_OPTIMIZATION_HIGH:
-            compile_flags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
-            break;
-    }
+    UINT compile_flags = D3DCOMPILE_SKIP_OPTIMIZATION;
 #endif
 
     HRESULT hr = d3d.D3DCompile(vs_hlsl, strlen(vs_hlsl), nullptr, nullptr, nullptr, "main", "vs_5_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());

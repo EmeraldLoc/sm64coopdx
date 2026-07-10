@@ -64,7 +64,7 @@ constants_whitelist = { "__name__": "constants_whitelist",
     "src/audio/external.h": [ "SEQ_PLAYER", "DS_" ],
     "src/pc/lua/utils/smlua_audio_utils.h": ["MOD_AUDIO_CHANNEL"],
     "src/pc/mods/mod_storage.h": [ "MAX_KEYS", "MAX_KEY_VALUE_LENGTH" ],
-    "src/pc/gfx/gfx_shader.h": [ "SHADER_STAGE_*", "SHADER_OPTIMIZATION_*" ],
+    "src/pc/gfx/gfx_shader.h": [ "SHADER_STAGE_*" ],
     "include/PR/gbi.h": [
         "^G_NOOP$",
         "^G_SETOTHERMODE_H$",

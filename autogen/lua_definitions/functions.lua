@@ -11790,14 +11790,6 @@ function gfx_shader_get_current_frame_pass()
     -- ...
 end
 
---- @param level ShaderOptimizationLevel
---- Sets the renderer's optimization level for compiling shaders if applicable.<br>
---- Lower optimization yields faster compilation but slower framerate<br>
---- Higher optimization yields slower compilation but faster framerate
-function gfx_shader_set_optimization_level(level)
-    -- ...
-end
-
 --- @param name string
 --- @return Pointer_Vtx
 --- @return integer count

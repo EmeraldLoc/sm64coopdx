@@ -168,12 +168,7 @@ void gfx_shader_set_frame_pass_viewport(int framePassIndex, u32 width, u32 heigh
 void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry);
 /* |description|Gets the current active frame pass index. If there is no active frame pass, it returns -1|descriptionEnd| */
 int gfx_shader_get_current_frame_pass();
-/* |description|
-Sets the renderer's optimization level for compiling shaders if applicable.
-Lower optimization yields faster compilation but slower framerate
-Higher optimization yields slower compilation but faster framerate
-|descriptionEnd| */
-void gfx_shader_set_optimization_level(enum ShaderOptimizationLevel level);
+
 
 /* |description|
 Gets a vertex buffer of the current mod from its name.
