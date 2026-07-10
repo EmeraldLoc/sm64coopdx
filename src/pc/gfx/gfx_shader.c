@@ -143,7 +143,7 @@ static const char *shader_item_to_str(uint32_t item, bool with_alpha, bool only_
             case SHADER_COMBINEDA:
                 return "texel.a";
             case SHADER_NOISE:
-                return "noise.a";
+                return "noise";
         }
     }
     return "unknown";
@@ -357,7 +357,7 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     }
 
     if ((opt_alpha && opt_dither) || ccf.do_noise) {
-        append_line(fs_buf, &fs_len, "uniform float uFrameCount;");
+        append_line(fs_buf, &fs_len, "uniform uint uFrameCount;");
 
         append_line(fs_buf, &fs_len, "float random(in vec3 value) {");
         append_line(fs_buf, &fs_len, "    float random = dot(sin(value), vec3(12.9898, 78.233, 37.719));");
@@ -400,9 +400,10 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
         }
     }
 
-    append_str(fs_buf, &fs_len, (opt_alpha) ? "vec4 texel = " : "vec3 texel = ");
+    append_str(fs_buf, &fs_len, (opt_alpha) ? "vec4 texel = vec4(0);" : "vec3 texel = vec3(0);");
     for (int i = 0; i < (opt_2cycle + 1); i++) {
         u8 *cmd = &cc->shader_commands[i * 8];
+        append_str(fs_buf, &fs_len, "texel = ");
         if (!ccf.color_alpha_same[i] && opt_alpha) {
             append_str(fs_buf, &fs_len, "vec4(");
             append_formula(fs_buf, &fs_len, cmd, ccf.do_single[i*2+0], ccf.do_multiply[i*2+0], ccf.do_mix[i*2+0], false, false);
@@ -414,10 +415,12 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
         }
         append_line(fs_buf, &fs_len, ";");
 
-        if (i == 0 && opt_2cycle) {
-            append_str(fs_buf, &fs_len, "texel = ");
+        if (i == 0) {
+            append_line(fs_buf, &fs_len, "texel = mod(texel + 0.5, 2.0) - 0.5;");
         }
     }
+
+    append_line(fs_buf, &fs_len, "texel = clamp(mod(texel + 0.5, 2.0) - 0.5, 0.0, 1.0);");
 
     if (opt_texture_edge && opt_alpha) {
         append_line(fs_buf, &fs_len, "if (texel.a > 0.3) texel.a = 1.0; else discard;");

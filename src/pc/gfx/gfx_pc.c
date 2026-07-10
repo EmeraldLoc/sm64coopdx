@@ -159,7 +159,7 @@ enum ShaderStage gSelectedShaderStage = SHADER_STAGE_ANY;
 static Mat4 sInverseCameraMatrix;
 static bool sHasInverseCameraMatrix = false;
 
-static float sFrameCount = 0;
+static u32 sFrameCount = 0;
 
 // 4x4 pink-black checkerboard texture to indicate missing textures
 #define MISSING_W 4
@@ -2222,7 +2222,7 @@ bool gfx_shader_stage_is(enum ShaderStage stage) {
 }
 
 void gfx_start_frame(void) {
-    sFrameCount++;
+    sFrameCount += 1;
     if (gGfxPcResetTex1 > 0) {
         gGfxPcResetTex1--;
         rdp.loaded_texture[1].addr = NULL;
@@ -2492,7 +2492,8 @@ void gfx_set_builtin_uniforms(void) {
     gSelectedShaderStage = SHADER_STAGE_ANY;
     gSelectedVertexUniformBuffer = 0;
     gSelectedFragmentUniformBuffer = 0;
-    gfx_rapi->set_uniform(NULL, "uFrameCount", SHADER_UNIFORM_TYPE_FLOAT, &sFrameCount, 1);
+
+    gfx_rapi->set_uniform(NULL, "uFrameCount", SHADER_UNIFORM_TYPE_INT, &sFrameCount, 1);
 
     float lightmapColor[3] = {
         gVertexColor[0] / 255.0f,

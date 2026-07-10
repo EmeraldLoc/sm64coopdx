@@ -285,7 +285,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if (opt_alpha and opt_dither) or ccf.do_noise then
-        table.insert(fs, "uniform float uFrameCount;")
+        table.insert(fs, "uniform uint uFrameCount;")
         table.insert(fs, "float random(in vec3 v) {")
         table.insert(fs, "    float r = dot(sin(v), vec3(12.9898, 78.233, 37.719));")
         table.insert(fs, "    return fract(sin(r) * 143758.5453);")
