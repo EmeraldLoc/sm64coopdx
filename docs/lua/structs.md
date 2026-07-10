@@ -721,6 +721,7 @@
 | alpha2 | `integer` |  |
 | all_values | `Array` <`integer`> |  |
 | flags | `integer` |  |
+| geometry_mode | `integer` |  |
 | hash | `integer` |  |
 
 [:arrow_up_small:](#)

@@ -95,6 +95,7 @@ struct CombineMode {
         };
         u32 flags;
     };
+    u32 geometry_mode;
     s64 hash;
 };
 #pragma pack()

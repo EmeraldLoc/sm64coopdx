@@ -22,7 +22,7 @@
 #define HALF_SCREEN_WIDTH (SCREEN_WIDTH / 2)
 #define HALF_SCREEN_HEIGHT (SCREEN_HEIGHT / 2)
 
-#define MAX_BUFFERED 256
+#define MAX_BUFFERED 64
 #define MAX_MATRIX_STACK_SIZE 11
 #define MAX_LIGHTS 18
 #define MAX_VERTICES 64
@@ -48,6 +48,7 @@ struct GfxVertex {
     float x, y, z, w;
     float localX, localY, localZ, localW;
     float u, v;
+    float nx, ny, nz;
     struct RGBA color;
     uint8_t fog_z;
     uint8_t clip_rej;
