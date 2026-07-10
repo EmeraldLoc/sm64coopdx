@@ -407,6 +407,8 @@ void gfx_delete_all() {
     dynos_gfx_delete_all();
 }
 
+///
+
 void gfx_set_culling_enabled(bool enable) {
     gCullingEnabled = enable;
 }
@@ -566,6 +568,13 @@ void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeom
 int gfx_shader_get_current_frame_pass() {
     return gCurrentFramePassIndex;
 }
+
+void gfx_shader_set_optimization_level(enum ShaderOptimizationLevel level) {
+    if (level < 0 || level > SHADER_OPTIMIZATION_HIGH) { return; }
+    gShaderOptimizationLevel = level;
+}
+
+///
 
 Vtx *vtx_get_from_name(const char *name, RET u32 *count) {
     *count = 0;

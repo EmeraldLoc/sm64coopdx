@@ -3204,6 +3204,17 @@ SHADER_STAGE_COUNT    = 3 --- @type ShaderStage
 --- | `SHADER_STAGE_ANY`
 --- | `SHADER_STAGE_COUNT`
 
+SHADER_OPTIMIZATION_NONE   = 0 --- @type ShaderOptimizationLevel
+SHADER_OPTIMIZATION_LOW    = 1 --- @type ShaderOptimizationLevel
+SHADER_OPTIMIZATION_MEDIUM = 2 --- @type ShaderOptimizationLevel
+SHADER_OPTIMIZATION_HIGH   = 3 --- @type ShaderOptimizationLevel
+
+--- @alias ShaderOptimizationLevel
+--- | `SHADER_OPTIMIZATION_NONE`
+--- | `SHADER_OPTIMIZATION_LOW`
+--- | `SHADER_OPTIMIZATION_MEDIUM`
+--- | `SHADER_OPTIMIZATION_HIGH`
+
 --- @type integer
 GRAPH_RENDER_ACTIVE = (1 << 0)
 
@@ -3864,7 +3875,7 @@ HUD_DISPLAY_DEFAULT               = HUD_DISPLAY_FLAG_LIVES | HUD_DISPLAY_FLAG_CO
 --- | `HUD_DISPLAY_DEFAULT`
 
 --- @type integer
-LE_MAX_LIGHTS = 1024
+LE_MAX_LIGHTS = 512
 
 LE_MODE_AFFECT_ALL_SHADED_AND_COLORED = 0 --- @type LEMode
 LE_MODE_AFFECT_ALL_SHADED             = 1 --- @type LEMode

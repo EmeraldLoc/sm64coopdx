@@ -109,10 +109,19 @@ struct Shader {
     int uniformBlockCount;
 };
 
+enum ShaderOptimizationLevel {
+    SHADER_OPTIMIZATION_NONE,
+    SHADER_OPTIMIZATION_LOW,
+    SHADER_OPTIMIZATION_MEDIUM,
+    SHADER_OPTIMIZATION_HIGH
+};
+
 extern struct ShaderInput *gShaderInputs;
 extern struct ShaderInput *gPostProcessShaderInputs;
 extern struct ShaderBinding *gShaderBindings;
 extern struct ShaderBinding *gPostProcessShaderBindings;
+
+extern enum ShaderOptimizationLevel gShaderOptimizationLevel;
 
 extern const char *gDefaultPostProcessVertexShader;
 extern const char *gDefaultPostProcessFragmentShader;

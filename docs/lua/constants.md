@@ -39,6 +39,7 @@
     - [enum ShaderFlag](#enum-ShaderFlag)
 - [gfx_shader.h](#gfx_shaderh)
     - [enum ShaderStage](#enum-ShaderStage)
+    - [enum ShaderOptimizationLevel](#enum-ShaderOptimizationLevel)
 - [graph_node.h](#graph_nodeh)
 - [interaction.c](#interactionc)
 - [interaction.h](#interactionh)
@@ -1488,6 +1489,14 @@
 | SHADER_STAGE_FRAGMENT | 1 |
 | SHADER_STAGE_ANY | 2 |
 | SHADER_STAGE_COUNT | 3 |
+
+### [enum ShaderOptimizationLevel](#ShaderOptimizationLevel)
+| Identifier | Value |
+| :--------- | :---- |
+| SHADER_OPTIMIZATION_NONE | 0 |
+| SHADER_OPTIMIZATION_LOW | 1 |
+| SHADER_OPTIMIZATION_MEDIUM | 2 |
+| SHADER_OPTIMIZATION_HIGH | 3 |
 
 [:arrow_up_small:](#)
 

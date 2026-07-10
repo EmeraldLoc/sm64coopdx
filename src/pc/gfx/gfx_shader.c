@@ -29,6 +29,8 @@ struct ShaderInput *gPostProcessShaderInputs = NULL;
 struct ShaderBinding *gShaderBindings = NULL;
 struct ShaderBinding *gPostProcessShaderBindings = NULL;
 
+enum ShaderOptimizationLevel gShaderOptimizationLevel = SHADER_OPTIMIZATION_MEDIUM;
+
 const char *gDefaultPostProcessVertexShader = "#version 410 core\n"
     "in vec4 aVtxPos;\n"
     "out vec4 vVtxPos;\n" // exists for convenience of mods
