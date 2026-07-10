@@ -3016,6 +3016,45 @@ G_TEXRECTFLIP = 0xe5
 G_TEXRECT = 0xe4
 
 --- @type integer
+G_ZBUFFER = 0x00000001
+
+--- @type integer
+G_SHADE = 0x00000004
+
+--- @type integer
+G_FOG = 0x00010000
+
+--- @type integer
+G_LIGHTING = 0x00020000
+
+--- @type integer
+G_TEXTURE_GEN = 0x00040000
+
+--- @type integer
+G_TEXTURE_GEN_LINEAR = 0x00080000
+
+--- @type integer
+G_LOD = 0x00100000
+
+--- @type integer
+G_LIGHT_MAP_EXT = 0x00000800
+
+--- @type integer
+G_LIGHTING_ENGINE_EXT = 0x00004000
+
+--- @type integer
+G_PACKED_NORMALS_EXT = 0x00000080
+
+--- @type integer
+G_CULL_INVERT_EXT = 0x00000100
+
+--- @type integer
+G_FRESNEL_COLOR_EXT = 0x00000040
+
+--- @type integer
+G_FRESNEL_ALPHA_EXT = 0x00400000
+
+--- @type integer
 G_VTX_EXT = 0x11
 
 --- @type integer
