@@ -52,7 +52,7 @@ local function shader_item_to_str(item, with_alpha, only_alpha, hint_single_elem
         elseif item == SHADER_COMBINED or item == SHADER_COMBINEDA then
             return "texel.a"
         elseif item == SHADER_NOISE then
-            return "noise.a"
+            return "noise"
         end
     end
     return "unknown"
@@ -285,7 +285,7 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if (opt_alpha and opt_dither) or ccf.do_noise then
-        table.insert(fs, "uniform float uFrameCount;")
+        table.insert(fs, "uniform uint uFrameCount;")
         table.insert(fs, "float random(in vec3 v) {")
         table.insert(fs, "    float r = dot(sin(v), vec3(12.9898, 78.233, 37.719));")
         table.insert(fs, "    return fract(sin(r) * 143758.5453);")
@@ -329,9 +329,9 @@ local function on_fragment_shader_create(cc, shaderIndex)
     end
 
     if opt_alpha then
-        table.insert(fs, "vec4 texel = ")
+        table.insert(fs, "vec4 texel = vec4(0);")
     else
-        table.insert(fs, "vec3 texel = ")
+        table.insert(fs, "vec3 texel = vec3(0);")
     end
 
     -- combine passes
@@ -342,6 +342,8 @@ local function on_fragment_shader_create(cc, shaderIndex)
         end
 
         local idx = i * 2
+
+        table.insert(fs, "texel = ")
 
         if not ccf.color_alpha_same[i + 1] and opt_alpha then
             table.insert(fs, "vec4(")
@@ -364,10 +366,12 @@ local function on_fragment_shader_create(cc, shaderIndex)
 
         table.insert(fs, ";")
 
-        if i == 0 and opt_2cycle then
-            table.insert(fs, "texel = ")
+        if i == 0 then
+            table.insert(fs, "texel = mod(texel + 0.5, 2.0) - 0.5;")
         end
     end
+
+    table.insert(fs, "texel = clamp(mod(texel + 0.5, 2.0) - 0.5, 0.0, 1.0);")
 
     if opt_texture_edge and opt_alpha then
         table.insert(fs, "if (texel.a > 0.3) texel.a = 1.0; else discard;")
