@@ -708,23 +708,24 @@ static struct LuaObjectField sColorCombinerFields[LUA_COLOR_COMBINER_FIELD_COUNT
     { "shader_input_mapping_as_u64", LVT_U64,     offsetof(struct ColorCombiner, shader_input_mapping_as_u64), false, LOT_NONE,      8,  sizeof(u64) },
 };
 
-#define LUA_COMBINE_MODE_FIELD_COUNT 7
+#define LUA_COMBINE_MODE_FIELD_COUNT 8
 static struct LuaObjectField sCombineModeFields[LUA_COMBINE_MODE_FIELD_COUNT] = {
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-//  { "1",          LVT_???, offsetof(struct CombineMode, 1),          false, LOT_???                  }, <--- UNIMPLEMENTED
-    { "all_values", LVT_U8,  offsetof(struct CombineMode, all_values), false, LOT_NONE, 16, sizeof(u8) },
-    { "alpha1",     LVT_U32, offsetof(struct CombineMode, alpha1),     false, LOT_NONE                 },
-    { "alpha2",     LVT_U32, offsetof(struct CombineMode, alpha2),     false, LOT_NONE                 },
-    { "flags",      LVT_U32, offsetof(struct CombineMode, flags),      false, LOT_NONE                 },
-    { "hash",       LVT_S64, offsetof(struct CombineMode, hash),       false, LOT_NONE                 },
-    { "rgb1",       LVT_U32, offsetof(struct CombineMode, rgb1),       false, LOT_NONE                 },
-    { "rgb2",       LVT_U32, offsetof(struct CombineMode, rgb2),       false, LOT_NONE                 },
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+//  { "1",             LVT_???, offsetof(struct CombineMode, 1),             false, LOT_???                  }, <--- UNIMPLEMENTED
+    { "all_values",    LVT_U8,  offsetof(struct CombineMode, all_values),    false, LOT_NONE, 16, sizeof(u8) },
+    { "alpha1",        LVT_U32, offsetof(struct CombineMode, alpha1),        false, LOT_NONE                 },
+    { "alpha2",        LVT_U32, offsetof(struct CombineMode, alpha2),        false, LOT_NONE                 },
+    { "flags",         LVT_U32, offsetof(struct CombineMode, flags),         false, LOT_NONE                 },
+    { "geometry_mode", LVT_U32, offsetof(struct CombineMode, geometry_mode), false, LOT_NONE                 },
+    { "hash",          LVT_S64, offsetof(struct CombineMode, hash),          false, LOT_NONE                 },
+    { "rgb1",          LVT_U32, offsetof(struct CombineMode, rgb1),          false, LOT_NONE                 },
+    { "rgb2",          LVT_U32, offsetof(struct CombineMode, rgb2),          false, LOT_NONE                 },
 };
 
 #define LUA_CONTROLLER_FIELD_COUNT 11

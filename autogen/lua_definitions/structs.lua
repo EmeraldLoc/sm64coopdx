@@ -523,6 +523,7 @@
 --- @field public alpha2 integer
 --- @field public all_values integer[]
 --- @field public flags integer
+--- @field public geometry_mode integer
 --- @field public hash integer
 
 --- @class Controller

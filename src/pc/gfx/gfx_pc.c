@@ -782,7 +782,7 @@ static OPTIMIZE_O3 void gfx_local_to_world_space(VEC_OUT Vec3f pos, VEC_OUT Vec3
     }
 }
 
-static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, const Vtx *vertices, bool luaVertexColor) {
+static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, const Vtx *vertices, bool worldGeometry) {
     if (!vertices) { return; }
 
     Vec3f globalLightCached[2];
@@ -794,7 +794,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         }
     }
 
-    if (luaVertexColor) {
+    if (worldGeometry) {
         if (!(rsp.geometry_mode & G_LIGHTING)) {
             for (int i = 0; i < 3; i ++) {
                 vertexColorCached[i] = gVertexColor[i] / 255.0f;
@@ -837,7 +837,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
         short V = v->tc[1] * rsp.texture_scaling_factor.t >> 16;
 
         // are we on affect all shaded surfaces mode and on a vertex colorable surface
-        bool affectAllVertexColored = (le_get_mode() == LE_MODE_AFFECT_ALL_SHADED_AND_COLORED && luaVertexColor);
+        bool leAffectAllVertexColored = (le_get_mode() == LE_MODE_AFFECT_ALL_SHADED_AND_COLORED && worldGeometry);
 
         if (rsp.geometry_mode & G_LIGHTING) {
             if (rsp.lights_changed) {
@@ -966,7 +966,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
             }
 
             // if lighting engine is enabled and either we want to affect all shaded surfaces or the lighting engine geometry mode is on
-            if (le_is_enabled() && luaVertexColor && ((le_get_mode() != LE_MODE_AFFECT_ONLY_GEOMETRY_MODE) || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
+            if (le_is_enabled() && worldGeometry && ((le_get_mode() != LE_MODE_AFFECT_ONLY_GEOMETRY_MODE) || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
                 Color color = { gLEAmbientColor[0], gLEAmbientColor[1], gLEAmbientColor[2] };
 
                 Vec3f vpos    = { v->ob[0], v->ob[1], v->ob[2] };
@@ -985,8 +985,12 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 d->color.g *= color[1] / 255.0f;
                 d->color.b *= color[2] / 255.0f;
             }
+
+            d->nx = nx;
+            d->ny = ny;
+            d->nz = nz;
         // if lighting engine is enabled and we should affect all vertex colored surfaces or the lighting engine geometry mode is on
-        } else if (le_is_enabled() && !(rsp.geometry_mode & G_LIGHT_MAP_EXT) && (affectAllVertexColored || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
+        } else if (le_is_enabled() && !(rsp.geometry_mode & G_LIGHT_MAP_EXT) && (leAffectAllVertexColored || (rsp.geometry_mode & G_LIGHTING_ENGINE_EXT))) {
             Color color = { gLEAmbientColor[0], gLEAmbientColor[1], gLEAmbientColor[2] };
 
             Vec3f vpos = { v->ob[0], v->ob[1], v->ob[2] };
@@ -1000,7 +1004,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
             // this is my compromise for retaining vertex colors vs lighting up darker surfaces.
             // if retaining color is the most important like on a red coin, don't use the lighting engine geometry mode.
             // if lighting up darker surfaces like in a map with prebaked lighting is the most important, use the lighting engine geometry mode.
-            if (affectAllVertexColored && !(rsp.geometry_mode & G_LIGHTING_ENGINE_EXT)) {
+            if (leAffectAllVertexColored && !(rsp.geometry_mode & G_LIGHTING_ENGINE_EXT)) {
                 le_calculate_lighting_color(vpos, color, 1.0f);
             } else {
                 le_calculate_vertex_lighting(v, vpos, color);
@@ -1009,12 +1013,12 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
             CTX_END(CTX_LIGHTING);
 
             // combine the colors
-            if (affectAllVertexColored && !(rsp.geometry_mode & G_LIGHTING_ENGINE_EXT)) {
+            if (leAffectAllVertexColored && !(rsp.geometry_mode & G_LIGHTING_ENGINE_EXT)) {
                 d->color.r = (v->cn[0] * color[0] / 255.0f) * vertexColorCached[0];
                 d->color.g = (v->cn[1] * color[1] / 255.0f) * vertexColorCached[1];
                 d->color.b = (v->cn[2] * color[2] / 255.0f) * vertexColorCached[2];
             } else {
-                if (luaVertexColor) {
+                if (worldGeometry) {
                     d->color.r = color[0] * vertexColorCached[0];
                     d->color.g = color[1] * vertexColorCached[1];
                     d->color.b = color[2] * vertexColorCached[2];
@@ -1025,7 +1029,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
                 }
             }
         } else {
-            if (!(rsp.geometry_mode & G_LIGHT_MAP_EXT) && luaVertexColor) {
+            if (!(rsp.geometry_mode & G_LIGHT_MAP_EXT) && worldGeometry) {
                 d->color.r = v->cn[0] * vertexColorCached[0];
                 d->color.g = v->cn[1] * vertexColorCached[1];
                 d->color.b = v->cn[2] * vertexColorCached[2];
@@ -1061,7 +1065,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
             d->color.a = v->cn[3];
         }
 
-        d->world_geometry = luaVertexColor;
+        d->world_geometry = worldGeometry;
     }
 }
 
@@ -1211,6 +1215,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     cm->light_map      = (rsp.geometry_mode & G_LIGHT_MAP_EXT)           == G_LIGHT_MAP_EXT;
     cm->tex_persp      = (rdp.other_mode_h  & G_TP_PERSP)                == G_TP_PERSP;
     cm->world_geometry = (v1->world_geometry && v2->world_geometry && v3->world_geometry);
+    cm->geometry_mode  = rsp.geometry_mode; // pass in all the bits for shaders to mess with
 
     if (cm->texture_edge) {
         cm->use_alpha = true;
@@ -1370,23 +1375,35 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         }
 
         // calculate normal
-        f32 ux = v2->localX - v1->localX;
-        f32 uy = v2->localY - v1->localY;
-        f32 uz = v2->localZ - v1->localZ;
+        f32 nx = 0.0f;
+        f32 ny = 0.0f;
+        f32 nz = 0.0f;
 
-        f32 vx = v3->localX - v1->localX;
-        f32 vy = v3->localY - v1->localY;
-        f32 vz = v3->localZ - v1->localZ;
+        if (rsp.geometry_mode & G_LIGHTING) {
+            struct GfxVertex *v;
 
-        f32 nx = uy * vz - uz * vy;
-        f32 ny = uz * vx - ux * vz;
-        f32 nz = ux * vy - uy * vx;
+            switch (i) {
+                case 0: v = v1; break;
+                case 1: v = v2; break;
+                case 2: v = v3; break;
+            }
 
-        float len = sqrtf(nx*nx + ny*ny + nz*nz);
-        if (len > 0.0f) {
-            nx /= len;
-            ny /= len;
-            nz /= len;
+            nx = v->nx;
+            ny = v->ny;
+            nz = v->nz;
+        } else {
+            // it's faster if we let the shader normalize them
+            f32 ux = v2->localX - v1->localX;
+            f32 uy = v2->localY - v1->localY;
+            f32 uz = v2->localZ - v1->localZ;
+
+            f32 vx = v3->localX - v1->localX;
+            f32 vy = v3->localY - v1->localY;
+            f32 vz = v3->localZ - v1->localZ;
+
+            nx = uy * vz - uz * vy;
+            ny = uz * vx - ux * vz;
+            nz = ux * vy - uy * vx;
         }
 
         // send normal
