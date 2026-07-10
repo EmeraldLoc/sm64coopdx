@@ -503,7 +503,7 @@ static void gfx_opengl_set_uniform_for_specific_shader(struct ShaderUniformBlock
 
             if (uniform->arrayLength > 1) {
                 const u8 *src = (const u8 *)data;
-                u32 count = MIN(numElements, uniform->arrayLength);
+                u32 count = MIN((int)numElements, uniform->arrayLength);
                 for (u32 j = 0; j < count; j++) {
                     memcpy(dst + j * uniform->arrayStride, src + j * uniform->elementSize, uniform->elementSize);
                 }
