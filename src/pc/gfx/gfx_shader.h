@@ -74,8 +74,7 @@ struct ShaderUniform {
 };
 
 struct ShaderUniformBlock {
-    char name[64];
-    char compiledName[64];
+    char name[MAX_SHADER_VARIABLE_NAME];
     u32 size;
     u32 location;
     u8 *buffer;

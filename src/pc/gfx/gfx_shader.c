@@ -772,7 +772,6 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
 
     sShaderInputCount = 0;
     sShaderOutputCount = 0;
-    sShaderUniformBlockCount = UNIFORM_BINDING_SLOT_OFFSET + 1;
     sShaderInsideCustomUniformBlock = false;
 
     memset(sShaderUniformCode, 0, sizeof(char) * MAX_SHADER_CODE);
@@ -820,7 +819,7 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
 
         // append block
         char defaultUniformBlockString[MAX_SHADER_VARIABLE_NAME + 128];
-        snprintf(defaultUniformBlockString, sizeof(defaultUniformBlockString), "layout(std140, set = 0, binding = %d) uniform %s {\n", UNIFORM_BINDING_SLOT_OFFSET, defaultUniformBlockName);
+        snprintf(defaultUniformBlockString, sizeof(defaultUniformBlockString), "layout(std140, set = 0, binding = %d) uniform %s {\n", sShaderUniformBlockCount++, defaultUniformBlockName);
         strncat(sanitized, defaultUniformBlockString, MAX_SHADER_CODE - 1);
 
         // append uniform code
@@ -1209,6 +1208,8 @@ void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
 static bool gfx_generate_vertex_and_fragment_shader_no_fallback(struct Shader *vertexShader, struct Shader *fragmentShader, struct ShaderInput *shaderInputs, struct ShaderBinding *shaderBindings, char **vsCode, char **fsCode, bool isCustom)  {
     vertexShader->stage = SHADER_STAGE_VERTEX;
     fragmentShader->stage = SHADER_STAGE_FRAGMENT;
+
+    sShaderUniformBlockCount = UNIFORM_BINDING_SLOT_OFFSET;
 
     if (!gfx_sanitize_vertex_shader(vertexShader, shaderInputs, shaderBindings, vsCode)) {
         if (isCustom) {
