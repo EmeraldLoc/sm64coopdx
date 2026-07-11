@@ -49,7 +49,6 @@ struct GfxVertex {
     float localX, localY, localZ, localW;
     float u, v;
     float nx, ny, nz;
-    struct RGBA baseColor;
     struct RGBA color;
     uint8_t fog_z;
     uint8_t clip_rej;
