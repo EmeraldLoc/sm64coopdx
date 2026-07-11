@@ -278,3 +278,7 @@ A sweet visualtion of these matrices can be found [here](https://bitly.com/98K8e
 To reiterate, `aVtxPos` is in clip space, but it also has adjustments made to it to ensure that it has widescreen adjustments, and accounts for MSAA in the HUD properly. So it's not *pure* clip space. If you were to get to clip space using the `uModelViewProjectionMatrix` on `aLocalPos`, it would be different from `aVtxPos`. Uniforms such as `uXAdjustRatio` exist to help with that if necessary.
 
 Some devices are stuck on legacy renderers. That means that the NDC Z range is from -1 to 1 when normally it is from 0 to 1. Lua can detect and modify shaders accordingly with `gfx_is_legacy_renderer`. This is an unfortunate limitation that can't really be fixed unless we stop supporting a bunch of devices. This may change in the future, but for now this is the case.
+
+## A Note on GLSL Extensions
+
+Avoid them. Unless you know what you are doing and know the list of devices supported, don't bother. That's all :D
