@@ -180,27 +180,6 @@ static inline OPTIMIZE_O3 void le_calculate_light_contribution(const LELight& li
     contribution++;
 }
 
-C_FIELD OPTIMIZE_O3 void le_calculate_vertex_lighting(const Vtx_t* v, Vec3f pos, VEC_OUT Color out) {
-    // clear color
-    Vec3f color = { 0 };
-
-    // accumulate lighting
-    f32 weight = 1.0f;
-    u8 contribution = 0;
-    for (LELight* light : sActiveLights) {
-        le_calculate_light_contribution(*light, pos, NULL, 1.0f, color, weight, contribution);
-        if (contribution == sMaxLightsPerVertex) { break; }
-    }
-
-    // tone map and output
-    Color vtxAmbient = {
-        (u8)(v->cn[0] * (gLEAmbientColor[0] / 255.0f)),
-        (u8)(v->cn[1] * (gLEAmbientColor[1] / 255.0f)),
-        (u8)(v->cn[2] * (gLEAmbientColor[2] / 255.0f)),
-    };
-    le_tone_map(out, vtxAmbient, color, weight);
-}
-
 C_FIELD OPTIMIZE_O3 void le_calculate_lighting_color(Vec3f pos, VEC_OUT Color out, f32 lightIntensityScalar) {
     // clear color
     Vec3f color = { 0 };

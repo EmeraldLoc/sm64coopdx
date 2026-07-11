@@ -1000,15 +1000,7 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
             // transform vpos to world space
             gfx_local_to_world_space(vpos, NULL);
 
-            // do multiplication based lighting instead of additive based lighting if we're not using the lighting engine geometry mode,
-            // this is my compromise for retaining vertex colors vs lighting up darker surfaces.
-            // if retaining color is the most important like on a red coin, don't use the lighting engine geometry mode.
-            // if lighting up darker surfaces like in a map with prebaked lighting is the most important, use the lighting engine geometry mode.
-            if (leAffectAllVertexColored && !(rsp.geometry_mode & G_LIGHTING_ENGINE_EXT)) {
-                le_calculate_lighting_color(vpos, color, 1.0f);
-            } else {
-                le_calculate_vertex_lighting(v, vpos, color);
-            }
+            le_calculate_lighting_color(vpos, color, 1.0f);
 
             CTX_END(CTX_LIGHTING);
 
