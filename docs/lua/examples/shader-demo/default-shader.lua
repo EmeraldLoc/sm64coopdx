@@ -327,9 +327,9 @@ local function on_fragment_shader_create(cc)
     end
 
     if opt_alpha then
-        table.insert(fs, "vec4 texel = vec4(0);")
+        table.insert(fs, "vec4 texel = vec4(0.0);")
     else
-        table.insert(fs, "vec3 texel = vec3(0);")
+        table.insert(fs, "vec3 texel = vec3(0.0);")
     end
 
     -- combine passes
