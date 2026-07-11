@@ -400,7 +400,7 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
         }
     }
 
-    append_str(fs_buf, &fs_len, (opt_alpha) ? "vec4 texel = vec4(0);" : "vec3 texel = vec3(0);");
+    append_str(fs_buf, &fs_len, (opt_alpha) ? "vec4 texel = vec4(0.0);" : "vec3 texel = vec3(0.0);");
     for (int i = 0; i < (opt_2cycle + 1); i++) {
         u8 *cmd = &cc->shader_commands[i * 8];
         append_str(fs_buf, &fs_len, "texel = ");

@@ -436,8 +436,6 @@ void le_clear(void) {
     sLightPool.clear();
     sActiveLights.clear();
     sLightID = -1;
-
-    color_set(gLEAmbientColor, 127, 127, 127);
 }
 
 void le_shutdown(void) {
@@ -445,5 +443,6 @@ void le_shutdown(void) {
     sMode = LE_MODE_AFFECT_ALL_SHADED_AND_COLORED;
     sToneMapping = LE_TONE_MAPPING_WEIGHTED;
     sMaxLightsPerVertex = 4;
+    color_set(gLEAmbientColor, 127, 127, 127);
     le_clear();
 }
