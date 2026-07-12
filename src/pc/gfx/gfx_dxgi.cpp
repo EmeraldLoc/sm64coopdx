@@ -451,8 +451,8 @@ static void gfx_dxgi_main_loop(void (*run_one_game_iter)(void)) {
 }
 
 static void gfx_dxgi_get_dimensions(uint32_t *width, uint32_t *height) {
-    *width = dxgi.current_width;
-    *height = dxgi.current_height;
+    if (width) *width = dxgi.current_width;
+    if (height) *height = dxgi.current_height;
 }
 
 static void gfx_dxgi_handle_events(void) {
