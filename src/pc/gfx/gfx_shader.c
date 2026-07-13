@@ -1312,20 +1312,21 @@ bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader
 
     char *fallbackVsCode = strdup(defaultVsCode);
     char *fallbackFsCode = strdup(defaultFsCode);
-    char *vsShaderCode = NULL;
+    const char *vsShaderCode = NULL;
     char *fsShaderCode = NULL;
     if (!fallbackVsCode || !fallbackFsCode) {
         sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
     }
 
     smlua_call_event_hooks(HOOK_ON_VERTEX_SHADER_CREATE, cc, (const char **)&vsShaderCode);
-    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, (const char **)&fsShaderCode);
 
     if (!vsShaderCode) {
         vsShaderCode = strdup(fallbackVsCode);
     } else {
         vsShaderCode = strdup(vsShaderCode); // lua handles its own memory, we need to escape it
     }
+
+    smlua_call_event_hooks(HOOK_ON_FRAGMENT_SHADER_CREATE, cc, (const char **)&fsShaderCode);
 
     if (!fsShaderCode) {
         fsShaderCode = strdup(fallbackFsCode);
@@ -1337,7 +1338,7 @@ bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader
         sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
     }
 
-    return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gShaderInputs, gShaderBindings, vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
+    return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gShaderInputs, gShaderBindings, (char*)vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
 }
 
 bool gfx_generate_post_process_vertex_and_fragment_shader(struct Shader *vertexShader, struct Shader *fragmentShader, char **outVertShader, char **outFragShader) {
@@ -1350,13 +1351,14 @@ bool gfx_generate_post_process_vertex_and_fragment_shader(struct Shader *vertexS
     }
 
     smlua_call_event_hooks(HOOK_ON_POST_PROCESS_VERTEX_SHADER_CREATE, (const char **)&vsShaderCode);
-    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
 
     if (!vsShaderCode) {
         vsShaderCode = strdup(fallbackVsCode);
     } else {
         vsShaderCode = strdup(vsShaderCode); // lua handles its own memory, we need to escape it
     }
+
+    smlua_call_event_hooks(HOOK_ON_POST_PROCESS_FRAGMENT_SHADER_CREATE, (const char **)&fsShaderCode);
 
     if (!fsShaderCode) {
         fsShaderCode = strdup(fallbackFsCode);
