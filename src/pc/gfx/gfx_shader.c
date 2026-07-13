@@ -1312,7 +1312,7 @@ bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader
 
     char *fallbackVsCode = strdup(defaultVsCode);
     char *fallbackFsCode = strdup(defaultFsCode);
-    const char *vsShaderCode = NULL;
+    char *vsShaderCode = NULL;
     char *fsShaderCode = NULL;
     if (!fallbackVsCode || !fallbackFsCode) {
         sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
@@ -1338,7 +1338,7 @@ bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader
         sys_fatal("Failed to generate vertex and fragment shader, ran out of memory!");
     }
 
-    return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gShaderInputs, gShaderBindings, (char*)vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
+    return gfx_generate_vertex_and_fragment_shader(vertexShader, fragmentShader, gShaderInputs, gShaderBindings, vsShaderCode, fsShaderCode, fallbackVsCode, fallbackFsCode, outVertShader, outFragShader);
 }
 
 bool gfx_generate_post_process_vertex_and_fragment_shader(struct Shader *vertexShader, struct Shader *fragmentShader, char **outVertShader, char **outFragShader) {
