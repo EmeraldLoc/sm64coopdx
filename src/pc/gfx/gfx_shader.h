@@ -3,7 +3,7 @@
 #define MAX_SHADER_CODE 65536
 #define MAX_SHADER_VARIABLE_NAME 128
 #define MAX_SHADER_TEXTURES 2
-#define MAX_SHADER_INPUTS 64
+#define MAX_SHADER_INPUTS 512
 #define MAX_SHADER_OUTPUTS 512
 #define MAX_SHADER_UNIFORMS 1024
 #define MAX_SHADER_BINDINGS 64
@@ -74,8 +74,7 @@ struct ShaderUniform {
 };
 
 struct ShaderUniformBlock {
-    char name[64];
-    char compiledName[64];
+    char name[MAX_SHADER_VARIABLE_NAME];
     u32 size;
     u32 location;
     u8 *buffer;

@@ -89,8 +89,7 @@ local function append_formula(cmd, do_single, do_multiply, do_mix, with_alpha, o
 end
 
 ---@param cc ColorCombiner
----@param shaderIndex integer
-local function on_vertex_shader_create(cc, shaderIndex)
+local function on_vertex_shader_create(cc)
     local opt_fog = cc.cm.flags & CM_FLAG_USE_FOG ~= 0
     local opt_tex_persp = cc.cm.flags & CM_FLAG_TEX_PERSP ~= 0
 
@@ -164,8 +163,7 @@ local function on_vertex_shader_create(cc, shaderIndex)
 end
 
 ---@param cc ColorCombiner
----@param shaderIndex integer
-local function on_fragment_shader_create(cc, shaderIndex)
+local function on_fragment_shader_create(cc)
     local ccf = gfx_color_combiner_get_features(cc)
 
     local opt_alpha = cc.cm.flags & CM_FLAG_USE_ALPHA ~= 0

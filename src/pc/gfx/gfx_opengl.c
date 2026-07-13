@@ -488,6 +488,7 @@ void gfx_opengl_set_uniform_buffer(enum ShaderStage stage, const char *name) {
 
         if (strcmp(uniformBlock->name, name) == 0) {
             *destination = i;
+            return;
         }
     }
 }
