@@ -206,7 +206,7 @@ void djui_panel_join_query(uint64_t aLobbyId, UNUSED uint64_t aOwnerId, uint16_t
     snprintf(version, MAX_VERSION_LENGTH, "%s", get_version());
     bool disabled = strcmp(version, aVersion) != 0;
     if (disabled) {
-        snprintf(mode, COOPNET_MAX_MODE_LEN, "\\#ff0000\\[%s]", aVersion);
+        snprintf(mode, COOPNET_MAX_MODE_LEN, "\\#f00\\[%s]", aVersion);
     }
 
     struct CoopnetLobby* lobby = malloc(sizeof(struct CoopnetLobby));
