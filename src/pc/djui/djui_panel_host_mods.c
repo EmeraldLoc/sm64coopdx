@@ -12,14 +12,10 @@
 #include "djui_panel_host.h"
 #include "djui_panel_host_mods.h"
 #include "djui_panel_pause.h"
+#include "mod_category.h"
 #include "pc/thread.h"
 
 #define DJUI_MOD_PANEL_WIDTH (410.0f + (16 * 2.0f))
-
-struct ModCategory {
-    const char* langKey;
-    const char* category;
-};
 
 struct ModCategory sCategories[] = {
 #define MOD_CATEGORY_DEF(key) { #key, NULL },

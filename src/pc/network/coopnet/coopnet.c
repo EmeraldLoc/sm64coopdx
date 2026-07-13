@@ -7,6 +7,7 @@
 #include "pc/djui/djui_language.h"
 #include "pc/djui/djui_popup.h"
 #include "pc/djui/djui_panel_host_mods.h"
+#include "pc/djui/mod_category.h"
 #include "pc/mods/mods.h"
 #include "pc/utils/misc.h"
 #include "pc/debuglog.h"
@@ -194,25 +195,26 @@ static void coopnet_populate_description(void) {
     buffer += sepLength;
     bufferLength -= sepLength;
 
-    struct ModCategory sCategories[] = {
-        { "GAMEMODES", "gamemode" },
-        { "ROMHACKS", "romhack" },
-        { "MOVESETS", "moveset" },
-        { "CHARACTER_SELECT", "cs" },
+    struct ModCategory modCategories[] = {
+    #define MOD_CATEGORY_DEF(key) { #key, NULL },
+    #define MOD_CATEGORY(key, category) { #key, category },
+    #include "pc/djui/mod_categories.inl"
+    #undef MOD_CATEGORY_DEF
+    #undef MOD_CATEGORY
     };
 
     if (gActiveMods.entryCount <= 0) { return; }
 
     // add mods that are in a category
-    for (size_t i = 0; i < sizeof(sCategories) / sizeof(sCategories[0]); i++) {
-        struct ModCategory category = sCategories[i];
+    for (size_t i = 0; i < sizeof(modCategories) / sizeof(modCategories[0]); i++) {
+        struct ModCategory category = modCategories[i];
 
         char* strings[gActiveMods.entryCount];
         int strIndex = 0;
         for (int j = 0; j < gActiveMods.entryCount; j++) {
             struct Mod* mod = gActiveMods.entries[j];
             char* modCategory = mod->category != NULL ? mod->category : mod->incompatible;
-            if (modCategory && strstr_lowercased(modCategory, sCategories[i].category)) {
+            if (modCategory && strstr_lowercased(modCategory, modCategories[i].category)) {
                 strings[strIndex++] = mod->name;
             }
         }
@@ -245,8 +247,8 @@ static void coopnet_populate_description(void) {
         char* modCategory = mod->category != NULL ? mod->category : mod->incompatible;
         bool doContinue = false;
         if (modCategory) {
-            for (size_t i = 0; i < sizeof(sCategories) / sizeof(sCategories[0]); i++) {
-                if (strstr_lowercased(modCategory, sCategories[i].category)) {
+            for (size_t i = 0; i < sizeof(modCategories) / sizeof(modCategories[0]); i++) {
+                if (strstr_lowercased(modCategory, modCategories[i].category)) {
                     doContinue = true;
                     break;
                 }
