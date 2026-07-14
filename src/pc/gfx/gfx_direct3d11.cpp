@@ -686,6 +686,14 @@ static void gfx_d3d11_set_framebuffer(struct FramePass *framePass) {
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     d3d.context->RSSetViewports(1, &vp);
+
+    // reset scissor
+    D3D11_RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = viewportWidth;
+    rect.bottom = viewportHeight;
+    d3d.context->RSSetScissorRects(1, &rect);
 }
 
 static void gfx_d3d11_reset_framebuffer(void) {
@@ -707,6 +715,14 @@ static void gfx_d3d11_reset_framebuffer(void) {
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     d3d.context->RSSetViewports(1, &vp);
+
+    // reset scissor
+    D3D11_RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = windowWidth;
+    rect.bottom = windowWidth;
+    d3d.context->RSSetScissorRects(1, &rect);
 }
 
 void gfx_d3d11_set_uniform_buffer(enum ShaderStage stage, const char *name) {
