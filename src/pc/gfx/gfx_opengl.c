@@ -461,6 +461,7 @@ static void gfx_opengl_set_framebuffer(struct FramePass *framePass) {
     gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
     glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
     glViewport(0, 0, viewportWidth, viewportHeight);
+    glScissor(0, 0, viewportWidth, viewportHeight);
 }
 
 static void gfx_opengl_reset_framebuffer(void) {
@@ -468,6 +469,7 @@ static void gfx_opengl_reset_framebuffer(void) {
     u32 windowWidth, windowHeight;
     gfx_get_dimensions(&windowWidth, &windowHeight);
     glViewport(0, 0, windowWidth, windowHeight);
+    glScissor(0, 0, windowWidth, windowHeight);
 }
 
 void gfx_opengl_set_uniform_buffer(enum ShaderStage stage, const char *name) {
@@ -708,6 +710,10 @@ static void gfx_opengl_init(void) {
         // force opengl to use dx11 clip space (0, 1)
         glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
     }
+
+    GLint dims[2];
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
+    printf("Max Viewport Width: %d, Height: %d\n", dims[0], dims[1]);
 }
 
 bool gfx_opengl_check_compatibility(void) {
