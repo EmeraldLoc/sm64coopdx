@@ -820,7 +820,7 @@ static void gfx_d3d11_bind_texture_raw(int tile, u64 texture_id) {
             currentFramePass = &gDefaultGeoFramePass;
         }
 
-        static ComPtr<ID3D11SamplerState> textureSampler;
+        ComPtr<ID3D11SamplerState> textureSampler;
 
         D3D11_SAMPLER_DESC desc = {};
         desc.Filter = currentFramePass->passFilter == PASS_FILTER_LINEAR ? D3D11_FILTER_MIN_MAG_MIP_LINEAR : D3D11_FILTER_MIN_MAG_MIP_POINT;
