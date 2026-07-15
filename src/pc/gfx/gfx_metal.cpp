@@ -51,7 +51,7 @@ struct ShaderProgramMetal {
     uint8_t numInputs;
     uint8_t numFloats;
 
-    bool usedTextures[2];
+    bool usedTextures[MAX_TEXTURES];
     bool usedLightmap;
     bool usedFog;
     bool worldGeometry;
@@ -87,7 +87,7 @@ static struct {
 
     std::vector<struct TextureData> textures;
     int currentTile;
-    u32 currentTextureIds[2];
+    u32 currentTextureIds[MAX_TEXTURES];
 
     // Current state
 
@@ -105,8 +105,8 @@ static struct {
     struct ShaderProgramMetal *lastShaderProgram = NULL;
     u32 lastVertexBufferStride = 0;
     MTL::RenderPipelineState *lastPipelineState;
-    MTL::Texture *lastTextures[2];
-    MTL::SamplerState *lastSamplers[2];
+    MTL::Texture *lastTextures[MAX_TEXTURES];
+    MTL::SamplerState *lastSamplers[MAX_TEXTURES];
     s8 lastDepthTest = -1;
     s8 lastDepthMask = -1;
     s8 lastZModeDecal = -1;
@@ -489,7 +489,7 @@ static struct ShaderProgram *gfx_metal_lookup_shader_using_index(uint8_t shaderI
     return (struct ShaderProgram *)&metal.shaderProgramPool[framePassIndex][shaderIndex];
 }
 
-void gfx_metal_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]) {
+void gfx_metal_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[MAX_TEXTURES]) {
     struct ShaderProgramMetal *p = (struct ShaderProgramMetal *)prg;
 
     *num_inputs = p->numInputs;
@@ -735,7 +735,7 @@ void gfx_metal_bind_texture_raw(int tile, uint64_t texture_id) {
 
     metal.encoder->setFragmentTexture(texture, tile);
 
-    if (tile < 2) {
+    if (tile < MAX_TEXTURES) {
         metal.lastTextures[tile] = texture;
         metal.encoder->setFragmentSamplerState(metal.textures[metal.currentTextureIds[tile]].sampler, tile);
     } else {
@@ -928,7 +928,7 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     metal.encoder->setFrontFacingWinding(MTL::WindingCounterClockwise);
 
     // bind texture data
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < MAX_TEXTURES; i++) {
         if (metal.shaderProgram->usedTextures[i]) {
             struct TextureData &textureData = metal.textures[metal.currentTextureIds[i]];
 
