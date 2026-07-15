@@ -289,7 +289,7 @@ OPTIMIZE_O3 bool mtxf_inverse_non_affine(VEC_OUT Mat4 dest, Mat4 src);
 /* |description|
 Creates a orthographic matrix based on the bounds provided. This can be used to get an orthographic projection matrix.
 |descriptionEnd| */
-OPTIMIZE_O3 void mtxf_ortho(VEC_OUT Mat4 dest, float bottom, float top, float left, float right, float near, float far);
+OPTIMIZE_O3 void mtxf_ortho(VEC_OUT Mat4 dest, float bottom, float topBound, float left, float right, float near, float far);
 
 /* |description|
 Extracts the position (translation component) from the transformation matrix `objMtx` relative to the coordinate system defined by `camMtx` and stores that 3D position in `dest`. This can be used to get the object's coordinates in camera space

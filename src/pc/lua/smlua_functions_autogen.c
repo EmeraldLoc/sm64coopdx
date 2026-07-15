@@ -20311,7 +20311,7 @@ int smlua_func_mtxf_ortho(lua_State* L) {
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mtxf_ortho"); return 0; }
     float bottom = smlua_to_number(L, 2);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mtxf_ortho"); return 0; }
-    float top = smlua_to_number(L, 3);
+    float topBound = smlua_to_number(L, 3);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "mtxf_ortho"); return 0; }
     float left = smlua_to_number(L, 4);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "mtxf_ortho"); return 0; }
@@ -20322,7 +20322,7 @@ int smlua_func_mtxf_ortho(lua_State* L) {
     float far = smlua_to_number(L, 7);
     if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 7, "mtxf_ortho"); return 0; }
 
-    mtxf_ortho(dest, bottom, top, left, right, near, far);
+    mtxf_ortho(dest, bottom, topBound, left, right, near, far);
 
     smlua_push_mat4(dest, 1);
 
