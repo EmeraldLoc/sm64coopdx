@@ -1267,6 +1267,7 @@
    - [mtxf_rotate_xy](functions-4.md#mtxf_rotate_xy)
    - [mtxf_inverse](functions-4.md#mtxf_inverse)
    - [mtxf_inverse_non_affine](functions-4.md#mtxf_inverse_non_affine)
+   - [mtxf_ortho](functions-4.md#mtxf_ortho)
    - [get_pos_from_transform_mtx](functions-4.md#get_pos_from_transform_mtx)
    - [get_world_mtx_from_transform](functions-4.md#get_world_mtx_from_transform)
 
