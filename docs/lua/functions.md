@@ -2016,6 +2016,7 @@
    - [gfx_shader_remove_frame_pass](functions-7.md#gfx_shader_remove_frame_pass)
    - [gfx_shader_get_frame_pass_viewport](functions-7.md#gfx_shader_get_frame_pass_viewport)
    - [gfx_shader_set_frame_pass_viewport](functions-7.md#gfx_shader_set_frame_pass_viewport)
+   - [gfx_shader_set_frame_pass_filter](functions-7.md#gfx_shader_set_frame_pass_filter)
    - [gfx_shader_set_frame_pass_draw_world](functions-7.md#gfx_shader_set_frame_pass_draw_world)
    - [gfx_shader_get_current_frame_pass](functions-7.md#gfx_shader_get_current_frame_pass)
    - [vtx_get_from_name](functions-7.md#vtx_get_from_name)

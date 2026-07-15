@@ -36,6 +36,7 @@
     - [enum CcShaderInput](#enum-CcShaderInput)
     - [enum CombineModeFlags](#enum-CombineModeFlags)
 - [gfx_pc.h](#gfx_pch)
+    - [enum PassFilter](#enum-PassFilter)
     - [enum ShaderFlag](#enum-ShaderFlag)
 - [gfx_shader.h](#gfx_shaderh)
     - [enum ShaderStage](#enum-ShaderStage)
@@ -1472,6 +1473,13 @@
 <br />
 
 ## [gfx_pc.h](#gfx_pc.h)
+
+### [enum PassFilter](#PassFilter)
+| Identifier | Value |
+| :--------- | :---- |
+| PASS_FILTER_LINEAR | 0 |
+| PASS_FILTER_NEAREST | 1 |
+| PASS_FILTER_COUNT | 2 |
 
 ### [enum ShaderFlag](#ShaderFlag)
 | Identifier | Value |

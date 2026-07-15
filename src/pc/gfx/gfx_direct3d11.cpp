@@ -804,23 +804,21 @@ static void gfx_d3d11_bind_texture_raw(int tile, u64 texture_id) {
     if (tile < MAX_TEXTURES) {
         d3d.last_resource_views[tile] = srv;
     } else {
-        // need to bind sampler or else it points to the last valid one, causing pure chaos
+        struct FramePass *framePass = gfx_get_current_frame_pass();
+
         static ComPtr<ID3D11SamplerState> textureSampler;
 
-        // only create sampler once to save performance since it can't be customized
-        if (!textureSampler) {
-            D3D11_SAMPLER_DESC desc = {};
-            desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-            desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.MinLOD = 0.0f;
-            desc.MaxLOD = D3D11_FLOAT32_MAX;
-            desc.MaxAnisotropy = 1;
-            desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+        D3D11_SAMPLER_DESC desc = {};
+        desc.Filter = framePass->passFilter == PASS_FILTER_LINEAR ? D3D11_FILTER_MIN_MAG_MIP_LINEAR : D3D11_FILTER_MIN_MAG_MIP_POINT;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.MinLOD = 0.0f;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
 
-            ThrowIfFailed(d3d.device->CreateSamplerState(&desc, textureSampler.GetAddressOf()));
-        }
+        ThrowIfFailed(d3d.device->CreateSamplerState(&desc, textureSampler.GetAddressOf()));
 
         // set sampler
         ID3D11SamplerState *sampler = textureSampler.Get();

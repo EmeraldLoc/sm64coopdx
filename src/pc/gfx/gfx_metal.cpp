@@ -107,7 +107,6 @@ static struct {
     MTL::RenderPipelineState *lastPipelineState;
     MTL::Texture *lastTextures[2];
     MTL::SamplerState *lastSamplers[2];
-    MTL::SamplerState *defaultSampler;
     s8 lastDepthTest = -1;
     s8 lastDepthMask = -1;
     s8 lastZModeDecal = -1;
@@ -735,11 +734,40 @@ void gfx_metal_bind_texture_raw(int tile, uint64_t texture_id) {
     if (texture == NULL) { return; }
 
     metal.encoder->setFragmentTexture(texture, tile);
-    MTL::SamplerState *sampler = (tile < 2) ? metal.textures[metal.currentTextureIds[tile]].sampler : metal.defaultSampler;
-    metal.encoder->setFragmentSamplerState(sampler, tile);
 
     if (tile < 2) {
         metal.lastTextures[tile] = texture;
+        metal.encoder->setFragmentSamplerState(metal.textures[metal.currentTextureIds[tile]].sampler, tile);
+    } else {
+        // find our frame pass from our texture id
+        struct FramePass *currentFramePass = NULL;
+
+        for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+            struct FramePass *framePass = &gFramePasses[i];
+            if (!framePass->active) { continue; }
+            if (framePass->passTexture != texture_id) { continue; }
+            currentFramePass = framePass;
+            break;
+        }
+
+        if (currentFramePass == NULL) {
+            // we have to be the geo pass
+            currentFramePass = &gDefaultGeoFramePass;
+        }
+
+        MTL::SamplerDescriptor *samplerDesc = MTL::SamplerDescriptor::alloc()->init();
+        samplerDesc->setMinFilter(currentFramePass->passFilter == PASS_FILTER_LINEAR ? MTL::SamplerMinMagFilterLinear : MTL::SamplerMinMagFilterNearest);
+        samplerDesc->setMagFilter(currentFramePass->passFilter == PASS_FILTER_LINEAR ? MTL::SamplerMinMagFilterLinear : MTL::SamplerMinMagFilterNearest);
+        samplerDesc->setSAddressMode(MTL::SamplerAddressModeClampToEdge);
+        samplerDesc->setTAddressMode(MTL::SamplerAddressModeClampToEdge);
+        samplerDesc->setRAddressMode(MTL::SamplerAddressModeClampToEdge);
+
+        MTL::SamplerState *sampler = metal.device->newSamplerState(samplerDesc);
+        samplerDesc->release();
+
+        metal.encoder->setFragmentSamplerState(sampler, tile);
+
+        sampler->release();
     }
 }
 
@@ -1017,17 +1045,6 @@ void gfx_metal_init(void) {
     if (!metal.depthStencilState) {
         sys_fatal("Failed to create Metal depth stencil state.");
     }
-
-    // setup default sampler
-    MTL::SamplerDescriptor *samplerDesc = MTL::SamplerDescriptor::alloc()->init();
-    samplerDesc->setMinFilter(MTL::SamplerMinMagFilterLinear);
-    samplerDesc->setMagFilter(MTL::SamplerMinMagFilterLinear);
-    samplerDesc->setSAddressMode(MTL::SamplerAddressModeClampToEdge);
-    samplerDesc->setTAddressMode(MTL::SamplerAddressModeClampToEdge);
-    samplerDesc->setRAddressMode(MTL::SamplerAddressModeClampToEdge);
-
-    metal.defaultSampler = metal.device->newSamplerState(samplerDesc);
-    samplerDesc->release();
 
     create_depth_texture();
 }

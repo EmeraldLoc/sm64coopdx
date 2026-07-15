@@ -2264,7 +2264,7 @@ struct FramePass *gfx_get_current_frame_pass(void) {
 static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
     for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
         struct FramePass *framePass = &gFramePasses[i];
-        if (!framePass->active) continue;
+        if (!framePass->active) { continue; }
         *isLuaPassesActive = true;
 
         // remove default frame pass if we have lua frame pass

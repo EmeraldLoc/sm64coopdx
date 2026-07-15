@@ -3205,6 +3205,15 @@ CC_MAX_SHADERS = 64
 --- @type integer
 CC_MAX_INPUTS = 8
 
+PASS_FILTER_LINEAR  = 0 --- @type PassFilter
+PASS_FILTER_NEAREST = 1 --- @type PassFilter
+PASS_FILTER_COUNT   = 2 --- @type PassFilter
+
+--- @alias PassFilter
+--- | `PASS_FILTER_LINEAR`
+--- | `PASS_FILTER_NEAREST`
+--- | `PASS_FILTER_COUNT`
+
 SHADER_FLAG_HUE           = 0 --- @type ShaderFlag
 SHADER_FLAG_SATURATION    = 1 --- @type ShaderFlag
 SHADER_FLAG_BRIGHTNESS    = 2 --- @type ShaderFlag

@@ -1866,6 +1866,30 @@ Sets a frame passes viewport size
 
 <br />
 
+## [gfx_shader_set_frame_pass_filter](#gfx_shader_set_frame_pass_filter)
+
+### Description
+Sets a frame passes filter for the pass texture
+
+### Lua Example
+`gfx_shader_set_frame_pass_filter(framePassIndex, filter)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+| filter | [enum PassFilter](constants.md#enum-PassFilter) |
+
+### Returns
+- None
+
+### C Prototype
+`void gfx_shader_set_frame_pass_filter(int framePassIndex, enum PassFilter filter);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [gfx_shader_set_frame_pass_draw_world](#gfx_shader_set_frame_pass_draw_world)
 
 ### Description

@@ -11787,6 +11787,13 @@ function gfx_shader_set_frame_pass_viewport(framePassIndex, width, height)
 end
 
 --- @param framePassIndex integer
+--- @param filter PassFilter
+--- Sets a frame passes filter for the pass texture
+function gfx_shader_set_frame_pass_filter(framePassIndex, filter)
+    -- ...
+end
+
+--- @param framePassIndex integer
 --- @param drawWorldGeometry boolean
 --- Configures whether a frame pass should redraw the whole scene or use a fullscreen quad
 function gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry)

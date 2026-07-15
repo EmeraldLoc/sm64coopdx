@@ -556,6 +556,19 @@ void gfx_shader_set_frame_pass_viewport(int framePassIndex, u32 width, u32 heigh
     gfx_get_current_rendering_api()->delete_framebuffer(framePass);
 }
 
+void gfx_shader_set_frame_pass_filter(int framePassIndex, enum PassFilter filter) {
+    if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) { return; }
+    if (filter < 0 || filter >= PASS_FILTER_COUNT) { return; }
+
+    struct FramePass *framePass = &gFramePasses[framePassIndex];
+    if (!framePass->active) { return; }
+
+    framePass->passFilter = filter;
+
+    // needs to be recreated
+    gfx_get_current_rendering_api()->delete_framebuffer(framePass);
+}
+
 void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry) {
     if (framePassIndex < 0 || framePassIndex >= MAX_CUSTOM_FRAME_PASSES) { return; }
 
