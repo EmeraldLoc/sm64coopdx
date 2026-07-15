@@ -1534,10 +1534,16 @@ static void gfx_sp_texture(uint16_t sc, uint16_t tc, UNUSED uint8_t level, UNUSE
 }
 
 static void gfx_dp_set_scissor(UNUSED uint32_t mode, uint32_t ulx, uint32_t uly, uint32_t lrx, uint32_t lry) {
-    float x = ulx / 4.0f * RATIO_X;
-    float y = (SCREEN_HEIGHT - lry / 4.0f) * RATIO_Y;
-    float width = (lrx - ulx) / 4.0f * RATIO_X;
-    float height = (lry - uly) / 4.0f * RATIO_Y;
+    u32 viewW, viewH;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewW, &viewH);
+
+    float passRatioX = (float)viewW / SCREEN_WIDTH;
+    float passRatioY = (float)viewH / SCREEN_HEIGHT;
+
+    float x = ulx / 4.0f * passRatioX;
+    float y = (SCREEN_HEIGHT - lry / 4.0f) * passRatioY;
+    float width = (lrx - ulx) / 4.0f * passRatioX;
+    float height = (lry - uly) / 4.0f * passRatioY;
 
     rdp.scissor.x = x;
     rdp.scissor.y = y;
