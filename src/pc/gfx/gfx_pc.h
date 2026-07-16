@@ -27,7 +27,7 @@ enum ShaderFlag {
 struct GfxRenderingAPI;
 struct GfxWindowManagerAPI;
 
-#define MAX_CUSTOM_FRAME_PASSES 8
+#define MAX_CUSTOM_FRAME_PASSES 64
 #define MAX_FRAME_PASSES MAX_CUSTOM_FRAME_PASSES + 1
 
 struct RSP {
