@@ -3236,7 +3236,7 @@ SHADER_FLAG_MAX           = 8 --- @type ShaderFlag
 --- | `SHADER_FLAG_MAX`
 
 --- @type integer
-MAX_CUSTOM_FRAME_PASSES = 8
+MAX_CUSTOM_FRAME_PASSES = 64
 
 --- @type integer
 MAX_FRAME_PASSES = MAX_CUSTOM_FRAME_PASSES + 1

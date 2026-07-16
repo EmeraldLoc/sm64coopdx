@@ -942,9 +942,12 @@ static void gfx_d3d11_set_viewport(int x, int y, int width, int height) {
 }
 
 static void gfx_d3d11_set_scissor(int x, int y, int width, int height) {
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
     D3D11_RECT rect;
     rect.left = x;
-    rect.top = d3d.current_height - y - height;
+    rect.top = viewportHeight - y - height;
     rect.right = x + width;
     rect.bottom = d3d.current_height - y;
 
