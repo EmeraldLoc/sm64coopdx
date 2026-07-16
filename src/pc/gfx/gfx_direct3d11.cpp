@@ -686,6 +686,14 @@ static void gfx_d3d11_set_framebuffer(struct FramePass *framePass) {
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     d3d.context->RSSetViewports(1, &vp);
+
+    // reset scissor
+    D3D11_RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = viewportWidth;
+    rect.bottom = viewportHeight;
+    d3d.context->RSSetScissorRects(1, &rect);
 }
 
 static void gfx_d3d11_reset_framebuffer(void) {
@@ -707,6 +715,14 @@ static void gfx_d3d11_reset_framebuffer(void) {
     vp.MinDepth = 0.0f;
     vp.MaxDepth = 1.0f;
     d3d.context->RSSetViewports(1, &vp);
+
+    // reset scissor
+    D3D11_RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = windowWidth;
+    rect.bottom = windowWidth;
+    d3d.context->RSSetScissorRects(1, &rect);
 }
 
 void gfx_d3d11_set_uniform_buffer(enum ShaderStage stage, const char *name) {
@@ -788,23 +804,35 @@ static void gfx_d3d11_bind_texture_raw(int tile, u64 texture_id) {
     if (tile < MAX_TEXTURES) {
         d3d.last_resource_views[tile] = srv;
     } else {
-        // need to bind sampler or else it points to the last valid one, causing pure chaos
-        static ComPtr<ID3D11SamplerState> textureSampler;
+        // find our frame pass from our texture id
+        struct FramePass *currentFramePass = NULL;
 
-        // only create sampler once to save performance since it can't be customized
-        if (!textureSampler) {
-            D3D11_SAMPLER_DESC desc = {};
-            desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-            desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-            desc.MinLOD = 0.0f;
-            desc.MaxLOD = D3D11_FLOAT32_MAX;
-            desc.MaxAnisotropy = 1;
-            desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-
-            ThrowIfFailed(d3d.device->CreateSamplerState(&desc, textureSampler.GetAddressOf()));
+        for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+            struct FramePass *framePass = &gFramePasses[i];
+            if (!framePass->active) { continue; }
+            if (framePass->passTexture != texture_id) { continue; }
+            currentFramePass = framePass;
+            break;
         }
+
+        if (currentFramePass == NULL) {
+            // we have to be the geo pass
+            currentFramePass = &gDefaultGeoFramePass;
+        }
+
+        ComPtr<ID3D11SamplerState> textureSampler;
+
+        D3D11_SAMPLER_DESC desc = {};
+        desc.Filter = currentFramePass->passFilter == PASS_FILTER_LINEAR ? D3D11_FILTER_MIN_MAG_MIP_LINEAR : D3D11_FILTER_MIN_MAG_MIP_POINT;
+        desc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+        desc.MinLOD = 0.0f;
+        desc.MaxLOD = D3D11_FLOAT32_MAX;
+        desc.MaxAnisotropy = 1;
+        desc.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
+
+        ThrowIfFailed(d3d.device->CreateSamplerState(&desc, textureSampler.GetAddressOf()));
 
         // set sampler
         ID3D11SamplerState *sampler = textureSampler.Get();

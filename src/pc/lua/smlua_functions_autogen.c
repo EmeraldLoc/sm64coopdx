@@ -20296,6 +20296,39 @@ int smlua_func_mtxf_inverse_non_affine(lua_State* L) {
     return 1;
 }
 
+int smlua_func_mtxf_ortho(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 7) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "mtxf_ortho", 7, top);
+        return 0;
+    }
+
+
+    Mat4 dest;
+    smlua_get_mat4(dest, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "mtxf_ortho"); return 0; }
+    float bottom = smlua_to_number(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "mtxf_ortho"); return 0; }
+    float topBound = smlua_to_number(L, 3);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 3, "mtxf_ortho"); return 0; }
+    float left = smlua_to_number(L, 4);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 4, "mtxf_ortho"); return 0; }
+    float right = smlua_to_number(L, 5);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 5, "mtxf_ortho"); return 0; }
+    float near = smlua_to_number(L, 6);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 6, "mtxf_ortho"); return 0; }
+    float far = smlua_to_number(L, 7);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 7, "mtxf_ortho"); return 0; }
+
+    mtxf_ortho(dest, bottom, topBound, left, right, near, far);
+
+    smlua_push_mat4(dest, 1);
+
+    return 1;
+}
+
 int smlua_func_get_pos_from_transform_mtx(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -33343,6 +33376,25 @@ int smlua_func_gfx_shader_set_frame_pass_viewport(lua_State* L) {
     return 1;
 }
 
+int smlua_func_gfx_shader_set_frame_pass_filter(lua_State* L) {
+    if (L == NULL) { return 0; }
+
+    int top = lua_gettop(L);
+    if (top != 2) {
+        LOG_LUA_LINE("Improper param count for '%s': Expected %u, Received %u", "gfx_shader_set_frame_pass_filter", 2, top);
+        return 0;
+    }
+
+    int framePassIndex = smlua_to_integer(L, 1);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 1, "gfx_shader_set_frame_pass_filter"); return 0; }
+    enum PassFilter filter = smlua_to_integer(L, 2);
+    if (!gSmLuaConvertSuccess) { LOG_LUA("Failed to convert parameter %u for function '%s'", 2, "gfx_shader_set_frame_pass_filter"); return 0; }
+
+    gfx_shader_set_frame_pass_filter(framePassIndex, filter);
+
+    return 1;
+}
+
 int smlua_func_gfx_shader_set_frame_pass_draw_world(lua_State* L) {
     if (L == NULL) { return 0; }
 
@@ -38851,6 +38903,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "mtxf_rotate_xy", smlua_func_mtxf_rotate_xy);
     smlua_bind_function(L, "mtxf_inverse", smlua_func_mtxf_inverse);
     smlua_bind_function(L, "mtxf_inverse_non_affine", smlua_func_mtxf_inverse_non_affine);
+    smlua_bind_function(L, "mtxf_ortho", smlua_func_mtxf_ortho);
     smlua_bind_function(L, "get_pos_from_transform_mtx", smlua_func_get_pos_from_transform_mtx);
     smlua_bind_function(L, "get_world_mtx_from_transform", smlua_func_get_world_mtx_from_transform);
 
@@ -39565,6 +39618,7 @@ void smlua_bind_functions_autogen(void) {
     smlua_bind_function(L, "gfx_shader_remove_frame_pass", smlua_func_gfx_shader_remove_frame_pass);
     smlua_bind_function(L, "gfx_shader_get_frame_pass_viewport", smlua_func_gfx_shader_get_frame_pass_viewport);
     smlua_bind_function(L, "gfx_shader_set_frame_pass_viewport", smlua_func_gfx_shader_set_frame_pass_viewport);
+    smlua_bind_function(L, "gfx_shader_set_frame_pass_filter", smlua_func_gfx_shader_set_frame_pass_filter);
     smlua_bind_function(L, "gfx_shader_set_frame_pass_draw_world", smlua_func_gfx_shader_set_frame_pass_draw_world);
     smlua_bind_function(L, "gfx_shader_get_current_frame_pass", smlua_func_gfx_shader_get_current_frame_pass);
     smlua_bind_function(L, "vtx_get_from_name", smlua_func_vtx_get_from_name);

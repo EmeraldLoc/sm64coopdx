@@ -1267,6 +1267,7 @@
    - [mtxf_rotate_xy](functions-4.md#mtxf_rotate_xy)
    - [mtxf_inverse](functions-4.md#mtxf_inverse)
    - [mtxf_inverse_non_affine](functions-4.md#mtxf_inverse_non_affine)
+   - [mtxf_ortho](functions-4.md#mtxf_ortho)
    - [get_pos_from_transform_mtx](functions-4.md#get_pos_from_transform_mtx)
    - [get_world_mtx_from_transform](functions-4.md#get_world_mtx_from_transform)
 
@@ -2016,6 +2017,7 @@
    - [gfx_shader_remove_frame_pass](functions-7.md#gfx_shader_remove_frame_pass)
    - [gfx_shader_get_frame_pass_viewport](functions-7.md#gfx_shader_get_frame_pass_viewport)
    - [gfx_shader_set_frame_pass_viewport](functions-7.md#gfx_shader_set_frame_pass_viewport)
+   - [gfx_shader_set_frame_pass_filter](functions-7.md#gfx_shader_set_frame_pass_filter)
    - [gfx_shader_set_frame_pass_draw_world](functions-7.md#gfx_shader_set_frame_pass_draw_world)
    - [gfx_shader_get_current_frame_pass](functions-7.md#gfx_shader_get_current_frame_pass)
    - [vtx_get_from_name](functions-7.md#vtx_get_from_name)

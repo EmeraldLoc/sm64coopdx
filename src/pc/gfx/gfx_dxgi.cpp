@@ -451,8 +451,8 @@ static void gfx_dxgi_main_loop(void (*run_one_game_iter)(void)) {
 }
 
 static void gfx_dxgi_get_dimensions(uint32_t *width, uint32_t *height) {
-    if (width) *width = dxgi.current_width;
-    if (height) *height = dxgi.current_height;
+    if (width) { *width = dxgi.current_width; }
+    if (height) { *height = dxgi.current_height; }
 }
 
 static void gfx_dxgi_handle_events(void) {
@@ -581,7 +581,7 @@ ComPtr<IDXGISwapChain1> gfx_dxgi_create_swap_chain(IUnknown *device) {
     if (dxgi.allow_tearing) {
         swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
     }
-    
+
     run_as_dpi_aware([&] () {
         // When setting size for the buffers, the values that DXGI puts into the desc (that can later be retrieved by GetDesc1)
         // have been divided by the current scaling factor. By making this call dpi aware, no division will be performed.

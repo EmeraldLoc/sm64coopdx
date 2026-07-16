@@ -7074,6 +7074,18 @@ function mtxf_inverse_non_affine(dest, src)
     -- ...
 end
 
+--- @param dest Mat4
+--- @param bottom number
+--- @param topBound number
+--- @param left number
+--- @param right number
+--- @param near number
+--- @param far number
+--- Creates a orthographic matrix based on the bounds provided. This can be used to get an orthographic projection matrix.
+function mtxf_ortho(dest, bottom, topBound, left, right, near, far)
+    -- ...
+end
+
 --- @param dest Vec3f
 --- @param objMtx Mat4
 --- @param camMtx Mat4
@@ -11783,6 +11795,13 @@ end
 --- @param height integer
 --- Sets a frame passes viewport size
 function gfx_shader_set_frame_pass_viewport(framePassIndex, width, height)
+    -- ...
+end
+
+--- @param framePassIndex integer
+--- @param filter PassFilter
+--- Sets a frame passes filter for the pass texture
+function gfx_shader_set_frame_pass_filter(framePassIndex, filter)
     -- ...
 end
 

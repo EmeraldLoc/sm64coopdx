@@ -431,8 +431,10 @@ static void gfx_opengl_create_framebuffer(struct FramePass *framePass) {
     glBindTexture(GL_TEXTURE_2D, framePass->passTexture);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, viewportWidth, viewportHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    GLint filter = framePass->passFilter == PASS_FILTER_LINEAR ? GL_LINEAR : GL_NEAREST;
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
 
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, framePass->passTexture, 0);
 
@@ -461,6 +463,7 @@ static void gfx_opengl_set_framebuffer(struct FramePass *framePass) {
     gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
     glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
     glViewport(0, 0, viewportWidth, viewportHeight);
+    glScissor(0, 0, viewportWidth, viewportHeight);
 }
 
 static void gfx_opengl_reset_framebuffer(void) {
@@ -468,6 +471,7 @@ static void gfx_opengl_reset_framebuffer(void) {
     u32 windowWidth, windowHeight;
     gfx_get_dimensions(&windowWidth, &windowHeight);
     glViewport(0, 0, windowWidth, windowHeight);
+    glScissor(0, 0, windowWidth, windowHeight);
 }
 
 void gfx_opengl_set_uniform_buffer(enum ShaderStage stage, const char *name) {
@@ -708,6 +712,10 @@ static void gfx_opengl_init(void) {
         // force opengl to use dx11 clip space (0, 1)
         glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
     }
+
+    GLint dims[2];
+    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
+    printf("Max Viewport Width: %d, Height: %d\n", dims[0], dims[1]);
 }
 
 bool gfx_opengl_check_compatibility(void) {

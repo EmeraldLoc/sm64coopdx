@@ -5610,6 +5610,35 @@ Inverts the 4x4 floating-point matrix `src` and stores the inverse in `dest`. Ap
 
 <br />
 
+## [mtxf_ortho](#mtxf_ortho)
+
+### Description
+Creates a orthographic matrix based on the bounds provided. This can be used to get an orthographic projection matrix.
+
+### Lua Example
+`mtxf_ortho(dest, bottom, topBound, left, right, near, far)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| dest | [Mat4](structs.md#Mat4) |
+| bottom | `number` |
+| topBound | `number` |
+| left | `number` |
+| right | `number` |
+| near | `number` |
+| far | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void mtxf_ortho(VEC_OUT Mat4 dest, float bottom, float topBound, float left, float right, float near, float far);`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [get_pos_from_transform_mtx](#get_pos_from_transform_mtx)
 
 ### Description

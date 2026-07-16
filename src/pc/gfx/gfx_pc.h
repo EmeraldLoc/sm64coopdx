@@ -6,6 +6,12 @@
 #include "pc/gfx/gfx_cc.h"
 #include "pc/gfx/gfx_shader.h"
 
+enum PassFilter {
+    PASS_FILTER_LINEAR,
+    PASS_FILTER_NEAREST,
+    PASS_FILTER_COUNT
+};
+
 enum ShaderFlag {
     SHADER_FLAG_HUE,
     SHADER_FLAG_SATURATION,
@@ -68,9 +74,11 @@ struct FramePass {
     bool active;
     bool drawWorldGeometry;
     u8 clearColor[4];
+    enum PassFilter passFilter;
 };
 
 extern struct RSP rsp;
+extern struct FramePass gDefaultGeoFramePass;
 extern struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES];
 extern int gCurrentFramePassIndex;
 
