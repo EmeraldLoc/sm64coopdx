@@ -2243,13 +2243,18 @@ void gfx_start_frame(void) {
 }
 
 void gfx_get_frame_pass_viewport_dimensions(struct FramePass *framePass, u32 *width, u32 *height) {
-    *width = framePass->width;
-    if (*width == 0) {
-        gfx_get_dimensions(width, NULL);
+    if (width) {
+        *width = framePass->width;
+        if (*width == 0) {
+            gfx_get_dimensions(width, NULL);
+        }
     }
-    *height = framePass->height;
-    if (*height == 0) {
-        gfx_get_dimensions(NULL, height);
+
+    if (height) {
+        *height = framePass->height;
+        if (*height == 0) {
+            gfx_get_dimensions(NULL, height);
+        }
     }
 }
 
@@ -2310,12 +2315,13 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
                 color_combiner_pool[j].prg = NULL;
             }
 
-            // render
+            // render world
             smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
             gfx_run_dl(commands);
             gfx_end_frame_render();
             smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
         } else {
+            // render quad
             gfx_draw_fullscreen_quad();
             gfx_end_frame_render();
         }

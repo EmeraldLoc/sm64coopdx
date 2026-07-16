@@ -537,7 +537,7 @@ void gfx_metal_create_framebuffer(struct FramePass *framePass) {
         return;
     }
 
-    framePass->passTexture = (uint64_t)colorTex;
+    framePass->passTexture = (u64)colorTex;
     framePass->d3dRtv = (void *)colorTex;
     framePass->d3dDsv = (void *)depthTex;
     framePass->fbo = 1;
@@ -613,6 +613,13 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     vp.znear   = 0.0;
     vp.zfar    = 1.0;
     metal.encoder->setViewport(vp);
+
+    MTL::ScissorRect scissorRect;
+    scissorRect.x      = 0;
+    scissorRect.y      = 0;
+    scissorRect.width  = viewportWidth;
+    scissorRect.height = viewportHeight;
+    metal.encoder->setScissorRect(scissorRect);
 }
 
 void gfx_metal_reset_framebuffer(void) {
@@ -654,6 +661,13 @@ void gfx_metal_reset_framebuffer(void) {
     vp.znear   = 0.0;
     vp.zfar    = 1.0;
     metal.encoder->setViewport(vp);
+
+    MTL::ScissorRect scissorRect;
+    scissorRect.x      = 0;
+    scissorRect.y      = 0;
+    scissorRect.width  = metal.currentWidth;
+    scissorRect.height = metal.currentHeight;
+    metal.encoder->setScissorRect(scissorRect);
 }
 
 void gfx_metal_set_uniform_buffer(enum ShaderStage stage, const char *name) {
@@ -853,12 +867,14 @@ void gfx_metal_set_viewport(int x, int y, int width, int height) {
 }
 
 void gfx_metal_set_scissor(int x, int y, int width, int height) {
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
     MTL::ScissorRect r;
     r.x = x;
-    r.y = metal.currentHeight - y - height;
+    r.y = viewportHeight - y - height;
     r.width = width;
     r.height = height;
-
     metal.encoder->setScissorRect(r);
 }
 

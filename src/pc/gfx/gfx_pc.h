@@ -62,7 +62,7 @@ struct FramePass {
     u32 depthBuffer;
     u64 passTexture;
 
-    // d3d
+    // d3d/metal (scuffed)
     void *d3dTexture;
     void *d3dRtv;
     void *d3dSrv;
