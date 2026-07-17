@@ -833,6 +833,19 @@ static void OPTIMIZE_O3 gfx_sp_vertex(size_t n_vertices, size_t dest_index, cons
 
         x = gfx_adjust_x_for_aspect_ratio(x);
 
+        // have mercy on my soul, this code is truly abysmal garbage
+        // When they look at the work I have done, the work I have accomplished
+        // When they see the many heights reached by this amazing project
+        // When they see the sun shine down on their rusty dirty monitor
+        // And when they see this awful, horrific, terrible, garbage code
+        // May they punch their monitor, throw it in the trash, then do a
+        // marathon holding a computer and throw that in the dumpster
+        // and to top it off set that dumpster on fire.
+        // Truly, truly, truly, I am sorry.
+        if (!gfx_rapi->is_legacy() && gfx_rapi == &gfx_opengl_api && !gGameInited) {
+            y = -y;
+        }
+
         short U = v->tc[0] * rsp.texture_scaling_factor.s >> 16;
         short V = v->tc[1] * rsp.texture_scaling_factor.t >> 16;
 
@@ -1065,43 +1078,47 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v1 = &rsp.loaded_vertices[vtx1_idx];
     struct GfxVertex *v2 = &rsp.loaded_vertices[vtx2_idx];
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
-    struct GfxVertex *v_arr[3] = { v1, v2, v3 };
+    struct GfxVertex
+    *v_arr[3] = { v1, v2, v3 };
 
-    if (v1->clip_rej & v2->clip_rej & v3->clip_rej && gCullingEnabled) {
-        // The whole triangle lies outside the visible area
-        return;
-    }
-
-    if ((rsp.geometry_mode & G_CULL_BOTH) != 0 && gCullingEnabled) {
-        float dx1 = v1->x / (v1->w) - v2->x / (v2->w);
-        float dy1 = v1->y / (v1->w) - v2->y / (v2->w);
-        float dx2 = v3->x / (v3->w) - v2->x / (v2->w);
-        float dy2 = v3->y / (v3->w) - v2->y / (v2->w);
-        float cross = dx1 * dy2 - dy1 * dx2;
-
-        if ((v1->w < 0) ^ (v2->w < 0) ^ (v3->w < 0)) {
-            // If one vertex lies behind the eye, negating cross will give the correct result.
-            // If all vertices lie behind the eye, the triangle will be rejected anyway.
-            cross = -cross;
+    // oh dear this code is awful please dont look its so bad plz
+    if (gfx_rapi->is_legacy() || gfx_rapi != &gfx_opengl_api || gGameInited) {
+        if (v1->clip_rej & v2->clip_rej & v3->clip_rej && gCullingEnabled) {
+            // The whole triangle lies outside the visible area
+            return;
         }
 
-        // Invert culling: back becomes front and front becomes back
-        if (rsp.geometry_mode & G_CULL_INVERT_EXT) {
-            cross = -cross;
-        }
+        if ((rsp.geometry_mode & G_CULL_BOTH) != 0 && gCullingEnabled) {
+            float dx1 = v1->x / (v1->w) - v2->x / (v2->w);
+            float dy1 = v1->y / (v1->w) - v2->y / (v2->w);
+            float dx2 = v3->x / (v3->w) - v2->x / (v2->w);
+            float dy2 = v3->y / (v3->w) - v2->y / (v2->w);
+            float cross = dx1 * dy2 - dy1 * dx2;
 
-        switch (rsp.geometry_mode & G_CULL_BOTH) {
-            case G_CULL_FRONT:
-                if (cross <= 0) { return; }
-                break;
-            case G_CULL_BACK:
-                if (cross >= 0) { return; }
-                break;
-            case G_CULL_BOTH:
-                // Why is this even an option?
-                // HACK: Instead of culling both sides and displaying nothing, cull nothing and display everything
-                // this is needed because of the mirror room... some custom models will set/clear cull values resulting in cull both
-                break;
+            if ((v1->w < 0) ^ (v2->w < 0) ^ (v3->w < 0)) {
+                // If one vertex lies behind the eye, negating cross will give the correct result.
+                // If all vertices lie behind the eye, the triangle will be rejected anyway.
+                cross = -cross;
+            }
+
+            // Invert culling: back becomes front and front becomes back
+            if (rsp.geometry_mode & G_CULL_INVERT_EXT) {
+                cross = -cross;
+            }
+
+            switch (rsp.geometry_mode & G_CULL_BOTH) {
+                case G_CULL_FRONT:
+                    if (cross <= 0) { return; }
+                    break;
+                case G_CULL_BACK:
+                    if (cross >= 0) { return; }
+                    break;
+                case G_CULL_BOTH:
+                    // Why is this even an option?
+                    // HACK: Instead of culling both sides and displaying nothing, cull nothing and display everything
+                    // this is needed because of the mirror room... some custom models will set/clear cull values resulting in cull both
+                    break;
+            }
         }
     }
 
