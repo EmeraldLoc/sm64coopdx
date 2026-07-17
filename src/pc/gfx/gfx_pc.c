@@ -2344,7 +2344,6 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
-    //gfx_run_basic(commands); return;
     if (!gfx_wapi->start_frame()) {
         sDroppedFrame = true;
         return;

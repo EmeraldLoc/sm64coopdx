@@ -434,7 +434,11 @@ void produce_one_dummy_frame(void (*callback)(), u8 clearColorR, u8 clearColorG,
     djui_gfx_displaylist_end();
     end_master_display_list();
     alloc_display_list(0);
-    gfx_run_basic((Gfx*) gGfxSPTask->task.t.data_ptr); // send_display_list
+    if (gfx_get_current_rendering_api()->is_legacy()) {
+        gfx_run_basic((Gfx *)gGfxSPTask->task.t.data_ptr);
+    } else {
+        gfx_run((Gfx *)gGfxSPTask->task.t.data_ptr);
+    }
     display_and_vsync();
 
     // delay to go easy on the cpu
