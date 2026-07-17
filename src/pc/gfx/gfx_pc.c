@@ -1078,8 +1078,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     struct GfxVertex *v1 = &rsp.loaded_vertices[vtx1_idx];
     struct GfxVertex *v2 = &rsp.loaded_vertices[vtx2_idx];
     struct GfxVertex *v3 = &rsp.loaded_vertices[vtx3_idx];
-    struct GfxVertex
-    *v_arr[3] = { v1, v2, v3 };
+    struct GfxVertex *v_arr[3] = { v1, v2, v3 };
 
     // oh dear this code is awful please dont look its so bad plz
     if (gfx_rapi->is_legacy() || gfx_rapi != &gfx_opengl_api || gGameInited) {
