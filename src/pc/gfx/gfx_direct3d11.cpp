@@ -949,7 +949,7 @@ static void gfx_d3d11_set_scissor(int x, int y, int width, int height) {
     rect.left = x;
     rect.top = viewportHeight - y - height;
     rect.right = x + width;
-    rect.bottom = d3d.current_height - y;
+    rect.bottom = viewportHeight - y;
 
     d3d.context->RSSetScissorRects(1, &rect);
 }
