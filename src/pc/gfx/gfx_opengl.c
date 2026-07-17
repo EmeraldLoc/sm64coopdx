@@ -62,8 +62,10 @@ static struct ShaderProgram *opengl_prg = NULL;
 static struct GLTexture *opengl_tex[2];
 static int opengl_curtex = 0;
 
+static bool gfx_opengl_is_legacy(void);
+
 static bool gfx_opengl_z_is_from_0_to_1(void) {
-    return false;
+    return !gfx_opengl_is_legacy();
 }
 
 static void gfx_opengl_vertex_array_set_attribs(struct ShaderProgram *prg) {
@@ -458,8 +460,7 @@ static void gfx_opengl_delete_framebuffer(struct FramePass *framePass) {
 }
 
 static void gfx_opengl_set_framebuffer(struct FramePass *framePass) {
-    u32 viewportWidth;
-    u32 viewportHeight;
+    u32 viewportWidth, viewportHeight;
     gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
     glBindFramebuffer(GL_FRAMEBUFFER, framePass->fbo);
     glViewport(0, 0, viewportWidth, viewportHeight);
@@ -614,7 +615,14 @@ static void gfx_opengl_set_viewport(int x, int y, int width, int height) {
 }
 
 static void gfx_opengl_set_scissor(int x, int y, int width, int height) {
-    glScissor(x, y, width, height);
+    int adjustedY = y;
+    if (!gfx_opengl_is_legacy()) {
+        struct FramePass *framePass = gfx_get_current_frame_pass();
+        u32 viewportHeight;
+        gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
+        adjustedY = viewportHeight - y - height;
+    }
+    glScissor(x, adjustedY, width, height);
 }
 
 static void gfx_opengl_set_use_alpha(bool use_alpha) {
@@ -676,7 +684,6 @@ static inline bool gl_get_version(int *major, int *minor, bool *is_es) {
     return (sscanf(vstr, "%d.%d", major, minor) == 2);
 }
 
-static bool gfx_opengl_is_legacy(void);
 static void gfx_opengl_init(void) {
 #if FOR_WINDOWS || defined(OSX_BUILD)
     GLenum err;
@@ -709,13 +716,9 @@ static void gfx_opengl_init(void) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     if (!gfx_opengl_is_legacy()) {
-        // force opengl to use dx11 clip space (0, 1)
-        glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+        // force opengl to use modern clip space (0, 1) and upper left like modern renderers
+        glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
     }
-
-    GLint dims[2];
-    glGetIntegerv(GL_MAX_VIEWPORT_DIMS, dims);
-    printf("Max Viewport Width: %d, Height: %d\n", dims[0], dims[1]);
 }
 
 bool gfx_opengl_check_compatibility(void) {

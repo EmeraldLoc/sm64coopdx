@@ -2328,23 +2328,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
     }
 }
 
-void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a multipass system
-    gfx_sp_reset();
-    sHasInverseCameraMatrix = false;
-
-    if (!gfx_wapi->start_frame()) {
-        sDroppedFrame = true;
-        return;
-    }
-    sDroppedFrame = false;
-
-    gfx_rapi->reset_framebuffer();
-    gfx_rapi->start_frame();
-    gfx_run_dl(commands);
-}
-
 void gfx_run(Gfx *commands) {
-    //gfx_run_basic(commands); return;
     if (!gfx_wapi->start_frame()) {
         sDroppedFrame = true;
         return;
