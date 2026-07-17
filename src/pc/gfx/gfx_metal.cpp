@@ -25,6 +25,7 @@ extern "C" {
     #include "pc/debuglog.h"
     #include "pc/lua/smlua.h"
     #include "pc/mods/mods_utils.h"
+    #include "pc/utils/misc.h"
     #include "gfx_sdl.h"
 }
 
@@ -34,9 +35,9 @@ extern "C" {
 struct TextureData {
     MTL::Texture *texture = NULL;
     MTL::SamplerState *sampler = NULL;
-
     uint32_t width;
     uint32_t height;
+    uint32_t hash;
     bool linearFiltering;
 };
 
@@ -806,6 +807,7 @@ void gfx_metal_upload_texture(const uint8_t *rgba32_buf, int width, int height) 
     struct TextureData *textureData = &metal.textures[metal.currentTextureIds[metal.currentTile]];
     textureData->width = width;
     textureData->height = height;
+    textureData->hash = fnv1a_hash(rgba32_buf, width * height * 4);
 
     if (textureData->texture != NULL) {
         textureData->texture->release();
@@ -963,6 +965,10 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
                 snprintf(sizeUniformName, sizeof(sizeUniformName), "uTex%dSize", i);
                 float texSize[2] = { (float)textureData.width, (float)textureData.height };
                 gfx_metal_set_uniform((struct ShaderProgram *)metal.shaderProgram, sizeUniformName, SHADER_UNIFORM_TYPE_VEC2, texSize, 1);
+
+                char hashUniformName[MAX_SHADER_VARIABLE_NAME];
+                snprintf(hashUniformName, sizeof(hashUniformName), "uTex%dHash", i);
+                gfx_metal_set_uniform((struct ShaderProgram *)metal.shaderProgram, hashUniformName, SHADER_UNIFORM_TYPE_INT, &textureData.hash, 1);
 
                 char filterUniformName[MAX_SHADER_VARIABLE_NAME];
                 snprintf(filterUniformName, sizeof(filterUniformName), "uTex%dFilter", i);

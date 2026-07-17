@@ -658,7 +658,9 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
     }
 
     // parse inputs for inputs equivalent to reference inputs
-    if (sscanf(line, "%31s in %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+    char dummy[32];
+    if (sscanf(line, "%31s %31s %31s %31[^; \t\n]", qualifier, dummy, type, name) == 4 && strcmp(dummy, "in") == 0) {
+    // if (sscanf(line, "%31s in %31s %31[^; \t\n]", qualifier, type, name) == 3) {
         strip_array_from_name(name);
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
