@@ -618,7 +618,7 @@ static void gfx_opengl_set_viewport(int x, int y, int width, int height) {
         gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
         adjustedY = viewportHeight - y - height;
     }
-    glViewport(x, y, width, height);
+    glViewport(x, adjustedY, width, height);
 }
 
 static void gfx_opengl_set_scissor(int x, int y, int width, int height) {
