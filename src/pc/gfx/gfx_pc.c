@@ -1425,10 +1425,16 @@ static void gfx_calc_and_set_viewport(const Vp_t *viewport) {
     float x = (viewport->vtrans[0] / 4.0f) - width / 2.0f;
     float y = SCREEN_HEIGHT - ((viewport->vtrans[1] / 4.0f) + height / 2.0f);
 
-    width *= RATIO_X;
-    height *= RATIO_Y;
-    x *= RATIO_X;
-    y *= RATIO_Y;
+    // get ratios
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewportWidth, &viewportHeight);
+    float ratioX = viewportWidth / (2.0f * HALF_SCREEN_WIDTH);
+    float ratioY = viewportHeight / (2.0f * HALF_SCREEN_HEIGHT);
+
+    width *= ratioX;
+    height *= ratioY;
+    x *= ratioX;
+    y *= ratioY;
 
     rdp.viewport.x = x;
     rdp.viewport.y = y;
@@ -1534,11 +1540,11 @@ static void gfx_sp_texture(uint16_t sc, uint16_t tc, UNUSED uint8_t level, UNUSE
 }
 
 static void gfx_dp_set_scissor(UNUSED uint32_t mode, uint32_t ulx, uint32_t uly, uint32_t lrx, uint32_t lry) {
-    u32 viewW, viewH;
-    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewW, &viewH);
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewportWidth, &viewportHeight);
 
-    float passRatioX = (float)viewW / SCREEN_WIDTH;
-    float passRatioY = (float)viewH / SCREEN_HEIGHT;
+    float passRatioX = (float)viewportWidth / SCREEN_WIDTH;
+    float passRatioY = (float)viewportHeight / SCREEN_HEIGHT;
 
     float x = ulx / 4.0f * passRatioX;
     float y = (SCREEN_HEIGHT - lry / 4.0f) * passRatioY;
@@ -1768,7 +1774,10 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     mtxf_identity(rsp.V_matrix);
     mtxf_identity(rsp.P_matrix);
 
-    struct Box default_viewport = {0, 0, gfx_current_dimensions.width, gfx_current_dimensions.height};
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewportWidth, &viewportHeight);
+
+    struct Box default_viewport = {0, 0, viewportWidth, viewportHeight};
     struct Box viewport_saved = rdp.viewport;
     uint32_t geometry_mode_saved = rsp.geometry_mode;
 

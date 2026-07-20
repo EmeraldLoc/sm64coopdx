@@ -930,9 +930,12 @@ static void gfx_d3d11_set_zmode_decal(bool zmode_decal) {
 }
 
 static void gfx_d3d11_set_viewport(int x, int y, int width, int height) {
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
     D3D11_VIEWPORT viewport;
     viewport.TopLeftX = x;
-    viewport.TopLeftY = d3d.current_height - y - height;
+    viewport.TopLeftY = viewportHeight - y - height;
     viewport.Width = width;
     viewport.Height = height;
     viewport.MinDepth = 0.0f;

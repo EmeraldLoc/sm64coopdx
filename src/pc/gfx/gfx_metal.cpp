@@ -491,6 +491,7 @@ static struct ShaderProgram *gfx_metal_lookup_shader_using_index(uint8_t shaderI
 
 void gfx_metal_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[MAX_TEXTURES]) {
     struct ShaderProgramMetal *p = (struct ShaderProgramMetal *)prg;
+    if (!p) { return; }
 
     *num_inputs = p->numInputs;
     used_textures[0] = p->usedTextures[0];
@@ -855,9 +856,12 @@ void gfx_metal_set_zmode_decal(bool zmode_decal) {
 }
 
 void gfx_metal_set_viewport(int x, int y, int width, int height) {
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
     MTL::Viewport vp;
     vp.originX = x;
-    vp.originY = y;
+    vp.originY = viewportHeight - y - height;
     vp.width   = width;
     vp.height  = height;
     vp.znear   = 0.0;

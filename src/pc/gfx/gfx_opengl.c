@@ -611,6 +611,13 @@ static void gfx_opengl_set_zmode_decal(bool zmode_decal) {
 }
 
 static void gfx_opengl_set_viewport(int x, int y, int width, int height) {
+    int adjustedY = y;
+    if (!gfx_opengl_is_legacy()) {
+        struct FramePass *framePass = gfx_get_current_frame_pass();
+        u32 viewportHeight;
+        gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
+        adjustedY = viewportHeight - y - height;
+    }
     glViewport(x, y, width, height);
 }
 

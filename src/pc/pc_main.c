@@ -434,7 +434,8 @@ void produce_one_dummy_frame(void (*callback)(), u8 clearColorR, u8 clearColorG,
     djui_gfx_displaylist_end();
     end_master_display_list();
     alloc_display_list(0);
-    gfx_run_basic((Gfx *)gGfxSPTask->task.t.data_ptr);
+    gfx_run((Gfx *)gGfxSPTask->task.t.data_ptr);
+    gfx_end_frame_render();
     display_and_vsync();
 
     // delay to go easy on the cpu
@@ -445,7 +446,7 @@ void produce_one_dummy_frame(void (*callback)(), u8 clearColorR, u8 clearColorG,
         gWindowApi->delay((u32)(remaining * 1000.0));
     }
 
-    gfx_end_frame();
+    gfx_display_frame();
 }
 
 void audio_shutdown(void) {
