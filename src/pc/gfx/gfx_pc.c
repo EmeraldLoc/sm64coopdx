@@ -37,7 +37,7 @@
 #include "pc/gfx/gfx_pc.h"
 #include "pc/gfx/gfx_rendering_api.h"
 #include "pc/gfx/gfx_screen_config.h"
-#include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/gfx/gfx_window_manager.h"
 
 #include "pc/lua/smlua.h"
 
@@ -121,7 +121,6 @@ static float buf_vbo[VERTEX_STRIDE] = { 0.0f };
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
-static struct GfxWindowManagerAPI *gfx_wapi = NULL;
 static struct GfxRenderingAPI *gfx_rapi = NULL;
 
 static f32 sDepthZAdd = 0;
@@ -2204,20 +2203,19 @@ static void gfx_sp_reset(void) {
 }
 
 void gfx_get_dimensions(u32 *width, u32 *height) {
-    gfx_wapi->get_dimensions(width, height);
+    gfx_wm_get_dimensions(width, height);
 }
 
 void gfx_get_adjusted_dimensions(u32 *width, u32 *height) {
-    gfx_wapi->get_dimensions(width, height);
+    gfx_wm_get_dimensions(width, height);
     if (configForce4By3) {
         *width = gfx_current_dimensions.aspect_ratio * *height;
     }
 }
 
-void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, const char *window_title) {
-    gfx_wapi = wapi;
+void gfx_init(struct GfxRenderingAPI *rapi, const char *window_title) {
+    gfx_wm_init(window_title);
     gfx_rapi = rapi;
-    gfx_wapi->init(window_title);
     gfx_rapi->init();
 
     gfx_init_shaders();
@@ -2241,8 +2239,8 @@ void gfx_start_frame(void) {
         rdp.loaded_texture[1].addr = NULL;
         rdp.loaded_texture[1].size_bytes = 0;
     }
-    gfx_wapi->handle_events();
-    gfx_wapi->get_dimensions(&gfx_current_dimensions.width, &gfx_current_dimensions.height);
+    gfx_wm_handle_events();
+    gfx_wm_get_dimensions(&gfx_current_dimensions.width, &gfx_current_dimensions.height);
     if (gfx_current_dimensions.height == 0) {
         // Avoid division by zero
         gfx_current_dimensions.height = 1;
@@ -2347,7 +2345,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
     gfx_sp_reset();
     sHasInverseCameraMatrix = false;
 
-    if (!gfx_wapi->start_frame()) {
+    if (!gfx_wm_start_frame()) {
         sDroppedFrame = true;
         return;
     }
@@ -2359,7 +2357,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
-    if (!gfx_wapi->start_frame()) {
+    if (!gfx_wm_start_frame()) {
         sDroppedFrame = true;
         return;
     }
@@ -2442,10 +2440,10 @@ void gfx_end_frame_render(void) {
 }
 
 void gfx_display_frame(void) {
-    gfx_wapi->swap_buffers_begin();
+    gfx_wm_swap_buffers_begin();
     if (!sDroppedFrame) {
         gfx_rapi->finish_render();
-        gfx_wapi->swap_buffers_end();
+        gfx_wm_swap_buffers_end();
     }
 }
 
@@ -2459,10 +2457,7 @@ void gfx_shutdown(void) {
         if (gfx_rapi->shutdown) gfx_rapi->shutdown();
         gfx_rapi = NULL;
     }
-    if (gfx_wapi) {
-        if (gfx_wapi->shutdown) gfx_wapi->shutdown();
-        gfx_wapi = NULL;
-    }
+    gfx_wm_shutdown();
     gGfxInited = false;
 }
 

@@ -16,7 +16,7 @@
 
 #include "pc/pc_main.h"
 
-#include "gfx_window_manager_api.h"
+#include "gfx_window_manager.h"
 #include "gfx_rendering_api.h"
 #include "gfx_pc.h"
 #include "gfx_shader.h"
@@ -25,7 +25,6 @@ extern "C" {
     #include "pc/debuglog.h"
     #include "pc/lua/smlua.h"
     #include "pc/mods/mods_utils.h"
-    #include "gfx_sdl.h"
 }
 
 #define MAX_FRAMES_IN_FLIGHT 3
@@ -1011,7 +1010,7 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
 }
 
 void gfx_metal_init(void) {
-    SDL_Window *wnd = gfx_sdl_get_window();
+    SDL_Window *wnd = gfx_wm_get_window();
     metal.metalView = SDL_Metal_CreateView(wnd);
     metal.layer = static_cast<CA::MetalLayer *>(SDL_Metal_GetLayer(metal.metalView));
 
@@ -1027,7 +1026,7 @@ void gfx_metal_init(void) {
 
     // get current window dimensions
     uint32_t w, h;
-    gWindowApi->get_dimensions(&w, &h);
+    gfx_wm_get_dimensions(&w, &h);
 
     metal.currentWidth = w;
     metal.currentHeight = h;
@@ -1081,7 +1080,7 @@ void gfx_metal_on_resize(void) {
     }
 
     uint32_t w, h;
-    gWindowApi->get_dimensions(&w, &h);
+    gfx_wm_get_dimensions(&w, &h);
 
     metal.currentWidth = w;
     metal.currentHeight = h;

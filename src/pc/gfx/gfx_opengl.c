@@ -694,8 +694,9 @@ static inline bool gl_get_version(int *major, int *minor, bool *is_es) {
 static void gfx_opengl_init(void) {
 #if FOR_WINDOWS || defined(OSX_BUILD)
     GLenum err;
-    if ((err = glewInit()) != GLEW_OK)
+    if ((err = glewInit()) != GLEW_OK) {
         sys_fatal("could not init GLEW:\n%s", glewGetErrorString(err));
+    }
 #endif
 
     tex_cache_size = TEX_CACHE_STEP;
@@ -707,7 +708,7 @@ static void gfx_opengl_init(void) {
     int vminor = 0;
     bool is_es = false;
     if (!gl_get_version(&vmajor, &vminor, &is_es) || !gl_version_is_supported(vmajor, vminor, is_es)) {
-        sys_fatal("OpenGL 2.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
+        sys_fatal("OpenGL 4.1+ is required.\nReported version: %s%d.%d", is_es ? "ES" : "", vmajor, vminor);
     }
 
     glGenBuffers(1, &opengl_vbo);

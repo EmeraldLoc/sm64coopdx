@@ -25,7 +25,6 @@ enum ShaderFlag {
 };
 
 struct GfxRenderingAPI;
-struct GfxWindowManagerAPI;
 
 #define MAX_CUSTOM_FRAME_PASSES 64
 #define MAX_FRAME_PASSES MAX_CUSTOM_FRAME_PASSES + 1
@@ -108,7 +107,7 @@ extern enum ShaderStage gSelectedShaderStage;
 extern "C" {
 #endif
 
-void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, const char *window_title);
+void gfx_init(struct GfxRenderingAPI *rapi, const char *window_title);
 struct GfxRenderingAPI *gfx_get_current_rendering_api(void);
 bool gfx_shader_stage_is(enum ShaderStage stage);
 void gfx_start_frame(void);
