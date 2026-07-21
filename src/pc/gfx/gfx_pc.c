@@ -2383,10 +2383,10 @@ void gfx_run(Gfx *commands) {
 
         gfx_rapi->set_framebuffer(&gDefaultGeoFramePass);
 
-        gfx_rapi->start_frame(); // resets color and depth
-
         gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
+
+        gfx_rapi->start_frame(); // resets color and depth
 
         // draw world into frame buffer
         smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
@@ -2395,12 +2395,11 @@ void gfx_run(Gfx *commands) {
         smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
     }
 
-    gfx_rapi->reset_framebuffer();
-
-    gfx_rapi->start_frame(); // resets color and depth
-
     gfx_sp_reset(); // resets the rsp
     sHasInverseCameraMatrix = false;
+
+    gfx_rapi->reset_framebuffer();
+    gfx_rapi->start_frame(); // resets color and depth
 
     int textureSlotOffset = 10;
 
