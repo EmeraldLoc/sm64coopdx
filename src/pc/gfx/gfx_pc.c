@@ -2203,7 +2203,11 @@ static void gfx_sp_reset(void) {
     rdp.viewport_or_scissor_changed = true;
 }
 
-void gfx_get_dimensions(uint32_t *width, uint32_t *height) {
+void gfx_get_dimensions(u32 *width, u32 *height) {
+    gfx_wapi->get_dimensions(width, height);
+}
+
+void gfx_get_adjusted_dimensions(u32 *width, u32 *height) {
     gfx_wapi->get_dimensions(width, height);
     if (configForce4By3) {
         *width = gfx_current_dimensions.aspect_ratio * *height;
