@@ -1184,7 +1184,7 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
         if (memcmp(&rdp.viewport, &sRenderingState.viewport, sizeof(rdp.viewport)) != 0
             || sRenderingState.x_adjust_4by3 != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
-            gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width - gfx_current_dimensions.x_adjust_4by3*2, rdp.viewport.height);
+            gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width - gfx_current_dimensions.x_adjust_4by3 * 2, rdp.viewport.height);
             sRenderingState.viewport = rdp.viewport;
         }
         if (memcmp(&rdp.scissor, &sRenderingState.scissor, sizeof(rdp.scissor)) != 0
