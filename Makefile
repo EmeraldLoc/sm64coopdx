@@ -776,7 +776,7 @@ endif
 ifeq ($(WINDOWS_BUILD),1)
   SPIRV_CROSS_LIBS := -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-msl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-core -lSPIRV-Tools-opt -lSPIRV-Tools
 else ifeq ($(OSX_BUILD),1)
-  SPIRV_CROSS_LIBS := -lspirv-cross-c -lspirv-cross-hlsl -lspirv-cross-msl -lspirv-cross-glsl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-core -lSPIRV-Tools-opt -lSPIRV-Tools
+  SPIRV_CROSS_LIBS := $(BREW_PREFIX)/lib/libspirv-cross-c.a $(BREW_PREFIX)/lib/libspirv-cross-hlsl.a $(BREW_PREFIX)/lib/libspirv-cross-msl.a $(BREW_PREFIX)/lib/libspirv-cross-glsl.a $(BREW_PREFIX)/lib/libspirv-cross-cpp.a $(BREW_PREFIX)/lib/libspirv-cross-reflect.a $(BREW_PREFIX)/lib/libspirv-cross-core.a
 else
   SPIRV_CROSS_LIBS := -Wl,-Bstatic -lspirv-cross-c -lspirv-cross-glsl -lspirv-cross-hlsl -lspirv-cross-msl -lspirv-cross-cpp -lspirv-cross-reflect -lspirv-cross-core -Wl,-Bdynamic
 endif
