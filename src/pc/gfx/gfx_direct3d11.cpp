@@ -341,7 +341,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     HRESULT hr = d3d.D3DCompile(vs_hlsl, strlen(vs_hlsl), nullptr, nullptr, nullptr, "main", "vs_5_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
 
     if (FAILED(hr)) {
-        MessageBox(gfx_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Vertex Shader Error", MB_OK | MB_ICONERROR);
+        MessageBox(gfx_window_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Vertex Shader Error", MB_OK | MB_ICONERROR);
         free(vs_hlsl);
         free(ps_hlsl);
         throw hr;
@@ -350,7 +350,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
     hr = d3d.D3DCompile(ps_hlsl, strlen(ps_hlsl), nullptr, nullptr, nullptr, "main", "ps_5_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
 
     if (FAILED(hr)) {
-        MessageBox(gfx_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Pixel Shader Error", MB_OK | MB_ICONERROR);
+        MessageBox(gfx_window_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Pixel Shader Error", MB_OK | MB_ICONERROR);
         free(vs_hlsl);
         free(ps_hlsl);
         throw hr;
@@ -408,7 +408,7 @@ static struct ShaderProgram *gfx_d3d11_create_and_load_new_shader(struct ColorCo
             vs->GetBufferPointer(),
             vs->GetBufferSize(),
             prg->input_layout.GetAddressOf()
-        ), gfx_dxgi_get_h_wnd(), "Failed to create shader input layout.");
+        ), gfx_window_dxgi_get_h_wnd(), "Failed to create shader input layout.");
     } else {
         prg->input_layout = nullptr;
     }
@@ -494,7 +494,7 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
 
     HRESULT hr = d3d.D3DCompile(vs_hlsl, strlen(vs_hlsl), nullptr, nullptr, nullptr, "main", "vs_5_0", compile_flags, 0, vs.GetAddressOf(), error_blob.GetAddressOf());
     if (FAILED(hr)) {
-        MessageBox(gfx_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Post-Process VS Error", MB_OK | MB_ICONERROR);
+        MessageBox(gfx_window_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Post-Process VS Error", MB_OK | MB_ICONERROR);
         free(vs_hlsl);
         free(ps_hlsl);
         throw hr;
@@ -502,7 +502,7 @@ static struct ShaderProgram *gfx_d3d11_create_or_load_post_process_shader(void) 
 
     hr = d3d.D3DCompile(ps_hlsl, strlen(ps_hlsl), nullptr, nullptr, nullptr, "main", "ps_5_0", compile_flags, 0, ps.GetAddressOf(), error_blob.GetAddressOf());
     if (FAILED(hr)) {
-        MessageBox(gfx_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Post-Process PS Error", MB_OK | MB_ICONERROR);
+        MessageBox(gfx_window_dxgi_get_h_wnd(), (char *)error_blob->GetBufferPointer(), "Post-Process PS Error", MB_OK | MB_ICONERROR);
         free(vs_hlsl);
         free(ps_hlsl);
         throw hr;

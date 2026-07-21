@@ -1,3 +1,4 @@
+#ifdef __APPLE__
 
 #include <SDL2/SDL.h>
 
@@ -78,3 +79,5 @@ struct GfxWindowBackendAPI gfx_window_metal = {
     gfx_window_metal_get_time,
     gfx_window_metal_get_max_msaa,
 };
+
+#endif
