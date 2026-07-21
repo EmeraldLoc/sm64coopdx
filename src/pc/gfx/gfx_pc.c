@@ -110,6 +110,7 @@ static struct RenderingState {
     ALIGNED16 Mat4 m_matrix;
     ALIGNED16 Mat4 v_matrix;
     ALIGNED16 Mat4 p_matrix;
+    u32 x_adjust_4by3;
 } sRenderingState;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
@@ -1180,21 +1181,20 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     }
 
     if (rdp.viewport_or_scissor_changed) {
-        static uint32_t x_adjust_4by3_prev;
         if (memcmp(&rdp.viewport, &sRenderingState.viewport, sizeof(rdp.viewport)) != 0
-            || x_adjust_4by3_prev != gfx_current_dimensions.x_adjust_4by3) {
+            || sRenderingState.x_adjust_4by3 != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
-            gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width, rdp.viewport.height);
+            gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width - gfx_current_dimensions.x_adjust_4by3*2, rdp.viewport.height);
             sRenderingState.viewport = rdp.viewport;
         }
         if (memcmp(&rdp.scissor, &sRenderingState.scissor, sizeof(rdp.scissor)) != 0
-            || x_adjust_4by3_prev != gfx_current_dimensions.x_adjust_4by3) {
+            || sRenderingState.x_adjust_4by3 != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
             gfx_rapi->set_scissor(rdp.scissor.x + gfx_current_dimensions.x_adjust_4by3, rdp.scissor.y, rdp.scissor.width, rdp.scissor.height);
             sRenderingState.scissor = rdp.scissor;
         }
         rdp.viewport_or_scissor_changed = false;
-        x_adjust_4by3_prev = gfx_current_dimensions.x_adjust_4by3;
+        sRenderingState.x_adjust_4by3 = gfx_current_dimensions.x_adjust_4by3;
     }
 
     struct CombineMode *cm = &rdp.combine_mode;
@@ -2199,6 +2199,8 @@ static void gfx_sp_reset(void) {
     rsp.current_num_lights = 2;
     rsp.lights_changed = true;
     num_gfx_states = 0;
+    sRenderingState.x_adjust_4by3 = 0;
+    rdp.viewport_or_scissor_changed = true;
 }
 
 void gfx_get_dimensions(uint32_t *width, uint32_t *height) {

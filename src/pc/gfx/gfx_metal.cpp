@@ -872,8 +872,8 @@ void gfx_metal_set_viewport(int x, int y, int width, int height) {
 
 void gfx_metal_set_scissor(int x, int y, int width, int height) {
     struct FramePass *framePass = gfx_get_current_frame_pass();
-    u32 viewportHeight;
-    gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, &viewportWidth, &viewportHeight);
     MTL::ScissorRect r;
     r.x = x;
     r.y = viewportHeight - y - height;
