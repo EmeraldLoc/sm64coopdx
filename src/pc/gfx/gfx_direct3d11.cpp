@@ -721,7 +721,7 @@ static void gfx_d3d11_reset_framebuffer(void) {
     rect.left = 0;
     rect.top = 0;
     rect.right = windowWidth;
-    rect.bottom = windowWidth;
+    rect.bottom = windowHeight;
     d3d.context->RSSetScissorRects(1, &rect);
 }
 
