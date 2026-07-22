@@ -16,7 +16,7 @@ enum PlayerPart {
 #pragma pack(1)
 struct PlayerPalette {
     //rgb
-    Color parts[PLAYER_PART_MAX];
+    C_ARRAY Color parts[PLAYER_PART_MAX];
 };
 #pragma pack()
 

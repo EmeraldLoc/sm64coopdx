@@ -6,6 +6,42 @@
 
 
 ---
+# functions from level_script.h
+
+<br />
+
+
+## [area_create_warp_node](#area_create_warp_node)
+
+### Description
+Creates a warp node in the current level and area with id `id` that goes to the warp node `destNode` in level `destLevel` and area `destArea`, and attach it to the object `o`.
+To work properly, object `o` must be able to trigger a warp (for example, with interact type set to `INTERACT_WARP`.)
+`checkpoint` should be set only to WARP_NO_CHECKPOINT (0x00) or WARP_CHECKPOINT (0x80.) If `checkpoint` is set to `0x80`, Mario will warp directly to this node if he enters the level again (after a death for example)
+
+### Lua Example
+`local objectWarpNodeValue = area_create_warp_node(id, destLevel, destArea, destNode, checkpoint, o)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| id | `integer` |
+| destLevel | `integer` |
+| destArea | `integer` |
+| destNode | `integer` |
+| checkpoint | `integer` |
+| o | [Object](structs.md#Object) |
+
+### Returns
+- [ObjectWarpNode](structs.md#ObjectWarpNode)
+
+### C Prototype
+`struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u8 destNode, u8 checkpoint, struct Object *o);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+---
 # functions from level_update.h
 
 <br />
@@ -1464,21 +1500,22 @@ Checks whether Mario can become bubbled under certain game conditions (multiplay
 ## [mario_set_bubbled](#mario_set_bubbled)
 
 ### Description
-Transitions Mario into a bubbled state (if available in multiplayer), decrementing lives and preventing normal movement
+Transitions Mario into a bubbled state (if available in multiplayer), decrementing lives by default and preventing normal movement
 
 ### Lua Example
-`mario_set_bubbled(m)`
+`mario_set_bubbled(m, stayAlive)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
 | m | [MarioState](structs.md#MarioState) |
+| stayAlive | `boolean` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void mario_set_bubbled(struct MarioState* m);`
+`void mario_set_bubbled(struct MarioState* m, OPTIONAL bool stayAlive);`
 
 [:arrow_up_small:](#)
 
@@ -5865,6 +5902,31 @@ Extracts the position (translation component) from the transformation matrix `ob
 
 ### C Prototype
 `Vec3fp get_pos_from_transform_mtx(VEC_OUT Vec3f dest, Mat4 objMtx, Mat4 camMtx);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [get_world_mtx_from_transform](#get_world_mtx_from_transform)
+
+### Description
+Strip the camera-view matrix `camMtx` off of a model-view matrix `objMtx` and store the resulting matrix in `dest`. This can be used to get the object's transforms in world space.
+
+### Lua Example
+`get_world_mtx_from_transform(dest, objMtx, camMtx)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| dest | [Mat4](structs.md#Mat4) |
+| objMtx | [Mat4](structs.md#Mat4) |
+| camMtx | [Mat4](structs.md#Mat4) |
+
+### Returns
+- None
+
+### C Prototype
+`void get_world_mtx_from_transform(VEC_OUT Mat4 dest, Mat4 objMtx, Mat4 camMtx);`
 
 [:arrow_up_small:](#)
 

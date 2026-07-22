@@ -539,7 +539,7 @@ static struct ModAudio* get_mod_audio_character_sound(struct MarioState* m, enum
         return NULL;
     }
 
-    return audio_sample_load_from_mod(mod, mod->files[modFileIndex].relativePath);
+    return audio_load_from_mod(mod, mod->files[modFileIndex].relativePath, MA_TYPE_SAMPLE);
 }
 
 static void play_character_sound_internal(struct MarioState *m, enum CharacterSound characterSound, u32 offset, u32 flags) {

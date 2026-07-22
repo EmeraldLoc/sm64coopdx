@@ -3135,7 +3135,7 @@ Every sound file will get removed from the character.
 
 ### Description
 Sets animation for `animID` using a registered smlua animation.
-You can register an smlua animation by using `smlua_util_register_animation`.
+You can register an smlua animation by using `smlua_anim_util_register_animation`.
 The animation string you used to register the animation is the `animString` to be passed.
 
 ### Lua Example
@@ -4096,6 +4096,109 @@ Measures the width and height of `message` in the current font
 
 ### C Prototype
 `void djui_hud_measure_text(const char* message, RET f32 *width, RET f32 *height);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [djui_hud_print_text](#djui_hud_print_text)
+
+### Description
+Prints DJUI HUD text onto the screen
+
+### Lua Example
+`djui_hud_print_text(message, x, y, scaleX, scaleY)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| message | `string` |
+| x | `number` |
+| y | `number` |
+| scaleX | `number` |
+| scaleY | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void djui_hud_print_text(const char* message, f32 x, f32 y, f32 scaleX, f32 scaleY);`
+
+---
+### Description
+Prints DJUI HUD text onto the screen
+
+### Lua Example
+`djui_hud_print_text(message, x, y, scale)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| message | `string` |
+| x | `number` |
+| y | `number` |
+| scale | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void djui_hud_print_text_uniform(const char* message, f32 x, f32 y, f32 scale);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [djui_hud_print_text_interpolated](#djui_hud_print_text_interpolated)
+
+### Description
+Prints interpolated DJUI HUD text onto the screen
+
+### Lua Example
+`djui_hud_print_text_interpolated(message, prevX, prevY, prevScaleX, prevScaleY, x, y, scaleX, scaleY)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| message | `string` |
+| prevX | `number` |
+| prevY | `number` |
+| prevScaleX | `number` |
+| prevScaleY | `number` |
+| x | `number` |
+| y | `number` |
+| scaleX | `number` |
+| scaleY | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void djui_hud_print_text_interpolated(const char* message, f32 prevX, f32 prevY, f32 prevScaleX, f32 prevScaleY, f32 x, f32 y, f32 scaleX, f32 scaleY);`
+
+---
+### Description
+Prints interpolated DJUI HUD text onto the screen
+
+### Lua Example
+`djui_hud_print_text_interpolated(message, prevX, prevY, prevScale, x, y, scale)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| message | `string` |
+| prevX | `number` |
+| prevY | `number` |
+| prevScale | `number` |
+| x | `number` |
+| y | `number` |
+| scale | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void djui_hud_print_text_interpolated_uniform(const char* message, f32 prevX, f32 prevY, f32 prevScale, f32 x, f32 y, f32 scale);`
 
 [:arrow_up_small:](#)
 
@@ -7270,42 +7373,6 @@ Returns the name of the star corresponding to `courseNum` and `starNum` as a dec
 
 ### C Prototype
 `const char *get_star_name(s16 courseNum, s16 starNum);`
-
-[:arrow_up_small:](#)
-
-<br />
-
----
-# functions from level_script.h
-
-<br />
-
-
-## [area_create_warp_node](#area_create_warp_node)
-
-### Description
-Creates a warp node in the current level and area with id `id` that goes to the warp node `destNode` in level `destLevel` and area `destArea`, and attach it to the object `o`.
-To work properly, object `o` must be able to trigger a warp (for example, with interact type set to `INTERACT_WARP`.)
-`checkpoint` should be set only to WARP_NO_CHECKPOINT (0x00) or WARP_CHECKPOINT (0x80.) If `checkpoint` is set to `0x80`, Mario will warp directly to this node if he enters the level again (after a death for example)
-
-### Lua Example
-`local objectWarpNodeValue = area_create_warp_node(id, destLevel, destArea, destNode, checkpoint, o)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| id | `integer` |
-| destLevel | `integer` |
-| destArea | `integer` |
-| destNode | `integer` |
-| checkpoint | `integer` |
-| o | [Object](structs.md#Object) |
-
-### Returns
-- [ObjectWarpNode](structs.md#ObjectWarpNode)
-
-### C Prototype
-`struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u8 destNode, u8 checkpoint, struct Object *o);`
 
 [:arrow_up_small:](#)
 
