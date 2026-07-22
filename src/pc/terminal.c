@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <pthread.h>
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/select.h>
 #include <unistd.h>
@@ -18,22 +19,25 @@ static struct linenoiseState sLinenoiseState;
 static char sTerminalInput[TERMINAL_BUFFER_SIZE] = { 0 };
 static bool sTerminalInitialized = false;
 static bool sTerminalActive = false;
+static pthread_mutex_t sTerminalMutex = PTHREAD_MUTEX_INITIALIZER;
 
 void log_to_terminal(const char* fmt, ...) {
+    pthread_mutex_lock(&sTerminalMutex);
     va_list args;
     va_start(args, fmt);
 
 #if !defined(_WIN32) && !defined(_WIN64)
-    if (sTerminalActive) linenoiseHide(&sLinenoiseState);
+    if (sTerminalActive) { linenoiseHide(&sLinenoiseState); }
 #endif
 
     vprintf(fmt, args);
 
 #if !defined(_WIN32) && !defined(_WIN64)
-    if (sTerminalActive) linenoiseShow(&sLinenoiseState);
+    if (sTerminalActive) { linenoiseShow(&sLinenoiseState); }
 #endif
 
     va_end(args);
+    pthread_mutex_unlock(&sTerminalMutex);
 }
 
 static void terminal_stop() {
@@ -70,13 +74,13 @@ void terminal_init() {
 
 void terminal_update() {
 #if !defined(_WIN32) && !defined(_WIN64)
-    if (!sTerminalInitialized) return;
-    struct timeval tv = {0L, 0L};
+    if (!sTerminalInitialized) { return; }
+    struct timeval tv = { 0L, 0L };
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(STDIN_FILENO, &fds);
 
-    if (select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) <= 0) return;
+    if (select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) <= 0) { return; }
 
     char* input = linenoiseEditFeed(&sLinenoiseState);
 
@@ -100,7 +104,7 @@ void terminal_update() {
 
 void terminal_clear() {
 #if !defined(_WIN32) && !defined(_WIN64)
-    if (!sTerminalInitialized) return;
+    if (!sTerminalInitialized) { return; }
     linenoiseClearScreen();
 #endif
 }

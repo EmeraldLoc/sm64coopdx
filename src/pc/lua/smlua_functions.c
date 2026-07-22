@@ -85,7 +85,7 @@ int smlua_func_print(lua_State *L) {
     djui_console_message_create(completeString, CONSOLE_MESSAGE_INFO);
 
     free(completeString);
-    return 1;
+    return 0;
 }
 
   ///////////

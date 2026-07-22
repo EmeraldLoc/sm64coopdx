@@ -1183,25 +1183,27 @@ int smlua_hook_console_command(lua_State* L) {
     return smlua_hook_command_internal(L, true);
 }
 
-int smlua_update_chat_command_description(lua_State* L) {
+int smlua_update_command_description(lua_State* L, bool onConsole) {
+    const char *funcName = onConsole ? "update_console_command_description"  : "update_chat_command_description";
+
     if (L == NULL) { return 0; }
     if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
 
     const char* command = smlua_to_string(L, 1);
     if (command == NULL || strlen(command) == 0 || !gSmLuaConvertSuccess) {
-        LOG_LUA_LINE("Update chat command: tried to update invalid command");
+        LOG_LUA_LINE("%s: tried to update invalid command", funcName);
         return 0;
     }
 
     const char* description = smlua_to_string(L, 2);
     if (description == NULL || strlen(description) == 0 || !gSmLuaConvertSuccess) {
-        LOG_LUA_LINE("Update chat command: tried to update invalid description");
+        LOG_LUA_LINE("%s: tried to update invalid description", funcName);
         return 0;
     }
 
     for (int i = 0; i < sHookedChatCommandsCount; i++) {
-        struct LuaHookedCommand* hook = &sHookedChatCommands[i];
-        if (!hook->isConsoleCommand && !strcmp(hook->command, command)) {
+        struct LuaHookedCommand *hook = &sHookedChatCommands[i];
+        if (hook->isConsoleCommand == onConsole && !strcmp(hook->command, command)) {
             if (hook->description) {
                 free(hook->description);
             }
@@ -1210,39 +1212,16 @@ int smlua_update_chat_command_description(lua_State* L) {
         }
     }
 
-    LOG_LUA_LINE("Update chat command: could not find command to update");
+    LOG_LUA_LINE("%s: could not find command to update", funcName);
     return 0;
 }
 
+int smlua_update_chat_command_description(lua_State* L) {
+    return smlua_update_command_description(L, false);
+}
+
 int smlua_update_console_command_description(lua_State* L) {
-    if (L == NULL) { return 0; }
-    if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
-
-    const char* command = smlua_to_string(L, 1);
-    if (command == NULL || strlen(command) == 0 || !gSmLuaConvertSuccess) {
-        LOG_LUA_LINE("Update console command: tried to update invalid command");
-        return 0;
-    }
-
-    const char* description = smlua_to_string(L, 2);
-    if (description == NULL || strlen(description) == 0 || !gSmLuaConvertSuccess) {
-        LOG_LUA_LINE("Update console command: tried to update invalid description");
-        return 0;
-    }
-
-    for (int i = 0; i < sHookedChatCommandsCount; i++) {
-        struct LuaHookedCommand* hook = &sHookedChatCommands[i];
-        if (hook->isConsoleCommand && !strcmp(hook->command, command)) {
-            if (hook->description) {
-                free(hook->description);
-            }
-            hook->description = strdup(description);
-            return 1;
-        }
-    }
-
-    LOG_LUA_LINE("Update console command: could not find command to update");
-    return 0;
+    return smlua_update_command_description(L, true);
 }
 
 bool smlua_call_chat_command_hook(char* command, bool onConsole) {
@@ -1361,10 +1340,10 @@ char** smlua_get_chat_player_list(void) {
 char** smlua_get_chat_maincommands_list(void) {
 #if defined(DEVELOPMENT)
     s32 defaultCmdsCount = 11;
-    static char* defaultCmds[] = {"players", "kick", "ban", "permban", "moderator", "help", "?", "warp", "lua", "luaf", NULL};
+    static char* defaultCmds[] = { "players", "kick", "ban", "permban", "moderator", "help", "?", "warp", "lua", "luaf", NULL };
 #else
     s32 defaultCmdsCount = 8;
-    static char* defaultCmds[] = {"players", "kick", "ban", "permban", "moderator", "help", "?", NULL};
+    static char* defaultCmds[] = { "players", "kick", "ban", "permban", "moderator", "help", "?", NULL };
 #endif
     s32 defaultCmdsCountNew = 0;
     for (s32 i = 0; i < defaultCmdsCount; i++) {
@@ -1376,10 +1355,13 @@ char** smlua_get_chat_maincommands_list(void) {
             break;
         }
     }
-    char** commands = (char**) malloc((sHookedChatCommandsCount + defaultCmdsCountNew + 1) * sizeof(char*));
+    char** commands = malloc((sHookedChatCommandsCount + defaultCmdsCountNew + 1) * sizeof(char*));
     for (s32 i = 0; i < sHookedChatCommandsCount; i++) {
         struct LuaHookedCommand* hook = &sHookedChatCommands[i];
-        if (hook->isConsoleCommand) continue;
+        if (hook->isConsoleCommand) {
+            commands[i] = NULL;
+            continue;
+        }
         commands[i] = strdup(hook->command);
     }
     for (s32 i = 0; i < defaultCmdsCount; i++) {

@@ -28,7 +28,6 @@ static bool command_clear(UNUSED const char* message);
 static bool command_quit(UNUSED const char* message);
 static bool command_host(UNUSED const char* message);
 static bool command_rehost(UNUSED const char* message);
-static bool command_stop_hosting(UNUSED const char* message);
 static bool command_disconnect(UNUSED const char* message);
 
 static struct Command sCommands[] = {
@@ -112,7 +111,7 @@ static struct Command sCommands[] = {
     {
         .command = "stop-hosting",
         .description = "/stop-hosting - Stop hosting a currently active game",
-        .action = command_stop_hosting,
+        .action = command_disconnect,
         .active = false,
         .isChatCommand = false
     },
@@ -292,14 +291,14 @@ static bool command_mod(const char* message) {
 static bool command_confirm(UNUSED const char* message) {
     // deactivate command
     struct Command* confirmCommand = get_command("confirm");
-    if (confirmCommand) confirmCommand->active = false;
+    if (confirmCommand) { confirmCommand->active = false; }
 
     enum ChatConfirmCommand ccc = sConfirming;
     sConfirming = CCC_NONE;
 
     struct NetworkPlayer* npl = &gNetworkPlayers[0];
     struct NetworkPlayer* np = &gNetworkPlayers[sConfirmPlayerIndex];
-    if (!np->connected) return true;
+    if (!np->connected) { return false; }
     if (gNetworkType == NT_SERVER || npl->moderator) {
         if (ccc == CCC_KICK) {
             chat_construct_player_message(np, DLANG(CHAT, KICKING));
@@ -373,12 +372,6 @@ static bool command_host(UNUSED const char* message) {
 
 static bool command_rehost(UNUSED const char* message) {
     network_rehost_begin();
-    return true;
-}
-
-static bool command_stop_hosting(UNUSED const char* message) {
-    network_reset_reconnect_and_rehost();
-    network_shutdown(true, false, false, false);
     return true;
 }
 
