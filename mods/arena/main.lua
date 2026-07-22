@@ -518,7 +518,7 @@ end
 
 function on_jump_leniency_command(msg)
     local num = tonumber(msg)
-    if not network_is_server and not network_is_moderator() then
+    if not network_is_server() and not network_is_moderator() then
         command_message_create("\\#ffa0a0\\[Arena] You need to be a moderator to use this command.")
         return true
     elseif num == nil then

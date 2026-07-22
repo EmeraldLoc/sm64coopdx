@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
         if (!gCLIOpts.hideLoadingScreen) {
             render_rom_setup_screen(); // holds the game load until a valid rom is provided
         } else {
-            LOG_ERROR("ERROR: could not find valid vanilla us sm64 rom in game's user folder\n");
+            log_to_terminal("ERROR: could not find valid vanilla us sm64 rom in game's user folder\n");
             return 0;
         }
     }

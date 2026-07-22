@@ -67,7 +67,7 @@ static s32 get_level_abbreviation_alt(const char *str) {
 
 bool exec_dev_chat_command(char* command) {
     if (strcmp("warp", command) == 0) {
-        djui_chat_message_create("Missing parameters: [LEVEL] [AREA] [ACT]");
+        command_message_create("Missing parameters: [LEVEL] [AREA] [ACT]", CONSOLE_MESSAGE_ERROR);
         return true;
     }
 
@@ -87,7 +87,7 @@ bool exec_dev_chat_command(char* command) {
         // Params
         char *paramLevel = command + 5;
         if (*paramLevel == 0 || *paramLevel == ' ') {
-            djui_chat_message_create("Missing parameters: [LEVEL]");
+            command_message_create("Missing parameters: [LEVEL]", CONSOLE_MESSAGE_ERROR);
             return true;
         }
         char *paramArea = strchr(paramLevel, ' ');
@@ -125,7 +125,7 @@ bool exec_dev_chat_command(char* command) {
             if (level == -1) {
                 char message[256];
                 snprintf(message, 256, "Invalid [LEVEL] parameter: %s", paramLevel);
-                djui_chat_message_create(message);
+                command_message_create(message, CONSOLE_MESSAGE_ERROR);
                 return true;
             }
         }
@@ -134,7 +134,7 @@ bool exec_dev_chat_command(char* command) {
         if (paramArea && sscanf(paramArea, "%d", &area) <= 0) {
             char message[256];
             snprintf(message, 256, "Invalid [AREA] parameter: %s", paramArea);
-            djui_chat_message_create(message);
+            command_message_create(message, CONSOLE_MESSAGE_ERROR);
             return true;
         }
 
@@ -142,7 +142,7 @@ bool exec_dev_chat_command(char* command) {
         if (paramAct && sscanf(paramAct, "%d", &act) <= 0) {
             char message[256];
             snprintf(message, 256, "Invalid [ACT] parameter: %s", paramAct);
-            djui_chat_message_create(message);
+            command_message_create(message, CONSOLE_MESSAGE_ERROR);
             return true;
         }
 
@@ -150,35 +150,37 @@ bool exec_dev_chat_command(char* command) {
         if (!dynos_warp_to_level(level, area, act)) {
             char message[256];
             snprintf(message, 256, "Unable to warp to: %s %d %d", paramLevel, area, act);
-            djui_chat_message_create(message);
+            command_message_create(message, CONSOLE_MESSAGE_ERROR);
             return true;
         }
 
         // OK
         char message[256];
         snprintf(message, 256, "Warping to: %s %d %d...", paramLevel, area, act);
-        djui_chat_message_create(message);
+        command_message_create(message, CONSOLE_MESSAGE_INFO);
         return true;
     }
 
-    if (strcmp("lua", command) == 0) {
-        djui_chat_message_create("Missing parameter: [LUA]");
-        return true;
-    }
+    if (!gDjuiInMainMenu) {
+        if (strcmp("lua", command) == 0) {
+            command_message_create("Missing parameter: [LUA]", CONSOLE_MESSAGE_ERROR);
+            return true;
+        }
 
-    if (str_starts_with(command, "lua ")) {
-        smlua_exec_str(&command[4]);
-        return true;
-    }
+        if (str_starts_with(command, "lua ")) {
+            smlua_exec_str(&command[4]);
+            return true;
+        }
 
-    if (strcmp("luaf", command) == 0) {
-        djui_chat_message_create("Missing parameter: [FILENAME]");
-        return true;
-    }
+        if (strcmp("luaf", command) == 0) {
+            command_message_create("Missing parameter: [FILENAME]", CONSOLE_MESSAGE_ERROR);
+            return true;
+        }
 
-    if (str_starts_with(command, "luaf ")) {
-        smlua_exec_file(&command[5]);
-        return true;
+        if (str_starts_with(command, "luaf ")) {
+            smlua_exec_file(&command[5]);
+            return true;
+        }
     }
 
     return false;
@@ -186,7 +188,9 @@ bool exec_dev_chat_command(char* command) {
 
 void dev_display_chat_commands(void) {
     command_message_create("/warp [LEVEL] [AREA] [ACT] - Level can be either a numeric value or a shorthand name", CONSOLE_MESSAGE_INFO);
-    command_message_create("/lua [LUA] - Execute Lua code from a string", CONSOLE_MESSAGE_INFO);
-    command_message_create("/luaf [FILENAME] - Execute Lua code from a file", CONSOLE_MESSAGE_INFO);
+    if (!gDjuiInMainMenu) {
+        command_message_create("/lua [LUA] - Execute Lua code from a string", CONSOLE_MESSAGE_INFO);
+        command_message_create("/luaf [FILENAME] - Execute Lua code from a file", CONSOLE_MESSAGE_INFO);
+    }
 }
 #endif

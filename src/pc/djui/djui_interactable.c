@@ -200,7 +200,11 @@ bool djui_interactable_on_key_down(int scancode) {
         return true;
     }
 
-    if (!gDjuiChatBoxFocus) {
+    // check if we should open the console
+    // console focus is checked because in the console on key down we check this there
+    // the reason we do is to prevent the input from leaking into the console inputbox
+    // before closing itself
+    if (!gDjuiChatBoxFocus && !gDjuiConsoleFocus) {
         for (int i = 0; i < MAX_BINDS; i++) {
             if (scancode == (int)configKeyConsole[i]) {
                 sPendingConsoleToggleScancode = scancode;
@@ -226,15 +230,6 @@ bool djui_interactable_on_key_down(int scancode) {
         // pressed escape button on keyboard
         djui_panel_back();
         return true;
-    }
-
-    if (!gDjuiChatBoxFocus) {
-        for (int i = 0; i < MAX_BINDS; i++) {
-            if (scancode == (int)configKeyConsole[i]) {
-                djui_console_toggle();
-                return true;
-            }
-        }
     }
 
     if (gDjuiChatBox != NULL && !gDjuiChatBoxFocus) {

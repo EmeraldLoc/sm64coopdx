@@ -16,7 +16,7 @@
 #include "pc/dev/chat.h"
 #endif
 
-static bool command_help(UNUSED const char* message);
+static bool command_help(UNUSED const char* message, bool onConsole);
 static bool command_players(UNUSED const char* message);
 static bool command_kick(const char* message);
 static bool command_ban(const char* message);
@@ -161,16 +161,16 @@ static void chat_construct_player_message(struct NetworkPlayer* np, char* msg) {
     command_message_create(built, CONSOLE_MESSAGE_INFO);
 }
 
-static bool command_help(UNUSED const char* message) {
+static bool command_help(UNUSED const char* message, bool onConsole) {
     for (unsigned int i = 0; i < sCommandCount; i++) {
-        if (!sCommands[i].active) continue;
-        if (!sCommands[i].isChatCommand && gDjuiChatBoxFocus) continue;
+        if (!sCommands[i].active) { continue; }
+        if (!sCommands[i].isChatCommand && onConsole) { continue; }
         command_message_create(djui_language_get("CHAT", sCommands[i].description), CONSOLE_MESSAGE_INFO);
     }
 #ifdef DEVELOPMENT
     dev_display_chat_commands();
 #endif
-    smlua_display_chat_commands(gDjuiConsoleFocus);
+    smlua_display_chat_commands(onConsole);
     return true;
 }
 
@@ -403,10 +403,11 @@ struct Command* get_command(const char* name) {
 }
 
 
-void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLevel level) {
+void command_message_create(const char *message, OPTIONAL enum ConsoleMessageLevel level) {
     if (gDjuiChatBoxFocus) {
         size_t newMsgLength = strlen(message) + 12;
-        char newMsg[newMsgLength];
+        char *newMsg = malloc(newMsgLength);
+        if (!newMsg) { return; }
         switch (level) {
             case CONSOLE_MESSAGE_INFO:
                 snprintf(newMsg, newMsgLength, "\\#dcdcdc\\%s", message);
@@ -422,9 +423,10 @@ void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLev
                 break;
         }
         djui_chat_message_create(newMsg);
+        free(newMsg);
     } else {
         djui_console_message_create(message, level);
-        char* colorCode;
+        char *colorCode;
         switch (level) {
             case CONSOLE_MESSAGE_WARNING: colorCode = "\x1b[33m"; break;
             case CONSOLE_MESSAGE_ERROR:   colorCode = "\x1b[31m"; break;
@@ -444,7 +446,7 @@ void run_command(char* command, bool onConsole) {
 
     // directly check help command
     if (strcmp(command, "help") == 0 || strcmp(command, "?") == 0 || strcmp(command, "") == 0) {
-        command_help(NULL);
+        command_help(NULL, onConsole);
         return;
     }
 

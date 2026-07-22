@@ -732,7 +732,7 @@ void PrintNoNewLine(const char *aFmt, Args... aArgs) {
 template <typename... Args>
 void Print(const char *aFmt, Args... aArgs) {
     log_to_terminal(aFmt, aArgs...);
-    printf("\r\n");
+    log_to_terminal("\r\n");
     fflush(stdout);
 }
 
