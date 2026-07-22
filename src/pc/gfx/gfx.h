@@ -100,7 +100,5 @@ struct TextureCache {
 };
 
 extern struct GfxDimensions gfx_current_dimensions;
-#define RATIO_X (gfx_current_dimensions.width / (2.0f * HALF_SCREEN_WIDTH))
-#define RATIO_Y (gfx_current_dimensions.height / (2.0f * HALF_SCREEN_HEIGHT))
 
 #endif // GFX_H

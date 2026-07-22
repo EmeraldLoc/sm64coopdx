@@ -37,7 +37,7 @@
 #include "pc/gfx/gfx_pc.h"
 #include "pc/gfx/gfx_rendering_api.h"
 #include "pc/gfx/gfx_screen_config.h"
-#include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/gfx/gfx_window_manager.h"
 
 #include "pc/lua/smlua.h"
 
@@ -110,6 +110,7 @@ static struct RenderingState {
     ALIGNED16 Mat4 m_matrix;
     ALIGNED16 Mat4 v_matrix;
     ALIGNED16 Mat4 p_matrix;
+    u32 x_adjust_4by3;
 } sRenderingState;
 
 struct GfxDimensions gfx_current_dimensions = { 0 };
@@ -120,7 +121,6 @@ static float buf_vbo[VERTEX_STRIDE] = { 0.0f };
 static size_t buf_vbo_len = 0;
 static size_t buf_vbo_num_tris = 0;
 
-static struct GfxWindowManagerAPI *gfx_wapi = NULL;
 static struct GfxRenderingAPI *gfx_rapi = NULL;
 
 static f32 sDepthZAdd = 0;
@@ -1180,21 +1180,20 @@ static void OPTIMIZE_O3 gfx_sp_tri1(uint8_t vtx1_idx, uint8_t vtx2_idx, uint8_t 
     }
 
     if (rdp.viewport_or_scissor_changed) {
-        static uint32_t x_adjust_4by3_prev;
         if (memcmp(&rdp.viewport, &sRenderingState.viewport, sizeof(rdp.viewport)) != 0
-            || x_adjust_4by3_prev != gfx_current_dimensions.x_adjust_4by3) {
+            || sRenderingState.x_adjust_4by3 != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
-            gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width, rdp.viewport.height);
+            gfx_rapi->set_viewport(rdp.viewport.x + gfx_current_dimensions.x_adjust_4by3, rdp.viewport.y, rdp.viewport.width - gfx_current_dimensions.x_adjust_4by3 * 2, rdp.viewport.height);
             sRenderingState.viewport = rdp.viewport;
         }
         if (memcmp(&rdp.scissor, &sRenderingState.scissor, sizeof(rdp.scissor)) != 0
-            || x_adjust_4by3_prev != gfx_current_dimensions.x_adjust_4by3) {
+            || sRenderingState.x_adjust_4by3 != gfx_current_dimensions.x_adjust_4by3) {
             gfx_flush();
             gfx_rapi->set_scissor(rdp.scissor.x + gfx_current_dimensions.x_adjust_4by3, rdp.scissor.y, rdp.scissor.width, rdp.scissor.height);
             sRenderingState.scissor = rdp.scissor;
         }
         rdp.viewport_or_scissor_changed = false;
-        x_adjust_4by3_prev = gfx_current_dimensions.x_adjust_4by3;
+        sRenderingState.x_adjust_4by3 = gfx_current_dimensions.x_adjust_4by3;
     }
 
     struct CombineMode *cm = &rdp.combine_mode;
@@ -1425,10 +1424,16 @@ static void gfx_calc_and_set_viewport(const Vp_t *viewport) {
     float x = (viewport->vtrans[0] / 4.0f) - width / 2.0f;
     float y = SCREEN_HEIGHT - ((viewport->vtrans[1] / 4.0f) + height / 2.0f);
 
-    width *= RATIO_X;
-    height *= RATIO_Y;
-    x *= RATIO_X;
-    y *= RATIO_Y;
+    // get ratios
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewportWidth, &viewportHeight);
+    float ratioX = viewportWidth / (2.0f * HALF_SCREEN_WIDTH);
+    float ratioY = viewportHeight / (2.0f * HALF_SCREEN_HEIGHT);
+
+    width *= ratioX;
+    height *= ratioY;
+    x *= ratioX;
+    y *= ratioY;
 
     rdp.viewport.x = x;
     rdp.viewport.y = y;
@@ -1534,11 +1539,11 @@ static void gfx_sp_texture(uint16_t sc, uint16_t tc, UNUSED uint8_t level, UNUSE
 }
 
 static void gfx_dp_set_scissor(UNUSED uint32_t mode, uint32_t ulx, uint32_t uly, uint32_t lrx, uint32_t lry) {
-    u32 viewW, viewH;
-    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewW, &viewH);
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewportWidth, &viewportHeight);
 
-    float passRatioX = (float)viewW / SCREEN_WIDTH;
-    float passRatioY = (float)viewH / SCREEN_HEIGHT;
+    float passRatioX = (float)viewportWidth / SCREEN_WIDTH;
+    float passRatioY = (float)viewportHeight / SCREEN_HEIGHT;
 
     float x = ulx / 4.0f * passRatioX;
     float y = (SCREEN_HEIGHT - lry / 4.0f) * passRatioY;
@@ -1768,7 +1773,10 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
     mtxf_identity(rsp.V_matrix);
     mtxf_identity(rsp.P_matrix);
 
-    struct Box default_viewport = {0, 0, gfx_current_dimensions.width, gfx_current_dimensions.height};
+    u32 viewportWidth, viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(gfx_get_current_frame_pass(), &viewportWidth, &viewportHeight);
+
+    struct Box default_viewport = {0, 0, viewportWidth, viewportHeight};
     struct Box viewport_saved = rdp.viewport;
     uint32_t geometry_mode_saved = rsp.geometry_mode;
 
@@ -2190,19 +2198,24 @@ static void gfx_sp_reset(void) {
     rsp.current_num_lights = 2;
     rsp.lights_changed = true;
     num_gfx_states = 0;
+    sRenderingState.x_adjust_4by3 = 0;
+    rdp.viewport_or_scissor_changed = true;
 }
 
-void gfx_get_dimensions(uint32_t *width, uint32_t *height) {
-    gfx_wapi->get_dimensions(width, height);
+void gfx_get_dimensions(u32 *width, u32 *height) {
+    gfx_wm_get_dimensions(width, height);
+}
+
+void gfx_get_adjusted_dimensions(u32 *width, u32 *height) {
+    gfx_wm_get_dimensions(width, height);
     if (configForce4By3) {
         *width = gfx_current_dimensions.aspect_ratio * *height;
     }
 }
 
-void gfx_init(struct GfxWindowManagerAPI *wapi, struct GfxRenderingAPI *rapi, const char *window_title) {
-    gfx_wapi = wapi;
+void gfx_init(struct GfxRenderingAPI *rapi, const char *window_title) {
+    gfx_wm_init(window_title);
     gfx_rapi = rapi;
-    gfx_wapi->init(window_title);
     gfx_rapi->init();
 
     gfx_init_shaders();
@@ -2226,8 +2239,8 @@ void gfx_start_frame(void) {
         rdp.loaded_texture[1].addr = NULL;
         rdp.loaded_texture[1].size_bytes = 0;
     }
-    gfx_wapi->handle_events();
-    gfx_wapi->get_dimensions(&gfx_current_dimensions.width, &gfx_current_dimensions.height);
+    gfx_wm_handle_events();
+    gfx_wm_get_dimensions(&gfx_current_dimensions.width, &gfx_current_dimensions.height);
     if (gfx_current_dimensions.height == 0) {
         // Avoid division by zero
         gfx_current_dimensions.height = 1;
@@ -2332,7 +2345,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
     gfx_sp_reset();
     sHasInverseCameraMatrix = false;
 
-    if (!gfx_wapi->start_frame()) {
+    if (!gfx_wm_start_frame()) {
         sDroppedFrame = true;
         return;
     }
@@ -2344,7 +2357,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
 }
 
 void gfx_run(Gfx *commands) {
-    if (!gfx_wapi->start_frame()) {
+    if (!gfx_wm_start_frame()) {
         sDroppedFrame = true;
         return;
     }
@@ -2374,10 +2387,10 @@ void gfx_run(Gfx *commands) {
 
         gfx_rapi->set_framebuffer(&gDefaultGeoFramePass);
 
-        gfx_rapi->start_frame(); // resets color and depth
-
         gfx_sp_reset(); // resets the rsp
         sHasInverseCameraMatrix = false;
+
+        gfx_rapi->start_frame(); // resets color and depth
 
         // draw world into frame buffer
         smlua_call_event_hooks(HOOK_BEFORE_DRAW_GEOMETRY);
@@ -2386,12 +2399,11 @@ void gfx_run(Gfx *commands) {
         smlua_call_event_hooks(HOOK_ON_DRAW_GEOMETRY);
     }
 
-    gfx_rapi->reset_framebuffer();
-
-    gfx_rapi->start_frame(); // resets color and depth
-
     gfx_sp_reset(); // resets the rsp
     sHasInverseCameraMatrix = false;
+
+    gfx_rapi->reset_framebuffer();
+    gfx_rapi->start_frame(); // resets color and depth
 
     int textureSlotOffset = 10;
 
@@ -2428,10 +2440,10 @@ void gfx_end_frame_render(void) {
 }
 
 void gfx_display_frame(void) {
-    gfx_wapi->swap_buffers_begin();
+    gfx_wm_swap_buffers_begin();
     if (!sDroppedFrame) {
         gfx_rapi->finish_render();
-        gfx_wapi->swap_buffers_end();
+        gfx_wm_swap_buffers_end();
     }
 }
 
@@ -2445,10 +2457,7 @@ void gfx_shutdown(void) {
         if (gfx_rapi->shutdown) gfx_rapi->shutdown();
         gfx_rapi = NULL;
     }
-    if (gfx_wapi) {
-        if (gfx_wapi->shutdown) gfx_wapi->shutdown();
-        gfx_wapi = NULL;
-    }
+    gfx_wm_shutdown();
     gGfxInited = false;
 }
 

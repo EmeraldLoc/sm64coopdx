@@ -5,7 +5,7 @@
 
 #include "pc/controller/controller_mouse.h"
 #include "pc/gfx/gfx_pc.h"
-#include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/gfx/gfx_window_manager.h"
 #include "pc/pc_main.h"
 #include "pc/utils/misc.h"
 
@@ -143,7 +143,7 @@ static void djui_hud_translate_positions(f32 *outX, f32 *outY, f32 *outW, f32 *o
     // translate scale
     if (sHudUtilsState.resolution == RESOLUTION_DJUI) {
         u32 windowWidth, windowHeight;
-        gfx_get_dimensions(&windowWidth, &windowHeight);
+        gfx_get_adjusted_dimensions(&windowWidth, &windowHeight);
         f32 screenWidth = (f32) windowWidth / djui_gfx_get_scale();
         f32 screenHeight = (f32) windowHeight / djui_gfx_get_scale();
         *outW = (*outW / screenWidth)  * SCREEN_WIDTH;
@@ -428,7 +428,7 @@ void djui_hud_set_text_alignment_interpolated(f32 prevTextHAlign, f32 prevTextVA
 
 u32 djui_hud_get_screen_width(void) {
     u32 windowWidth, windowHeight;
-    gfx_get_dimensions(&windowWidth, &windowHeight);
+    gfx_get_adjusted_dimensions(&windowWidth, &windowHeight);
 
     return (sHudUtilsState.resolution == RESOLUTION_N64)
         ? GFX_DIMENSIONS_ASPECT_RATIO * SCREEN_HEIGHT
@@ -437,7 +437,7 @@ u32 djui_hud_get_screen_width(void) {
 
 u32 djui_hud_get_screen_height(void) {
     u32 windowWidth, windowHeight;
-    gfx_get_dimensions(&windowWidth, &windowHeight);
+    gfx_get_adjusted_dimensions(&windowWidth, &windowHeight);
 
     return (sHudUtilsState.resolution == RESOLUTION_N64)
         ? SCREEN_HEIGHT
@@ -730,6 +730,10 @@ void djui_hud_print_text(const char* message, f32 x, f32 y, f32 scaleX, f32 scal
     djui_hud_print_text_internal(message, x, y, scaleX, scaleY, NULL);
 }
 
+inline void djui_hud_print_text_uniform(const char* message, f32 x, f32 y, f32 scale) {
+    djui_hud_print_text(message, x, y, scale, scale);
+}
+
 void djui_hud_print_text_interpolated(const char* message, f32 prevX, f32 prevY, f32 prevScaleX, f32 prevScaleY, f32 x, f32 y, f32 scaleX, f32 scaleY) {
     if (message == NULL) { return; }
 
@@ -756,6 +760,10 @@ void djui_hud_print_text_interpolated(const char* message, f32 prevX, f32 prevY,
     }
 
     djui_hud_print_text_internal(message, x, y, scaleX, scaleY, interp);
+}
+
+inline void djui_hud_print_text_interpolated_uniform(const char* message, f32 prevX, f32 prevY, f32 prevScale, f32 x, f32 y, f32 scale) {
+    djui_hud_print_text_interpolated(message, prevX, prevY, prevScale, prevScale, x, y, scale, scale);
 }
 
 static inline bool is_power_of_two(u32 n) {
@@ -1007,7 +1015,7 @@ bool djui_hud_world_pos_to_screen_pos(Vec3f pos, VEC_OUT Vec3f out) {
         screenHeight = SCREEN_HEIGHT;
     } else {
         u32 windowWidth, windowHeight;
-        gfx_get_dimensions(&windowWidth, &windowHeight);
+        gfx_get_adjusted_dimensions(&windowWidth, &windowHeight);
         screenWidth = (f32) windowWidth / djui_gfx_get_scale();
         screenHeight = (f32) windowHeight / djui_gfx_get_scale();
     }

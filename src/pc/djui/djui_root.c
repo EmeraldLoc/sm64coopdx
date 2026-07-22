@@ -1,11 +1,11 @@
 #include "djui.h"
 #include "pc/pc_main.h"
-#include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/gfx/gfx_window_manager.h"
 
 static bool djui_root_render(struct DjuiBase* base) {
     // grab window height
     u32 windowWidth, windowHeight;
-    gfx_get_dimensions(&windowWidth, &windowHeight);
+    gfx_get_adjusted_dimensions(&windowWidth, &windowHeight);
 
     // fill the screen
     djui_base_set_location(base, 0, 0);

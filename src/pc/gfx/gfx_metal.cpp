@@ -16,7 +16,7 @@
 
 #include "pc/pc_main.h"
 
-#include "gfx_window_manager_api.h"
+#include "gfx_window_manager.h"
 #include "gfx_rendering_api.h"
 #include "gfx_pc.h"
 #include "gfx_shader.h"
@@ -26,7 +26,6 @@ extern "C" {
     #include "pc/lua/smlua.h"
     #include "pc/mods/mods_utils.h"
     #include "pc/utils/misc.h"
-    #include "gfx_sdl.h"
 }
 
 #define MAX_FRAMES_IN_FLIGHT 3
@@ -492,6 +491,7 @@ static struct ShaderProgram *gfx_metal_lookup_shader_using_index(uint8_t shaderI
 
 void gfx_metal_shader_get_info(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[MAX_TEXTURES]) {
     struct ShaderProgramMetal *p = (struct ShaderProgramMetal *)prg;
+    if (!p) { return; }
 
     *num_inputs = p->numInputs;
     used_textures[0] = p->usedTextures[0];
@@ -857,9 +857,12 @@ void gfx_metal_set_zmode_decal(bool zmode_decal) {
 }
 
 void gfx_metal_set_viewport(int x, int y, int width, int height) {
+    struct FramePass *framePass = gfx_get_current_frame_pass();
+    u32 viewportHeight;
+    gfx_get_frame_pass_viewport_dimensions(framePass, NULL, &viewportHeight);
     MTL::Viewport vp;
     vp.originX = x;
-    vp.originY = y;
+    vp.originY = viewportHeight - y - height;
     vp.width   = width;
     vp.height  = height;
     vp.znear   = 0.0;
@@ -1013,7 +1016,7 @@ void gfx_metal_draw_triangles(float buf_vbo[], size_t buf_vbo_len, size_t buf_vb
 }
 
 void gfx_metal_init(void) {
-    SDL_Window *wnd = gfx_sdl_get_window();
+    SDL_Window *wnd = gfx_wm_get_window();
     metal.metalView = SDL_Metal_CreateView(wnd);
     metal.layer = static_cast<CA::MetalLayer *>(SDL_Metal_GetLayer(metal.metalView));
 
@@ -1029,7 +1032,7 @@ void gfx_metal_init(void) {
 
     // get current window dimensions
     uint32_t w, h;
-    gWindowApi->get_dimensions(&w, &h);
+    gfx_wm_get_dimensions(&w, &h);
 
     metal.currentWidth = w;
     metal.currentHeight = h;
@@ -1083,7 +1086,7 @@ void gfx_metal_on_resize(void) {
     }
 
     uint32_t w, h;
-    gWindowApi->get_dimensions(&w, &h);
+    gfx_wm_get_dimensions(&w, &h);
 
     metal.currentWidth = w;
     metal.currentHeight = h;

@@ -11,8 +11,9 @@ extern "C" {
 #include "gfx/gfx_direct3d11.h"
 #include "gfx/gfx_metal.h"
 
-#include "gfx/gfx_dxgi.h"
-#include "gfx/gfx_sdl.h"
+#include "gfx/gfx_window_opengl.h"
+#include "gfx/gfx_window_metal.h"
+#include "gfx/gfx_window_dxgi.h"
 #include "gfx/gfx_dummy.h"
 
 #include "audio/audio_api.h"
@@ -28,7 +29,6 @@ extern "C" {
 #define AT_STARTUP __attribute__((constructor))
 
 extern struct AudioAPI* gAudioApi;
-extern struct GfxWindowManagerAPI* gWindowApi;
 extern struct GfxRenderingAPI* gRenderApi;
 
 extern bool gGameInited;

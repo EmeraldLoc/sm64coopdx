@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <PR/ultratypes.h>
 #include "game/player_palette.h"
+#include "pc/gfx/gfx_window_manager.h"
 
 #define CONFIGFILE_DEFAULT "sm64config.txt"
 #define CONFIGFILE_BACKUP "sm64config-backup.txt"
@@ -43,23 +44,12 @@ enum RefreshRateMode {
     RRM_MAX
 };
 
-enum GraphicsBackend {
-#if defined(_WIN32)
-    GAPI_D3D11,
-#endif
-#if defined(OSX_BUILD)
-    GAPI_METAL,
-#endif
-    GAPI_GL,
-    GAPI_MAX
-};
-
 extern char configSaveNames[4][MAX_SAVE_NAME_STRING];
 
 // display settings
 extern ConfigWindow configWindow;
 extern ConfigStick configStick;
-extern enum GraphicsBackend configGraphicsBackend;
+extern enum GfxWindowBackend configGraphicsBackend;
 extern unsigned int configFiltering;
 extern bool         configShowFPS;
 extern bool         configShowPing;
