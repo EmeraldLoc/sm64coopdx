@@ -632,7 +632,7 @@ static void strip_array_from_name(char *name) {
 }
 
 static bool process_shader_line(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char *output, const char *line) {
-    char qualifier[32] = { 0 }, type[32] = { 0 }, name[MAX_SHADER_VARIABLE_NAME] = { 0 };
+    char qualifier[32] = { 0 }, storageQualifier[32] = { 0 }, type[32] = { 0 }, name[MAX_SHADER_VARIABLE_NAME] = { 0 };
 
     // parse and update uniform blocks
     // scan brace because sscanf does scanning from left to right and will succeed even if the
@@ -658,7 +658,7 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
     }
 
     // parse inputs for inputs equivalent to reference inputs
-    if (sscanf(line, "%31s in %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+    if (sscanf(line, "%31s %31s %31s %31[^; \t\n]", qualifier, storageQualifier, type, name) == 4 && strcmp(storageQualifier, "in") == 0) {
         strip_array_from_name(name);
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
@@ -677,7 +677,7 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
         }
     }
 
-    if (sscanf(line, " in %31s %31[^; \t\n]", type, name) == 2) {
+    if (sscanf(line, " %31s %31s %31[^; \t\n]", storageQualifier, type, name) == 3 && strcmp(storageQualifier, "in") == 0) {
         strip_array_from_name(name);
         for (int i = 0; i < MAX_SHADER_INPUTS; i++) {
             if (referenceInputs[i].name[0] != '\0' && strcmp(referenceInputs[i].name, name) == 0) {
@@ -697,7 +697,7 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
     }
 
     // look for and parse outputs
-    if (sscanf(line, "%31s out %31s %31[^; \t\n]", qualifier, type, name) == 3) {
+    if (sscanf(line, "%31s %31s %31s %31[^; \t\n]", qualifier, storageQualifier, type, name) == 4 && strcmp(storageQualifier, "out") == 0) {
         strip_array_from_name(name);
         // add name to our shader outputs
         if (shader) {
@@ -711,7 +711,7 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
         return true;
     }
 
-    if (sscanf(line, " out %31s %31[^; \t\n]", type, name) == 2) {
+    if (sscanf(line, " %31s %31s %31[^; \t\n]", storageQualifier, type, name) == 3 && strcmp(storageQualifier, "out") == 0) {
         strip_array_from_name(name);
         // add name to our shader outputs
         if (shader) {
