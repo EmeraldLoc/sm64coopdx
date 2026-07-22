@@ -185,8 +185,8 @@ bool exec_dev_chat_command(char* command) {
 }
 
 void dev_display_chat_commands(void) {
-    command_message_create("/warp [LEVEL] [AREA] [ACT] - Level can be either a numeric value or a shorthand name");
-    command_message_create("/lua [LUA] - Execute Lua code from a string");
-    command_message_create("/luaf [FILENAME] - Execute Lua code from a file");
+    command_message_create("/warp [LEVEL] [AREA] [ACT] - Level can be either a numeric value or a shorthand name", CONSOLE_MESSAGE_INFO);
+    command_message_create("/lua [LUA] - Execute Lua code from a string", CONSOLE_MESSAGE_INFO);
+    command_message_create("/luaf [FILENAME] - Execute Lua code from a file", CONSOLE_MESSAGE_INFO);
 }
 #endif
