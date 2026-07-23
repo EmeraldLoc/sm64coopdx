@@ -16,19 +16,19 @@
 #include "pc/dev/chat.h"
 #endif
 
-static bool command_help(UNUSED const char* message, bool onConsole);
-static bool command_players(UNUSED const char* message);
-static bool command_kick(const char* message);
-static bool command_ban(const char* message);
-static bool command_permaban(const char* message);
-static bool command_mod(const char* message);
-static bool command_confirm(UNUSED const char* message);
-static bool command_nametags(const char* message);
-static bool command_clear(UNUSED const char* message);
-static bool command_quit(UNUSED const char* message);
-static bool command_host(UNUSED const char* message);
-static bool command_rehost(UNUSED const char* message);
-static bool command_disconnect(UNUSED const char* message);
+static bool command_help(UNUSED const char *message, bool onConsole);
+static bool command_players(UNUSED const char *message);
+static bool command_kick(const char *message);
+static bool command_ban(const char *message);
+static bool command_permaban(const char *message);
+static bool command_mod(const char *message);
+static bool command_confirm(UNUSED const char *message);
+static bool command_nametags(const char *message);
+static bool command_clear(UNUSED const char *message);
+static bool command_quit(UNUSED const char *message);
+static bool command_host(UNUSED const char *message);
+static bool command_rehost(UNUSED const char *message);
+static bool command_disconnect(UNUSED const char *message);
 
 static struct Command sCommands[] = {
     {
@@ -127,7 +127,7 @@ static unsigned int sCommandCount = sizeof(sCommands) / sizeof(struct Command);
 enum ChatConfirmCommand gConfirmingCommandType = CCC_NONE;
 u8 gConfirmPlayerIndex = 0;
 
-static struct NetworkPlayer* chat_get_network_player(const char* name) {
+static struct NetworkPlayer *chat_get_network_player(const char *name) {
     // check for id
     for (s32 i = 0; i < MAX_PLAYERS; i++) {
         if (!gNetworkPlayers[i].connected) { continue; }
@@ -150,7 +150,7 @@ static struct NetworkPlayer* chat_get_network_player(const char* name) {
     return NULL;
 }
 
-static void chat_construct_player_message(struct NetworkPlayer* np, char* msg) {
+static void chat_construct_player_message(struct NetworkPlayer *np, char *msg) {
     char built[256] = { 0 };
     snprintf(built, 256, "\\#fff982\\");
 
@@ -160,7 +160,7 @@ static void chat_construct_player_message(struct NetworkPlayer* np, char* msg) {
     command_message_create(built, CONSOLE_MESSAGE_INFO);
 }
 
-static bool command_help(UNUSED const char* message, bool onConsole) {
+static bool command_help(UNUSED const char *message, bool onConsole) {
     for (unsigned int i = 0; i < sCommandCount; i++) {
         if (!sCommands[i].active) { continue; }
         if (!sCommands[i].isChatCommand && onConsole) { continue; }
@@ -173,12 +173,12 @@ static bool command_help(UNUSED const char* message, bool onConsole) {
     return true;
 }
 
-static bool command_players(UNUSED const char* message) {
+static bool command_players(UNUSED const char *message) {
     char line[128] = { 0 };
     snprintf(line, 127, "\\#fff982\\%s:\n", DLANG(CHAT, PLAYERS));
     command_message_create(line, CONSOLE_MESSAGE_INFO);
     for (s32 i = 0; i < MAX_PLAYERS; i++) {
-        struct NetworkPlayer* np = &gNetworkPlayers[i];
+        struct NetworkPlayer *np = &gNetworkPlayers[i];
         if (!np->connected) { continue; }
         if (gNetworkSystem == &gNetworkSystemSocket) {
             snprintf(line, 127, "\\#82f9ff\\%u\\#fff982\\ - %s%s\n", np->globalIndex, network_get_player_text_color_string(np->localIndex), np->name);
@@ -190,14 +190,14 @@ static bool command_players(UNUSED const char* message) {
     return true;
 }
 
-static bool command_kick(const char* message) {
-    struct NetworkPlayer* npl = &gNetworkPlayers[0];
+static bool command_kick(const char *message) {
+    struct NetworkPlayer *npl = &gNetworkPlayers[0];
     if (gNetworkType != NT_SERVER && !npl->moderator) {
         command_message_create(DLANG(CHAT, NO_PERMS), CONSOLE_MESSAGE_ERROR);
         return true;
     }
 
-    struct NetworkPlayer* np = chat_get_network_player(message);
+    struct NetworkPlayer *np = chat_get_network_player(message);
     if (np == NULL) {
         command_message_create(DLANG(CHAT, PLAYER_NOT_FOUND), CONSOLE_MESSAGE_ERROR);
         return true;
@@ -210,19 +210,19 @@ static bool command_kick(const char* message) {
     chat_construct_player_message(np, DLANG(CHAT, KICK_CONFIRM));
     gConfirmingCommandType = CCC_KICK;
     gConfirmPlayerIndex = np->localIndex;
-    struct Command* confirmCommand = get_command("confirm");
-    if (confirmCommand) confirmCommand->active = true;
+    struct Command *confirmCommand = get_command("confirm");
+    if (confirmCommand) { confirmCommand->active = true; }
     return true;
 }
 
-static bool command_ban(const char* message) {
-    struct NetworkPlayer* npl = &gNetworkPlayers[0];
+static bool command_ban(const char *message) {
+    struct NetworkPlayer *npl = &gNetworkPlayers[0];
     if (gNetworkType != NT_SERVER && !npl->moderator) {
         command_message_create(DLANG(CHAT, NO_PERMS), CONSOLE_MESSAGE_ERROR);
         return true;
     }
 
-    struct NetworkPlayer* np = chat_get_network_player(message);
+    struct NetworkPlayer *np = chat_get_network_player(message);
     if (np == NULL) {
         command_message_create(DLANG(CHAT, PLAYER_NOT_FOUND), CONSOLE_MESSAGE_ERROR);
         return true;
@@ -235,18 +235,18 @@ static bool command_ban(const char* message) {
     chat_construct_player_message(np, DLANG(CHAT, BAN_CONFIRM));
     gConfirmingCommandType = CCC_BAN;
     gConfirmPlayerIndex = np->localIndex;
-    struct Command* confirmCommand = get_command("confirm");
-    if (confirmCommand) confirmCommand->active = true;
+    struct Command *confirmCommand = get_command("confirm");
+    if (confirmCommand) { confirmCommand->active = true; }
     return true;
 }
 
-static bool command_permaban(const char* message) {
+static bool command_permaban(const char *message) {
     if (gNetworkType != NT_SERVER) {
         command_message_create(DLANG(CHAT, NO_PERMS), CONSOLE_MESSAGE_ERROR);
         return true;
     }
 
-    struct NetworkPlayer* np = chat_get_network_player(message);
+    struct NetworkPlayer *np = chat_get_network_player(message);
     if (np == NULL) {
         command_message_create(DLANG(CHAT, PLAYER_NOT_FOUND), CONSOLE_MESSAGE_ERROR);
         return true;
@@ -259,18 +259,18 @@ static bool command_permaban(const char* message) {
     chat_construct_player_message(np, DLANG(CHAT, PERM_BAN_CONFIRM));
     gConfirmingCommandType = CCC_PERMBAN;
     gConfirmPlayerIndex = np->localIndex;
-    struct Command* confirmCommand = get_command("confirm");
-    if (confirmCommand) confirmCommand->active = true;
+    struct Command *confirmCommand = get_command("confirm");
+    if (confirmCommand) { confirmCommand->active = true; }
     return true;
 }
 
-static bool command_mod(const char* message) {
+static bool command_mod(const char *message) {
     if (gNetworkType != NT_SERVER) {
         command_message_create(DLANG(CHAT, SERVER_ONLY), CONSOLE_MESSAGE_ERROR);
         return true;
     }
 
-    struct NetworkPlayer* np = chat_get_network_player(message);
+    struct NetworkPlayer *np = chat_get_network_player(message);
     if (np == NULL) {
         command_message_create(DLANG(CHAT, PLAYER_NOT_FOUND), CONSOLE_MESSAGE_ERROR);
         return true;
@@ -283,21 +283,21 @@ static bool command_mod(const char* message) {
     chat_construct_player_message(np, DLANG(CHAT, MOD_CONFIRM));
     gConfirmingCommandType = CCC_MODERATOR;
     gConfirmPlayerIndex = np->localIndex;
-    struct Command* confirmCommand = get_command("confirm");
-    if (confirmCommand) confirmCommand->active = true;
+    struct Command *confirmCommand = get_command("confirm");
+    if (confirmCommand) { confirmCommand->active = true; }
     return true;
 }
 
-static bool command_confirm(UNUSED const char* message) {
+static bool command_confirm(UNUSED const char *message) {
     // deactivate command
-    struct Command* confirmCommand = get_command("confirm");
+    struct Command *confirmCommand = get_command("confirm");
     if (confirmCommand) { confirmCommand->active = false; }
 
     enum ChatConfirmCommand ccc = gConfirmingCommandType;
     gConfirmingCommandType = CCC_NONE;
 
-    struct NetworkPlayer* npl = &gNetworkPlayers[0];
-    struct NetworkPlayer* np = &gNetworkPlayers[gConfirmPlayerIndex];
+    struct NetworkPlayer *npl = &gNetworkPlayers[0];
+    struct NetworkPlayer *np = &gNetworkPlayers[gConfirmPlayerIndex];
     if (!np->connected) { return false; }
     if (gNetworkType == NT_SERVER || npl->moderator) {
         if (ccc == CCC_KICK) {
@@ -341,7 +341,7 @@ static bool command_confirm(UNUSED const char* message) {
     return false;
 }
 
-static bool command_nametags(const char* message) {
+static bool command_nametags(const char *message) {
     if (strcmp("show-tag", message) == 0) {
         gNametagsSettings.showSelfTag = !gNametagsSettings.showSelfTag;
         return true;
@@ -353,40 +353,40 @@ static bool command_nametags(const char* message) {
     return true;
 }
 
-static bool command_clear(UNUSED const char* message) {
+static bool command_clear(UNUSED const char *message) {
     djui_console_clear();
     terminal_clear();
     return true;
 }
 
-static bool command_quit(UNUSED const char* message) {
+static bool command_quit(UNUSED const char *message) {
     game_exit();
     return true;
 }
 
 extern void djui_panel_do_host(bool reconnecting, bool playSound);
-static bool command_host(UNUSED const char* message) {
+static bool command_host(UNUSED const char *message) {
     djui_panel_do_host(false, true);
     return true;
 }
 
-static bool command_rehost(UNUSED const char* message) {
+static bool command_rehost(UNUSED const char *message) {
     network_rehost_begin();
     return true;
 }
 
-static bool command_disconnect(UNUSED const char* message) {
+static bool command_disconnect(UNUSED const char *message) {
     network_reset_reconnect_and_rehost();
     network_shutdown(true, false, false, false);
     return true;
 }
 
-static void set_command_active(const char* name, bool active) {
-    struct Command* command = get_command(name);
+static void set_command_active(const char *name, bool active) {
+    struct Command *command = get_command(name);
     if (command) { command->active = active; }
 }
 
-struct Command* get_command(const char* name) {
+struct Command *get_command(const char *name) {
     for (unsigned int i = 0; i < sCommandCount; i++) {
         if (strcmp(sCommands[i].command, name) == 0) {
             return &sCommands[i];
@@ -428,7 +428,7 @@ void command_message_create(const char *message, OPTIONAL enum ConsoleMessageLev
     }
 }
 
-void run_command(char* command, bool onConsole) {
+void run_command(char *command, bool onConsole) {
     // directly set active state of certain commands
     set_command_active("nametags", gServerSettings.nametags);
     set_command_active("host", gDjuiInMainMenu);
@@ -456,7 +456,7 @@ void run_command(char* command, bool onConsole) {
         if (command[commandLength] != '\0' && command[commandLength] != ' ') { continue; }
 
         // get args
-        char* arguments = command + commandLength;
+        char *arguments = command + commandLength;
         if (*arguments != '\0') arguments++;
 
         // run action
