@@ -398,7 +398,7 @@ u8 network_player_disconnected(u8 globalIndex) {
         gNetworkSystem->clear_id(i);
         network_forget_all_reliable_from(i);
         if (np->localIndex == gConfirmPlayerIndex) {
-            struct Command* confirmCommand = get_command("confirm");
+            struct Command *confirmCommand = get_command("confirm");
             if (confirmCommand) { confirmCommand->active = false; }
             gConfirmPlayerIndex = 0;
             gConfirmingCommandType = CCC_NONE;
