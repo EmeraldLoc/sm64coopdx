@@ -732,6 +732,9 @@ static void gfx_opengl_init(void) {
 
     // query max texture units
     glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &opengl_max_texture_units);
+    if (opengl_max_texture_units < MAX_CUSTOM_FRAME_PASSES + 10) {
+        LOG_INFO("Your GPU in OpenGL supports %d texture slots! The maximum that may be used is %d. Some shaders may fail, but most should work fine", opengl_max_texture_units, MAX_CUSTOM_FRAME_PASSES + 10);
+    }
 }
 
 bool gfx_opengl_check_compatibility(void) {
