@@ -6,11 +6,10 @@
 
 To start, open up sm64coopdx, and navigate to Options -> Misc -> Open User/Appdata Folder.
 
-<img width="300" height="359" alt="SCR-20260623-trjb-2" src="https://github.com/user-attachments/assets/390ac087-b46b-411b-b04e-712aa9cb529b" />
-<br>
-<img width="300" height="418" alt="SCR-20260623-sufe-2" src="https://github.com/user-attachments/assets/59c9ff95-28bb-4d14-a47a-7222f248b869" />
-<br>
-<img width="300" height="372" alt="SCR-20260623-suhc-2" src="https://github.com/user-attachments/assets/ac108b5f-d421-4aa8-8272-ae96b476fdb5" />
+<img width="300" height="383" alt="Screenshot 2026-07-23 at 1 19 35 PM" src="https://github.com/user-attachments/assets/65086b81-e040-43ee-9e32-2c44d720b663"/>
+<img width="300" height="383" alt="Screenshot 2026-07-23 at 1 22 34 PM" src="https://github.com/user-attachments/assets/bea3c1b2-0ff8-4e2e-953f-bbe91135ad39"/>
+<img width="300" height="383" alt="Screenshot 2026-07-23 at 1 22 37 PM" src="https://github.com/user-attachments/assets/3e496e88-2635-4d9d-a44c-26c51b373481"/>
+
 
 Now, in your file browser, open up the `mods` folder. If the `mods` folder does not exist, create it.
 
