@@ -11,14 +11,14 @@
 struct Command {
     char command[MAX_COMMAND_LEN];
     char description[MAX_COMMAND_DESC_LEN];
-    bool (*action)(const char*);
+    bool (*action)(const char *);
     bool active;
     bool isChatCommand;
 };
 
-struct Command* get_command(const char* name);
-void run_command(char* command, bool onConsole);
-void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLevel level);
+struct Command *get_command(const char *name);
+void run_command(char *command, bool onConsole);
+void command_message_create(const char *message, OPTIONAL enum ConsoleMessageLevel level);
 
 extern enum ChatConfirmCommand gConfirmingCommandType;
 extern u8 gConfirmPlayerIndex;
