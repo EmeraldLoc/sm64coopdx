@@ -59,7 +59,7 @@ struct ShaderProgramMetal {
 static struct {
     SDL_MetalView metalView;
 
-    MTL::Device* device;
+    MTL::Device *device;
     MTL::CommandQueue *commandQueue;
     MTL::CommandBuffer *commandBuffer;
     MTL::RenderCommandEncoder *encoder;
@@ -67,8 +67,6 @@ static struct {
     CA::MetalDrawable *drawable;
     MTL::Texture *depthTexture;
     MTL::DepthStencilState *depthStencilState;
-    MTL::Buffer *vertexBuffer;
-    MTL::Library *library;
 
     dispatch_semaphore_t frameSemaphore;
 
@@ -97,19 +95,15 @@ static struct {
     s8 depthTest;
     s8 depthMask;
     s8 zModeDecal;
-    bool useAlpha;
 
     // Previous states (to prevent setting states needlessly)
 
     struct ShaderProgramMetal *lastShaderProgram = NULL;
-    u32 lastVertexBufferStride = 0;
-    MTL::RenderPipelineState *lastPipelineState;
     MTL::Texture *lastTextures[MAX_TEXTURES];
     MTL::SamplerState *lastSamplers[MAX_TEXTURES];
     s8 lastDepthTest = -1;
     s8 lastDepthMask = -1;
     s8 lastZModeDecal = -1;
-    MTL::PrimitiveType lastPrimitiveType = MTL::PrimitiveTypeTriangle;
 } metal;
 
 static void setup_command_buffer() {
@@ -882,7 +876,6 @@ void gfx_metal_set_scissor(int x, int y, int width, int height) {
 }
 
 void gfx_metal_set_use_alpha(bool use_alpha) {
-    metal.useAlpha = use_alpha;
 }
 
 void gfx_metal_set_vsync(bool enabled) {
@@ -1037,11 +1030,6 @@ void gfx_metal_init(void) {
     metal.commandQueue = metal.device->newCommandQueue();
     if (!metal.commandQueue) {
         sys_fatal("Failed to create Metal command queue.");
-    }
-
-    metal.vertexBuffer = metal.device->newBuffer(VERTEX_STRIDE * sizeof(float), MTL::ResourceStorageModeShared);
-    if (!metal.vertexBuffer) {
-        sys_fatal("Failed to create Metal vertex buffer.");
     }
 
     for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
