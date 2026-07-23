@@ -20,7 +20,7 @@ You can move on to the next section with this done.
 
 ## Section 2: Picking a file mod or a folder mod
 
-A file mod is a mod that is a single code file. This should be used for very simple mods, for instance, let's say you want to make a mod that makes mario die on an A button press, that should be a file mod due to the simple nature of it.
+A file mod is a mod that is a single code file. This should be used for very simple mods, for instance, let's say you want to make a mod that makes Mario die on an A button press, that should be a file mod due to the simple nature of it.
 
 A folder mod is a mod that allows for multiple code files, actors, textures, levels, and more. If your mod is anywhere from medium-sized to large, you'll want a folder mod. It allows for greater organization, usage of assets, and a generally more expandable system.
 
@@ -51,8 +51,8 @@ There are a few fields that exist for mods. Fields can be set at the very top of
 | `name` | The name of the mod. This name is the name used in game |
 | `description` | A description of the mod. Appears when hovering over a mod to turn it on/off |
 | `incompatible` | A list of tags to be marked as incompatible. This is an opt-in system. If 2 mods contain an equivalent incompatible tag, then they both won't be able to be enabled together. Tags are separated with a space character, or a whitespace.
-| `category` | The category of a mod. Leaving this empty will have the mod be in the `misc` category. The list of categories can be found in game by going to Host, Mods, then looping through the Categories select box. Note that categories are all lowercase, they are also only in English. So for category Utility, you want to put in your mod `-- category utility`
-| `pausable` | A boolean of whether or not to allow the game to be frozen when paused in singleplayer. By default this is true, so by default you can pause in singleplayer and become frozen. To make this not the case, use `-- pausable false`.
+| `category` | The category of a mod. Leaving this empty will have the mod be in the `misc` category. The list of categories can be found in game by going to Host, Mods, then looping through the Categories select box. Note that categories are all lowercase, they are also only in English. So for category Utility, you want to put in your mod `-- category: utility`
+| `pausable` | A boolean of whether or not to allow the game to be frozen when paused in singleplayer. By default this is true, so by default you can pause in singleplayer and become frozen. To make this not the case, use `-- pausable: false`.
 | `ignore-script-warnings` | A boolean of whether or not to ignore script warnings. Don't touch this for your mods, but for documentation sake, this will suppress warnings that your script may have. This does not suppress errors, it only suppresses warnings, which are quite rare.
 
 An example of some of these would be:
