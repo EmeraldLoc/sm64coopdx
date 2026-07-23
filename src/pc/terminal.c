@@ -42,7 +42,7 @@ void log_to_terminal(const char* fmt, ...) {
 
 static void terminal_stop() {
 #if !defined(_WIN32) && !defined(_WIN64)
-    if (!sTerminalInitialized) return;
+    if (!sTerminalInitialized) { return; }
     linenoiseEditStop(&sLinenoiseState);
     sTerminalActive = false;
 #endif

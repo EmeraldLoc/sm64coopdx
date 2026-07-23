@@ -124,8 +124,8 @@ static struct Command sCommands[] = {
     },
 };
 static unsigned int sCommandCount = sizeof(sCommands) / sizeof(struct Command);
-static enum ChatConfirmCommand sConfirming = CCC_NONE;
-static u8 sConfirmPlayerIndex = 0;
+enum ChatConfirmCommand gConfirmingCommandType = CCC_NONE;
+u8 gConfirmPlayerIndex = 0;
 
 static struct NetworkPlayer* chat_get_network_player(const char* name) {
     // check for id
@@ -208,8 +208,8 @@ static bool command_kick(const char* message) {
         return true;
     }
     chat_construct_player_message(np, DLANG(CHAT, KICK_CONFIRM));
-    sConfirming = CCC_KICK;
-    sConfirmPlayerIndex = np->localIndex;
+    gConfirmingCommandType = CCC_KICK;
+    gConfirmPlayerIndex = np->localIndex;
     struct Command* confirmCommand = get_command("confirm");
     if (confirmCommand) confirmCommand->active = true;
     return true;
@@ -233,8 +233,8 @@ static bool command_ban(const char* message) {
         return true;
     }
     chat_construct_player_message(np, DLANG(CHAT, BAN_CONFIRM));
-    sConfirming = CCC_BAN;
-    sConfirmPlayerIndex = np->localIndex;
+    gConfirmingCommandType = CCC_BAN;
+    gConfirmPlayerIndex = np->localIndex;
     struct Command* confirmCommand = get_command("confirm");
     if (confirmCommand) confirmCommand->active = true;
     return true;
@@ -257,8 +257,8 @@ static bool command_permaban(const char* message) {
         return true;
     }
     chat_construct_player_message(np, DLANG(CHAT, PERM_BAN_CONFIRM));
-    sConfirming = CCC_PERMBAN;
-    sConfirmPlayerIndex = np->localIndex;
+    gConfirmingCommandType = CCC_PERMBAN;
+    gConfirmPlayerIndex = np->localIndex;
     struct Command* confirmCommand = get_command("confirm");
     if (confirmCommand) confirmCommand->active = true;
     return true;
@@ -281,8 +281,8 @@ static bool command_mod(const char* message) {
         return true;
     }
     chat_construct_player_message(np, DLANG(CHAT, MOD_CONFIRM));
-    sConfirming = CCC_MODERATOR;
-    sConfirmPlayerIndex = np->localIndex;
+    gConfirmingCommandType = CCC_MODERATOR;
+    gConfirmPlayerIndex = np->localIndex;
     struct Command* confirmCommand = get_command("confirm");
     if (confirmCommand) confirmCommand->active = true;
     return true;
@@ -293,11 +293,11 @@ static bool command_confirm(UNUSED const char* message) {
     struct Command* confirmCommand = get_command("confirm");
     if (confirmCommand) { confirmCommand->active = false; }
 
-    enum ChatConfirmCommand ccc = sConfirming;
-    sConfirming = CCC_NONE;
+    enum ChatConfirmCommand ccc = gConfirmingCommandType;
+    gConfirmingCommandType = CCC_NONE;
 
     struct NetworkPlayer* npl = &gNetworkPlayers[0];
-    struct NetworkPlayer* np = &gNetworkPlayers[sConfirmPlayerIndex];
+    struct NetworkPlayer* np = &gNetworkPlayers[gConfirmPlayerIndex];
     if (!np->connected) { return false; }
     if (gNetworkType == NT_SERVER || npl->moderator) {
         if (ccc == CCC_KICK) {
@@ -383,7 +383,7 @@ static bool command_disconnect(UNUSED const char* message) {
 
 static void set_command_active(const char* name, bool active) {
     struct Command* command = get_command(name);
-    if (command) command->active = active;
+    if (command) { command->active = active; }
 }
 
 struct Command* get_command(const char* name) {
@@ -394,7 +394,6 @@ struct Command* get_command(const char* name) {
     }
     return NULL;
 }
-
 
 void command_message_create(const char *message, OPTIONAL enum ConsoleMessageLevel level) {
     if (gDjuiChatBoxFocus) {

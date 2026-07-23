@@ -19,3 +19,6 @@ struct Command {
 struct Command* get_command(const char* name);
 void run_command(char* command, bool onConsole);
 void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLevel level);
+
+extern enum ChatConfirmCommand gConfirmingCommandType;
+extern u8 gConfirmPlayerIndex;
