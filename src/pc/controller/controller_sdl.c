@@ -164,7 +164,6 @@ static SDL_Haptic *controller_sdl_init_haptics(void) {
         return NULL;
     }
 
-    printf("Controller %s has haptics support, rumble enabled\n", SDL_GetJoystickNameForID(sdl_joystick));
     return hap;
 }
 
@@ -262,7 +261,7 @@ static void controller_sdl_read(OSContPad *pad) {
                 sdl_haptic = controller_sdl_init_haptics();
             }
         } else {
-            sdl_joystick = SDL_JoystickOpen(configGamepadNumber);
+            sdl_joystick = SDL_OpenJoystick(configGamepadNumber);
             if (!sdl_joystick) { return; }
         }
     }
