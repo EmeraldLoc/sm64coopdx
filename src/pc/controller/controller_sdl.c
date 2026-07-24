@@ -41,6 +41,8 @@ static SDL_Haptic *sdl_haptic = NULL;
 static bool sExtendedReports = false;
 static bool sBackgroundGamepad = false;
 
+static u32 sSelectedGamepad = 0;
+
 static u32 num_joy_binds = 0;
 static u32 num_mouse_binds = 0;
 static u32 joy_binds[MAX_JOYBINDS][2] = { 0 };
@@ -133,7 +135,7 @@ static void controller_sdl_init(void) {
         if (src) {
             int numMaps = SDL_AddGamepadMappingsFromIO(src, true);
             if (numMaps >= 0) {
-                printf("loaded %d controller mappings from 'gamecontrollerdb.txt'\n", numMaps);
+                LOG_INFO("loaded %d controller mappings from 'gamecontrollerdb.txt'\n", numMaps);
             }
         }
         free(gcdata);
@@ -250,18 +252,24 @@ static void controller_sdl_read(OSContPad *pad) {
         sdl_haptic = NULL;
     }
 
-    if ((!sdl_cntrl && !sdl_joystick) || last_gamepad != configGamepadNumber) {
+    if ((!sdl_cntrl && !sdl_joystick) || last_gamepad != sSelectedGamepad) {
+        int numJoysticks;
+        SDL_JoystickID *ids = SDL_GetJoysticks(&numJoysticks);
+        if ((int)configGamepadNumber >= numJoysticks) { configGamepadNumber = numJoysticks; }
+        sSelectedGamepad = ids[configGamepadNumber];
+        SDL_free(ids);
+
         if (sdl_haptic) { SDL_CloseHaptic(sdl_haptic); sdl_haptic = NULL; }
         if (sdl_cntrl) { SDL_CloseGamepad(sdl_cntrl); sdl_cntrl = NULL; }
         if (sdl_joystick) { SDL_CloseJoystick(sdl_joystick); sdl_joystick = NULL; }
-        last_gamepad = configGamepadNumber;
-        if (SDL_IsGamepad(configGamepadNumber)) {
-            sdl_cntrl = SDL_OpenGamepad(configGamepadNumber);
+        last_gamepad = sSelectedGamepad;
+        if (SDL_IsGamepad(sSelectedGamepad)) {
+            sdl_cntrl = SDL_OpenGamepad(sSelectedGamepad);
             if (sdl_cntrl != NULL) {
                 sdl_haptic = controller_sdl_init_haptics();
             }
         } else {
-            sdl_joystick = SDL_OpenJoystick(configGamepadNumber);
+            sdl_joystick = SDL_OpenJoystick(sSelectedGamepad);
             if (!sdl_joystick) { return; }
         }
     }
@@ -318,27 +326,31 @@ static void controller_sdl_read(OSContPad *pad) {
     update_button(VK_LTRIGGER - VK_BASE_SDL_GAMEPAD, ltrig > AXIS_THRESHOLD);
     update_button(VK_RTRIGGER - VK_BASE_SDL_GAMEPAD, rtrig > AXIS_THRESHOLD);
 
-    for (u32 i = 0; i < num_joy_binds; ++i)
-        if (joy_buttons[joy_binds[i][0]])
+    for (u32 i = 0; i < num_joy_binds; ++i) {
+        if (joy_buttons[joy_binds[i][0]]) {
             buttons_down |= joy_binds[i][1];
+        }
+    }
 
     pad->button |= buttons_down;
 
     const u32 xstick = buttons_down & STICK_XMASK;
     const u32 ystick = buttons_down & STICK_YMASK;
-    if (xstick == STICK_LEFT)
-        pad->stick_x = -128;
-    else if (xstick == STICK_RIGHT)
-        pad->stick_x = 127;
-    if (ystick == STICK_DOWN)
-        pad->stick_y = -128;
-    else if (ystick == STICK_UP)
-        pad->stick_y = 127;
 
-    if (rightx < -0x4000) pad->button |= L_CBUTTONS;
-    if (rightx > 0x4000) pad->button |= R_CBUTTONS;
-    if (righty < -0x4000) pad->button |= U_CBUTTONS;
-    if (righty > 0x4000) pad->button |= D_CBUTTONS;
+    if (xstick == STICK_LEFT) {
+        pad->stick_x = -128;
+    } else if (xstick == STICK_RIGHT) {
+        pad->stick_x = 127;
+    } if (ystick == STICK_DOWN) {
+        pad->stick_y = -128;
+    } else if (ystick == STICK_UP) {
+        pad->stick_y = 127;
+    }
+
+    if (rightx < -0x4000) { pad->button |= L_CBUTTONS; }
+    if (rightx > 0x4000) { pad->button |= R_CBUTTONS; }
+    if (righty < -0x4000) { pad->button |= U_CBUTTONS; }
+    if (righty > 0x4000) { pad->button |= D_CBUTTONS; }
 
     update_analog_stick(&pad->stick_x, &pad->stick_y, leftx, lefty);
     update_analog_stick(&pad->ext_stick_x, &pad->ext_stick_y, rightx, righty);
