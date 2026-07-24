@@ -436,21 +436,21 @@ u32 djui_hud_get_screen_height(void) {
         : (windowHeight / djui_gfx_get_scale());
 }
 
-f32 djui_hud_get_mouse_x(void) {
+float djui_hud_get_mouse_x(void) {
     controller_mouse_read_window();
     return mouse_window_x / djui_gfx_get_scale();
 }
 
-f32 djui_hud_get_mouse_y(void) {
+float djui_hud_get_mouse_y(void) {
     controller_mouse_read_window();
     return mouse_window_y / djui_gfx_get_scale();
 }
 
-f32 djui_hud_get_raw_mouse_x(void) {
+float djui_hud_get_raw_mouse_x(void) {
     return mouse_x;
 }
 
-f32 djui_hud_get_raw_mouse_y(void) {
+float djui_hud_get_raw_mouse_y(void) {
     return mouse_y;
 }
 
