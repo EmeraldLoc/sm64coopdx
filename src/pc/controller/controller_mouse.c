@@ -9,14 +9,14 @@
 bool mouse_init_ok;
 
 u32 mouse_buttons;
-float mouse_x;
-float mouse_y;
+f32 mouse_x;
+f32 mouse_y;
 
 u32 mouse_window_buttons;
 u32 mouse_window_buttons_pressed;
 u32 mouse_window_buttons_released;
-float mouse_window_x;
-float mouse_window_y;
+f32 mouse_window_x;
+f32 mouse_window_y;
 
 u32 mouse_scroll_timestamp;
 f32 mouse_scroll_x;

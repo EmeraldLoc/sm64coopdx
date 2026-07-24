@@ -17,14 +17,14 @@
 extern bool mouse_init_ok;
 
 extern u32 mouse_buttons;
-extern float mouse_x;
-extern float mouse_y;
+extern f32 mouse_x;
+extern f32 mouse_y;
 
 extern u32 mouse_window_buttons;
 extern u32 mouse_window_buttons_pressed;
 extern u32 mouse_window_buttons_released;
-extern float mouse_window_x;
-extern float mouse_window_y;
+extern f32 mouse_window_x;
+extern f32 mouse_window_y;
 
 extern u32 mouse_scroll_timestamp;
 extern f32 mouse_scroll_x;

@@ -14,8 +14,8 @@ struct DjuiImage* sMouseCursor = NULL;
 static bool sCursorMouseControlled = false;
 static struct DjuiBase* sInputControlledBase = NULL;
 
-static float sSavedMouseX = 0;
-static float sSavedMouseY = 0;
+static f32 sSavedMouseX = 0;
+static f32 sSavedMouseY = 0;
 f32 gCursorX = 0;
 f32 gCursorY = 0;
 
@@ -143,8 +143,8 @@ static void djui_cursor_update_position(void) {
 
     // update mouse cursor
     if (sCursorMouseControlled) {
-        gCursorX = (f32)mouse_window_x / djui_gfx_get_scale();
-        gCursorY = (f32)mouse_window_y / djui_gfx_get_scale();
+        gCursorX = mouse_window_x / djui_gfx_get_scale();
+        gCursorY = mouse_window_y / djui_gfx_get_scale();
     } else if (sInputControlledBase != NULL) {
         djui_cursor_base_hover_location(sInputControlledBase, &gCursorX, &gCursorY);
     }

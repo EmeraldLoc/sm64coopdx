@@ -55,10 +55,10 @@ static void audio_sdl_play(const uint8_t *buf, size_t len) {
 
 static void audio_sdl_shutdown(void) {
     if (SDL_WasInit(SDL_INIT_AUDIO)) {
-        if (sDevice != 0) { // Make sure Device is paused first
+        if (sDevice != 0) {
             SDL_PauseAudioDevice(sDevice);
         }
-        if (sStream != NULL) { // Then clear any leftovers
+        if (sStream != NULL) {
             SDL_ClearAudioStream(sStream);
             SDL_DestroyAudioStream(sStream);
         }
