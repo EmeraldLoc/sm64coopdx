@@ -10,7 +10,7 @@ on:
 jobs:
     build-linux:
         if: ${{ (github.event_name != 'push' || contains(github.event.head_commit.message, '[build]')) && github.event.pull_request.draft == false }}
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-26.04
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
             - name: Install dependencies
               run: |
                 sudo apt update
-                sudo apt install -y build-essential git python3 libglew-dev libz-dev libcurl4-openssl-dev zip
+                sudo apt install -y build-essential git python3 libsdl3-dev libglew-dev libz-dev libcurl4-openssl-dev zip
 
             - name: Build the game
               run: make -j$(nproc)
@@ -42,7 +42,7 @@ jobs:
 
     build-steamos:
         if: ${{ (github.event_name != 'push' || contains(github.event.head_commit.message, '[build]')) && github.event.pull_request.draft == false }}
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-26.04
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
             - name: Install dependencies
               run: |
                 sudo apt update
-                sudo apt install -y build-essential git python3 libglew-dev libz-dev libcurl4-openssl-dev zip
+                sudo apt install -y build-essential git python3 libsdl3-dev libglew-dev libz-dev libcurl4-openssl-dev zip
 
             - name: Build the game
               run: make -j$(nproc) HANDHELD=1
@@ -118,30 +118,21 @@ jobs:
 
     build-macos-arm:
         if: ${{ (github.event_name != 'push' || contains(github.event.head_commit.message, '[build]')) && github.event.pull_request.draft == false }}
-        runs-on: macos-26
+        runs-on: macos-15
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
             - name: Install dependencies
               run: |
-                brew install make mingw-w64 pkg-config glfw3 coreutils
-
-            - name: Compile glew
-              run: |
-                export MACOSX_DEPLOYMENT_TARGET=11
-                curl -L -o glew.tar.gz https://github.com/nigels-com/glew/releases/download/glew-2.3.1/glew-2.3.1.tgz
-                tar -xzf glew.tar.gz
-                cd glew-2.3.1
-                make SYSTEM=darwin CC="clang -arch arm64 -mmacosx-version-min=11" GLEW_PREFIX=/opt/homebrew GLEW_DEST=/opt/homebrew
-                make install GLEW_PREFIX=/opt/homebrew GLEW_DEST=/opt/homebrew
+                brew install make mingw-w64 pkg-config glfw3 coreutils glew sdl3
 
             - name: Build the game
               run: |
                 export PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH
                 gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
 
-            - name: Code sign the app (Ad-Hoc)
+            - name: Codesign Ad-Hoc
               run: |
                 codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
 
@@ -171,22 +162,13 @@ jobs:
 
             - name: Install dependencies
               run: |
-                brew install make mingw-w64 pkg-config glfw3 coreutils
-
-            - name: Compile glew
-              run: |
-                export MACOSX_DEPLOYMENT_TARGET=10.15
-                curl -L -o glew.tar.gz https://github.com/nigels-com/glew/releases/download/glew-2.3.1/glew-2.3.1.tgz
-                tar -xzf glew.tar.gz
-                cd glew-2.3.1
-                make SYSTEM=darwin CC="clang -arch x86_64 -mmacosx-version-min=10.15"
-                make install
+                brew install make mingw-w64 pkg-config glfw3 coreutils glew sdl3
 
             - name: Build the game
               run: |
                 gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
 
-            - name: Code sign the app (Ad-Hoc)
+            - name: Codesign Ad-Hoc
               run: |
                 codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
 

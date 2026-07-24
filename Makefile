@@ -69,7 +69,7 @@ ICON ?= 1
 # Use .app (for macOS)
 USE_APP ?= 1
 # Minimum macOS Version
-MIN_MACOS_VERSION ?= 11
+MIN_MACOS_VERSION ?= 15
 # Make some small adjustments for handheld devices
 HANDHELD ?= 0
 
@@ -1514,8 +1514,10 @@ APP_MACOS_DIR = $(APP_CONTENTS_DIR)/MacOS
 APP_RESOURCES_DIR = $(APP_CONTENTS_DIR)/Resources
 
 ifeq ($(OSX_BUILD),1)
-  GLEW_LIB := $(shell find $(BREW_PREFIX)/lib/ | grep libGLEW.2.3.1 | sort -n | uniq)
-  SDL3_LIB := $(shell find $(BREW_PREFIX)/lib/ | grep libSDL3- | sort -n | uniq)
+  GLEW_LIB := $(shell find $(BREW_PREFIX)/lib/ | grep "libGLEW\." | sort -n | uniq | head -n 1)
+  GLEW_ID  := $(shell otool -D $(GLEW_LIB) | tail -n1)
+  SDL_LIB := $(shell find $(BREW_PREFIX)/lib/ | grep "libSDL3\." | sort -n | uniq | head -n 1)
+  SDL_ID  := $(shell otool -D $(SDL_LIB) | tail -n1)
 endif
 
 all:
@@ -1536,18 +1538,16 @@ all:
     cp build/us_pc/libdiscord_game_sdk.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/libcoopnet.dylib $(APP_MACOS_DIR); \
     cp build/us_pc/coopdx_updater $(APP_MACOS_DIR); \
-    codesign --force --deep --sign - $(APP_MACOS_DIR)/coopdx_updater; \
+    codesign --force --deep --sign - $(APP_MACOS_DIR)/coopdx_updater > /dev/null 2>&1; \
     cp build/us_pc/libjuice.1.6.2.dylib $(APP_MACOS_DIR); \
-    cp $(SDL3_LIB) $(APP_MACOS_DIR)/libSDL3.dylib; \
-    install_name_tool -change $(BREW_PREFIX)/lib/libSDL3-3.4.12.dylib @executable_path/libSDL3.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
-    install_name_tool -change $(BREW_PREFIX)/opt/sdl3/lib/libSDL3-3.4.12.dylib @executable_path/libSDL3.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
+    cp $(SDL_LIB) $(APP_MACOS_DIR)/libSDL3.dylib; \
+    install_name_tool -change $(SDL_ID) @executable_path/libSDL3.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
 		install_name_tool -id @executable_path/libSDL3.dylib $(APP_MACOS_DIR)/libSDL3.dylib > /dev/null 2>&1; \
-    codesign --force --deep --sign - $(APP_MACOS_DIR)/libSDL3.dylib; \
+    codesign --force --deep --sign - $(APP_MACOS_DIR)/libSDL3.dylib > /dev/null 2>&1; \
     cp $(GLEW_LIB) $(APP_MACOS_DIR)/libGLEW.dylib; \
-    install_name_tool -change $(BREW_PREFIX)/lib/libGLEW.2.3.1.dylib @executable_path/libGLEW.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
-    install_name_tool -change $(BREW_PREFIX)/opt/glew/lib/libGLEW.2.3.1.dylib @executable_path/libGLEW.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
+    install_name_tool -change $(GLEW_ID) @executable_path/libGLEW.dylib $(APP_MACOS_DIR)/sm64coopdx > /dev/null 2>&1; \
 		install_name_tool -id @executable_path/libGLEW.dylib $(APP_MACOS_DIR)/libGLEW.dylib > /dev/null 2>&1; \
-    codesign --force --deep --sign - $(APP_MACOS_DIR)/libGLEW.dylib; \
+    codesign --force --deep --sign - $(APP_MACOS_DIR)/libGLEW.dylib > /dev/null 2>&1; \
     mkdir res/build; \
     xcrun actool res/icon.icon --compile res/build --app-icon icon --output-partial-info-plist res/build/Info.plist --minimum-deployment-target $(MIN_MACOS_VERSION) --platform macosx > /dev/null 2>&1; \
     mv res/build/Assets.car $(APP_RESOURCES_DIR)/; \
