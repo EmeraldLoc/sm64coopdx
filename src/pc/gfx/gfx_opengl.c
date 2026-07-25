@@ -62,6 +62,7 @@ static struct GLTexture *tex_cache = NULL;
 
 static struct ShaderProgram *opengl_prg = NULL;
 static struct GLTexture *opengl_tex[2];
+static GLint opengl_max_texture_units = 0;
 static int opengl_curtex = 0;
 
 static bool gfx_opengl_is_legacy(void);
@@ -254,7 +255,7 @@ static struct ShaderProgram *gfx_opengl_create_and_load_new_shader(struct ColorC
     }
 
     char uniformName[16];
-    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+    for (int i = 0; i < MIN(MAX_CUSTOM_FRAME_PASSES, opengl_max_texture_units - 10); i++) {
         snprintf(uniformName, sizeof(uniformName), "uPassTex%d", i);
         GLint loc = glGetUniformLocation(shader_program, uniformName);
         if (loc != -1) {
@@ -378,7 +379,7 @@ static struct ShaderProgram *gfx_opengl_create_or_load_post_process_shader(void)
     }
 
     char uniformName[16];
-    for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+    for (int i = 0; i < MIN(MAX_CUSTOM_FRAME_PASSES, opengl_max_texture_units - 10); i++) {
         snprintf(uniformName, sizeof(uniformName), "uPassTex%d", i);
         GLint loc = glGetUniformLocation(shader_program, uniformName);
         if (loc != -1) {
@@ -552,6 +553,7 @@ static void gfx_opengl_select_texture(int tile, GLuint texture_id) {
 }
 
 static void gfx_opengl_bind_texture_raw(int tile, uint64_t texture_id) {
+    if (tile >= opengl_max_texture_units) { return; }
     glActiveTexture(GL_TEXTURE0 + tile);
     glBindTexture(GL_TEXTURE_2D, (GLuint)texture_id);
 }
@@ -729,6 +731,12 @@ static void gfx_opengl_init(void) {
     if (!gfx_opengl_is_legacy()) {
         // force opengl to use modern clip space (0, 1) and upper left like modern renderers
         glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
+    }
+
+    // query max texture units
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &opengl_max_texture_units);
+    if (opengl_max_texture_units < MAX_CUSTOM_FRAME_PASSES + 10) {
+        LOG_INFO("Your GPU in OpenGL supports %d texture slots! The maximum that may be used is %d. Some shaders may fail, but most should work fine", opengl_max_texture_units, MAX_CUSTOM_FRAME_PASSES + 10);
     }
 }
 

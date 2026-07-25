@@ -41,7 +41,7 @@ struct RGBA {
 };
 
 struct Box {
-    uint16_t x, y, width, height;
+    int16_t x, y, width, height;
 };
 
 struct GfxVertex {

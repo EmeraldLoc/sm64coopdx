@@ -62,6 +62,8 @@
 #include "pc/discord/discord.h"
 #endif
 
+#include "pc/terminal.h"
+
 #include "pc/mumble/mumble.h"
 
 #if defined(_WIN32)
@@ -556,7 +558,7 @@ int main(int argc, char *argv[]) {
         if (!gCLIOpts.hideLoadingScreen) {
             render_rom_setup_screen(); // holds the game load until a valid rom is provided
         } else {
-            printf("ERROR: could not find valid vanilla us sm64 rom in game's user folder\n");
+            log_to_terminal("ERROR: could not find valid vanilla us sm64 rom in game's user folder\n");
             return 0;
         }
     }
@@ -621,6 +623,9 @@ int main(int argc, char *argv[]) {
         network_init(NT_NONE, false);
     }
 
+    // initialize terminal
+    terminal_init();
+
     // main loop
     while (true) {
         debug_context_reset();
@@ -630,6 +635,7 @@ int main(int argc, char *argv[]) {
         discord_update();
 #endif
         mumble_update();
+        terminal_update();
 #ifdef DEBUG
         fflush(stdout);
         fflush(stderr);

@@ -27,10 +27,6 @@ static inline void gfx_window_metal_set_vsync(const bool enabled) {
 static void gfx_window_metal_set_fullscreen(void) {
 }
 
-static void gfx_window_metal_reset_dimension_and_pos(void) {
-    gfx_window_metal_set_vsync(configWindow.vsync);
-}
-
 static void gfx_window_metal_init(const char *window_title) {
     int xpos = (configWindow.x == WAPI_WIN_CENTERPOS) ? SDL_WINDOWPOS_CENTERED : configWindow.x;
     int ypos = (configWindow.y == WAPI_WIN_CENTERPOS) ? SDL_WINDOWPOS_CENTERED : configWindow.y;
@@ -45,9 +41,14 @@ static void gfx_window_metal_init(const char *window_title) {
     gfx_window_metal_set_vsync(configWindow.vsync);
 }
 
-static void gfx_window_metal_handle_events(UNUSED SDL_Event event) {
+static void gfx_window_metal_handle_events(SDL_Event event) {
     if (configWindow.settings_changed) {
-        gfx_window_metal_reset_dimension_and_pos();
+        gfx_window_metal_set_vsync(configWindow.vsync);
+        gfx_metal_api.on_resize();
+    }
+
+    if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        gfx_metal_api.on_resize();
     }
 }
 

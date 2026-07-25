@@ -2807,6 +2807,33 @@ Useful for keeping Mario's animations visually aligned, particularly when transi
 <br />
 
 ---
+# functions from commands.h
+
+<br />
+
+
+## [command_message_create](#command_message_create)
+
+### Lua Example
+`command_message_create(message, level)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| message | `string` |
+| level | [enum ConsoleMessageLevel](constants.md#enum-ConsoleMessageLevel) |
+
+### Returns
+- None
+
+### C Prototype
+`void command_message_create(const char* message, OPTIONAL enum ConsoleMessageLevel level);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+---
 # functions from djui_chat_message.h
 
 <br />
@@ -2840,6 +2867,24 @@ Creates a `message` in the game's chat box
 
 <br />
 
+
+## [djui_console_clear](#djui_console_clear)
+
+### Lua Example
+`djui_console_clear()`
+
+### Parameters
+- None
+
+### Returns
+- None
+
+### C Prototype
+`void djui_console_clear();`
+
+[:arrow_up_small:](#)
+
+<br />
 
 ## [djui_console_toggle](#djui_console_toggle)
 
@@ -3610,24 +3655,54 @@ Returns the amount scrolled vertically (-down/up+)
 ## [djui_hud_set_viewport](#djui_hud_set_viewport)
 
 ### Description
-Sets the viewport to the specified position and size, this will resize any subsequent DJUI graphics
+Sets the viewport to the specified corners (upper left, lower right), this will resize any subsequent DJUI graphics
 
 ### Lua Example
-`djui_hud_set_viewport(x, y, width, height)`
+`djui_hud_set_viewport(ulx, uly, lrx, lry)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| x | `number` |
-| y | `number` |
-| width | `number` |
-| height | `number` |
+| ulx | `number` |
+| uly | `number` |
+| lrx | `number` |
+| lry | `number` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void djui_hud_set_viewport(f32 x, f32 y, f32 width, f32 height);`
+`void djui_hud_set_viewport(f32 ulx, f32 uly, f32 lrx, f32 lry);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [djui_hud_set_viewport_interpolated](#djui_hud_set_viewport_interpolated)
+
+### Description
+Interpolates the viewport to the specified corners (upper left, lower right), this will resize any subsequent DJUI graphics
+
+### Lua Example
+`djui_hud_set_viewport_interpolated(pulx, puly, plrx, plry, ulx, uly, lrx, lry)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| pulx | `number` |
+| puly | `number` |
+| plrx | `number` |
+| plry | `number` |
+| ulx | `number` |
+| uly | `number` |
+| lrx | `number` |
+| lry | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void djui_hud_set_viewport_interpolated(f32 pulx, f32 puly, f32 plrx, f32 plry, f32 ulx, f32 uly, f32 lrx, f32 lry);`
 
 [:arrow_up_small:](#)
 
@@ -3657,24 +3732,54 @@ Resets the viewport to a fullscreen state
 ## [djui_hud_set_scissor](#djui_hud_set_scissor)
 
 ### Description
-Sets the scissor rectangle to the specified position and size, this will cut off any subsequent DJUI graphics not within the rectangle
+Sets the scissor rectangle to the specified corners (upper left, lower right), this will cut off any subsequent DJUI graphics not within the rectangle
 
 ### Lua Example
-`djui_hud_set_scissor(x, y, width, height)`
+`djui_hud_set_scissor(ulx, uly, lrx, lry)`
 
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| x | `number` |
-| y | `number` |
-| width | `number` |
-| height | `number` |
+| ulx | `number` |
+| uly | `number` |
+| lrx | `number` |
+| lry | `number` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void djui_hud_set_scissor(f32 x, f32 y, f32 width, f32 height);`
+`void djui_hud_set_scissor(f32 ulx, f32 uly, f32 lrx, f32 lry);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [djui_hud_set_scissor_interpolated](#djui_hud_set_scissor_interpolated)
+
+### Description
+Interpolates the scissor rectangle to the specified corners (upper left, lower right), this will cut off any subsequent DJUI graphics not within the rectangle
+
+### Lua Example
+`djui_hud_set_scissor_interpolated(pulx, puly, plrx, plry, ulx, uly, lrx, lry)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| pulx | `number` |
+| puly | `number` |
+| plrx | `number` |
+| plry | `number` |
+| ulx | `number` |
+| uly | `number` |
+| lrx | `number` |
+| lry | `number` |
+
+### Returns
+- None
+
+### C Prototype
+`void djui_hud_set_scissor_interpolated(f32 pulx, f32 puly, f32 plrx, f32 plry, f32 ulx, f32 uly, f32 lrx, f32 lry);`
 
 [:arrow_up_small:](#)
 
