@@ -151,10 +151,10 @@ static void controller_sdl_init(void) {
 }
 
 static SDL_Haptic *controller_sdl_init_haptics(void) {
-    if (!haptics_enabled) return NULL;
+    if (!haptics_enabled) { return NULL; }
 
     SDL_Haptic *hap = SDL_OpenHapticFromJoystick(sdl_joystick);
-    if (!hap) return NULL;
+    if (!hap) { return NULL; }
 
     if (!SDL_HapticRumbleSupported(hap)) {
         SDL_CloseHaptic(hap);
@@ -246,10 +246,9 @@ static void controller_sdl_read(OSContPad *pad) {
     SDL_UpdateGamepads();
 
     if (sdl_cntrl != NULL && !SDL_GamepadConnected(sdl_cntrl)) {
-        SDL_CloseHaptic(sdl_haptic);
+        if (sdl_haptic) { SDL_CloseHaptic(sdl_haptic); sdl_haptic = NULL; }
         SDL_CloseGamepad(sdl_cntrl);
         sdl_cntrl = NULL;
-        sdl_haptic = NULL;
     }
 
     if ((!sdl_cntrl && !sdl_joystick) || last_gamepad != sSelectedGamepad) {
@@ -399,6 +398,10 @@ static void controller_sdl_shutdown(void) {
         if (sdl_cntrl) {
             SDL_CloseGamepad(sdl_cntrl);
             sdl_cntrl = NULL;
+        }
+        if (sdl_joystick) {
+            SDL_CloseJoystick(sdl_joystick);
+            sdl_joystick = NULL;
         }
         SDL_QuitSubSystem(SDL_INIT_GAMEPAD);
     }
