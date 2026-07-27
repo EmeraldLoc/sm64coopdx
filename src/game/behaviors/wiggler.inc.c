@@ -340,7 +340,7 @@ static void wiggler_act_jumped_on(void) {
         network_send_object(o);
     }
 
-    // Text to show on first, second, and third attack.
+    // Text to show when jumped on at 1, 2 and 3 health.
     enum DialogId *attackText[3] = {
         &gBehaviorValues.dialogs.WigglerAttack1Dialog,
         &gBehaviorValues.dialogs.WigglerAttack2Dialog,
