@@ -27,7 +27,7 @@ If you are just starting out, I'd recommend learning to create a folder mod firs
 
 ## Section 3a: Creating a file mod
 
-First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet. On Windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
+First, you need to create a `.lua` file. This is a code file where your code will go. Creating this file will differ depending on your platform. On macOS there is no easy way to do this, please consult the internet (it really does suck). On Windows, simply right click, hit New, and hit Text Document, then make the extension `.lua` and make the file name the name of the mod all lowercased with `-` as space.
 
 <img width="613" height="349" alt="Screenshot 2026-06-23 223738" src="https://github.com/user-attachments/assets/f128b1af-5abf-4214-b29e-0f9b437af64d" />
 
@@ -67,4 +67,4 @@ When you've configured the mod the way you like, you are ready to go! Open up th
 
 You can read up on more documentation. Go back to the [main page](../lua.md) and go through some of the guides if you are just getting started. A good first place to look is the [hooks documentation](hooks.md). Happy modding!
 
-(P.S. For a simple tutorial on creating a mod, [check out this great video guide](https://bitly.com/98K8eH))
+(P.S. For a simple tutorial on creating a mod, [check out this great video guide]([https://bitly.com/98K8eH](https://www.youtube.com/watch?v=2qBlE2-WL60)))
