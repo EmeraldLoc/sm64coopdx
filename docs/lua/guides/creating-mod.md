@@ -66,5 +66,3 @@ An example of some of these would be:
 When you've configured the mod the way you like, you are ready to go! Open up the game, select the mod, and you should see your mod appear!
 
 You can read up on more documentation. Go back to the [main page](../lua.md) and go through some of the guides if you are just getting started. A good first place to look is the [hooks documentation](hooks.md). Happy modding!
-
-(P.S. For a simple tutorial on creating a mod, [check out this great video guide](https://www.youtube.com/watch?v=2qBlE2-WL60))
