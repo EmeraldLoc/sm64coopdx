@@ -762,7 +762,6 @@
 <br />
 
 - djui_console.h
-   - [djui_console_clear](functions-3.md#djui_console_clear)
    - [djui_console_toggle](functions-3.md#djui_console_toggle)
    - [djui_console_is_open](functions-3.md#djui_console_is_open)
 
@@ -2067,6 +2066,7 @@
 
 - smlua_misc_utils.h
    - [get_network_area_timer](functions-7.md#get_network_area_timer)
+   - [get_network_area_random_seed](functions-7.md#get_network_area_random_seed)
    - [get_area_update_counter](functions-7.md#get_area_update_counter)
    - [get_temp_s32_pointer](functions-7.md#get_temp_s32_pointer)
    - [deref_s32_pointer](functions-7.md#deref_s32_pointer)
@@ -2235,6 +2235,9 @@
    - [smlua_text_utils_dialog_restore](functions-7.md#smlua_text_utils_dialog_restore)
    - [smlua_text_utils_dialog_is_replaced](functions-7.md#smlua_text_utils_dialog_is_replaced)
    - [smlua_text_utils_allocate_dialog](functions-7.md#smlua_text_utils_allocate_dialog)
+   - [smlua_text_utils_dialog_get_type](functions-7.md#smlua_text_utils_dialog_get_type)
+   - [smlua_text_utils_dialog_set_type](functions-7.md#smlua_text_utils_dialog_set_type)
+   - [smlua_text_utils_dialog_reset_type](functions-7.md#smlua_text_utils_dialog_reset_type)
    - [smlua_text_utils_course_acts_replace](functions-7.md#smlua_text_utils_course_acts_replace)
    - [smlua_text_utils_secret_star_replace](functions-7.md#smlua_text_utils_secret_star_replace)
    - [smlua_text_utils_course_name_replace](functions-7.md#smlua_text_utils_course_name_replace)
@@ -2310,6 +2313,7 @@
 <br />
 
 - sync_object.h
+   - [sync_object_get_random_seed](functions-7.md#sync_object_get_random_seed)
    - [sync_object_get_object](functions-7.md#sync_object_get_object)
    - [sync_object_is_initialized](functions-7.md#sync_object_is_initialized)
    - [sync_object_is_owned_locally](functions-7.md#sync_object_is_owned_locally)
