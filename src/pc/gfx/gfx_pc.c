@@ -2440,7 +2440,6 @@ void gfx_run(Gfx *commands) {
 }
 
 void gfx_end_frame_render(void) {
-    log_to_terminal("Finished rendering\n");
     gfx_flush();
     gfx_rapi->end_frame();
 }
