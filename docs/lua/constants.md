@@ -1441,23 +1441,23 @@
 ### [enum ColorCombinerSource](#ColorCombinerSource)
 | Identifier | Value |
 | :--------- | :---- |
-| CC_0 | 0 |
-| CC_TEXEL0 | 1 |
-| CC_TEXEL1 | 2 |
-| CC_PRIM | 3 |
-| CC_SHADE | 4 |
-| CC_ENV | 5 |
-| CC_TEXEL0A | 6 |
-| CC_LOD | 7 |
-| CC_1 | 8 |
-| CC_TEXEL1A | 9 |
-| CC_COMBINED | 10 |
-| CC_COMBINEDA | 11 |
-| CC_PRIMA | 12 |
-| CC_SHADEA | 13 |
-| CC_ENVA | 14 |
-| CC_NOISE | 15 |
-| CC_ENUM_MAX | 16 |
+| CCS_0 | 0 |
+| CCS_TEXEL0 | 1 |
+| CCS_TEXEL1 | 2 |
+| CCS_PRIM | 3 |
+| CCS_SHADE | 4 |
+| CCS_ENV | 5 |
+| CCS_TEXEL0A | 6 |
+| CCS_LOD | 7 |
+| CCS_1 | 8 |
+| CCS_TEXEL1A | 9 |
+| CCS_COMBINED | 10 |
+| CCS_COMBINEDA | 11 |
+| CCS_PRIMA | 12 |
+| CCS_SHADEA | 13 |
+| CCS_ENVA | 14 |
+| CCS_NOISE | 15 |
+| CCS_COUNT | 16 |
 
 ### [enum CcShaderInput](#CcShaderInput)
 | Identifier | Value |
