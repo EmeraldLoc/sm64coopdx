@@ -1837,6 +1837,8 @@ static void gfx_draw_fullscreen_quad() {
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_PROGRAM);
 
     gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
+
+    sRenderingState.shader_program = NULL; // reset shader program to sync state with render api
 }
 
 static void gfx_dp_texture_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lry, UNUSED uint8_t tile, int16_t uls, int16_t ult, int16_t dsdx, int16_t dtdy, bool flip) {
@@ -2364,6 +2366,8 @@ void gfx_run(Gfx *commands) {
     }
     sDroppedFrame = false;
 
+    printf("Starting frame, buf vbo len is %zu\n", buf_vbo_len);
+
     bool isLuaPassesActive = false;
     gfx_process_lua_passes(commands, &isLuaPassesActive);
 
@@ -2432,10 +2436,11 @@ void gfx_run(Gfx *commands) {
         }
     }
 
-    gfx_draw_fullscreen_quad();  // draw final quad
+    gfx_draw_fullscreen_quad();
 }
 
 void gfx_end_frame_render(void) {
+    log_to_terminal("Finished rendering\n");
     gfx_flush();
     gfx_rapi->end_frame();
 }
