@@ -3119,42 +3119,42 @@ BACKGROUND_CUSTOM          = 10 --- @type SkyBackgroundParams
 --- | `BACKGROUND_PURPLE_SKY`
 --- | `BACKGROUND_CUSTOM`
 
-CC_0         =  0 --- @type ColorCombinerSource
-CC_TEXEL0    =  1 --- @type ColorCombinerSource
-CC_TEXEL1    =  2 --- @type ColorCombinerSource
-CC_PRIM      =  3 --- @type ColorCombinerSource
-CC_SHADE     =  4 --- @type ColorCombinerSource
-CC_ENV       =  5 --- @type ColorCombinerSource
-CC_TEXEL0A   =  6 --- @type ColorCombinerSource
-CC_LOD       =  7 --- @type ColorCombinerSource
-CC_1         =  8 --- @type ColorCombinerSource
-CC_TEXEL1A   =  9 --- @type ColorCombinerSource
-CC_COMBINED  = 10 --- @type ColorCombinerSource
-CC_COMBINEDA = 11 --- @type ColorCombinerSource
-CC_PRIMA     = 12 --- @type ColorCombinerSource
-CC_SHADEA    = 13 --- @type ColorCombinerSource
-CC_ENVA      = 14 --- @type ColorCombinerSource
-CC_NOISE     = 15 --- @type ColorCombinerSource
-CC_ENUM_MAX  = 16 --- @type ColorCombinerSource
+CCS_0         =  0 --- @type ColorCombinerSource
+CCS_TEXEL0    =  1 --- @type ColorCombinerSource
+CCS_TEXEL1    =  2 --- @type ColorCombinerSource
+CCS_PRIM      =  3 --- @type ColorCombinerSource
+CCS_SHADE     =  4 --- @type ColorCombinerSource
+CCS_ENV       =  5 --- @type ColorCombinerSource
+CCS_TEXEL0A   =  6 --- @type ColorCombinerSource
+CCS_LOD       =  7 --- @type ColorCombinerSource
+CCS_1         =  8 --- @type ColorCombinerSource
+CCS_TEXEL1A   =  9 --- @type ColorCombinerSource
+CCS_COMBINED  = 10 --- @type ColorCombinerSource
+CCS_COMBINEDA = 11 --- @type ColorCombinerSource
+CCS_PRIMA     = 12 --- @type ColorCombinerSource
+CCS_SHADEA    = 13 --- @type ColorCombinerSource
+CCS_ENVA      = 14 --- @type ColorCombinerSource
+CCS_NOISE     = 15 --- @type ColorCombinerSource
+CCS_COUNT     = 16 --- @type ColorCombinerSource
 
 --- @alias ColorCombinerSource
---- | `CC_0`
---- | `CC_TEXEL0`
---- | `CC_TEXEL1`
---- | `CC_PRIM`
---- | `CC_SHADE`
---- | `CC_ENV`
---- | `CC_TEXEL0A`
---- | `CC_LOD`
---- | `CC_1`
---- | `CC_TEXEL1A`
---- | `CC_COMBINED`
---- | `CC_COMBINEDA`
---- | `CC_PRIMA`
---- | `CC_SHADEA`
---- | `CC_ENVA`
---- | `CC_NOISE`
---- | `CC_ENUM_MAX`
+--- | `CCS_0`
+--- | `CCS_TEXEL0`
+--- | `CCS_TEXEL1`
+--- | `CCS_PRIM`
+--- | `CCS_SHADE`
+--- | `CCS_ENV`
+--- | `CCS_TEXEL0A`
+--- | `CCS_LOD`
+--- | `CCS_1`
+--- | `CCS_TEXEL1A`
+--- | `CCS_COMBINED`
+--- | `CCS_COMBINEDA`
+--- | `CCS_PRIMA`
+--- | `CCS_SHADEA`
+--- | `CCS_ENVA`
+--- | `CCS_NOISE`
+--- | `CCS_COUNT`
 
 SHADER_0         =  0 --- @type CcShaderInput
 SHADER_INPUT_1   =  1 --- @type CcShaderInput

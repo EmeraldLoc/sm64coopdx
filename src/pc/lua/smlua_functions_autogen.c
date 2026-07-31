@@ -19540,7 +19540,7 @@ int smlua_func_mtxf_ortho(lua_State* L) {
     mtxf_ortho(dest, bottom, topBound, left, right, near, far);
     smlua_push_mat4(dest, 1);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_get_pos_from_transform_mtx(lua_State* L) {
@@ -31971,7 +31971,7 @@ int smlua_func_gfx_set_culling_enabled(lua_State* L) {
 
     gfx_set_culling_enabled(enable);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_is_culling_enabled(lua_State* L) {
@@ -32027,7 +32027,7 @@ int smlua_func_gfx_reload_shaders(lua_State* L) {
 
     gfx_reload_shaders();
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_color_combiner_get_features(lua_State* L) {
@@ -32061,7 +32061,7 @@ int smlua_func_gfx_shader_set_shader_stage(lua_State* L) {
 
     gfx_shader_set_shader_stage(stage);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_uniform_buffer(lua_State* L) {
@@ -32078,7 +32078,7 @@ int smlua_func_gfx_shader_set_uniform_buffer(lua_State* L) {
 
     gfx_shader_set_uniform_buffer(name);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_reset_uniform_buffer(lua_State* L) {
@@ -32092,7 +32092,7 @@ int smlua_func_gfx_shader_reset_uniform_buffer(lua_State* L) {
 
     gfx_shader_reset_uniform_buffer();
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_bool(lua_State* L) {
@@ -32111,7 +32111,7 @@ int smlua_func_gfx_shader_set_bool(lua_State* L) {
 
     gfx_shader_set_bool(name, value);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_int(lua_State* L) {
@@ -32130,7 +32130,7 @@ int smlua_func_gfx_shader_set_int(lua_State* L) {
 
     gfx_shader_set_int(name, value);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_float(lua_State* L) {
@@ -32149,7 +32149,7 @@ int smlua_func_gfx_shader_set_float(lua_State* L) {
 
     gfx_shader_set_float(name, value);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_vec2(lua_State* L) {
@@ -32170,7 +32170,7 @@ int smlua_func_gfx_shader_set_vec2(lua_State* L) {
 
     gfx_shader_set_vec2(name, x, y);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_vec3(lua_State* L) {
@@ -32193,7 +32193,7 @@ int smlua_func_gfx_shader_set_vec3(lua_State* L) {
 
     gfx_shader_set_vec3(name, x, y, z);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_vec4(lua_State* L) {
@@ -32218,7 +32218,7 @@ int smlua_func_gfx_shader_set_vec4(lua_State* L) {
 
     gfx_shader_set_vec4(name, x, y, z, w);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_mat4(lua_State* L) {
@@ -32237,7 +32237,7 @@ int smlua_func_gfx_shader_set_mat4(lua_State* L) {
 
     gfx_shader_set_mat4(name, mat4);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_create_frame_pass(lua_State* L) {
@@ -32268,7 +32268,7 @@ int smlua_func_gfx_shader_remove_frame_pass(lua_State* L) {
 
     gfx_shader_remove_frame_pass(framePassIndex);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_get_frame_pass_viewport(lua_State* L) {
@@ -32312,7 +32312,7 @@ int smlua_func_gfx_shader_set_frame_pass_viewport(lua_State* L) {
 
     gfx_shader_set_frame_pass_viewport(framePassIndex, width, height);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_frame_pass_filter(lua_State* L) {
@@ -32331,7 +32331,7 @@ int smlua_func_gfx_shader_set_frame_pass_filter(lua_State* L) {
 
     gfx_shader_set_frame_pass_filter(framePassIndex, filter);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_set_frame_pass_draw_world(lua_State* L) {
@@ -32350,7 +32350,7 @@ int smlua_func_gfx_shader_set_frame_pass_draw_world(lua_State* L) {
 
     gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry);
 
-    return 1;
+    return 0;
 }
 
 int smlua_func_gfx_shader_get_current_frame_pass(lua_State* L) {
