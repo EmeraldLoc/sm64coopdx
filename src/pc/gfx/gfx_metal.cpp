@@ -67,6 +67,7 @@ static struct {
     CA::MetalDrawable *drawable;
     MTL::Texture *depthTexture;
     MTL::DepthStencilState *depthStencilState;
+    NS::AutoreleasePool *autoreleasePool;
 
     dispatch_semaphore_t frameSemaphore;
 
@@ -114,6 +115,12 @@ static void setup_command_buffer() {
         dispatch_semaphore_signal(metal.frameSemaphore);
     });
     memset(metal.storageBufferOffset, 0, sizeof(metal.storageBufferOffset));
+}
+
+static void init_auto_release_pool() {
+    if (!metal.autoreleasePool) {
+        metal.autoreleasePool = NS::AutoreleasePool::alloc()->init();
+    }
 }
 
 static MTL::Library *metal_compile_source(const char *sourceCode, const char *stageName) {
@@ -168,8 +175,6 @@ static void create_depth_texture() {
     desc->setUsage(MTL::TextureUsageRenderTarget);
 
     metal.depthTexture = metal.device->newTexture(desc);
-
-    desc->release();
 
     if (!metal.depthTexture) {
         sys_fatal("Failed to create Metal depth texture.");
@@ -508,7 +513,6 @@ void gfx_metal_create_framebuffer(struct FramePass *framePass) {
     colorDesc->setStorageMode(MTL::StorageModePrivate);
 
     MTL::Texture *colorTex = metal.device->newTexture(colorDesc);
-    colorDesc->release();
 
     if (!colorTex) {
         return;
@@ -524,7 +528,6 @@ void gfx_metal_create_framebuffer(struct FramePass *framePass) {
     depthDesc->setStorageMode(MTL::StorageModePrivate);
 
     MTL::Texture *depthTex = metal.device->newTexture(depthDesc);
-    depthDesc->release();
 
     if (!depthTex) {
         colorTex->release();
@@ -557,6 +560,8 @@ void gfx_metal_delete_framebuffer(struct FramePass *framePass) {
 void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     if (!framePass || !framePass->fbo) return;
 
+    init_auto_release_pool(); // this may be called before start frame
+
     setup_command_buffer();
 
     if (metal.encoder) {
@@ -586,7 +591,6 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
 
     metal.encoder = metal.commandBuffer->renderCommandEncoder(pass);
     metal.encoder->setDepthStencilState(metal.depthStencilState);
-    pass->release();
 
     metal.lastShaderProgram = NULL;
     metal.lastDepthTest = -1;
@@ -617,6 +621,7 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
 }
 
 void gfx_metal_reset_framebuffer(void) {
+    init_auto_release_pool(); // this may be called before start frame
     setup_command_buffer();
 
     if (metal.encoder) {
@@ -638,7 +643,6 @@ void gfx_metal_reset_framebuffer(void) {
 
     metal.encoder = metal.commandBuffer->renderCommandEncoder(pass);
     metal.encoder->setDepthStencilState(metal.depthStencilState);
-    pass->release();
 
     metal.lastShaderProgram = NULL;
     metal.lastDepthTest = -1;
@@ -786,7 +790,6 @@ void gfx_metal_upload_texture(const uint8_t *rgba32_buf, int width, int height) 
     desc->setStorageMode(MTL::StorageModeShared);
 
     MTL::Texture *texture = metal.device->newTexture(desc);
-    desc->release();
 
     if (texture == NULL) {
         sys_fatal("Failed to allocate memory for Metal texture upload!");
@@ -1078,7 +1081,11 @@ void gfx_metal_on_resize(void) {
     create_depth_texture();
 }
 
+
+
 void gfx_metal_start_frame(void) {
+    init_auto_release_pool();
+
     if (!metal.startedFrame) {
         dispatch_semaphore_wait(metal.frameSemaphore, DISPATCH_TIME_FOREVER);
         // increment the current frame
@@ -1118,6 +1125,9 @@ void gfx_metal_finish_render(void) {
         metal.commandBuffer->commit();
         metal.commandBuffer = NULL;
     }
+
+    metal.autoreleasePool->release();
+    metal.autoreleasePool = NULL;
 
     metal.startedFrame = false;
 }

@@ -2344,7 +2344,9 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
     }
 }
 
-void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a multipass system
+// a helper function when porting over new render apis to not deal with framebuffers
+// in one go
+/*void gfx_run_basic(Gfx *commands) {
     gfx_sp_reset();
     sHasInverseCameraMatrix = false;
 
@@ -2357,7 +2359,7 @@ void gfx_run_basic(Gfx *commands) { // for dummy frames we don't want to do a mu
     gfx_rapi->reset_framebuffer();
     gfx_rapi->start_frame();
     gfx_run_dl(commands);
-}
+}*/
 
 void gfx_run(Gfx *commands) {
     if (!gfx_wm_start_frame()) {
@@ -2365,8 +2367,6 @@ void gfx_run(Gfx *commands) {
         return;
     }
     sDroppedFrame = false;
-
-    printf("Starting frame, buf vbo len is %zu\n", buf_vbo_len);
 
     bool isLuaPassesActive = false;
     gfx_process_lua_passes(commands, &isLuaPassesActive);
