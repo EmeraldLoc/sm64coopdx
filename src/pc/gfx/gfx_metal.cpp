@@ -560,7 +560,7 @@ void gfx_metal_delete_framebuffer(struct FramePass *framePass) {
 void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     if (!framePass || !framePass->fbo) return;
 
-    init_auto_release_pool(); // this may be called before start frame
+    init_auto_release_pool(); // gfx_metal_set_framebuffer may be called before start frame
 
     setup_command_buffer();
 
@@ -621,7 +621,7 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
 }
 
 void gfx_metal_reset_framebuffer(void) {
-    init_auto_release_pool(); // this may be called before start frame
+    init_auto_release_pool(); // gfx_metal_reset_framebuffer may be called before start frame
     setup_command_buffer();
 
     if (metal.encoder) {
