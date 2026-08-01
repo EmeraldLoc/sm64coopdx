@@ -62,7 +62,7 @@ void djui_panel_controls_create(struct DjuiBase* caller) {
             }
             SDL_free(joysticks);
         } else {
-            gamepadChoices[0] = strdup("Unknown");
+            gamepadChoices[0] = strdup("None");
         }
 
         // Check for repeated names and append a number if necessary
