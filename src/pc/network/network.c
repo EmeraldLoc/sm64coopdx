@@ -169,7 +169,6 @@ bool network_init(enum NetworkType inNetworkType, bool reconnecting) {
         smlua_init();
 
         network_player_connected(NPT_LOCAL, 0, configPlayerModel, &configPlayerPalette, configPlayerName, get_local_discord_id());
-        extern u8* gOverrideEeprom[NUM_SAVE_FILES];
         memset(gOverrideEeprom, 0, sizeof(gOverrideEeprom));
 
         if (gCurrLevelNum != (s16)gLevelValues.entryLevel) {
@@ -705,7 +704,6 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     dynos_model_clear_pool(MODEL_POOL_SESSION);
 
     // reset other stuff
-    extern u8* gOverrideEeprom[NUM_SAVE_FILES];
     memset(gOverrideEeprom, 0, sizeof(gOverrideEeprom));
     extern u8 gOverrideFreezeCamera;
     gOverrideFreezeCamera = false;

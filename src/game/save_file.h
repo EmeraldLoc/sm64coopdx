@@ -85,6 +85,7 @@ struct LegacySaveBuffer {
     struct LegacyMainMenuSaveData menuData[2];
 };
 
+extern u8 *gOverrideEeprom[NUM_SAVE_FILES];
 extern u8 gLastCompletedCourseNum;
 extern u8 gLastCompletedStarNum;
 extern s8 sUnusedGotGlobalCoinHiScore;
@@ -142,8 +143,7 @@ extern struct WarpCheckpoint gWarpCheckpoint;
 extern s8 gMainMenuDataModified;
 extern s8 gSaveFileModified;
 
-s32 read_eeprom_data(u8 file, void *buffer, s32 size);
-s32 write_eeprom_data(u8 file, void *buffer, s32 size, const uintptr_t baseofs);
+bool write_save_file(u32 fileIndex, void *buffer, s32 size, u32 offset);
 
 /* |description|Gets the course number's corresponding level number|descriptionEnd| */
 s8 get_level_num_from_course_num(s16 courseNum);

@@ -4,16 +4,17 @@
 #include "game/save_file.h"
 #include "pc/debuglog.h"
 
-extern u8* gOverrideEeprom[NUM_SAVE_FILES];
-static u8 eeprom[NUM_SAVE_FILES][EEPROM_SIZE] = { 0 };
+// subtract 8 from packet length for the startingSaveFile and endSaveFile integers (an integer is 4 bytes)
+#define NUM_CHUNKS ((NUM_SAVE_FILES * EEPROM_SIZE + (PACKET_LENGTH - 8) - 1) / (PACKET_LENGTH - 8))
+
+static u8 sEeprom[NUM_SAVE_FILES][EEPROM_SIZE] = { 0 };
 static bool sReceivedSaveFile[NUM_SAVE_FILES] = { 0 };
-static int filledEepromData = 0;
-static int chunks = (NUM_SAVE_FILES * EEPROM_SIZE + (PACKET_LENGTH - 8) - 1) / (PACKET_LENGTH - 8);
+static int sFilledEepromData = 0;
 
 void network_send_download_save_files_request(void) {
     SOFT_ASSERT(gNetworkType == NT_CLIENT);
 
-    filledEepromData = 0;
+    sFilledEepromData = 0;
     memset(sReceivedSaveFile, 0, sizeof(sReceivedSaveFile));
 
     struct Packet p = { 0 };
@@ -26,7 +27,7 @@ void network_send_download_save_files_request(void) {
 void network_receive_download_saves_request(UNUSED struct Packet* p) {
     SOFT_ASSERT(gNetworkType == NT_SERVER);
 
-    for (int i = 0; i < chunks; i++) {
+    for (int i = 0; i < NUM_CHUNKS; i++) {
         network_send_download_save(i);
     }
 
@@ -36,8 +37,8 @@ void network_receive_download_saves_request(UNUSED struct Packet* p) {
 void network_send_download_save(int chunk) {
     SOFT_ASSERT(gNetworkType == NT_SERVER);
 
-    int startingSaveFile = chunk * (NUM_SAVE_FILES + chunks - 1) / chunks;
-    int endSaveFile = (chunk + 1) * (NUM_SAVE_FILES + chunks - 1) / chunks;
+    int startingSaveFile = chunk * (NUM_SAVE_FILES + NUM_CHUNKS - 1) / NUM_CHUNKS;
+    int endSaveFile = (chunk + 1) * (NUM_SAVE_FILES + NUM_CHUNKS - 1) / NUM_CHUNKS;
     if (endSaveFile > NUM_SAVE_FILES) endSaveFile = NUM_SAVE_FILES;
 
     struct Packet p = { 0 };
@@ -71,7 +72,7 @@ void network_receive_download_save(struct Packet* p) {
         }
     }
 
-    if (filledEepromData >= NUM_SAVE_FILES * EEPROM_SIZE) {
+    if (sFilledEepromData >= NUM_SAVE_FILES * EEPROM_SIZE) {
         LOG_ERROR("Received eeprom data after eeprom was filled");
         djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
         network_shutdown(false, false, false, false);
@@ -90,21 +91,21 @@ void network_receive_download_save(struct Packet* p) {
     }
 
     for (int i = startingSaveFile; i < endSaveFile; i++) {
-        packet_read(p, &eeprom[i], sizeof(eeprom[i]));
+        packet_read(p, &sEeprom[i], sizeof(sEeprom[i]));
         if (!sReceivedSaveFile[i]) {
             sReceivedSaveFile[i] = true;
-            filledEepromData += EEPROM_SIZE;
+            sFilledEepromData += EEPROM_SIZE;
         }
     }
 
-    if (filledEepromData == NUM_SAVE_FILES * EEPROM_SIZE) {
+    if (sFilledEepromData == NUM_SAVE_FILES * EEPROM_SIZE) {
         for (int i = 0; i < NUM_SAVE_FILES; i++) {
-            gOverrideEeprom[i] = eeprom[i];
+            gOverrideEeprom[i] = sEeprom[i];
         }
-        filledEepromData = 0;
+        sFilledEepromData = 0;
         network_send_join_request();
-    } else if (filledEepromData > NUM_SAVE_FILES * EEPROM_SIZE) {
-        LOG_ERROR("Filled eeprom data too much! Should be %d, but is %d", NUM_SAVE_FILES * EEPROM_SIZE, filledEepromData);
+    } else if (sFilledEepromData > NUM_SAVE_FILES * EEPROM_SIZE) {
+        LOG_ERROR("Filled eeprom data too much! Should be %d, but is %d", NUM_SAVE_FILES * EEPROM_SIZE, sFilledEepromData);
         djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
         network_shutdown(false, false, false, false);
         return;

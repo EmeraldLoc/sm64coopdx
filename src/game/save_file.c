@@ -36,6 +36,8 @@ STATIC_ASSERT(sizeof(struct SingleSaveFile) == EEPROM_SIZE, "eeprom buffer size 
 
 extern struct SaveBuffer gSaveBuffer;
 
+u8 *gOverrideEeprom[NUM_SAVE_FILES] = { NULL };
+
 struct WarpCheckpoint gWarpCheckpoint;
 
 s8 gSaveFileModified;
@@ -122,51 +124,80 @@ static inline void bswap_savefile(struct SaveFile *data) {
 }
 
 /**
- * Read from EEPROM to a given address.
- * The EEPROM address is computed using the offset of the destination address from gSaveBuffer.
- * Try at most 4 times, and return 0 on success. On failure, return the status returned from
- * osEepromLongReadFile. It also returns 0 if EEPROM isn't loaded correctly in the system.
+ * Read from save file to a buffer.
+ * The offset is computed using the location of the buffer subtracted by the
+ * offset of the destination address from gSaveBuffer.
+ * Returns true on success, and false on failure.
  */
-s32 read_eeprom_data(u8 file, void *buffer, s32 size) {
-    s32 status = 0;
-
-    if (gEepromProbe != 0) {
-        s32 triesLeft = 4;
-        u32 offset = (u32)((u8 *) buffer - (u8 *) &gSaveBuffer.files[file]) / 8;
-
-        do {
-            block_until_rumble_pak_free();
-            triesLeft--;
-            status = osEepromLongReadFile(&gSIEventMesgQueue, file, offset, buffer, size);
-            release_rumble_pak_control();
-        } while (triesLeft > 0 && status != 0);
+static bool read_save_file(u32 fileIndex, u8 *buffer, size_t size) {
+    if (fileIndex >= NUM_SAVE_FILES) { return false; }
+    u32 offset = (u32)((u8 *) buffer - (u8 *) &gSaveBuffer.files[fileIndex]) / 8;
+    // if we are using a networked eeprom, read that instead
+    if (gOverrideEeprom[fileIndex] != NULL) {
+        memcpy(buffer, gOverrideEeprom[fileIndex] + offset * 8, size);
+        return true;
     }
 
-    return status;
+    u8 content[EEPROM_SIZE];
+
+    // get file path
+    char filePath[SYS_MAX_PATH];
+    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
+
+    // open up file
+    fs_file_t *fp = fs_open(filePath);
+    if (fp == NULL) {
+        return false;
+    }
+
+    // read file, on success copy data over
+    bool success = (fs_read(fp, content, EEPROM_SIZE) == EEPROM_SIZE);
+    if (success) {
+        memcpy(buffer, content + offset * 8, size);
+    }
+    fs_close(fp);
+
+    return success;
 }
 
 /**
- * Write data to EEPROM.
- * The EEPROM address was originally computed using the offset of the source address from gSaveBuffer.
- * Try at most 4 times, and return 0 on success. On failure, return the status returned from
- * osEepromLongWrite. Unlike read_eeprom_data, return 1 if EEPROM isn't loaded.
+ * Write data to a save file.
+ * The offset provided is typically a specific slot provided by the caller, such as `write_eeprom_savefile`.
+ * Returns true on success, and false on failure.
  */
-s32 write_eeprom_data(u8 file, void *buffer, s32 size, const uintptr_t baseofs) {
-    s32 status = 1;
-
-    if (gEepromProbe != 0) {
-        s32 triesLeft = 4;
-        u32 offset = (u32)baseofs >> 3;
-
-        do {
-            block_until_rumble_pak_free();
-            triesLeft--;
-            status = osEepromLongWrite(&gSIEventMesgQueue, file, offset, buffer, size);
-            release_rumble_pak_control();
-        } while (triesLeft > 0 && status != 0);
+bool write_save_file(u32 fileIndex, void *buffer, s32 size, u32 offset) {
+    if (fileIndex >= NUM_SAVE_FILES) { return false; }
+    // if we are using a networked eeprom, write to that instead
+    if (gOverrideEeprom[fileIndex] != NULL) {
+        memcpy(gOverrideEeprom[fileIndex] + offset * 8, buffer, size);
+        return true;
     }
 
-    return status;
+    u8 content[EEPROM_SIZE] = { 0 };
+    // read save file if we aren't writing to the whole thing
+    if (offset != 0 || size != EEPROM_SIZE) {
+        read_save_file(fileIndex, content, EEPROM_SIZE);
+    }
+    // copy buffer data to content
+    memcpy(content + offset * 8, buffer, size);
+
+    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) {
+        fs_sys_mkdir(fs_get_write_path(SAVE_DIRECTORY));
+    }
+
+    // get file path
+    char filePath[SYS_MAX_PATH];
+    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
+
+    // open up file
+    FILE *fp = fopen(fs_get_write_path(filePath), "wb");
+    if (fp == NULL) { return false; }
+
+    // write to file
+    bool success = (fwrite(content, 1, EEPROM_SIZE, fp) == EEPROM_SIZE);
+    fclose(fp);
+
+    return success;
 }
 
 /**
@@ -177,16 +208,16 @@ static inline s32 write_eeprom_savefile(const u32 file, const u32 slot, const u3
     if (INVALID_FILE_INDEX(file)) { return 0; }
     if (INVALID_SRC_SLOT(slot)) { return 0; }
     // calculate the EEPROM address using the file number and slot
-    const uintptr_t ofs = (u8*)&gSaveBuffer.files[file][slot] - (u8*)&gSaveBuffer.files[file];
+    const u32 ofs = (u8 *)&gSaveBuffer.files[file][slot] - (u8 *)&gSaveBuffer.files[file];
 
 #if IS_BIG_ENDIAN
-    return write_eeprom_data(file, &gSaveBuffer.files[file][slot], num * sizeof(struct SaveFile), ofs);
+    return write_save_file(file, &gSaveBuffer.files[file][slot], num * sizeof(struct SaveFile), ofs);
 #else
     // byteswap the data and then write it
     struct SaveFile sf[num];
-    bcopy(&gSaveBuffer.files[file][slot], sf, num * sizeof(sf[0]));
-    for (u32 i = 0; i < num; ++i) bswap_savefile(&sf[i]);
-    return write_eeprom_data(file, &sf, sizeof(sf), ofs);
+    memcpy(sf, &gSaveBuffer.files[file][slot], num * sizeof(sf[0]));
+    for (u32 i = 0; i < num; ++i) { bswap_savefile(&sf[i]); }
+    return write_save_file(file, &sf, sizeof(sf), ofs);
 #endif
 }
 
@@ -276,12 +307,13 @@ static void save_file_bswap(struct SaveBuffer *buf) {
 /**
  * Converts old 512 byte save files into 4 new 128 byte save files
  */
-static void save_file_convert_old_to_new() {
+static void save_file_convert_old_file_to_new_files() {
     struct LegacySaveBuffer saveBuffer = { 0 };
     s32 status = osEepromLongRead(&gSIEventMesgQueue, 0, (void*)&saveBuffer, sizeof(saveBuffer), (char*)fs_get_write_path(SAVE_FILENAME), 512);
-    if (status != 0) return;
+    if (status != 0) { return; } // nonzero success means it wasn't successful
     for (int i = 0; i < 4; i++) {
-        write_eeprom_data(i, saveBuffer.files[i], sizeof(saveBuffer.files[i]), 0);
+        // write and rename save file
+        write_save_file(i, saveBuffer.files[i], sizeof(saveBuffer.files[i]), 0);
         save_file_rename_file(i, configSaveNames[i]);
     }
 }
@@ -518,14 +550,15 @@ void save_file_load_all(UNUSED u8 reload) {
 
     gSaveFileModified = FALSE;
 
+    // if the save dir doesn't exist, convert the legacy system to the new system
     if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) {
-        save_file_convert_old_to_new();
+        save_file_convert_old_file_to_new_files();
     }
 
     bzero(&gSaveBuffer, sizeof(gSaveBuffer));
 
     for (int file = 0; file < NUM_SAVE_FILES; file++) {
-        read_eeprom_data(file, &gSaveBuffer.files[file], sizeof(gSaveBuffer.files[file]));
+        read_save_file(file, (u8 *)&gSaveBuffer.files[file], sizeof(gSaveBuffer.files[file]));
     }
 
     if (save_file_need_bswap(&gSaveBuffer))

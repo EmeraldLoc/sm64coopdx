@@ -7,8 +7,6 @@
 #include "configfile.h"
 #include "game/save_file.h"
 
-u8* gOverrideEeprom[NUM_SAVE_FILES] = { NULL };
-
 extern OSMgrArgs piMgrArgs;
 
 u64 osClockRate = 62500000;
@@ -138,60 +136,6 @@ s32 osEepromLongRead(UNUSED OSMesgQueue *mq, u8 address, u8 *buffer, int nbytes,
         memcpy(buffer, content + address * 8, nbytes);
         ret = 0;
     }
-    fclose(fp);
-
-    return ret;
-}
-
-s32 osEepromLongReadFile(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *buffer, int nbytes) {
-    if (fileIndex >= NUM_SAVE_FILES) { return -1; }
-    if (gOverrideEeprom[fileIndex] != NULL) {
-        memcpy(buffer, gOverrideEeprom[fileIndex] + address * 8, nbytes);
-        return 0;
-    }
-
-    u8 content[EEPROM_SIZE];
-    s32 ret = -1;
-
-    char filePath[SYS_MAX_PATH];
-    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
-    fs_file_t *fp = fs_open(filePath);
-    if (fp == NULL) {
-        return -1;
-    }
-    if (fs_read(fp, content, EEPROM_SIZE) == EEPROM_SIZE) {
-        memcpy(buffer, content + address * 8, nbytes);
-        ret = 0;
-    }
-    fs_close(fp);
-
-    return ret;
-}
-
-s32 osEepromLongWrite(UNUSED OSMesgQueue *mq, u8 fileIndex, u8 address, u8 *buffer, int nbytes) {
-    if (fileIndex >= NUM_SAVE_FILES) { return -1; }
-    if (gOverrideEeprom[fileIndex] != NULL) {
-        memcpy(gOverrideEeprom[fileIndex] + address * 8, buffer, nbytes);
-        return 0;
-    }
-
-    u8 content[EEPROM_SIZE] = { 0 };
-    if (address != 0 || nbytes != EEPROM_SIZE) {
-        osEepromLongReadFile(mq, fileIndex, 0, content, EEPROM_SIZE);
-    }
-    memcpy(content + address * 8, buffer, nbytes);
-
-    if (!fs_sys_dir_exists(fs_get_write_path(SAVE_DIRECTORY))) {
-        fs_sys_mkdir(fs_get_write_path(SAVE_DIRECTORY));
-    }
-
-    char filePath[SYS_MAX_PATH];
-    save_file_get_dir(fileIndex, filePath, SYS_MAX_PATH, NULL);
-    FILE *fp = fopen(fs_get_write_path(filePath), "wb");
-    if (fp == NULL) {
-        return -1;
-    }
-    s32 ret = fwrite(content, 1, EEPROM_SIZE, fp) == EEPROM_SIZE ? 0 : -1;
     fclose(fp);
 
     return ret;

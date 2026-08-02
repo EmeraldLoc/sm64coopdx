@@ -258,15 +258,16 @@ static bool mod_import_save(char* src) {
     // check to see if it's the old format first
     struct LegacySaveBuffer legacySaveBuffer = { 0 };
     s32 status = osEepromLongRead(NULL, 0, (void*)&legacySaveBuffer, sizeof(legacySaveBuffer), src, 512);
-    if (status == 0) {
-        // old data is a go, write eeprom data
+    if (status == 0) { // 0 is success with osEeprom functions
+        // make sure we have 4 slots to import the 4 saves
         if (save_file_get_amount_of_available_indexes() < 4) {
-            LOG_ERROR("Ran out of save files slots");
+            LOG_ERROR("Ran out of save files slots!");
             return false;
         }
+        // write the save file
         for (int i = 0; i < 4; i++) {
             int file = save_file_get_first_available_index();
-            write_eeprom_data(file, legacySaveBuffer.files[i], sizeof(legacySaveBuffer.files[i]), 0);
+            write_save_file(file, legacySaveBuffer.files[i], sizeof(legacySaveBuffer.files[i]), 0);
         }
         LOG_INFO("Imported save: '%s' into 4 parts", src);
         save_file_load_all(TRUE);
@@ -281,8 +282,8 @@ static bool mod_import_save(char* src) {
     }
     status = osEepromLongRead(NULL, 0, (void*)&gSaveBuffer.files[firstIndex], sizeof(gSaveBuffer.files[firstIndex]), src, EEPROM_SIZE);
     if (status == 0) {
-        // data is a go, write to eeprom data
-        write_eeprom_data(firstIndex, gSaveBuffer.files[firstIndex], sizeof(gSaveBuffer.files[firstIndex]), 0);
+        // write to save file and load save file
+        write_save_file(firstIndex, gSaveBuffer.files[firstIndex], sizeof(gSaveBuffer.files[firstIndex]), 0);
         LOG_INFO("Imported save: '%s'", src);
         save_file_load_all(TRUE);
         return true;
