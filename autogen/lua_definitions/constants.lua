@@ -9278,6 +9278,25 @@ E_MODEL_MAX                                = 381 --- @type ModelExtendedId
 --- | `E_MODEL_MAX`
 
 --- @type integer
+MAX_ACTS = 6
+
+--- @type integer
+MAX_ACTS_AND_100_COINS = 7
+
+DIALOG_TYPE_DEFAULT    = 0 --- @type DialogType
+DIALOG_TYPE_BOSS_START = 1 --- @type DialogType
+DIALOG_TYPE_BOSS_STOP  = 2 --- @type DialogType
+DIALOG_TYPE_RACE       = 3 --- @type DialogType
+DIALOG_TYPE_STAR_SOUND = 4 --- @type DialogType
+
+--- @alias DialogType
+--- | `DIALOG_TYPE_DEFAULT`
+--- | `DIALOG_TYPE_BOSS_START`
+--- | `DIALOG_TYPE_BOSS_STOP`
+--- | `DIALOG_TYPE_RACE`
+--- | `DIALOG_TYPE_STAR_SOUND`
+
+--- @type integer
 SOUNDARGS_MASK_BANK = 0xF0000000
 
 --- @type integer
@@ -11438,10 +11457,10 @@ SM64COOPDX_VERSION = "v1.6"
 VERSION_TEXT = "v"
 
 --- @type integer
-VERSION_NUMBER = 42
+VERSION_NUMBER = 43
 
 --- @type integer
-MINOR_VERSION_NUMBER = 2
+MINOR_VERSION_NUMBER = 0
 
 --- @type string
 GAME_NAME = "sm64coopdx"

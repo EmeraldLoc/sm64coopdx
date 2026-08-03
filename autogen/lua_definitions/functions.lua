@@ -3912,7 +3912,7 @@ end
 --- It decides by checking where you entered the command, and will output to that source directly.<br>
 --- <br>
 --- It should be used in any function that is ran from `hook_chat_command` or `hook_console_command`.<br>
---- If ran independently of any of these hooks, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
+--- If ran independently of any hook, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
 function command_message_create(message, level)
     -- ...
 end
@@ -10644,6 +10644,29 @@ function get_level_course_num(levelNum)
 end
 
 --- @param fileIndex integer
+--- @param outPath string
+--- @param size integer
+--- @param overrideName string
+function save_file_get_dir(fileIndex, outPath, size, overrideName)
+    -- ...
+end
+
+--- @return integer
+function save_file_get_first_available_index()
+    -- ...
+end
+
+--- @return integer
+function save_file_get_amount_of_available_indexes()
+    -- ...
+end
+
+--- @return integer
+function save_file_get_first_active_index()
+    -- ...
+end
+
+--- @param fileIndex integer
 --- @param forceSave integer
 --- Saves the current state of the game into a specified save file. Includes data verification and backup management.<br>
 --- Useful for maintaining game progress during play or when saving manually
@@ -11986,6 +12009,12 @@ function get_network_area_timer()
 end
 
 --- @return integer
+--- Gets the current area's networked random seed
+function get_network_area_random_seed()
+    -- ...
+end
+
+--- @return integer
 --- Gets the area update counter incremented when objects are updated
 function get_area_update_counter()
     -- ...
@@ -13072,6 +13101,26 @@ function smlua_text_utils_allocate_dialog()
     -- ...
 end
 
+--- @param dialogId DialogId
+--- @return DialogType
+--- Gets the type of a `dialogId`
+function smlua_text_utils_dialog_get_type(dialogId)
+    -- ...
+end
+
+--- @param dialogId DialogId
+--- @param dialogType DialogType
+--- Sets the type of a `dialogId`
+function smlua_text_utils_dialog_set_type(dialogId, dialogType)
+    -- ...
+end
+
+--- @param dialogId DialogId
+--- Resets the type of a `dialogId`
+function smlua_text_utils_dialog_reset_type(dialogId)
+    -- ...
+end
+
 --- @param courseNum integer
 --- @param courseName string
 --- @param act1 string
@@ -13450,6 +13499,13 @@ end
 --- @return boolean
 --- Checks if a surface has force
 function surface_has_force(surfaceType)
+    -- ...
+end
+
+--- @param syncId integer
+--- @return integer
+--- Retrieves the random seed of a sync object from its sync ID
+function sync_object_get_random_seed(syncId)
     -- ...
 end
 

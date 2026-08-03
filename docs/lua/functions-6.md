@@ -5415,6 +5415,83 @@ Gets the level number's corresponding course number
 
 <br />
 
+## [save_file_get_dir](#save_file_get_dir)
+
+### Lua Example
+`save_file_get_dir(fileIndex, outPath, size, overrideName)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| fileIndex | `integer` |
+| outPath | `string` |
+| size | `integer` |
+| overrideName | `string` |
+
+### Returns
+- None
+
+### C Prototype
+`void save_file_get_dir(int fileIndex, char* outPath, size_t size, char* overrideName);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [save_file_get_first_available_index](#save_file_get_first_available_index)
+
+### Lua Example
+`local integerValue = save_file_get_first_available_index()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 save_file_get_first_available_index();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [save_file_get_amount_of_available_indexes](#save_file_get_amount_of_available_indexes)
+
+### Lua Example
+`local integerValue = save_file_get_amount_of_available_indexes()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 save_file_get_amount_of_available_indexes();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [save_file_get_first_active_index](#save_file_get_first_active_index)
+
+### Lua Example
+`local integerValue = save_file_get_first_active_index()`
+
+### Parameters
+- None
+
+### Returns
+- `integer`
+
+### C Prototype
+`s32 save_file_get_first_active_index();`
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [save_file_do_save](#save_file_do_save)
 
 ### Description
