@@ -280,10 +280,10 @@ static bool mod_import_save(char* src) {
         LOG_ERROR("Ran out of save files slots");
         return false;
     }
-    status = osEepromLongRead(NULL, 0, (void*)&gSaveBuffer.files[firstIndex], sizeof(gSaveBuffer.files[firstIndex]), src, EEPROM_SIZE);
+    status = osEepromLongRead(NULL, 0, (void*)&gSaveBuffer[firstIndex].files, sizeof(gSaveBuffer[firstIndex].files), src, EEPROM_SIZE);
     if (status == 0) {
         // write to save file and load save file
-        write_save_file(firstIndex, gSaveBuffer.files[firstIndex], sizeof(gSaveBuffer.files[firstIndex]), 0);
+        write_save_file(firstIndex, gSaveBuffer[firstIndex].files, sizeof(gSaveBuffer[firstIndex].files), 0);
         LOG_INFO("Imported save: '%s'", src);
         save_file_load_all(TRUE);
         return true;

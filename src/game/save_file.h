@@ -18,7 +18,7 @@ struct SaveBlockSignature {
     u16 chksum;
 };
 
-struct SaveFile {
+struct SaveFileData {
     // Location of lost cap.
     // Note: the coordinates get set, but are never actually used, since the
     // cap can always be found in a fixed spot within the course
@@ -45,16 +45,11 @@ enum SaveFileIndex {
     SAVE_FILE_D
 };
 
-struct SingleSaveFile {
-    // Each save file has two copies. If one is bad, the other is used as a backup.
-    struct SaveFile files[2];
-    // Filler to make a single save file equal the eeprom size
-    u8 filler[EEPROM_SIZE - (sizeof(struct SaveFile) * 2)];
-};
-
-struct SaveBuffer {
-    // For all save files, each save has two copies. If one is bad, the other is used as a backup.
-    struct SaveFile files[NUM_SAVE_FILES][2];
+struct SaveFile {
+    // each save file has two copies. If one is bad, the other is used as a backup.
+    struct SaveFileData files[2];
+    // filler to make a single save file equal the eeprom size
+    u8 filler[EEPROM_SIZE - (sizeof(struct SaveFileData) * 2)];
 };
 
 // Legacy save info for loading old save files
@@ -73,18 +68,19 @@ struct LegacyMainMenuSaveData {
 #endif
 
     // Pad to match the EEPROM size of 0x200 (10 bytes on JP/US, 8 bytes on EU)
-    u8 filler[512 / 2 - SUBTRAHEND - 4 * (4 + sizeof(struct SaveFile))];
+    u8 filler[512 / 2 - SUBTRAHEND - 4 * (4 + sizeof(struct SaveFileData))];
 
     struct SaveBlockSignature signature;
 };
 
 struct LegacySaveBuffer {
     // Each of the four save files has two copies. If one is bad, the other is used as a backup.
-    struct SaveFile files[4][2];
+    struct SaveFileData files[4][2];
     // The main menu data has two copies. If one is bad, the other is used as a backup.
     struct LegacyMainMenuSaveData menuData[2];
 };
 
+extern struct SaveFile gSaveBuffer[NUM_SAVE_FILES];
 extern u8 *gOverrideEeprom[NUM_SAVE_FILES];
 extern u8 gLastCompletedCourseNum;
 extern u8 gLastCompletedStarNum;
