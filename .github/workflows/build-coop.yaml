@@ -10,7 +10,7 @@ on:
 jobs:
     build-linux:
         if: ${{ (github.event_name != 'push' || contains(github.event.head_commit.message, '[build]')) && github.event.pull_request.draft == false }}
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-26.04
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -18,7 +18,7 @@ jobs:
             - name: Install dependencies
               run: |
                 sudo apt update
-                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev libspirv-cross-c-shared-dev glslang-dev zip
+                sudo apt install -y build-essential git python3 libglew-dev libsdl3-dev libz-dev libcurl4-openssl-dev libspirv-cross-c-shared-dev glslang-dev zip
 
             - name: Build the game
               run: make -j$(nproc)
@@ -42,7 +42,7 @@ jobs:
 
     build-steamos:
         if: ${{ (github.event_name != 'push' || contains(github.event.head_commit.message, '[build]')) && github.event.pull_request.draft == false }}
-        runs-on: ubuntu-latest
+        runs-on: ubuntu-26.04
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -50,7 +50,7 @@ jobs:
             - name: Install dependencies
               run: |
                 sudo apt update
-                sudo apt install -y build-essential git python3 libglew-dev libsdl2-dev libz-dev libcurl4-openssl-dev libspirv-cross-c-shared-dev glslang-dev zip
+                sudo apt install -y build-essential git python3 libglew-dev libsdl3-dev libz-dev libcurl4-openssl-dev libspirv-cross-c-shared-dev glslang-dev zip
 
             - name: Build the game
               run: make -j$(nproc) HANDHELD=1
@@ -91,9 +91,10 @@ jobs:
                     unzip
                     make
                     git
+                    mingw-w64-x86_64-pkgconf
                     mingw-w64-x86_64-gcc
                     mingw-w64-x86_64-glew
-                    mingw-w64-x86_64-SDL2
+                    mingw-w64-x86_64-sdl3
                     mingw-w64-x86_64-glslang
                     mingw-w64-x86_64-spirv-cross
                     python3
@@ -121,39 +122,21 @@ jobs:
 
     build-macos-arm:
         if: ${{ (github.event_name != 'push' || contains(github.event.head_commit.message, '[build]')) && github.event.pull_request.draft == false }}
-        runs-on: macos-26
+        runs-on: macos-15
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
             - name: Install dependencies
               run: |
-                brew install make mingw-w64 pkg-config glfw3 coreutils glslang spirv-cross spirv-tools
-
-            - name: Compile glew
-              run: |
-                export MACOSX_DEPLOYMENT_TARGET=11
-                curl -L -o glew.tar.gz https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
-                tar -xzf glew.tar.gz
-                cd glew-2.2.0
-                make SYSTEM=darwin CC="clang -arch arm64 -mmacosx-version-min=11" GLEW_PREFIX=/opt/homebrew GLEW_DEST=/opt/homebrew
-                make install GLEW_PREFIX=/opt/homebrew GLEW_DEST=/opt/homebrew
-
-            - name: Compile SDL2
-              run: |
-                curl -L -o SDL2.tar.gz https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-2.30.9.tar.gz
-                tar -xzf SDL2.tar.gz
-                cd SDL2-2.30.9
-                ./configure --prefix=/opt/homebrew CC="clang -arch arm64 -mmacosx-version-min=11"
-                make -j$(sysctl -n hw.ncpu)
-                make install
+                brew install make mingw-w64 pkg-config glfw3 coreutils glew sdl3
 
             - name: Build the game
               run: |
                 export PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH
                 gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
 
-            - name: Code sign the app (Ad-Hoc)
+            - name: Codesign Ad-Hoc
               run: |
                 codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
 
@@ -183,31 +166,13 @@ jobs:
 
             - name: Install dependencies
               run: |
-                brew install make mingw-w64 pkg-config glfw3 coreutils glslang spirv-cross spirv-tools
-
-            - name: Compile glew
-              run: |
-                export MACOSX_DEPLOYMENT_TARGET=10.15
-                curl -L -o glew.tar.gz https://github.com/nigels-com/glew/releases/download/glew-2.2.0/glew-2.2.0.tgz
-                tar -xzf glew.tar.gz
-                cd glew-2.2.0
-                make SYSTEM=darwin CC="clang -arch x86_64 -mmacosx-version-min=10.15"
-                make install
-
-            - name: Compile SDL2
-              run: |
-                curl -L -o SDL2.tar.gz https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-2.30.9.tar.gz
-                tar -xzf SDL2.tar.gz
-                cd SDL2-2.30.9
-                ./configure --prefix=/usr/local CC="clang -arch x86_64 -mmacosx-version-min=10.15"
-                make -j$(sysctl -n hw.ncpu)
-                make install
+                brew install make mingw-w64 pkg-config glfw3 coreutils glew sdl3
 
             - name: Build the game
               run: |
                 gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
 
-            - name: Code sign the app (Ad-Hoc)
+            - name: Codesign Ad-Hoc
               run: |
                 codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
 

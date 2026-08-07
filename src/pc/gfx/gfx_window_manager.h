@@ -1,7 +1,7 @@
 #pragma once
 
 #include <PR/ultratypes.h>
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -24,6 +24,7 @@ enum GfxWindowBackend {
     #ifdef __APPLE__
         GFX_WINDOW_BACKEND_METAL,
     #endif
+    GFX_WINDOW_BACKEND_SDL_GPU,
     GFX_WINDOW_BACKEND_OPENGL,
     GFX_WINDOW_BACKEND_DUMMY,
     GFX_WINDOW_BACKEND_COUNT,

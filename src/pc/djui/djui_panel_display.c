@@ -79,6 +79,7 @@ void djui_panel_display_create(struct DjuiBase* caller) {
 #elif defined(_WIN32)
                 (char *)gfx_direct3d11_api.get_name(),
 #endif
+                (char *)gfx_sdl_gpu_api.get_name(),
                 (char *)gfx_opengl_api.get_name(),
             };
             djui_selectionbox_create(body, DLANG(DISPLAY, GRAPHICS_BACKEND), gfxBackendChoices, GFX_WINDOW_BACKEND_MAX, &configGraphicsBackend, djui_panel_display_update_restart_text);
