@@ -725,6 +725,21 @@ static void gfx_d3d11_reset_framebuffer(void) {
     d3d.context->RSSetScissorRects(1, &rect);
 }
 
+size_t gfx_d3d11_get_uniform_buffer_size(enum ShaderStage stage, int bufferIndex) {
+    if (bufferIndex < 0 || bufferIndex >= MAX_UNIFORM_BLOCKS) { return 0; }
+
+    struct Shader *shader = NULL;
+    if (stage == SHADER_STAGE_VERTEX) {
+        shader = d3d.shader_program->vertex_shader;
+    } else if (stage == SHADER_STAGE_FRAGMENT) {
+        shader = d3d.shader_program->fragment_shader;
+    } else {
+        return 0;
+    }
+
+    return shader->uniformBlocks[bufferIndex].size;
+}
+
 void gfx_d3d11_set_uniform_buffer(enum ShaderStage stage, const char *name) {
     struct Shader *shader = NULL;
     int *destination = NULL;
@@ -1186,6 +1201,7 @@ struct GfxRenderingAPI gfx_direct3d11_api = {
     gfx_d3d11_delete_framebuffer,
     gfx_d3d11_set_framebuffer,
     gfx_d3d11_reset_framebuffer,
+    gfx_d3d11_get_uniform_buffer_size,
     gfx_d3d11_set_uniform_buffer,
     gfx_d3d11_set_uniform,
     gfx_d3d11_new_texture,
