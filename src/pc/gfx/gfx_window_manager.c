@@ -25,12 +25,12 @@
 #include "pc/debuglog.h"
 
 static struct GfxWindowBackendAPI *sBackends[GFX_WINDOW_BACKEND_COUNT] = {
-    #if defined(_WIN32)
-        [GFX_WINDOW_BACKEND_DIRECTX] = &gfx_window_dxgi,
-    #endif
-    #if defined(__APPLE__)
-        [GFX_WINDOW_BACKEND_METAL] = &gfx_window_metal,
-    #endif
+#if defined(_WIN32)
+    [GFX_WINDOW_BACKEND_DIRECTX] = &gfx_window_dxgi,
+#endif
+#if defined(__APPLE__)
+    [GFX_WINDOW_BACKEND_METAL] = &gfx_window_metal,
+#endif
     [GFX_WINDOW_BACKEND_OPENGL] = &gfx_window_opengl,
     [GFX_WINDOW_BACKEND_DUMMY] = &gfx_window_dummy,
 };

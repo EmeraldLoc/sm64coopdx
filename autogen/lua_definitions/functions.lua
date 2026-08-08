@@ -11960,7 +11960,7 @@ end
 --- @return integer width
 --- @return integer height
 --- Gets a frame passes viewport size
-function gfx_shader_get_frame_pass_viewport(framePassIndex)
+function gfx_shader_get_frame_pass_viewport_dimensions(framePassIndex)
     -- ...
 end
 
@@ -11968,7 +11968,14 @@ end
 --- @param width integer
 --- @param height integer
 --- Sets a frame passes viewport size
-function gfx_shader_set_frame_pass_viewport(framePassIndex, width, height)
+function gfx_shader_set_frame_pass_viewport_dimensions(framePassIndex, width, height)
+    -- ...
+end
+
+--- @param framePassIndex integer
+--- @return integer
+--- Gets a frame passes filter for the pass texture
+function gfx_shader_get_frame_pass_filter(framePassIndex)
     -- ...
 end
 
@@ -11980,15 +11987,22 @@ function gfx_shader_set_frame_pass_filter(framePassIndex, filter)
 end
 
 --- @param framePassIndex integer
+--- @return boolean
+--- Gets if the pass is redrawing the world geometry
+function gfx_shader_get_frame_pass_draw_world_geometry(framePassIndex)
+    -- ...
+end
+
+--- @param framePassIndex integer
 --- @param drawWorldGeometry boolean
 --- Configures whether a frame pass should redraw the whole scene or use a fullscreen quad
-function gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry)
+function gfx_shader_set_frame_pass_draw_world_geometry(framePassIndex, drawWorldGeometry)
     -- ...
 end
 
 --- @return integer
 --- Gets the current active frame pass index. If there is no active frame pass, it returns -1
-function gfx_shader_get_current_frame_pass()
+function gfx_shader_get_current_frame_pass_index()
     -- ...
 end
 

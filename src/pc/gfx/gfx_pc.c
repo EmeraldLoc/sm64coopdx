@@ -1788,7 +1788,7 @@ static void gfx_draw_rectangle(int32_t ulx, int32_t uly, int32_t lrx, int32_t lr
 }
 
 static void gfx_draw_fullscreen_quad() {
-    float quadVerticies[] = {
+    float quadVertices[] = {
         -1.0f,  1.0f, 0.0f, 1.0f,   0.0f, 1.0f,
         -1.0f, -1.0f, 0.0f, 1.0f,   0.0f, 0.0f,
          1.0f, -1.0f, 0.0f, 1.0f,   1.0f, 0.0f,
@@ -1806,7 +1806,7 @@ static void gfx_draw_fullscreen_quad() {
 #endif
         // flip y coordinates
         for (int i = 0; i < 6; i++) {
-            quadVerticies[i * 6 + 5] = 1.0f - quadVerticies[i * 6 + 5];
+            quadVertices[i * 6 + 5] = 1.0f - quadVertices[i * 6 + 5];
         }
     }
 #endif
@@ -1821,7 +1821,7 @@ static void gfx_draw_fullscreen_quad() {
     gfx_set_builtin_uniforms();
     smlua_call_event_hooks(HOOK_ON_SET_SHADER_PROGRAM);
 
-    gfx_rapi->draw_triangles(quadVerticies, sizeof(quadVerticies) / sizeof(float), 2);
+    gfx_rapi->draw_triangles(quadVertices, sizeof(quadVertices) / sizeof(float), 2);
 
     sRenderingState.shader_program = NULL; // reset shader program to sync state with render api
 }

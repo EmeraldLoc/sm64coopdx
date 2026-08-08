@@ -1817,13 +1817,13 @@ Deletes a frame pass using `framePassIndex`
 
 <br />
 
-## [gfx_shader_get_frame_pass_viewport](#gfx_shader_get_frame_pass_viewport)
+## [gfx_shader_get_frame_pass_viewport_dimensions](#gfx_shader_get_frame_pass_viewport_dimensions)
 
 ### Description
 Gets a frame passes viewport size
 
 ### Lua Example
-`local width, height = gfx_shader_get_frame_pass_viewport(framePassIndex)`
+`local width, height = gfx_shader_get_frame_pass_viewport_dimensions(framePassIndex)`
 
 ### Parameters
 | Field | Type |
@@ -1835,19 +1835,19 @@ Gets a frame passes viewport size
 - `integer`
 
 ### C Prototype
-`void gfx_shader_get_frame_pass_viewport(int framePassIndex, RET u32 *width, RET u32 *height);`
+`void gfx_shader_get_frame_pass_viewport_dimensions(int framePassIndex, RET u32 *width, RET u32 *height);`
 
 [:arrow_up_small:](#)
 
 <br />
 
-## [gfx_shader_set_frame_pass_viewport](#gfx_shader_set_frame_pass_viewport)
+## [gfx_shader_set_frame_pass_viewport_dimensions](#gfx_shader_set_frame_pass_viewport_dimensions)
 
 ### Description
 Sets a frame passes viewport size
 
 ### Lua Example
-`gfx_shader_set_frame_pass_viewport(framePassIndex, width, height)`
+`gfx_shader_set_frame_pass_viewport_dimensions(framePassIndex, width, height)`
 
 ### Parameters
 | Field | Type |
@@ -1860,7 +1860,30 @@ Sets a frame passes viewport size
 - None
 
 ### C Prototype
-`void gfx_shader_set_frame_pass_viewport(int framePassIndex, u32 width, u32 height);`
+`void gfx_shader_set_frame_pass_viewport_dimensions(int framePassIndex, u32 width, u32 height);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_get_frame_pass_filter](#gfx_shader_get_frame_pass_filter)
+
+### Description
+Gets a frame passes filter for the pass texture
+
+### Lua Example
+`local integerValue = gfx_shader_get_frame_pass_filter(framePassIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+
+### Returns
+- `integer`
+
+### C Prototype
+`int gfx_shader_get_frame_pass_filter(int framePassIndex);`
 
 [:arrow_up_small:](#)
 
@@ -1890,13 +1913,36 @@ Sets a frame passes filter for the pass texture
 
 <br />
 
-## [gfx_shader_set_frame_pass_draw_world](#gfx_shader_set_frame_pass_draw_world)
+## [gfx_shader_get_frame_pass_draw_world_geometry](#gfx_shader_get_frame_pass_draw_world_geometry)
+
+### Description
+Gets if the pass is redrawing the world geometry
+
+### Lua Example
+`local booleanValue = gfx_shader_get_frame_pass_draw_world_geometry(framePassIndex)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| framePassIndex | `integer` |
+
+### Returns
+- `boolean`
+
+### C Prototype
+`bool gfx_shader_get_frame_pass_draw_world_geometry(int framePassIndex);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_set_frame_pass_draw_world_geometry](#gfx_shader_set_frame_pass_draw_world_geometry)
 
 ### Description
 Configures whether a frame pass should redraw the whole scene or use a fullscreen quad
 
 ### Lua Example
-`gfx_shader_set_frame_pass_draw_world(framePassIndex, drawWorldGeometry)`
+`gfx_shader_set_frame_pass_draw_world_geometry(framePassIndex, drawWorldGeometry)`
 
 ### Parameters
 | Field | Type |
@@ -1908,19 +1954,19 @@ Configures whether a frame pass should redraw the whole scene or use a fullscree
 - None
 
 ### C Prototype
-`void gfx_shader_set_frame_pass_draw_world(int framePassIndex, bool drawWorldGeometry);`
+`void gfx_shader_set_frame_pass_draw_world_geometry(int framePassIndex, bool drawWorldGeometry);`
 
 [:arrow_up_small:](#)
 
 <br />
 
-## [gfx_shader_get_current_frame_pass](#gfx_shader_get_current_frame_pass)
+## [gfx_shader_get_current_frame_pass_index](#gfx_shader_get_current_frame_pass_index)
 
 ### Description
 Gets the current active frame pass index. If there is no active frame pass, it returns -1
 
 ### Lua Example
-`local integerValue = gfx_shader_get_current_frame_pass()`
+`local integerValue = gfx_shader_get_current_frame_pass_index()`
 
 ### Parameters
 - None
@@ -1929,7 +1975,7 @@ Gets the current active frame pass index. If there is no active frame pass, it r
 - `integer`
 
 ### C Prototype
-`int gfx_shader_get_current_frame_pass();`
+`int gfx_shader_get_current_frame_pass_index();`
 
 [:arrow_up_small:](#)
 

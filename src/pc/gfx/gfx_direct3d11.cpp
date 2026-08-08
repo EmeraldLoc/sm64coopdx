@@ -29,12 +29,12 @@
 #include "game/rendering_graph_node.h"
 
 extern "C" {
-    #include "gfx_pc.h"
-    #include "pc/lua/smlua.h"
-    #include "pc/mods/mods_utils.h"
-    #include "pc/controller/controller_bind_mapping.h"
-    #include "engine/math_util.h"
-    extern Color gVertexColor;
+#include "gfx_pc.h"
+#include "pc/lua/smlua.h"
+#include "pc/mods/mods_utils.h"
+#include "pc/controller/controller_bind_mapping.h"
+#include "engine/math_util.h"
+extern Color gVertexColor;
 }
 
 #define DECLARE_GFX_DXGI_FUNCTIONS
