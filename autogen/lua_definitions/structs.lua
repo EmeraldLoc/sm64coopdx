@@ -510,10 +510,6 @@
 
 --- @class ColorCombiner
 --- @field public cm CombineMode
---- @field public shader_input_mapping integer[]
---- @field public shader_input_mapping_as_u64 integer[]
---- @field public shader_commands integer[]
---- @field public shader_commands_as_u64 integer[]
 --- @field public hash integer
 
 --- @class CombineMode

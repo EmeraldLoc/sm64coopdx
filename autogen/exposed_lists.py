@@ -424,7 +424,7 @@ structs_fields_blacklist = { "__name__": "structs_fields_blacklist",
     "DialogEntry": [ "str" ],
     "ModFsFile": [ "data", "capacity" ],
     "ModFs": [ "files" ],
-    "ColorCombiner": [ "prg" ],
+    "ColorCombiner": [ "prg", "shader_commands", "shader_commands_as_u64", "shader_input_mapping", "shader_input_mapping_as_u64" ],
 }
 
 # For each struct, expose these fields, but hide them from the documentation or VSCode autocomplete

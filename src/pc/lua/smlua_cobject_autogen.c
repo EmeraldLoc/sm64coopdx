@@ -698,14 +698,10 @@ static struct LuaObjectField sCharacterFields[LUA_CHARACTER_FIELD_COUNT] = {
     { "type",                               LVT_S32,       offsetof(struct Character, type),                               true, LOT_NONE                                         },
 };
 
-#define LUA_COLOR_COMBINER_FIELD_COUNT 6
+#define LUA_COLOR_COMBINER_FIELD_COUNT 2
 static struct LuaObjectField sColorCombinerFields[LUA_COLOR_COMBINER_FIELD_COUNT] = {
-    { "cm",                          LVT_COBJECT, offsetof(struct ColorCombiner, cm),                          true,  LOT_COMBINEMODE                },
-    { "hash",                        LVT_U64,     offsetof(struct ColorCombiner, hash),                        false, LOT_NONE                       },
-    { "shader_commands",             LVT_U8,      offsetof(struct ColorCombiner, shader_commands),             false, LOT_NONE,      16, sizeof(u8)  },
-    { "shader_commands_as_u64",      LVT_U64,     offsetof(struct ColorCombiner, shader_commands_as_u64),      false, LOT_NONE,      8,  sizeof(u64) },
-    { "shader_input_mapping",        LVT_U8,      offsetof(struct ColorCombiner, shader_input_mapping),        false, LOT_NONE,      16, sizeof(u8)  },
-    { "shader_input_mapping_as_u64", LVT_U64,     offsetof(struct ColorCombiner, shader_input_mapping_as_u64), false, LOT_NONE,      8,  sizeof(u64) },
+    { "cm",   LVT_COBJECT, offsetof(struct ColorCombiner, cm),   true,  LOT_COMBINEMODE },
+    { "hash", LVT_U64,     offsetof(struct ColorCombiner, hash), false, LOT_NONE        },
 };
 
 #define LUA_COMBINE_MODE_FIELD_COUNT 8

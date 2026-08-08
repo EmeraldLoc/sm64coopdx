@@ -701,10 +701,6 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | cm | [CombineMode](structs.md#CombineMode) | read-only |
-| shader_input_mapping | `Array` <`integer`> |  |
-| shader_input_mapping_as_u64 | `Array` <`integer`> |  |
-| shader_commands | `Array` <`integer`> |  |
-| shader_commands_as_u64 | `Array` <`integer`> |  |
 | hash | `integer` |  |
 
 [:arrow_up_small:](#)
