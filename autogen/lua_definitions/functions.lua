@@ -7157,14 +7157,14 @@ function mtxf_inverse_non_affine(dest, src)
 end
 
 --- @param dest Mat4
---- @param bottom number
---- @param topBound number
---- @param left number
---- @param right number
+--- @param boundBottom number
+--- @param boundTop number
+--- @param boundLeft number
+--- @param boundRight number
 --- @param near number
 --- @param far number
 --- Creates a orthographic matrix based on the bounds provided. This can be used to get an orthographic projection matrix.
-function mtxf_ortho(dest, bottom, topBound, left, right, near, far)
+function mtxf_ortho(dest, boundBottom, boundTop, boundLeft, boundRight, near, far)
     -- ...
 end
 
