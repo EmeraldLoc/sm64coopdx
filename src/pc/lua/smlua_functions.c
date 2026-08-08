@@ -1234,14 +1234,6 @@ int smlua_func_gfx_shader_set_mat4_array(lua_State* L) {
 
 #undef MAX_LUA_UNIFORMS
 
-// compatibility band-aid
-int smlua_func_return_self(lua_State* L) {
-    if (!smlua_functions_valid_param_count(L, 1)) { return 0; }
-
-    lua_pushvalue(L, 1);
-    return 1;
-}
-
   //////////
  // bind //
 //////////
@@ -1281,5 +1273,4 @@ void smlua_bind_functions(void) {
     smlua_bind_function(L, "gfx_shader_set_vec3_array", smlua_func_gfx_shader_set_vec3_array);
     smlua_bind_function(L, "gfx_shader_set_vec4_array", smlua_func_gfx_shader_set_vec4_array);
     smlua_bind_function(L, "gfx_shader_set_mat4_array", smlua_func_gfx_shader_set_mat4_array);
-    smlua_bind_function(L, "return_self", smlua_func_return_self); // compatibility band-aid
 }
