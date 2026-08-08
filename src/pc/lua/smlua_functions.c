@@ -1067,6 +1067,11 @@ static int smlua_gfx_shader_set_array(lua_State *L, const char *funcName, enum S
     if (!smlua_functions_valid_param_count(L, 2)) { return 0; }
 
     const char *name = smlua_to_string(L, 1);
+    if (!gSmLuaConvertSuccess) {
+        LOG_LUA("%s: Failed to convert parameter 1", funcName);
+        return 0;
+    }
+
     if (lua_type(L, 2) != LUA_TTABLE) {
         LOG_LUA_LINE("Invalid type passed to %s: %s", funcName, luaL_typename(L, 2));
         return 0;
