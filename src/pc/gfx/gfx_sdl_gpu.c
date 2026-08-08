@@ -34,7 +34,6 @@ struct GpuRingBuffer {
     u32 size;
 };
 
-static struct GpuRingBuffer sUniformRingBuffer = { 0 };
 static struct GpuRingBuffer sVertexRingBuffer = { 0 };
 
 struct TextureData {
@@ -77,7 +76,6 @@ u8 sShaderProgramPoolIndex[MAX_FRAME_PASSES] = { 0 };
 struct ShaderProgramSdlGpu sPostProcessShaderProgramPool[MAX_FRAME_PASSES];
 
 struct ShaderProgramSdlGpu *sShaderProgram = NULL;
-struct ShaderProgramSdlGpu *sLastShaderProgram = NULL;
 
 static struct TextureData *sTextures = NULL;
 static u32 sTexturesCapacity = 0;
@@ -230,11 +228,18 @@ static SDL_GPUShader *gfx_sdl_gpu_create_shader(struct Shader *shader) {
 }
 
 static void gfx_sdl_gpu_reset_state() {
-    sLastShaderProgram = NULL;
     sLastDepthTest = -1;
     sLastDepthMask = -1;
     sLastZModeDecal = -1;
     memset(sLastTextureIds, 0, sizeof(sLastTextureIds));
+}
+
+static void gfx_sdl_gpu_resume_render_pass(void) {
+    if (!gDefaultGeoFramePass.active) {
+        gfx_sdl_gpu_api.set_framebuffer(gfx_get_current_frame_pass());
+    } else {
+        gfx_sdl_gpu_api.reset_framebuffer();
+    }
 }
 
 static SDL_GPUSamplerAddressMode gfx_cm_to_sdl_gpu(u32 cm) {
@@ -279,7 +284,6 @@ void gfx_sdl_gpu_remove_shaders(void) {
     }
 
     sShaderProgram = NULL;
-    sLastShaderProgram = NULL;
 }
 
 static struct ShaderProgram *gfx_sdl_gpu_create_and_load_new_shader(struct ColorCombiner *cc) {
@@ -345,7 +349,7 @@ static struct ShaderProgram *gfx_sdl_gpu_create_and_load_new_shader(struct Color
     };
 
     SDL_GPUColorTargetDescription colorTargetDesc = {
-        .format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
+        .format = sSwapchainFormat, // TODO: may need to undo to use SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM
         .blend_state = {
             .enable_blend = cc->cm.use_alpha,
             .src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
@@ -1016,25 +1020,51 @@ static void upload_uniform_buffers_for_shader(struct Shader *shader) {
         if (uniformBlock->size == 0) { continue; }
 
         if (shader->stage == SHADER_STAGE_VERTEX) {
-            SDL_PushGPUVertexUniformData(
-                sCmdBuffer,
-                uniformBlock->location,
-                uniformBlock->buffer,
-                (u32)uniformBlock->size
-            );
+            SDL_PushGPUVertexUniformData(sCmdBuffer, uniformBlock->location, uniformBlock->buffer, (u32)uniformBlock->size);
         } else if (shader->stage == SHADER_STAGE_FRAGMENT) {
-            SDL_PushGPUFragmentUniformData(
-                sCmdBuffer,
-                uniformBlock->location,
-                uniformBlock->buffer,
-                (u32)uniformBlock->size
-            );
+            SDL_PushGPUFragmentUniformData(sCmdBuffer, uniformBlock->location, uniformBlock->buffer, (u32)uniformBlock->size);
         }
     }
 }
 
 void gfx_sdl_gpu_draw_triangles(f32 buf_vbo[], size_t buf_vbo_len, size_t buf_vbo_num_tris) {
     if (sShaderProgram == NULL || sRenderPass == NULL) { return; }
+
+    u32 offset = 0;
+    u32 vboByteSize = (u32)(buf_vbo_len * sizeof(f32));
+
+    if (buf_vbo_len > 0) {
+        // allocate new data to vertex ring buffer
+        offset = gfx_sdl_gpu_allocate_to_ring_buffer(&sVertexRingBuffer, vboByteSize);
+        memcpy(sVertexRingBuffer.mappedData + offset, buf_vbo, vboByteSize);
+
+        // end current render pass
+        gfx_sdl_gpu_end_render_pass();
+
+        // create a copy pass
+        SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(sCmdBuffer);
+
+        // create the transfer source
+        SDL_GPUTransferBufferLocation transferSrc = {
+            .transfer_buffer = sVertexRingBuffer.transferBuffer,
+            .offset = offset
+        };
+
+        // create the destination
+        SDL_GPUBufferRegion bufferDst = {
+            .buffer = sVertexRingBuffer.gpuBuffer,
+            .offset = offset,
+            .size = vboByteSize
+        };
+
+        // upload data to gpu buffer
+        SDL_UploadToGPUBuffer(copyPass, &transferSrc, &bufferDst, false);
+        // end copy pass
+        SDL_EndGPUCopyPass(copyPass);
+
+        // resume last render pass
+        gfx_sdl_gpu_resume_render_pass();
+    }
 
     if (sLastZModeDecal != sZModeDecal) {
         sLastZModeDecal = sZModeDecal;
@@ -1085,38 +1115,9 @@ void gfx_sdl_gpu_draw_triangles(f32 buf_vbo[], size_t buf_vbo_len, size_t buf_vb
     upload_uniform_buffers_for_shader(sShaderProgram->vertexShader);
     upload_uniform_buffers_for_shader(sShaderProgram->fragmentShader);
 
-    if (sLastShaderProgram != sShaderProgram) {
-        sLastShaderProgram = sShaderProgram;
-        SDL_BindGPUGraphicsPipeline(sRenderPass, sShaderProgram->pipeline);
-    }
+    SDL_BindGPUGraphicsPipeline(sRenderPass, sShaderProgram->pipeline);
 
     if (buf_vbo_len > 0) {
-        u32 vboByteSize = (u32)(buf_vbo_len * sizeof(f32));
-
-        // allocate vbo size to vertex buffer
-        u32 offset = gfx_sdl_gpu_allocate_to_ring_buffer(&sVertexRingBuffer, vboByteSize);
-
-        // copy vbo data to the vertex ring buffer
-        memcpy(sVertexRingBuffer.mappedData + offset, buf_vbo, vboByteSize);
-
-        gfx_sdl_gpu_end_render_pass();
-
-        SDL_GPUCopyPass *copyPass = SDL_BeginGPUCopyPass(sCmdBuffer);
-        SDL_GPUTransferBufferLocation transferSrc = {
-            .transfer_buffer = sVertexRingBuffer.transferBuffer,
-            .offset = offset
-        };
-        SDL_GPUBufferRegion bufferDst = {
-            .buffer = sVertexRingBuffer.gpuBuffer,
-            .offset = offset,
-            .size = vboByteSize
-        };
-        SDL_UploadToGPUBuffer(copyPass, &transferSrc, &bufferDst, false);
-        SDL_EndGPUCopyPass(copyPass);
-
-        gfx_sdl_gpu_reset_framebuffer();
-        SDL_BindGPUGraphicsPipeline(sRenderPass, sShaderProgram->pipeline);
-
         // bind vertex buffers
         SDL_GPUBufferBinding vboBinding = {
             .buffer = sVertexRingBuffer.gpuBuffer,
@@ -1176,9 +1177,6 @@ static void gfx_sdl_gpu_init(void) {
 
     // create a 16 megabyte vertex ring buffer
     gfx_sdl_gpu_create_ring_buffer(&sVertexRingBuffer, (16 * 1024 * 1024), SDL_GPU_BUFFERUSAGE_VERTEX);
-
-    // create a 16 megabyte uniform ring buffer (effectively a storage buffer)
-    gfx_sdl_gpu_create_ring_buffer(&sUniformRingBuffer, (16 * 1024 * 1024), SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ);
 
     gfx_sdl_gpu_create_depth_texture();
 }
