@@ -36,8 +36,6 @@
    - [gfx_shader_set_vec3_array](#gfx_shader_set_vec3_array)
    - [gfx_shader_set_vec4_array](#gfx_shader_set_vec4_array)
    - [gfx_shader_set_mat4_array](#gfx_shader_set_mat4_array)
-   - [gfx_get_from_name](#gfx_get_from_name)
-   - [vtx_get_from_name](#vtx_get_from_name)
 
 <br />
 
@@ -3041,7 +3039,7 @@ Pass an array of 4x4 matrices (mat4) to a custom uniform shader location using a
 
 ### Lua Example
 ```lua
--- Table containing 16 elements for a 4x4 matrix
+-- table containing 16 elements for a 4x4 matrix
 local matrix = gMat4Identity()
 gfx_shader_set_mat4_array("uIdentityMatrix", matrix)
 ```
@@ -3054,50 +3052,6 @@ gfx_shader_set_mat4_array("uIdentityMatrix", matrix)
 
 ### Returns
 - None
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_get_from_name](#gfx_get_from_name)
-
-### Description
-Gets a display list of the current mod from its name.
-Returns a pointer to the display list and its length
-
-### Lua Example
-
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| name | `string` |
-
-### Returns
-- [Pointer_Gfx](./structs.md#Pointer_Gfx)
-- `integer`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [vtx_get_from_name](#vtx_get_from_name)
-
-### Description
-Gets a vertex buffer of the current mod from its name.
-Returns a pointer to the vertex buffering and its vertex count
-
-### Lua Example
-
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| name | `string` |
-
-### Returns
-- [Pointer_Vtx](./structs.md#Pointer_Vtx)
-- `integer`
 
 [:arrow_up_small:](#)
 
