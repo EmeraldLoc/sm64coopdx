@@ -63,7 +63,7 @@ The fragment shader takes in the vertex pos we exported in the vertex shader.
 
 For a post process vertex shader example, we are going to mirror the entire world. First, grab the [default C post process shader converted to Lua](../examples/shader-demo/default-post-process-shader.lua), specifically the vertex portion.
 
-*Note: While the format shown in the default shaders use `table.insert(xShader, "line")`, this is not at all required. You may use any method you'd like, including loading the shader from a different file. This method was picked for it's ease to inject any if statement checks anywhere you'd like that's outside the shader.*
+*Note: While the format shown in the default shaders use `table.insert(xShader, "line")`, this is not at all required. You may use any method you'd like. This method was picked for it's ease to inject any if statement checks anywhere you'd like that's outside the shader.*
 
 ```lua
 gl_Position = aVtxPos;
