@@ -1150,10 +1150,10 @@ static void gfx_d3d11_start_frame(void) {
     struct FramePass *framePass = gfx_get_current_frame_pass();
 
     // get current render targets for clearing
-    ComPtr<ID3D11RenderTargetView> currentRtv;
-    ComPtr<ID3D11DepthStencilView> currentDsv;
+    ID3D11RenderTargetView *currentRtv = nullptr;
+    ID3D11DepthStencilView *currentDsv = nullptr;
 
-    d3d.context->OMGetRenderTargets(1, currentRtv.GetAddressOf(), currentDsv.GetAddressOf());
+    d3d.context->OMGetRenderTargets(1, &currentRtv, &currentDsv);
 
     // Prepare clear colors
     float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
@@ -1165,8 +1165,11 @@ static void gfx_d3d11_start_frame(void) {
     }
 
     // clear render targets
-    d3d.context->ClearRenderTargetView(currentRtv.Get(), clearColor);
-    d3d.context->ClearDepthStencilView(currentDsv.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+    d3d.context->ClearRenderTargetView(currentRtv, clearColor);
+    d3d.context->ClearDepthStencilView(currentDsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+    currentRtv->Release();
+    currentDsv->Release();
 
     frameCount++;
 }
