@@ -185,7 +185,7 @@ local sceneBrightness = 0.5
 
 local function on_set_shader_uniforms()
     -- if necessary, check frame pass index using this code
-    -- local framePass = gfx_shader_get_current_frame_pass()
+    -- local framePass = gfx_shader_get_current_frame_pass_index()
     -- if framePass ~= FRAME_PASS_REQ then return end
 
     gfx_shader_set_float("uSceneBrightness", sceneBrightness)
