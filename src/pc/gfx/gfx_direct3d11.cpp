@@ -1168,6 +1168,9 @@ static void gfx_d3d11_start_frame(void) {
     d3d.context->ClearRenderTargetView(currentRtv, clearColor);
     d3d.context->ClearDepthStencilView(currentDsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+    currentRtv->Release();
+    currentDsv->Release();
+
     frameCount++;
 }
 
