@@ -236,18 +236,13 @@ Multipass shaders allow you to draw the world multiple times in a single frame. 
 
 ## Creating a frame pass
 
-A frame pass can be created with `gfx_shader_create_frame_pass`. This function returns the frame pass index, which is anywhere from zero to the maximum number of frame passes. A frame pass may also be removed with `gfx_shader_remove_frame_pass`.
+A frame pass can be created with `gfx_shader_create_frame_pass`. This function returns the frame pass index, and the frame pass itself. The frame pass index is anywhere from zero to `MAX_FRAME_PASSES`. A frame pass may also be removed with `gfx_shader_remove_frame_pass`, which takes in the frame pass index.
 
-Frame passes can be configured with their configuration functions.
-
-| Function | Description |
-| -------- | ----------- |
-| `gfx_shader_set_frame_pass_viewport` | Sets the viewport/resolution of the frame pass. A viewport width or height of 0 will cause that value to use whatever the current screen size is |
-| `gfx_shader_set_frame_pass_draw_world` | Configures whether the frame pass should redraw the world or use a quad (quad uses post process shader, redrawing the world uses the scene shader) |
+Frame passes can be configured by modifying the `FramePass` provided by `gfx_shader_create_frame_pass`.
 
 ## Using frame passes
 
-In your shader hooks, you can access which frame pass you are currently on with the `gfx_shader_get_current_frame_pass`. This is needed if you need to change your shader depending on the current frame pass.
+In your shader hooks, you can access which frame pass you are currently on with the `gfx_shader_get_current_frame_pass` and `gfx_shader_get_current_frame_pass_index`. For unique identification, which is the main reason you would get the current frame pass, you should use `gfx_shader_get_current_frame_pass_index`. This is needed if you need to change your shader depending on the current frame pass.
 
 Sometimes you may need to configure things before you redraw the world. For instance, on some shaders you may want to disable culling before you redraw the world. You can use `HOOK_BEFORE_DRAW_GEOMETRY` to achieve this. Check your current frame pass index using `gfx_shader_get_current_frame_pass`, and run code accordingly in this hook. This hook isn't unique to frame passes, it's called anytime the world geometry is about to be drawn.
 
