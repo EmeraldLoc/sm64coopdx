@@ -1776,19 +1776,20 @@ Sets the value of a shader uniform of type mat4
 ## [gfx_shader_create_frame_pass](#gfx_shader_create_frame_pass)
 
 ### Description
-Creates a frame pass to be used when rendering the game. Allows for multipass shaders. Returns the frame pass index
+Creates a frame pass to be used when rendering the game. Allows for multipass shaders. Returns the frame pass index and the frame pass
 
 ### Lua Example
-`local integerValue = gfx_shader_create_frame_pass()`
+`local integerValue, retFramePass = gfx_shader_create_frame_pass()`
 
 ### Parameters
 - None
 
 ### Returns
 - `integer`
+- [FramePass](structs.md#FramePass)
 
 ### C Prototype
-`int gfx_shader_create_frame_pass();`
+`int gfx_shader_create_frame_pass(RET struct FramePass **retFramePass);`
 
 [:arrow_up_small:](#)
 
@@ -1817,149 +1818,6 @@ Deletes a frame pass using `framePassIndex`
 
 <br />
 
-## [gfx_shader_get_frame_pass_viewport_dimensions](#gfx_shader_get_frame_pass_viewport_dimensions)
-
-### Description
-Gets a frame passes viewport size
-
-### Lua Example
-`local width, height = gfx_shader_get_frame_pass_viewport_dimensions(framePassIndex)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| framePassIndex | `integer` |
-
-### Returns
-- `integer`
-- `integer`
-
-### C Prototype
-`void gfx_shader_get_frame_pass_viewport_dimensions(int framePassIndex, RET u32 *width, RET u32 *height);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_set_frame_pass_viewport_dimensions](#gfx_shader_set_frame_pass_viewport_dimensions)
-
-### Description
-Sets a frame passes viewport size
-
-### Lua Example
-`gfx_shader_set_frame_pass_viewport_dimensions(framePassIndex, width, height)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| framePassIndex | `integer` |
-| width | `integer` |
-| height | `integer` |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_shader_set_frame_pass_viewport_dimensions(int framePassIndex, u32 width, u32 height);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_get_frame_pass_filter](#gfx_shader_get_frame_pass_filter)
-
-### Description
-Gets a frame passes filter for the pass texture
-
-### Lua Example
-`local integerValue = gfx_shader_get_frame_pass_filter(framePassIndex)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| framePassIndex | `integer` |
-
-### Returns
-- `integer`
-
-### C Prototype
-`int gfx_shader_get_frame_pass_filter(int framePassIndex);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_set_frame_pass_filter](#gfx_shader_set_frame_pass_filter)
-
-### Description
-Sets a frame passes filter for the pass texture
-
-### Lua Example
-`gfx_shader_set_frame_pass_filter(framePassIndex, filter)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| framePassIndex | `integer` |
-| filter | [enum PassFilter](constants.md#enum-PassFilter) |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_shader_set_frame_pass_filter(int framePassIndex, enum PassFilter filter);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_get_frame_pass_draw_world_geometry](#gfx_shader_get_frame_pass_draw_world_geometry)
-
-### Description
-Gets if the pass is redrawing the world geometry
-
-### Lua Example
-`local booleanValue = gfx_shader_get_frame_pass_draw_world_geometry(framePassIndex)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| framePassIndex | `integer` |
-
-### Returns
-- `boolean`
-
-### C Prototype
-`bool gfx_shader_get_frame_pass_draw_world_geometry(int framePassIndex);`
-
-[:arrow_up_small:](#)
-
-<br />
-
-## [gfx_shader_set_frame_pass_draw_world_geometry](#gfx_shader_set_frame_pass_draw_world_geometry)
-
-### Description
-Configures whether a frame pass should redraw the whole scene or use a fullscreen quad
-
-### Lua Example
-`gfx_shader_set_frame_pass_draw_world_geometry(framePassIndex, drawWorldGeometry)`
-
-### Parameters
-| Field | Type |
-| ----- | ---- |
-| framePassIndex | `integer` |
-| drawWorldGeometry | `boolean` |
-
-### Returns
-- None
-
-### C Prototype
-`void gfx_shader_set_frame_pass_draw_world_geometry(int framePassIndex, bool drawWorldGeometry);`
-
-[:arrow_up_small:](#)
-
-<br />
-
 ## [gfx_shader_get_current_frame_pass_index](#gfx_shader_get_current_frame_pass_index)
 
 ### Description
@@ -1976,6 +1834,27 @@ Gets the current active frame pass index. If there is no active frame pass, it r
 
 ### C Prototype
 `int gfx_shader_get_current_frame_pass_index();`
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [gfx_shader_get_current_frame_pass](#gfx_shader_get_current_frame_pass)
+
+### Description
+Gets the current active frame pass. If there is no active frame pass, it returns nil
+
+### Lua Example
+`local framePassValue = gfx_shader_get_current_frame_pass()`
+
+### Parameters
+- None
+
+### Returns
+- [FramePass](structs.md#FramePass)
+
+### C Prototype
+`struct FramePass *gfx_shader_get_current_frame_pass();`
 
 [:arrow_up_small:](#)
 

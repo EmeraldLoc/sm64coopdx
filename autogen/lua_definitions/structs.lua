@@ -624,6 +624,13 @@
 --- @class FnGraphNode
 --- @field public node GraphNode
 
+--- @class FramePass
+--- @field public width integer
+--- @field public height integer
+--- @field public drawWorldGeometry boolean
+--- @field public clearColor ColorRGBA
+--- @field public passFilter PassFilter
+
 --- @class Gfx
 --- @field public w0 integer
 --- @field public w1 integer
@@ -2418,6 +2425,12 @@
 --- @field public r integer
 --- @field public g integer
 --- @field public b integer
+
+--- @class ColorRGBA
+--- @field public r integer
+--- @field public g integer
+--- @field public b integer
+--- @field public a integer
 
 --- @alias Pointer_integer integer
 --- @alias Pointer_Trajectory Trajectory
