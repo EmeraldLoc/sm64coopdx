@@ -191,7 +191,7 @@ local function on_set_shader_uniforms()
     gfx_shader_set_float("uSceneBrightness", sceneBrightness)
 end
 
-hook_event(HOOK_ON_SET_SHADER_UNIFORMS, on_set_shader_uniforms)
+hook_event(HOOK_ON_SET_SHADER_PROGRAM, on_set_shader_uniforms)
 ```
 
 That allows you to define your own uniforms and set your uniforms in Lua!
