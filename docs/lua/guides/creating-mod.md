@@ -66,6 +66,6 @@ An example of some of these would be:
 
 When you've configured the mod the way you like, you are ready to go! Open up the game, select the mod, and you should see your mod appear!
 
-*Note: For more advanced configuration, consider using a [mod manifset](mod-manifest.md).*
+*Note: For more advanced configuration, consider using a [mod manifest](mod-manifest.md).*
 
 You can read up on more documentation. Go back to the [main page](../lua.md) and go through some of the guides if you are just getting started. A good first place to look is the [hooks documentation](hooks.md). Happy modding!
