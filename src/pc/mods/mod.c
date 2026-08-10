@@ -529,12 +529,14 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
     }
 
     if (incompatible[0] != '\0') {
+        free(mod->incompatible);
         mod->incompatible = calloc(MOD_INCOMPATIBLE_SIZE, sizeof(char));
         snprintf(mod->incompatible, MOD_INCOMPATIBLE_SIZE, "%s", incompatible);
     }
 
     char *category = mod_manifest_get_string(mod, "category");
     if (category) {
+        free(mod->category);
         mod->category = calloc(MOD_CATEGORY_SIZE, sizeof(char));
         snprintf(mod->category, MOD_CATEGORY_SIZE, "%s", category);
         free(category);
@@ -542,6 +544,7 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
 
     char *description = mod_manifest_get_string(mod, "description");
     if (description) {
+        free(mod->description);
         mod->description = calloc(MOD_DESCRIPTION_SIZE, sizeof(char));
         snprintf(mod->description, MOD_DESCRIPTION_SIZE, "%s", description);
         free(description);
@@ -549,7 +552,7 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
 
     char *id = mod_manifest_get_string(mod, "id");
     if (id) {
-        snprintf(mod->id, MOD_ID_SIZE, "%s", description);
+        snprintf(mod->id, MOD_ID_SIZE, "%s", id);
         free(id);
     }
 

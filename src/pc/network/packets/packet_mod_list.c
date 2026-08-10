@@ -61,7 +61,7 @@ void network_send_mod_list(void) {
         if (nameLength > MOD_NAME_MAX_LENGTH) { nameLength = MOD_NAME_MAX_LENGTH; }
 
         u16 idLength = strlen(mod->id);
-        if (idLength > MOD_NAME_MAX_LENGTH) { idLength = MOD_NAME_MAX_LENGTH; }
+        if (idLength > MOD_ID_MAX_LENGTH) { idLength = MOD_NAME_MAX_LENGTH; }
 
         u16 incompatibleLength = 0;
         if (mod->incompatible) {

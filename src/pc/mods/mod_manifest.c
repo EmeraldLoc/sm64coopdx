@@ -9,7 +9,7 @@
 
 static bool read_file(const char *path, char **outContents, size_t *outSize) {
     // open file with the task to read
-    FILE *file = fopen(path, "r");
+    FILE *file = fopen(path, "rb");
     if (!file) { return false; }
 
     // get size of file
@@ -104,7 +104,10 @@ char *mod_manifest_get_entry_file_path(const char *path) {
 
     // scan for an entry file
     cJSON *entryFileJsonEntry = cJSON_GetObjectItemCaseSensitive(json, "entryFile");
-    if (!cJSON_IsString(entryFileJsonEntry) || entryFileJsonEntry->valuestring == NULL) { return NULL; }
+    if (!cJSON_IsString(entryFileJsonEntry) || entryFileJsonEntry->valuestring == NULL) {
+        cJSON_Delete(json);
+        return NULL;
+    }
 
     char *entryFile = entryFileJsonEntry->valuestring;
     normalize_path(entryFile);
@@ -184,7 +187,10 @@ char *mod_manifest_get_string(struct Mod *mod, const char *key) {
     if (!json) { return NULL; }
 
     cJSON *jsonItem = cJSON_GetObjectItemCaseSensitive(json, key);
-    if (!cJSON_IsString(jsonItem) || jsonItem->valuestring == NULL) { return NULL; }
+    if (!cJSON_IsString(jsonItem) || jsonItem->valuestring == NULL) {
+        cJSON_Delete(json);
+        return NULL;
+    }
     char *valueString = strdup(jsonItem->valuestring);
     if (!valueString) {
         cJSON_Delete(json);
@@ -199,7 +205,10 @@ bool mod_manifest_get_bool(struct Mod *mod, const char *key, bool defaultValue) 
     if (!json) { return defaultValue; }
 
     cJSON *jsonItem = cJSON_GetObjectItemCaseSensitive(json, key);
-    if (!cJSON_IsBool(jsonItem)) { return defaultValue; }
+    if (!cJSON_IsBool(jsonItem)) {
+        cJSON_Delete(json);
+        return defaultValue;
+    }
     bool returnValue = cJSON_IsTrue(jsonItem);
     cJSON_Delete(json);
     return returnValue;
