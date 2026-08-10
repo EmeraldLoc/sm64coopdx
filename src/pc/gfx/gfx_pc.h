@@ -81,10 +81,6 @@ extern struct FramePass gDefaultGeoFramePass;
 extern struct FramePass gFramePasses[MAX_CUSTOM_FRAME_PASSES];
 extern int gCurrentFramePassIndex;
 
-extern f32 gFogDepthZAdd;
-extern f32 gFogDepthZMult;
-extern f32 gFogDepthZSub;
-
 extern Vec3f gLightingDir;
 extern Color gLightingColor[2];
 extern Color gVertexColor;
