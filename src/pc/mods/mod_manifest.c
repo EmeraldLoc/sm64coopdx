@@ -14,7 +14,7 @@ static bool read_file(const char *path, char **outContents, size_t *outSize) {
 
     // get size of file
     fseek(file, 0, SEEK_END);
-    s32 fileSize = ftell(file);
+    s64 fileSize = ftell(file);
     if (fileSize <= 0) {
         fclose(file);
         return false;
