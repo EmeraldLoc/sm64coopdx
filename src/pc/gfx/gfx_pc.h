@@ -122,7 +122,6 @@ void gfx_shutdown(void);
 void gfx_update_fog_uniforms(void);
 void gfx_update_matrices(void);
 void gfx_set_builtin_uniforms(void);
-void gfx_set_builtin_uniforms(void);
 void gfx_remove_all_color_combiners(void);
 void gfx_pc_precomp_shader(uint32_t rgb1, uint32_t alpha1, uint32_t rgb2, uint32_t alpha2, uint32_t flags);
 
