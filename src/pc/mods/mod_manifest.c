@@ -14,11 +14,12 @@ static bool read_file(const char *path, char **outContents, size_t *outSize) {
 
     // get size of file
     fseek(file, 0, SEEK_END);
-    size_t size = ftell(file);
-    if (size <= 0) {
+    s32 fileSize = ftell(file);
+    if (fileSize <= 0) {
         fclose(file);
         return false;
     }
+    size_t size = (size_t)fileSize;
     rewind(file); // reset file cursor
 
     // allocate file contents with the size discovered above
@@ -39,7 +40,7 @@ static bool read_file(const char *path, char **outContents, size_t *outSize) {
     }
 
     *outContents = fileContents;
-    *outSize = size;
+    *outSize = (size_t)size;
 
     return true;
 }
