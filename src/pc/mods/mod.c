@@ -410,7 +410,7 @@ static void mod_set_loading_order(struct Mod* mod) {
     for (s32 i = 1; i < mod->fileCount; ++i) {
         struct ModFile file = mod->files[i];
         for (s32 j = 0; j < i; ++j) {
-            if (strcmp(file.relativePath, mod->files[j].relativePath) < 0) {
+            if (pathcmp(file.relativePath, mod->files[j].relativePath) < 0) {
                 memmove(mod->files + j + 1, mod->files + j, sizeof(struct ModFile) * (i - j));
                 memcpy(mod->files + j, &file, sizeof(struct ModFile));
                 break;
@@ -426,7 +426,7 @@ static void mod_extract_fields_from_lua_file(struct Mod *mod) {
     if (mod->isDirectory) {
         for (int i = 0; i < mod->fileCount; i++) {
             struct ModFile* file = &mod->files[i];
-            if (!strcmp(file->relativePath, mod->relativeEntryPath)) {
+            if (!pathcmp(file->relativePath, mod->relativeEntryPath)) {
                 relativePath = file->relativePath;
             }
         }
@@ -675,7 +675,7 @@ bool mod_load(struct Mods* mods, char* basePath, char* modName) {
     // make sure mod is unique
     for (int i = 0; i < mods->entryCount; i++) {
         struct Mod* compareMod = mods->entries[i];
-        if (!strcmp(compareMod->relativePath, modName)) {
+        if (!pathcmp(compareMod->relativePath, modName)) {
             return true;
         }
     }

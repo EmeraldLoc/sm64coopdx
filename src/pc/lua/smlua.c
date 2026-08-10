@@ -369,7 +369,7 @@ void smlua_init(void) {
 
             // if we have a custom entry file, skip loading lua files that are not that file, otherwise...
             if (mod->isCustomEntryFile) {
-                if (strcmp(file->relativePath, mod->relativeEntryPath) != 0) {
+                if (pathcmp(file->relativePath, mod->relativeEntryPath) != 0) {
                     continue;
                 }
             // ...skip loading scripts in subdirectories
