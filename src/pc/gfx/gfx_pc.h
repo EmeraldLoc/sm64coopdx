@@ -61,11 +61,16 @@ struct FramePass {
     u32 depthBuffer;
     u64 passTexture;
 
-    // d3d/metal (scuffed)
-    void *d3dTexture;
-    void *d3dRtv;
+    // d3d/metal specific stuff
     void *d3dSrv;
-    void *d3dDsv;
+    union {
+        void *d3dRtv;
+        void *mtlColorTex;
+    };
+    union {
+        void *d3dDsv;
+        void *mtlDepthTex;
+    };
 
     // global
     u32 width;
