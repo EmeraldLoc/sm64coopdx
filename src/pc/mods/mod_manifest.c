@@ -2,6 +2,7 @@
 
 #include "pc/utils/cJSON.h"
 #include "pc/debuglog.h"
+#include "pc/fs/fmem.h"
 
 #include "mod.h"
 #include "mods_utils.h"
@@ -9,29 +10,29 @@
 
 static bool read_file(const char *path, char **outContents, size_t *outSize) {
     // open file with the task to read
-    FILE *file = fopen(path, "rb");
+    FILE *file = f_open_r(path);
     if (!file) { return false; }
 
     // get size of file
-    fseek(file, 0, SEEK_END);
-    s64 fileSize = ftell(file);
+    f_seek(file, 0, SEEK_END);
+    s64 fileSize = f_tell(file);
     if (fileSize <= 0) {
-        fclose(file);
+        f_close(file);
         return false;
     }
     size_t size = (size_t)fileSize;
-    rewind(file); // reset file cursor
+    f_rewind(file); // reset file cursor
 
     // allocate file contents with the size discovered above
     char *fileContents = malloc(size);
     if (!fileContents) {
-        fclose(file);
+        f_close(file);
         return false;
     }
 
     // read the data
-    size_t readData = fread(fileContents, 1, size, file);
-    fclose(file);
+    size_t readData = f_read(fileContents, 1, size, file);
+    f_close(file);
 
     // if we couldnt read the entire file, return early
     if (readData < size) {
