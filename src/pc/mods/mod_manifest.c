@@ -63,15 +63,6 @@ static cJSON *get_json_from_path(const char *path) {
     return json;
 }
 
-static cJSON *get_json_from_mod(struct Mod *mod) {
-    char manifestPath[SYS_MAX_PATH] = { 0 };
-    if (!concat_path(manifestPath, mod->basePath, MOD_MANIFEST_ENTRY_FILE)) {
-        LOG_ERROR("Failed to concat path '%s' + '%s'", mod->basePath, MOD_MANIFEST_ENTRY_FILE);
-        return NULL;
-    }
-    return get_json_from_path(manifestPath);
-}
-
 static bool path_has_traversal(const char *path) {
     if (!path) { return true; }
 
@@ -100,6 +91,19 @@ static bool path_has_traversal(const char *path) {
     return false;
 }
 
+cJSON *mod_manifest_get_json_for_mod(struct Mod *mod) {
+    char manifestPath[SYS_MAX_PATH] = { 0 };
+    if (!concat_path(manifestPath, mod->basePath, MOD_MANIFEST_ENTRY_FILE)) {
+        LOG_ERROR("Failed to concat path '%s' + '%s'", mod->basePath, MOD_MANIFEST_ENTRY_FILE);
+        return NULL;
+    }
+    return get_json_from_path(manifestPath);
+}
+
+void mod_manifest_destroy_json(cJSON *json) {
+    cJSON_Delete(json);
+}
+
 char *mod_manifest_get_entry_file_path(const char *path) {
     cJSON *json = get_json_from_path(path);
     if (!json) { return NULL; }
@@ -120,34 +124,26 @@ char *mod_manifest_get_entry_file_path(const char *path) {
         return NULL;
     }
 
-    entryFile = strdup(entryFile); // deleting the json file deletes where this is pointing, so dupe it
+    entryFile = strdup(entryFile);
+    cJSON_Delete(json);
     if (!entryFile) {
-        cJSON_Delete(json);
         return NULL;
     }
-    cJSON_Delete(json);
 
     return entryFile;
 }
 
-char **mod_manifest_get_array_of_string(struct Mod *mod, const char *key) {
-    cJSON *json = get_json_from_mod(mod);
+char **mod_manifest_get_array_of_string(cJSON *json, const char *key) {
     if (!json) { return NULL; }
 
     cJSON *jsonItem = cJSON_GetObjectItemCaseSensitive(json, key);
-    if (!cJSON_IsArray(jsonItem)) {
-        cJSON_Delete(json);
-        return NULL;
-    }
+    if (!cJSON_IsArray(jsonItem)) { return NULL; }
 
     int size = cJSON_GetArraySize(jsonItem);
 
     // allocate array
     char **array = malloc((size + 1) * sizeof(char *)); // + 1 for null termination
-    if (!array) {
-        cJSON_Delete(json);
-        return NULL;
-    }
+    if (!array) { return NULL; }
 
     cJSON *element = NULL;
     int index = 0;
@@ -160,7 +156,6 @@ char **mod_manifest_get_array_of_string(struct Mod *mod, const char *key) {
                 free(array[i]);
             }
             free(array);
-            cJSON_Delete(json);
             return NULL;
         }
 
@@ -171,7 +166,6 @@ char **mod_manifest_get_array_of_string(struct Mod *mod, const char *key) {
                 free(array[i]);
             }
             free(array);
-            cJSON_Delete(json);
             return NULL;
         }
         index++;
@@ -180,38 +174,22 @@ char **mod_manifest_get_array_of_string(struct Mod *mod, const char *key) {
     // null terminate array
     array[index] = NULL;
 
-    cJSON_Delete(json);
     return array;
 }
 
-char *mod_manifest_get_string(struct Mod *mod, const char *key) {
-    cJSON *json = get_json_from_mod(mod);
+char *mod_manifest_get_string(cJSON *json, const char *key) {
     if (!json) { return NULL; }
 
     cJSON *jsonItem = cJSON_GetObjectItemCaseSensitive(json, key);
-    if (!cJSON_IsString(jsonItem) || jsonItem->valuestring == NULL) {
-        cJSON_Delete(json);
-        return NULL;
-    }
-    char *valueString = strdup(jsonItem->valuestring);
-    if (!valueString) {
-        cJSON_Delete(json);
-        return NULL;
-    }
-    cJSON_Delete(json);
-    return valueString;
+    if (!cJSON_IsString(jsonItem) || jsonItem->valuestring == NULL) { return NULL; }
+
+    return strdup(jsonItem->valuestring);
 }
 
-bool mod_manifest_get_bool(struct Mod *mod, const char *key, bool defaultValue) {
-    cJSON *json = get_json_from_mod(mod);
+bool mod_manifest_get_bool(cJSON *json, const char *key, bool defaultValue) {
     if (!json) { return defaultValue; }
 
     cJSON *jsonItem = cJSON_GetObjectItemCaseSensitive(json, key);
-    if (!cJSON_IsBool(jsonItem)) {
-        cJSON_Delete(json);
-        return defaultValue;
-    }
-    bool returnValue = cJSON_IsTrue(jsonItem);
-    cJSON_Delete(json);
-    return returnValue;
+    if (!cJSON_IsBool(jsonItem)) { return defaultValue; }
+    return cJSON_IsTrue(jsonItem);
 }

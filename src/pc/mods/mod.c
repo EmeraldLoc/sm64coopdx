@@ -498,17 +498,19 @@ static void mod_extract_fields_from_lua_file(struct Mod *mod) {
 static void mod_extract_fields_from_manifest(struct Mod *mod) {
     if (!mod->hasManifest) { return; }
 
-    char *name = mod_manifest_get_string(mod, "name");
+    cJSON *json = mod_manifest_get_json_for_mod(mod);
+
+    char *name = mod_manifest_get_string(json, "name");
     if (name) {
         snprintf(mod->name, MOD_NAME_SIZE, "%s", name);
         free(name);
     }
 
-    char *incompatibleStr = mod_manifest_get_string(mod, "incompatible");
+    char *incompatibleStr = mod_manifest_get_string(json, "incompatible");
     char incompatible[MOD_INCOMPATIBLE_SIZE] = { 0 };
     if (!incompatibleStr) {
         // try loading as an array instead
-        char **incompatibleArray = mod_manifest_get_array_of_string(mod, "incompatible");
+        char **incompatibleArray = mod_manifest_get_array_of_string(json, "incompatible");
 
         if (incompatibleArray) {
             s32 i = 0;
@@ -534,7 +536,7 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
         snprintf(mod->incompatible, MOD_INCOMPATIBLE_SIZE, "%s", incompatible);
     }
 
-    char *category = mod_manifest_get_string(mod, "category");
+    char *category = mod_manifest_get_string(json, "category");
     if (category) {
         free(mod->category);
         mod->category = calloc(MOD_CATEGORY_SIZE, sizeof(char));
@@ -542,7 +544,7 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
         free(category);
     }
 
-    char *description = mod_manifest_get_string(mod, "description");
+    char *description = mod_manifest_get_string(json, "description");
     if (description) {
         free(mod->description);
         mod->description = calloc(MOD_DESCRIPTION_SIZE, sizeof(char));
@@ -550,14 +552,15 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
         free(description);
     }
 
-    char *id = mod_manifest_get_string(mod, "id");
+    char *id = mod_manifest_get_string(json, "id");
     if (id) {
         snprintf(mod->id, MOD_ID_SIZE, "%s", id);
         free(id);
     }
 
-    mod->pausable = mod_manifest_get_bool(mod, "pausable", mod->pausable);
-    mod->ignoreScriptWarnings = mod_manifest_get_bool(mod, "ignoreScriptWarnings", mod->ignoreScriptWarnings);
+    mod->pausable = mod_manifest_get_bool(json, "pausable", mod->pausable);
+    mod->ignoreScriptWarnings = mod_manifest_get_bool(json, "ignoreScriptWarnings", mod->ignoreScriptWarnings);
+    mod_manifest_destroy_json(json);
 }
 
 static void mod_extract_fields(struct Mod *mod) {
