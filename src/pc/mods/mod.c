@@ -2,13 +2,13 @@
 #include "mod.h"
 #include "mods.h"
 #include "mods_utils.h"
-#include "mod_manifest.h"
 #include "mod_cache.h"
 #include "data/dynos.c.h"
 #include "pc/utils/misc.h"
 #include "pc/utils/md5.h"
 #include "pc/debuglog.h"
 #include "pc/fs/fmem.h"
+#include "pc/manifest.h"
 #include "pc/lua/smlua_cobject.h"
 #include <stdint.h>
 
@@ -498,19 +498,25 @@ static void mod_extract_fields_from_lua_file(struct Mod *mod) {
 static void mod_extract_fields_from_manifest(struct Mod *mod) {
     if (!mod->hasManifest) { return; }
 
-    cJSON *json = mod_manifest_get_json_for_mod(mod);
+    char manifestPath[SYS_MAX_PATH] = { 0 };
+    if (!concat_path(manifestPath, mod->basePath, MOD_MANIFEST_ENTRY_FILE)) {
+        LOG_ERROR("Failed to concat path '%s' + '%s'", mod->basePath, MOD_MANIFEST_ENTRY_FILE);
+        return;
+    }
 
-    char *name = mod_manifest_get_string(json, "name");
+    cJSON *json = manifest_get_json_from_path(manifestPath);
+
+    char *name = manifest_get_string(json, "name");
     if (name) {
         snprintf(mod->name, MOD_NAME_SIZE, "%s", name);
         free(name);
     }
 
-    char *incompatibleStr = mod_manifest_get_string(json, "incompatible");
+    char *incompatibleStr = manifest_get_string(json, "incompatible");
     char incompatible[MOD_INCOMPATIBLE_SIZE] = { 0 };
     if (!incompatibleStr) {
         // try loading as an array instead
-        char **incompatibleArray = mod_manifest_get_array_of_string(json, "incompatible");
+        char **incompatibleArray = manifest_get_array_of_string(json, "incompatible");
 
         if (incompatibleArray) {
             s32 i = 0;
@@ -536,7 +542,7 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
         snprintf(mod->incompatible, MOD_INCOMPATIBLE_SIZE, "%s", incompatible);
     }
 
-    char *category = mod_manifest_get_string(json, "category");
+    char *category = manifest_get_string(json, "category");
     if (category) {
         free(mod->category);
         mod->category = calloc(MOD_CATEGORY_SIZE, sizeof(char));
@@ -544,7 +550,7 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
         free(category);
     }
 
-    char *description = mod_manifest_get_string(json, "description");
+    char *description = manifest_get_string(json, "description");
     if (description) {
         free(mod->description);
         mod->description = calloc(MOD_DESCRIPTION_SIZE, sizeof(char));
@@ -552,15 +558,15 @@ static void mod_extract_fields_from_manifest(struct Mod *mod) {
         free(description);
     }
 
-    char *id = mod_manifest_get_string(json, "id");
+    char *id = manifest_get_string(json, "id");
     if (id) {
         snprintf(mod->id, MOD_ID_SIZE, "%s", id);
         free(id);
     }
 
-    mod->pausable = mod_manifest_get_bool(json, "pausable", mod->pausable);
-    mod->ignoreScriptWarnings = mod_manifest_get_bool(json, "ignoreScriptWarnings", mod->ignoreScriptWarnings);
-    mod_manifest_destroy_json(json);
+    mod->pausable = manifest_get_bool(json, "pausable", mod->pausable);
+    mod->ignoreScriptWarnings = manifest_get_bool(json, "ignoreScriptWarnings", mod->ignoreScriptWarnings);
+    manifest_destroy_json(json);
 }
 
 static void mod_extract_fields(struct Mod *mod) {
@@ -651,7 +657,14 @@ bool mod_load(struct Mods* mods, char* basePath, char* modName) {
             return true;
         }
 
-        char *manifestModEntryPath = mod_manifest_get_entry_file_path(manifestPath);
+        // get entry file in the manifest file
+        cJSON *json = manifest_get_json_from_path(manifestPath);
+        char *manifestModEntryPath = NULL;
+        if (json) {
+            manifestModEntryPath = manifest_get_path(json, "entryFile");
+        }
+        manifest_destroy_json(json);
+
         snprintf(relativeEntryFilePath, SYS_MAX_PATH, "%s", (manifestModEntryPath != NULL ? manifestModEntryPath : MOD_ENTRY_FILE));
         hasManifest = fs_sys_file_exists(manifestPath);
         isCustomEntryFile = (manifestModEntryPath != NULL);

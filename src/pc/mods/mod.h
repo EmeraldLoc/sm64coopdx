@@ -17,6 +17,7 @@
 #define MOD_DESCRIPTION_SIZE (MOD_DESCRIPTION_MAX_LENGTH + 1)
 #define MOD_ID_SIZE (MOD_ID_MAX_LENGTH + 1)
 
+#define MOD_MANIFEST_ENTRY_FILE "manifest.json"
 #define MOD_ENTRY_FILE "main.lua"
 
 struct Mods;
