@@ -143,7 +143,7 @@ A shader may contain uniforms. As per the GLSL naming convention, uniform variab
 | `uTex0Filter` | `bool` | `true` if the primary texture uses linear filtering |
 | `uTex1Filter` | `bool` | `true` if the secondary texture uses linear filtering |
 | `uFilter` | `int` | The current global filtering mode (`0` = Point, `1` = Linear, `2` = Three-point) |
-| `uFrameCount` | `float` | The current frame we are on since the lifetime of the program, acts as a timer |
+| `uFrameCount` | `uint` | The current frame we are on since the lifetime of the program, acts as a timer |
 | `uLightmapColor` | `vec3` | RGB multiplier applied to the environment/light map |
 | `uAspectRatio` | `float` | The current viewport aspect ratio (`width`/`height`) |
 | `uXAdjustRatio` | `float` | The horizontal clip-space scaling factor used for widescreen rendering |
