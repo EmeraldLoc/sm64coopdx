@@ -67,10 +67,10 @@ static void gfx_window_opengl_reset_dimension_and_pos(void) {
     gfx_window_opengl_set_vsync(configWindow.vsync);
 }
 
-static int clamp_window_msaa_before_init() {
+static void clamp_window_msaa_before_init() {
     if (!(SDL_WasInit(SDL_INIT_VIDEO) & SDL_INIT_VIDEO)) {
         if (SDL_InitSubSystem(SDL_INIT_VIDEO) != 0) {
-            return 0;
+            return;
         }
     }
 
@@ -87,15 +87,13 @@ static int clamp_window_msaa_before_init() {
         SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN
     );
 
-    if (!window) {
-        return 0;
-    }
+    if (!window) { return; }
 
     SDL_GLContext ctx = SDL_GL_CreateContext(window);
 
     if (!ctx) {
         SDL_DestroyWindow(window);
-        return 0;
+        return;
     }
 
     SDL_GL_MakeCurrent(window, ctx);
@@ -105,8 +103,6 @@ static int clamp_window_msaa_before_init() {
 
     SDL_GL_DeleteContext(ctx);
     SDL_DestroyWindow(window);
-
-    return maxMsaa;
 }
 
 static void gfx_window_opengl_init(const char *window_title) {
