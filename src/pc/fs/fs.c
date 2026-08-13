@@ -428,7 +428,7 @@ bool fs_sys_rmdir(const char *name) {
 #endif
 }
 
-bool fs_sys_read_file_to_string(const char *path, char **outContents, size_t *outSize) {
+bool fs_sys_load_file(const char *path, char **outContents, size_t *outSize) {
     // open file with the task to read
     FILE *file = fopen(path, "r");
     if (!file) { return false; }

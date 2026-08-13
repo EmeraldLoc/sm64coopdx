@@ -14,7 +14,7 @@ cJSON *manifest_get_json_from_path(const char *path) {
     char *fileContents = NULL;
     size_t size = 0;
 
-    if (!fs_sys_read_file_to_string(path, &fileContents, &size)) {
+    if (!fs_sys_load_file(path, &fileContents, &size)) {
         return NULL;
     }
 
