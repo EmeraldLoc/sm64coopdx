@@ -154,6 +154,14 @@ A shader may contain uniforms. As per the GLSL naming convention, uniform variab
 | `uProjectionMatrix` | `mat4` | Transforms view space to clip space |
 | `uShaderFlags` | `int[]` | Array of shader feature flags provided by the engine |
 | `uShaderFlagValues` | `float[]` | Array of values associated with `uShaderFlags` |
+| `uFogMul` | `float` | The multiplier for fog |
+| `uFogIntensity` | `float` | The intensity of fog |
+| `uFogOffset` | `float` | The offset of fog |
+| `uFogColor` | `vec3` | The color of the fog |
+| `uDepthZSub` | `float` | Value from CPU for calculating fog check |
+| `uDepthZMult` | `float` | Value from CPU for calculating fog check |
+| `uDepthZAdd` | `float` | Value from CPU for calculating fog check |
+| `uFogEnabled` | `float` | Whether or not fog is currently enabled |
 
 For defining a custom uniform in lua, use the `HOOK_ON_SET_SHADER_PROGRAM`, hook and use the appropriate `gfx_shader_set_*` function. If you need to set a uniform every triangle draw, do note there is a lot of performance overhead, but if it is necessary, use `HOOK_ON_DRAW_TRIANGLE`.
 
