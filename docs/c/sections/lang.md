@@ -3,6 +3,7 @@
 # Languages
 
 ## Tools
+
 The language checker (run `tools/check_languages.py`) can be used to report:
 - Missing (untranslated) entries
 - Extra (abandoned) entries
