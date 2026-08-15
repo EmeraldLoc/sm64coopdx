@@ -1,5 +1,3 @@
-## [:rewind: C Reference](../c.md)
-
 # Contributing
 
 ## Creating a Pull Request
