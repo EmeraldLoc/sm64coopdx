@@ -27,8 +27,8 @@ This is the coding format, conventions, and style we use:
 - Function arguments should always be specified. If empty, use `void`. As an example, use `void allocate_item(void)` instead of `void allocate_item()`
 - The brace style is 1TBS (One True Brace Style)
 - Indentation is 4 spaces
-- Use the `const` keyword for immutable pointers as much as possible. For example, do not use a `char *` for a read-only string.
-- Use ultratypes (`u8`, `u16`, `u32`, `u64`, `s8`, `s16`, `s32`, `s64`) everywhere you can, you can include it to a file by adding `include "types.h"` to the top of your file
+- Use the `const` keyword for immutable data as much as possible. For example, do not use a `char *` for a read-only string, use `const char *`.
+- Use ultratypes (`u8`, `u16`, `u32`, `u64`, `s8`, `s16`, `s32`, `s64`) everywhere you can, you can include it to a file by adding `#include "types.h"` to the top of your file
 - For `.c` files, use a corresponding `.h` file, and have it next to the `.c` file
 - For `.cpp` files, use a corresponding `.hpp` file, not a `.h` file, and have it next to the `.cpp` file
 - Headers in isolation should use `.inl`
