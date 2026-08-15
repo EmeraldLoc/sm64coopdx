@@ -14,7 +14,7 @@ Interestingly enough though, the goal of the project has slowly evolved over tim
 
 ## Documentation
 
-sm64coopdx is moddable via Lua, similar to Roblox and Garry's Mod's Lua APIs. To get started, click [here](docs/lua/lua.md) to see the Lua documentation. If you want to contribute to the repo, you can view the C documentation [here](docs/c/c.md).
+sm64coopdx is moddable via Lua, similar to Roblox and Garry's Mod's Lua APIs. To get started, click [here](docs/lua/lua.md) to see the Lua documentation. If you want to contribute to the repo, see the [contribution document](CONTRIBUTING.md). For documentation on the source code, you can view the C documentation [here](docs/c/c.md).
 
 ## Building
 
