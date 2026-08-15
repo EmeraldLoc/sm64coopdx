@@ -95,7 +95,7 @@ You can append [build flags](#build-flags) after your `make` or `gmake` command 
 - `USE_APP [0|1]` Whether or not to pack the files into a `.app` on macOS
 - `MIN_MACOS_VERSION` The version of macOS to target
 - `DEVELOPMENT [0|1]` Enables or disable development mode, which includes useful development features
-- `LUA_UNSAFE [0|1]` Allows unsafe lua calls to be ran. Useful for development purposes, such as profiling
+- `LUA_UNSAFE [0|1]` Allows unsafe lua calls to be ran. Useful for development purposes, such as profiling. Requires `DEVELOPMENT` to be `1`
 - `HANDHELD [0|1]` Makes some small adjustments for handheld devices
 
 For an exhaustive list, please see the `Makefile`!
