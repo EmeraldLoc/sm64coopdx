@@ -90,7 +90,6 @@ You can append [build flags](#build-flags) after your `make` or `gmake` command 
 - `DISCORD_SDK [0|1]`: Enable or disable Discord Game SDK
 - `COOPNET [0|1]`: Enable or disable the CoopNet networking system
 - `UPDATER [0|1]` Enable or disable the auto updater
-- `HEADLESS [0|1]`: Enable or disable headless mode (meant for dedicated servers)
 - `WINDOWS_BUILD [0|1]` If `1`, build for Windows. This should automatically be set
 - `OSX_BUILD [0|1]` If `1`, build for macOS. This should automatically be set
 - `USE_APP [0|1]` Whether or not to pack the files into a `.app` on macOS
