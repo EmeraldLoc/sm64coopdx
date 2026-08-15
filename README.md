@@ -18,7 +18,7 @@ sm64coopdx is moddable via Lua, similar to Roblox and Garry's Mod's Lua APIs. To
 
 ## Building
 
-For instructions on building the game, head [here](BUILDING.md). Manually compiled builds **cannot** connect to Coopnet, so use a released build if possible.
+For instructions on building the game, head [here](BUILDING.md). Manually compiled builds **cannot** connect to public Coopnet lobbies, so get the game from [releases](https://github.com/coop-deluxe/sm64coopdx/releases/latest) if possible.
 
 ## Community
 
