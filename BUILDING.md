@@ -86,7 +86,7 @@ You can append [build flags](#build-flags) after your `make` or `gmake` command 
 
 # Build Flags
 
-- `-j[2|4|8|16]`: Jobs amount, may speed up compilation
+- `-j`: Jobs amount, may speed up compilation. Recommended to use the number of cores, or the result of `nproc`.
 - `DISCORD_SDK [0|1]`: Enable or disable Discord Game SDK
 - `COOPNET [0|1]`: Enable or disable the CoopNet networking system
 - `UPDATER [0|1]` Enable or disable the auto updater
