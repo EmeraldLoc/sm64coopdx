@@ -3,6 +3,7 @@
 If you haven't, please read up on [contributing](../../CONTRIBUTING.md)!
 
 ## Sections
+
 - [SMLua](sections/smlua.md)
 - [Config File](sections/configfile.md)
 - [DJUI](sections/djui.md)
