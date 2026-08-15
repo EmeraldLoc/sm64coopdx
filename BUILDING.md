@@ -59,7 +59,7 @@ sudo pacman -S base-devel glibc linux-api-headers python sdl2 glew zlib libglvnd
 ### macOS
 
 ```sh
-brew install make gcc pkg-config sdl2 glew
+brew install make gcc pkg-config sdl2 glew coreutils
 ```
 
 ## Compilation
