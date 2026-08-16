@@ -2507,6 +2507,11 @@ void gfx_set_builtin_uniforms(void) {
     gfx_rapi->set_uniform(NULL, "uAspectRatio", SHADER_UNIFORM_TYPE_FLOAT, &aspectRatio, 1);
     gfx_rapi->set_uniform(NULL, "uXAdjustRatio", SHADER_UNIFORM_TYPE_FLOAT, &xAdjustRatio, 1);
 
+    float screenWidth = (float)gfx_current_dimensions.width;
+    float screenHeight = (float)gfx_current_dimensions.height;
+    gfx_rapi->set_uniform(NULL, "uScreenWidth", SHADER_UNIFORM_TYPE_FLOAT, &screenWidth, 1);
+    gfx_rapi->set_uniform(NULL, "uScreenHeight", SHADER_UNIFORM_TYPE_FLOAT, &screenHeight, 1);
+
     int shaderFlagEnabled = gShaderFlagsEnabled ? 1 : 0;
     gfx_rapi->set_uniform(NULL, "uShaderFlagsEnabled", SHADER_UNIFORM_TYPE_BOOL, &shaderFlagEnabled, 1);
     gfx_rapi->set_uniform(NULL, "uShaderFlags", SHADER_UNIFORM_TYPE_INT, gShaderFlags, SHADER_FLAG_MAX);
