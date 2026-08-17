@@ -131,15 +131,6 @@ void tuxies_mother_act_1(void) {
             break;
         case 1:
             if (o->prevObj && o->prevObj->oHeldState == HELD_FREE) {
-                //! This line is was almost certainly supposed to be something
-                // like o->prevObj->oInteractionSubtype &= ~INT_SUBTYPE_DROP_IMMEDIATELY;
-                // however, this code uses the value of o->oInteractionSubtype
-                // rather than its offset to rawData. For this object,
-                // o->oInteractionSubtype is always 0, so the result is this:
-                // o->prevObj->oUnknownUnk88 &= ~INT_SUBTYPE_DROP_IMMEDIATELY
-                // which has no effect as o->prevObj->oUnknownUnk88 is always 0
-                // or 1, which is not affected by the bitwise AND.
-                o->prevObj->OBJECT_FIELD_S32(o->oInteractionSubtype) &= ~INT_SUBTYPE_DROP_IMMEDIATELY;
                 o->prevObj->oSmallPenguinFound = TRUE;
 
                 f32 *starPos = gLevelValues.starPositions.TuxieMotherStarPos;
@@ -155,8 +146,6 @@ void tuxies_mother_act_1(void) {
             break;
         case 2:
             if (o->prevObj && o->prevObj->oHeldState == HELD_FREE) {
-                //! Same bug as above
-                o->prevObj->OBJECT_FIELD_S32(o->oInteractionSubtype) &= ~INT_SUBTYPE_DROP_IMMEDIATELY;
                 o->prevObj->oSmallPenguinFound = FALSE;
                 o->oAction = 2;
             }
