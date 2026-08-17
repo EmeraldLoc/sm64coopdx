@@ -265,7 +265,7 @@ char *gfx_get_default_vertex_shader_from_cc(struct ColorCombiner *cc) {
 
     append_line(sVsBuf, vsLen, "}");
 
-    sVsBuf[vsLen] = '\0';
+    sVsBuf[vsLen-1] = '\0';
 
     return sVsBuf;
 }
@@ -535,7 +535,7 @@ char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc) {
     }
     append_line(sFsBuf, fsLen, "}");
 
-    sFsBuf[fsLen] = '\0';
+    sFsBuf[fsLen-1] = '\0';
 
     return sFsBuf;
 }
