@@ -6,6 +6,42 @@
 
 
 ---
+# functions from level_script.h
+
+<br />
+
+
+## [area_create_warp_node](#area_create_warp_node)
+
+### Description
+Creates a warp node in the current level and area with id `id` that goes to the warp node `destNode` in level `destLevel` and area `destArea`, and attach it to the object `o`.
+To work properly, object `o` must be able to trigger a warp (for example, with interact type set to `INTERACT_WARP`.)
+`checkpoint` should be set only to WARP_NO_CHECKPOINT (0x00) or WARP_CHECKPOINT (0x80.) If `checkpoint` is set to `0x80`, Mario will warp directly to this node if he enters the level again (after a death for example)
+
+### Lua Example
+`local objectWarpNodeValue = area_create_warp_node(id, destLevel, destArea, destNode, checkpoint, o)`
+
+### Parameters
+| Field | Type |
+| ----- | ---- |
+| id | `integer` |
+| destLevel | `integer` |
+| destArea | `integer` |
+| destNode | `integer` |
+| checkpoint | `integer` |
+| o | [Object](structs.md#Object) |
+
+### Returns
+- [ObjectWarpNode](structs.md#ObjectWarpNode)
+
+### C Prototype
+`struct ObjectWarpNode *area_create_warp_node(u8 id, u8 destLevel, u8 destArea, u8 destNode, u8 checkpoint, struct Object *o);`
+
+[:arrow_up_small:](#)
+
+<br />
+
+---
 # functions from level_update.h
 
 <br />
@@ -64,14 +100,14 @@ Fades into a special warp with `arg` and using `color`
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| arg | `integer` |
+| arg | [enum SpecialWarpDestination](constants.md#enum-SpecialWarpDestination) |
 | color | `integer` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void fade_into_special_warp(u32 arg, u32 color);`
+`void fade_into_special_warp(enum SpecialWarpDestination arg, u32 color);`
 
 [:arrow_up_small:](#)
 
@@ -156,13 +192,13 @@ Triggers a warp (WARP_OP_*) for the level. Pass in `gMarioStates[0]` for `m`
 | Field | Type |
 | ----- | ---- |
 | m | [MarioState](structs.md#MarioState) |
-| warpOp | `integer` |
+| warpOp | [enum WarpOperation](constants.md#enum-WarpOperation) |
 
 ### Returns
 - `integer`
 
 ### C Prototype
-`s16 level_trigger_warp(struct MarioState *m, s32 warpOp);`
+`s16 level_trigger_warp(struct MarioState *m, enum WarpOperation warpOp);`
 
 [:arrow_up_small:](#)
 
@@ -171,7 +207,7 @@ Triggers a warp (WARP_OP_*) for the level. Pass in `gMarioStates[0]` for `m`
 ## [warp_special](#warp_special)
 
 ### Description
-Special warps to arg (`SPECIAL_WARP_*`)
+Special warps to arg (`WARP_SPECIAL_*`)
 
 ### Lua Example
 `warp_special(arg)`
@@ -179,13 +215,13 @@ Special warps to arg (`SPECIAL_WARP_*`)
 ### Parameters
 | Field | Type |
 | ----- | ---- |
-| arg | `integer` |
+| arg | [enum SpecialWarpDestination](constants.md#enum-SpecialWarpDestination) |
 
 ### Returns
 - None
 
 ### C Prototype
-`void warp_special(s32 arg);`
+`void warp_special(enum SpecialWarpDestination arg);`
 
 [:arrow_up_small:](#)
 
@@ -194,10 +230,10 @@ Special warps to arg (`SPECIAL_WARP_*`)
 ## [initiate_warp](#initiate_warp)
 
 ### Description
-Initiates a warp to `destLevel` in `destArea` at `destWarpNode` with `arg`. This function is unstable and it's generally recommended to use `warp_to_level` instead
+Initiates a warp to `destLevel` in `destArea` at `destWarpNode` with `warpFlags`. This function is unstable and it's generally recommended to use `warp_to_level` instead
 
 ### Lua Example
-`initiate_warp(destLevel, destArea, destWarpNode, arg)`
+`initiate_warp(destLevel, destArea, destWarpNode, warpFlags)`
 
 ### Parameters
 | Field | Type |
@@ -205,13 +241,13 @@ Initiates a warp to `destLevel` in `destArea` at `destWarpNode` with `arg`. This
 | destLevel | `integer` |
 | destArea | `integer` |
 | destWarpNode | `integer` |
-| arg | `integer` |
+| warpFlags | `integer` |
 
 ### Returns
 - None
 
 ### C Prototype
-`void initiate_warp(s16 destLevel, s16 destArea, s16 destWarpNode, s32 arg);`
+`void initiate_warp(s16 destLevel, s16 destArea, s16 destWarpNode, s32 warpFlags);`
 
 [:arrow_up_small:](#)
 

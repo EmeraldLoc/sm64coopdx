@@ -1213,7 +1213,7 @@ static void geo_process_animated_part(struct GraphNodeAnimatedPart *node) {
 
         Vec3s rot = { rotation[2], rotation[0], rotation[1] };
         vec3s_copy(gCurMarioBodyState->animPartsRot[gCurMarioBodyState->currAnimPart], rot);
-        
+
         get_world_mtx_from_transform(
             gCurMarioBodyState->animPartsMtx[gCurMarioBodyState->currAnimPart],
             gMatStack[gMatStackIndex],
@@ -1285,6 +1285,12 @@ void geo_set_animation_globals(struct AnimInfo *node, s32 hasAnimation) {
  * the floor below it.
  */
 static void geo_process_shadow(struct GraphNodeShadow *node) {
+    if (gLevelValues.disableShadows) {
+        if (node->node.children != NULL) {
+            geo_process_node_and_siblings(node->node.children);
+        }
+        return;
+    }
     Mat4 mtxf;
     Vec3f shadowPosPrev;
     Vec3f animOffset;
@@ -1877,7 +1883,7 @@ static void geo_process_bone(struct GraphNodeBone *node) {
 
         Vec3s rot = { rotation[2], rotation[0], rotation[1] };
         vec3s_copy(gCurMarioBodyState->animPartsRot[gCurMarioBodyState->currAnimPart], rot);
-        
+
         get_world_mtx_from_transform(
             gCurMarioBodyState->animPartsMtx[gCurMarioBodyState->currAnimPart],
             gMatStack[gMatStackIndex], 
