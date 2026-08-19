@@ -4,7 +4,7 @@ UseTab: Never
 PointerAlignment: Right
 SpaceAfterCStyleCast: false
 BreakBeforeBraces: Attach
-AllowShortFunctionsOnASingleLine: Never
+AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AlignAfterOpenBracket: Align
 ColumnLimit: 104
