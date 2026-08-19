@@ -21,7 +21,7 @@ static bool sTerminalInitialized = false;
 static bool sTerminalActive = false;
 static pthread_mutex_t sTerminalMutex = PTHREAD_MUTEX_INITIALIZER;
 
-void log_to_terminal(const char* fmt, ...) {
+void log_to_terminal(const char *fmt, ...) {
     pthread_mutex_lock(&sTerminalMutex);
     va_list args;
     va_start(args, fmt);
@@ -62,7 +62,8 @@ void terminal_init() {
         return;
     }
 
-    if (linenoiseEditStart(&sLinenoiseState, -1, -1, sTerminalInput, sizeof(sTerminalInput), "> ") == -1) {
+    if (linenoiseEditStart(&sLinenoiseState, -1, -1, sTerminalInput, sizeof(sTerminalInput), "> ")
+        == -1) {
         sTerminalInitialized = false;
         sTerminalActive = false;
         return;
@@ -82,7 +83,7 @@ void terminal_update() {
 
     if (select(STDIN_FILENO + 1, &fds, NULL, NULL, &tv) <= 0) { return; }
 
-    char* input = linenoiseEditFeed(&sLinenoiseState);
+    char *input = linenoiseEditFeed(&sLinenoiseState);
 
     if (input == NULL) {
         linenoiseEditStop(&sLinenoiseState);
@@ -99,7 +100,7 @@ void terminal_update() {
 
         terminal_init();
     }
-    #endif
+#endif
 }
 
 void terminal_clear() {

@@ -15,9 +15,9 @@
 #include "pc/debuglog.h"
 
 // TODO: move to common utility location
-static struct Object* get_object_matching_respawn_info(u32* respawnInfo) {
+static struct Object *get_object_matching_respawn_info(u32 *respawnInfo) {
     for (s32 i = 0; i < OBJECT_POOL_CAPACITY; i++) {
-        struct Object* o = &gObjectPool[i];
+        struct Object *o = &gObjectPool[i];
         if (o->respawnInfo == respawnInfo) { return o; }
     }
     return NULL;
@@ -25,9 +25,9 @@ static struct Object* get_object_matching_respawn_info(u32* respawnInfo) {
 
 ////
 
-static void network_send_level_spawn_info_area(struct NetworkPlayer* destNp, u8 areaIndex) {
+static void network_send_level_spawn_info_area(struct NetworkPlayer *destNp, u8 areaIndex) {
     // check that the area is active
-    struct Area* area = &gAreaData[areaIndex];
+    struct Area *area = &gAreaData[areaIndex];
     if (area->root == NULL) { return; }
 
     if (destNp == NULL || !destNp->connected) {
@@ -38,21 +38,21 @@ static void network_send_level_spawn_info_area(struct NetworkPlayer* destNp, u8 
     // write header
     struct Packet p = { 0 };
     packet_init(&p, PACKET_LEVEL_SPAWN_INFO, true, PLMT_NONE);
-    packet_write(&p, &gCurrCourseNum,  sizeof(s16));
+    packet_write(&p, &gCurrCourseNum, sizeof(s16));
     packet_write(&p, &gCurrActStarNum, sizeof(s16));
-    packet_write(&p, &gCurrLevelNum,   sizeof(s16));
-    packet_write(&p, &gCurrAreaIndex,  sizeof(s16));
+    packet_write(&p, &gCurrLevelNum, sizeof(s16));
+    packet_write(&p, &gCurrAreaIndex, sizeof(s16));
 
     // write this area's index
     packet_write(&p, &areaIndex, sizeof(u8));
 
     // write the amount of deletions
     u8 zero = 0;
-    u8* spawnInfoDeletionCount = &p.buffer[p.cursor];
+    u8 *spawnInfoDeletionCount = &p.buffer[p.cursor];
     packet_write(&p, &zero, sizeof(u8));
 
     // loop through spawn infos
-    struct SpawnInfo* spawnInfo = area->objectSpawnInfos;
+    struct SpawnInfo *spawnInfo = area->objectSpawnInfos;
     u16 spawnInfoIndex = 0;
 
     while (spawnInfo != NULL) {
@@ -74,10 +74,8 @@ static void network_send_level_spawn_info_area(struct NetworkPlayer* destNp, u8 
     }
 }
 
-void network_send_level_spawn_info(struct NetworkPlayer* destNp) {
-    if (!gNetworkPlayerLocal->currAreaSyncValid) {
-        return;
-    }
+void network_send_level_spawn_info(struct NetworkPlayer *destNp) {
+    if (!gNetworkPlayerLocal->currAreaSyncValid) { return; }
 
     if (destNp == NULL || !destNp->connected) {
         LOG_ERROR("network_send_level_spawn_info: dest np is invalid");
@@ -89,12 +87,12 @@ void network_send_level_spawn_info(struct NetworkPlayer* destNp) {
     }
 }
 
-void network_receive_level_spawn_info(struct Packet* p) {
+void network_receive_level_spawn_info(struct Packet *p) {
     s16 courseNum, actNum, levelNum, areaIndex;
-    packet_read(p, &courseNum,       sizeof(s16));
-    packet_read(p, &actNum,          sizeof(s16));
-    packet_read(p, &levelNum,        sizeof(s16));
-    packet_read(p, &areaIndex,       sizeof(s16));
+    packet_read(p, &courseNum, sizeof(s16));
+    packet_read(p, &actNum, sizeof(s16));
+    packet_read(p, &levelNum, sizeof(s16));
+    packet_read(p, &areaIndex, sizeof(s16));
 
     if (courseNum != gCurrCourseNum || actNum != gCurrActStarNum || levelNum != gCurrLevelNum) {
         LOG_ERROR("Receiving 'location response' with the wrong location!");
@@ -111,7 +109,7 @@ void network_receive_level_spawn_info(struct Packet* p) {
         return;
     }
 
-    struct SpawnInfo* spawnInfo = gAreaData[thisAreaIndex].objectSpawnInfos;
+    struct SpawnInfo *spawnInfo = gAreaData[thisAreaIndex].objectSpawnInfos;
     u16 spawnInfoIndex = 0;
 
     u16 spawnInfoDeleteIndex;
@@ -119,13 +117,13 @@ void network_receive_level_spawn_info(struct Packet* p) {
 
     while (spawnInfo != NULL && spawnInfoDeletionCount > 0) {
         if (spawnInfoIndex == spawnInfoDeleteIndex) {
-            u32* respawnInfo = &spawnInfo->behaviorArg;
-            struct Object* o = get_object_matching_respawn_info(respawnInfo);
+            u32 *respawnInfo = &spawnInfo->behaviorArg;
+            struct Object *o = get_object_matching_respawn_info(respawnInfo);
             if (o != NULL) {
                 obj_mark_for_deletion(o);
                 LOG_INFO("rx spawn info deletion: object");
                 if (o->oSyncID != 0) {
-                    struct SyncObject* so = sync_object_get(o->oSyncID);
+                    struct SyncObject *so = sync_object_get(o->oSyncID);
                     if (so && so->o == o) {
                         sync_object_forget(so->id);
                         LOG_INFO("rx spawn info deletion: sync object");

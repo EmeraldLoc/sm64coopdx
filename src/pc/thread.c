@@ -3,7 +3,8 @@
 #include <assert.h>
 #include <string.h>
 
-int init_thread_handle(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size) {
+int init_thread_handle(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp,
+                       size_t sp_size) {
     int err1 = init_mutex(handle);
     int err2 = init_thread(handle, entry, arg, sp, sp_size);
 
@@ -13,8 +14,8 @@ int init_thread_handle(struct ThreadHandle *handle, void *(*entry)(void *), void
 void free_thread_handle(struct ThreadHandle *handle) {
     assert(handle != NULL);
 
-    //int err = stop_thread(handle);
-    //assert(err == 0);
+    // int err = stop_thread(handle);
+    // assert(err == 0);
 
     int err = destroy_mutex(handle);
     assert(err == 0);
@@ -24,7 +25,8 @@ void free_thread_handle(struct ThreadHandle *handle) {
 }
 
 // Optimally just call init_thread_handle instead.
-int init_thread(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp, size_t sp_size) {
+int init_thread(struct ThreadHandle *handle, void *(*entry)(void *), void *arg, void *sp,
+                size_t sp_size) {
     assert(handle != NULL);
 
     // Setup our thread and create it.

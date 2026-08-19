@@ -7,7 +7,8 @@
 
 /* |description|Smoothly steps between `edge0` and `edge1` with `x` as delta|descriptionEnd| */
 float smooth_step(float edge0, float edge1, float x);
-/* |description|Updates every Mario state's star count with the save file total star count|descriptionEnd| */
+/* |description|Updates every Mario state's star count with the save file total star
+ * count|descriptionEnd| */
 void update_all_mario_stars(void);
 
 /* |description|Gets the current clock elapsed time|descriptionEnd| */
@@ -21,7 +22,7 @@ bool clock_is_date(u8 month, u8 day);
 
 void precise_delay_f64(f64 delaySec);
 
-void file_get_line(char* buffer, size_t maxLength, FILE* fp);
+void file_get_line(char *buffer, size_t maxLength, FILE *fp);
 
 /* |description|Linearly interpolates between `a` and `b` with `delta`|descriptionEnd| */
 f32 delta_interpolate_f32(f32 a, f32 b, f32 delta);
@@ -33,14 +34,15 @@ s16 delta_interpolate_angle(s16 a, s16 b, f32 delta);
 void delta_interpolate_vec3f(VEC_OUT Vec3f res, Vec3f a, Vec3f b, f32 delta);
 /* |description|Linearly interpolates `res` between `a` and `b` with `delta`|descriptionEnd| */
 void delta_interpolate_vec3s(VEC_OUT Vec3s res, Vec3s a, Vec3s b, f32 delta);
-void delta_interpolate_normal(s8* res, s8* a, s8* b, f32 delta);
-void delta_interpolate_rgba(u8* res, u8* a, u8* b, f32 delta);
-void delta_interpolate_mtx(Mtx* out, Mtx* a, Mtx* b, f32 delta);
-void detect_and_skip_mtx_interpolation(Mtx** mtxPrev, Mtx** mtx);
+void delta_interpolate_normal(s8 *res, s8 *a, s8 *b, f32 delta);
+void delta_interpolate_rgba(u8 *res, u8 *a, u8 *b, f32 delta);
+void delta_interpolate_mtx(Mtx *out, Mtx *a, Mtx *b, f32 delta);
+void detect_and_skip_mtx_interpolation(Mtx **mtxPrev, Mtx **mtx);
 
-void str_seperator_concat(char *output_buffer, int buffer_size, char** strings, int num_strings, char* seperator);
-void open_url(const char* url);
-void open_folder(const char* path);
+void str_seperator_concat(char *output_buffer, int buffer_size, char **strings, int num_strings,
+                          char *seperator);
+void open_url(const char *url);
+void open_folder(const char *path);
 const char *strstr_lowercased(const char *haystack, const char *needle);
 
 bool can_update_game(void);

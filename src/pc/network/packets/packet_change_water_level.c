@@ -10,7 +10,7 @@ void network_send_change_water_level(u8 index, s16 height) {
     network_send(&p);
 }
 
-void network_receive_change_water_level(struct Packet* p) {
+void network_receive_change_water_level(struct Packet *p) {
     u8 index;
     s16 height;
     packet_read(p, &index, sizeof(u8));

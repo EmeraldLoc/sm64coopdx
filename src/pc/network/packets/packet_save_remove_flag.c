@@ -6,7 +6,8 @@
 
 extern u8 gSaveFileUsingBackupSlot;
 
-void network_send_save_remove_flag(s32 fileIndex, s32 courseIndex, u8 courseStarsToRemove, u32 flagsToRemove) {
+void network_send_save_remove_flag(s32 fileIndex, s32 courseIndex, u8 courseStarsToRemove,
+                                   u32 flagsToRemove) {
     struct Packet p = { 0 };
     packet_init(&p, PACKET_SAVE_REMOVE_FLAG, true, PLMT_NONE);
     packet_write(&p, &fileIndex, sizeof(s32));
@@ -17,7 +18,7 @@ void network_send_save_remove_flag(s32 fileIndex, s32 courseIndex, u8 courseStar
     network_send(&p);
 }
 
-void network_receive_save_remove_flag(struct Packet* p) {
+void network_receive_save_remove_flag(struct Packet *p) {
     s32 fileIndex;
     s32 courseIndex;
     u8 courseStarsToRemove;

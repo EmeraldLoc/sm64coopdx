@@ -11,9 +11,11 @@ struct addrinfo *result, *i;
 
 char gGetHostName[MAX_CONFIG_STRING] = "";
 
-// Resolves a hostname to an IP address. Current limitation: It still only gets the first address it sees and returns.
-// getaddrinfo() is smart enough to prioritize IPv4 if the user is not in an IPv6 enabled network, so this shouldn't be a problem for now.
-// TODO: Store all found addresses somewhere and make the game try to connect to each of them if one fails.
+// Resolves a hostname to an IP address. Current limitation: It still only gets the first address it
+// sees and returns. getaddrinfo() is smart enough to prioritize IPv4 if the user is not in an IPv6
+// enabled network, so this shouldn't be a problem for now.
+// TODO: Store all found addresses somewhere and make the game try to connect to each of them if one
+// fails.
 void resolve_domain(struct sockaddr_in6 *addr) {
     // non zero value if getaddrinfo throws an error.
     int error;
@@ -22,14 +24,15 @@ void resolve_domain(struct sockaddr_in6 *addr) {
     memset(&hints, 0, sizeof(hints));
     hints.ai_socktype = SOCK_DGRAM;
 
-    // sanity check: remove square brackets from configJoinIp. getaddrinfo doesn't like those, at least on Linux.
+    // sanity check: remove square brackets from configJoinIp. getaddrinfo doesn't like those, at least
+    // on Linux.
     if (configJoinIp[0] == '[') {
         LOG_INFO("sanity check: found opening square bracket on configJoinIp, removing it.");
         for (int i = 0; i < MAX_CONFIG_STRING; i++) {
             if (configJoinIp[i] == '\0') { break; }
             if (configJoinIp[i] == ']') {
                 configJoinIp[i] = '\0';
-                memcpy(&configJoinIp, &configJoinIp[1], MAX_CONFIG_STRING-1);
+                memcpy(&configJoinIp, &configJoinIp[1], MAX_CONFIG_STRING - 1);
                 break;
             }
         }
@@ -50,12 +53,15 @@ void resolve_domain(struct sockaddr_in6 *addr) {
                 // copy address to sockaddr_in6 struct
                 memcpy(&addr->sin6_addr, &p->sin6_addr, sizeof(struct in6_addr));
                 // set new join IP for config file
-                snprintf(configJoinIp, MAX_CONFIG_STRING, "%s", inet_ntop(AF_INET6, &p->sin6_addr, str, sizeof(str)));
+                snprintf(configJoinIp, MAX_CONFIG_STRING, "%s",
+                         inet_ntop(AF_INET6, &p->sin6_addr, str, sizeof(str)));
                 // Free results from memory and return
                 freeaddrinfo(result);
                 return;
 
-            } else if (i->ai_addr->sa_family == AF_INET) { // IPv4 address. Convert it to an IPv6-mapped IPv4 address so it's compatible with the IPv6 socket.
+            } else if (i->ai_addr->sa_family
+                       == AF_INET) { // IPv4 address. Convert it to an IPv6-mapped IPv4 address so it's
+                                     // compatible with the IPv6 socket.
                 struct sockaddr_in *p = (struct sockaddr_in *)i->ai_addr;
                 struct in6_addr ipv6_mapped_addr;
                 // clear out IPv6-mapped IPv4 address buffer
@@ -63,13 +69,15 @@ void resolve_domain(struct sockaddr_in6 *addr) {
                 // ::ffff: Prefix
                 ipv6_mapped_addr.s6_addr[10] = 0xff;
                 ipv6_mapped_addr.s6_addr[11] = 0xff;
-                // then copy the IPv4 address to the end of the IPv6 address. The address is now properly formed.
+                // then copy the IPv4 address to the end of the IPv6 address. The address is now
+                // properly formed.
                 memcpy(&ipv6_mapped_addr.s6_addr[12], &p->sin_addr, sizeof(p->sin_addr));
                 // copy address to sockaddr_in6 struct
                 memcpy(&addr->sin6_addr, &ipv6_mapped_addr, sizeof(struct in6_addr));
 
                 // set new join IP for config file
-                snprintf(configJoinIp, MAX_CONFIG_STRING, "%s", inet_ntop(AF_INET6, &ipv6_mapped_addr, str, sizeof(str)));
+                snprintf(configJoinIp, MAX_CONFIG_STRING, "%s",
+                         inet_ntop(AF_INET6, &ipv6_mapped_addr, str, sizeof(str)));
                 // Free results from memory and return
                 freeaddrinfo(result);
                 return;
@@ -82,7 +90,8 @@ void resolve_domain(struct sockaddr_in6 *addr) {
 
 static int socket_bind(SOCKET socket, unsigned int port) {
     struct sockaddr_in6 rxAddr;
-    // Clean struct to prevent rare cases of binding errors due to garbage data in that memory location. This just happened to me randomly on Windows and left me very confused.
+    // Clean struct to prevent rare cases of binding errors due to garbage data in that memory location.
+    // This just happened to me randomly on Windows and left me very confused.
     memset(&rxAddr, 0, sizeof(struct sockaddr_in6));
     rxAddr.sin6_family = AF_INET6;
     rxAddr.sin6_port = htons(port);
@@ -90,16 +99,14 @@ static int socket_bind(SOCKET socket, unsigned int port) {
 
     int rc = bind(socket, (SOCKADDR *)&rxAddr, sizeof(rxAddr));
 
-    if (rc != 0) {
-        LOG_ERROR("bind failed with error %d", SOCKET_LAST_ERROR);
-    }
+    if (rc != 0) { LOG_ERROR("bind failed with error %d", SOCKET_LAST_ERROR); }
 
     return rc;
 }
 
-static int socket_send(SOCKET socket, struct sockaddr_in6* addr, u8* buffer, u16 bufferLength) {
+static int socket_send(SOCKET socket, struct sockaddr_in6 *addr, u8 *buffer, u16 bufferLength) {
     int addrSize = sizeof(struct sockaddr_in6);
-    int rc = sendto(socket, (char*)buffer, bufferLength, 0, (struct sockaddr*)addr, addrSize);
+    int rc = sendto(socket, (char *)buffer, bufferLength, 0, (struct sockaddr *)addr, addrSize);
     if (rc != SOCKET_ERROR) { return NO_ERROR; }
 
     int error = SOCKET_LAST_ERROR;
@@ -109,11 +116,12 @@ static int socket_send(SOCKET socket, struct sockaddr_in6* addr, u8* buffer, u16
     return rc;
 }
 
-static int socket_receive(SOCKET socket, struct sockaddr_in6* rxAddr, u8* buffer, u16 bufferLength, u16* receiveLength, u8* localIndex) {
+static int socket_receive(SOCKET socket, struct sockaddr_in6 *rxAddr, u8 *buffer, u16 bufferLength,
+                          u16 *receiveLength, u8 *localIndex) {
     *receiveLength = 0;
 
     RX_ADDR_SIZE_TYPE rxAddrSize = sizeof(struct sockaddr_in6);
-    int rc = recvfrom(socket, (char*)buffer, bufferLength, 0, (struct sockaddr*)rxAddr, &rxAddrSize);
+    int rc = recvfrom(socket, (char *)buffer, bufferLength, 0, (struct sockaddr *)rxAddr, &rxAddrSize);
 
     for (int i = 1; i < MAX_PLAYERS; i++) {
         if (memcmp(rxAddr, &sAddr[i], sizeof(struct sockaddr_in6)) == 0) {
@@ -146,12 +154,12 @@ static bool ns_socket_initialize(enum NetworkType networkType, UNUSED bool recon
     // connect
     if (networkType == NT_SERVER) {
         int reuse = 1;
-        if (setsockopt(sCurSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse)) < 0) {
+        if (setsockopt(sCurSocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuse, sizeof(reuse)) < 0) {
             LOG_ERROR("setsockopt(SO_REUSEADDR) failed");
         }
 
 #ifdef SO_REUSEPORT
-        if (setsockopt(sCurSocket, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse)) < 0) {
+        if (setsockopt(sCurSocket, SOL_SOCKET, SO_REUSEPORT, (const char *)&reuse, sizeof(reuse)) < 0) {
             LOG_ERROR("setsockopt(SO_REUSEPORT) failed");
         }
 #endif
@@ -186,9 +194,7 @@ static bool ns_socket_initialize(enum NetworkType networkType, UNUSED bool recon
 
     LOG_INFO("initialized");
 
-    if (networkType == NT_CLIENT) {
-        network_send_mod_list_request();
-    }
+    if (networkType == NT_CLIENT) { network_send_mod_list_request(); }
 
     // success
     return true;
@@ -198,7 +204,7 @@ static s64 ns_socket_get_id(UNUSED u8 localId) {
     return 0;
 }
 
-static char* ns_socket_get_id_str(u8 localId) {
+static char *ns_socket_get_id_str(u8 localId) {
     if (localId == UNKNOWN_LOCAL_INDEX) { localId = 0; }
     static char id_str[INET6_ADDRSTRLEN] = { 0 };
     inet_ntop(AF_INET6, &sAddr[localId].sin6_addr, id_str, sizeof(id_str));
@@ -219,13 +225,13 @@ static void ns_socket_clear_id(u8 localId) {
     LOG_INFO("cleared addr for id %d", localId);
 }
 
-static void* ns_socket_dup_addr(u8 localIndex) {
-    void* address = malloc(sizeof(struct sockaddr_in6));
+static void *ns_socket_dup_addr(u8 localIndex) {
+    void *address = malloc(sizeof(struct sockaddr_in6));
     memcpy(address, &sAddr[localIndex], sizeof(struct sockaddr_in6));
     return address;
 }
 
-static bool ns_socket_match_addr(void* addr1, void* addr2) {
+static bool ns_socket_match_addr(void *addr1, void *addr2) {
     return !memcmp(addr1, addr2, sizeof(struct sockaddr_in6));
 }
 
@@ -236,34 +242,40 @@ static void ns_socket_update(void) {
         u8 data[PACKET_LENGTH + 1];
         u16 dataLength = 0;
         u8 localIndex = UNKNOWN_LOCAL_INDEX;
-        int rc = socket_receive(sCurSocket, &sAddr[0], data, PACKET_LENGTH + 1, &dataLength, &localIndex);
+        int rc =
+            socket_receive(sCurSocket, &sAddr[0], data, PACKET_LENGTH + 1, &dataLength, &localIndex);
         SOFT_ASSERT(dataLength < PACKET_LENGTH);
         if (rc != NO_ERROR) { break; }
         network_receive(localIndex, &sAddr[0], data, dataLength);
     } while (true);
 }
 
-static int ns_socket_send(u8 localIndex, void* address, u8* data, u16 dataLength) {
+static int ns_socket_send(u8 localIndex, void *address, u8 *data, u16 dataLength) {
     if (localIndex != 0) {
-        if (gNetworkType == NT_SERVER && gNetworkPlayers[localIndex].type != NPT_CLIENT) { return SOCKET_ERROR; }
-        if (gNetworkType == NT_CLIENT && gNetworkPlayers[localIndex].type != NPT_SERVER) { return SOCKET_ERROR; }
+        if (gNetworkType == NT_SERVER && gNetworkPlayers[localIndex].type != NPT_CLIENT) {
+            return SOCKET_ERROR;
+        }
+        if (gNetworkType == NT_CLIENT && gNetworkPlayers[localIndex].type != NPT_SERVER) {
+            return SOCKET_ERROR;
+        }
     }
 
-    struct sockaddr_in6* userAddr = &sAddr[localIndex];
-    if (localIndex == 0 && address != NULL) { userAddr = (struct sockaddr_in6*)address; }
+    struct sockaddr_in6 *userAddr = &sAddr[localIndex];
+    if (localIndex == 0 && address != NULL) { userAddr = (struct sockaddr_in6 *)address; }
 
     int rc = socket_send(sCurSocket, userAddr, data, dataLength);
     if (rc) {
-        LOG_ERROR("    localIndex: %d, packetType: %d, dataLength: %d", localIndex, data[0], dataLength);
+        LOG_ERROR("    localIndex: %d, packetType: %d, dataLength: %d", localIndex, data[0],
+                  dataLength);
     }
     return rc;
 }
 
-static void ns_socket_get_lobby_id(char* destination, u32 destLength) {
+static void ns_socket_get_lobby_id(char *destination, u32 destLength) {
     snprintf(destination, destLength, "%s", ""); // TODO: we can probably hook this up
 }
 
-static void ns_socket_get_lobby_secret(char* destination, u32 destLength) {
+static void ns_socket_get_lobby_secret(char *destination, u32 destLength) {
     snprintf(destination, destLength, "%s", ""); // TODO: we can probably hook this up
 }
 
@@ -277,18 +289,18 @@ static void ns_socket_shutdown(UNUSED bool reconnecting) {
 }
 
 struct NetworkSystem gNetworkSystemSocket = {
-    .initialize       = ns_socket_initialize,
-    .get_id           = ns_socket_get_id,
-    .get_id_str       = ns_socket_get_id_str,
-    .save_id          = ns_socket_save_id,
-    .clear_id         = ns_socket_clear_id,
-    .dup_addr         = ns_socket_dup_addr,
-    .match_addr       = ns_socket_match_addr,
-    .update           = ns_socket_update,
-    .send             = ns_socket_send,
-    .get_lobby_id     = ns_socket_get_lobby_id,
+    .initialize = ns_socket_initialize,
+    .get_id = ns_socket_get_id,
+    .get_id_str = ns_socket_get_id_str,
+    .save_id = ns_socket_save_id,
+    .clear_id = ns_socket_clear_id,
+    .dup_addr = ns_socket_dup_addr,
+    .match_addr = ns_socket_match_addr,
+    .update = ns_socket_update,
+    .send = ns_socket_send,
+    .get_lobby_id = ns_socket_get_lobby_id,
     .get_lobby_secret = ns_socket_get_lobby_secret,
-    .shutdown         = ns_socket_shutdown,
+    .shutdown = ns_socket_shutdown,
     .requireServerBroadcast = true,
-    .name             = "Socket",
+    .name = "Socket",
 };

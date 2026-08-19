@@ -22,16 +22,39 @@ extern struct MarioState gMarioStates[];
 #define SYNC_DISTANCE_ONLY_EVENTS -2.0f
 #define SYNC_DISTANCE_INFINITE 0
 #define PACKET_LENGTH 3000
-#define NETWORKTYPESTR (gNetworkType == NT_CLIENT                            \
-                        ? "Client"                                           \
-                        : (gNetworkType == NT_SERVER ? "Server" : " None ")) \
+#define NETWORKTYPESTR                                                                                 \
+    (gNetworkType == NT_CLIENT ? "Client" : (gNetworkType == NT_SERVER ? "Server" : " None "))
 
 #ifdef DEVELOPMENT
-#define SOFT_ASSERT(_condition) { if (!(_condition)) { LOG_ERROR("failed assert at line %d", __LINE__); assert(_condition); } }
-#define SOFT_ASSERT_RETURN(_condition, _retval) { if (!(_condition)) { LOG_ERROR("failed assert at line %d", __LINE__); assert(_condition); } }
+#define SOFT_ASSERT(_condition)                                                                        \
+    {                                                                                                  \
+        if (!(_condition)) {                                                                           \
+            LOG_ERROR("failed assert at line %d", __LINE__);                                           \
+            assert(_condition);                                                                        \
+        }                                                                                              \
+    }
+#define SOFT_ASSERT_RETURN(_condition, _retval)                                                        \
+    {                                                                                                  \
+        if (!(_condition)) {                                                                           \
+            LOG_ERROR("failed assert at line %d", __LINE__);                                           \
+            assert(_condition);                                                                        \
+        }                                                                                              \
+    }
 #else
-#define SOFT_ASSERT(_condition) { if (!(_condition)) { LOG_ERROR("failed soft assert at line %d", __LINE__); return; } }
-#define SOFT_ASSERT_RETURN(_condition, _retval) { if (!(_condition)) { LOG_ERROR("failed soft assert at line %d", __LINE__); return _retval; } }
+#define SOFT_ASSERT(_condition)                                                                        \
+    {                                                                                                  \
+        if (!(_condition)) {                                                                           \
+            LOG_ERROR("failed soft assert at line %d", __LINE__);                                      \
+            return;                                                                                    \
+        }                                                                                              \
+    }
+#define SOFT_ASSERT_RETURN(_condition, _retval)                                                        \
+    {                                                                                                  \
+        if (!(_condition)) {                                                                           \
+            LOG_ERROR("failed soft assert at line %d", __LINE__);                                      \
+            return _retval;                                                                            \
+        }                                                                                              \
+    }
 #endif
 
 enum NetworkSystemType {
@@ -43,18 +66,18 @@ enum NetworkSystemType {
 struct NetworkSystem {
     bool (*initialize)(enum NetworkType, bool reconnecting);
     s64 (*get_id)(u8 localIndex);
-    char* (*get_id_str)(u8 localIndex);
+    char *(*get_id_str)(u8 localIndex);
     void (*save_id)(u8 localIndex, s64 networkId);
     void (*clear_id)(u8 localIndex);
-    void* (*dup_addr)(u8 localIndex);
-    bool (*match_addr)(void* addr1, void* addr2);
+    void *(*dup_addr)(u8 localIndex);
+    bool (*match_addr)(void *addr1, void *addr2);
     void (*update)(void);
-    int  (*send)(u8 localIndex, void* addr, u8* data, u16 dataLength);
-    void (*get_lobby_id)(char* destination, u32 destLength);
-    void (*get_lobby_secret)(char* destination, u32 destLength);
+    int (*send)(u8 localIndex, void *addr, u8 *data, u16 dataLength);
+    void (*get_lobby_id)(char *destination, u32 destLength);
+    void (*get_lobby_secret)(char *destination, u32 destLength);
     void (*shutdown)(bool reconnecting);
     bool requireServerBroadcast;
-    char* name;
+    char *name;
 };
 
 enum PlayerInteractions {
@@ -102,14 +125,14 @@ struct NametagsSettings {
 };
 
 // Networking-specific externs
-extern struct NetworkSystem* gNetworkSystem;
+extern struct NetworkSystem *gNetworkSystem;
 extern enum NetworkType gNetworkType;
 extern bool gNetworkAreaLoaded;
 extern bool gNetworkAreaSyncing;
 extern u32 gNetworkAreaTimer;
 extern u32 gNetworkAreaTimerClock;
 extern u32 gNetworkAreaRandomSeed;
-extern void* gNetworkServerAddr;
+extern void *gNetworkServerAddr;
 extern struct ServerSettings gServerSettings;
 extern struct NametagsSettings gNametagsSettings;
 extern bool gNetworkSentJoin;
@@ -125,10 +148,10 @@ bool network_init(enum NetworkType inNetworkType, bool reconnecting);
 void network_on_init_area(void);
 void network_on_loaded_area(void);
 bool network_allow_unknown_local_index(enum PacketType packetType);
-void network_send_to(u8 localIndex, struct Packet* p);
-void network_send(struct Packet* p);
-void network_receive(u8 localIndex, void* addr, u8* data, u16 dataLength);
-void* network_duplicate_address(u8 localIndex);
+void network_send_to(u8 localIndex, struct Packet *p);
+void network_send(struct Packet *p);
+void network_receive(u8 localIndex, void *addr, u8 *data, u16 dataLength);
+void *network_duplicate_address(u8 localIndex);
 void network_reset_reconnect_and_rehost(void);
 void network_reconnect_begin(void);
 bool network_is_reconnecting(void);

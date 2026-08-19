@@ -40,9 +40,7 @@ SOCKET socket_initialize(void) {
     // not actually sure this is the "proper" way to fix it
     int bufsiz = 128 * 1024; // 128kb, default is apparently 8kb or 16kb
     rc = setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (const char *)&bufsiz, sizeof(bufsiz));
-    if (rc != NO_ERROR) {
-        LOG_ERROR("setsockopt(SO_SNDBUF) failed with error: %d", rc);
-    }
+    if (rc != NO_ERROR) { LOG_ERROR("setsockopt(SO_SNDBUF) failed with error: %d", rc); }
 #endif
 
     return sock;
@@ -51,9 +49,7 @@ SOCKET socket_initialize(void) {
 void socket_shutdown(SOCKET socket) {
     if (socket == INVALID_SOCKET) { return; }
     int rc = closesocket(socket);
-    if (rc == SOCKET_ERROR) {
-        LOG_ERROR("closesocket failed with error %d", SOCKET_LAST_ERROR);
-    }
+    if (rc == SOCKET_ERROR) { LOG_ERROR("closesocket failed with error %d", SOCKET_LAST_ERROR); }
     WSACleanup();
 }
 

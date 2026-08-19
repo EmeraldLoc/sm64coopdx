@@ -19,11 +19,13 @@ static bool sFatalShown = false;
 bool gDiscordInitialized = false;
 static bool sDiscordFailed = false;
 
-static void discord_sdk_log_callback(UNUSED void* hook_data, enum EDiscordLogLevel level, const char* message) {
+static void discord_sdk_log_callback(UNUSED void *hook_data, enum EDiscordLogLevel level,
+                                     const char *message) {
     LOG_INFO("callback (%d): %s", level, message);
 }
 
-void discord_fatal_message(int rc) { // Discord usually does this because of loss of connection to Discord
+void discord_fatal_message(
+    int rc) { // Discord usually does this because of loss of connection to Discord
     LOG_ERROR("Discord fatal: %d", rc);
 }
 
@@ -42,7 +44,8 @@ void discord_fatal(int rc) {
     }
 }
 
-UNUSED static void get_oauth2_token_callback(UNUSED void* data, enum EDiscordResult result, struct DiscordOAuth2Token* token) {
+UNUSED static void get_oauth2_token_callback(UNUSED void *data, enum EDiscordResult result,
+                                             struct DiscordOAuth2Token *token) {
     LOG_INFO("get_oauth2_token_callback returned %d", result);
     if (result != DiscordResult_Ok) { return; }
     LOG_INFO("OAuth2 token: %s", token->access_token);
@@ -55,9 +58,9 @@ static void register_launch_command(void) {
     if (exe_path[0] == '\0') { return; }
 
 #if defined(_WIN32)
-    snprintf(cmd, MAX_LAUNCH_CMD, "\"%s\"", exe_path);  // argv[0] double-quoted
+    snprintf(cmd, MAX_LAUNCH_CMD, "\"%s\"", exe_path); // argv[0] double-quoted
 #else
-    snprintf(cmd, MAX_LAUNCH_CMD, "'%s'", exe_path);  // argv[0] single-quoted
+    snprintf(cmd, MAX_LAUNCH_CMD, "'%s'", exe_path); // argv[0] single-quoted
 #endif
 
     int rc = app.activities->register_command(app.activities, cmd);
@@ -68,7 +71,7 @@ static void register_launch_command(void) {
     LOG_INFO("cmd: %s", cmd);
 }
 
-static void on_current_user_update(UNUSED void* data) {
+static void on_current_user_update(UNUSED void *data) {
     LOG_INFO("on_current_user_update");
     struct DiscordUser user = { 0 };
     app.users->get_current_user(app.users, &user);
@@ -79,8 +82,8 @@ static void on_current_user_update(UNUSED void* data) {
 
     // copy over discord username if we haven't set one yet
     if (configPlayerName[0] == '\0' && strlen(user.username) > 0) {
-        char* cname = configPlayerName;
-        char* dname = user.username;
+        char *cname = configPlayerName;
+        char *dname = user.username;
         for (int i = 0; i < MAX_CONFIG_STRING - 1; i++) {
             if (*dname >= '!' && *dname <= '~') {
                 *cname = *dname;
@@ -91,7 +94,7 @@ static void on_current_user_update(UNUSED void* data) {
     }
 }
 
-struct IDiscordUserEvents* discord_user_initialize(void) {
+struct IDiscordUserEvents *discord_user_initialize(void) {
     LOG_INFO("discord_user_intitialize");
     static struct IDiscordUserEvents events = { 0 };
     events.on_current_user_update = on_current_user_update;
@@ -101,7 +104,7 @@ struct IDiscordUserEvents* discord_user_initialize(void) {
 static void discord_initialize(void) {
     if (gDiscordInitialized) {
         return;
-    } else if (app.core != NULL) { // reinit
+    } else if (app.core != NULL) {   // reinit
         app.core->destroy(app.core); // why does it ask for itself?
         app.core = NULL;
     }

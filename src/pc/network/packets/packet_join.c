@@ -19,7 +19,7 @@
 #include "pc/djui/djui_panel_menu.h"
 #include "pc/djui/djui_panel_join_message.h"
 #include "pc/utils/string_builder.h"
-//#define DISABLE_MODULE_LOG 1
+// #define DISABLE_MODULE_LOG 1
 #include "pc/debuglog.h"
 #include "pc/utils/misc.h"
 #include "pc/mods/mods.h"
@@ -27,10 +27,10 @@
 #include "pc/configfile.h"
 #include "pc/lua/utils/smlua_misc_utils.h"
 
-extern u8* gOverrideEeprom;
+extern u8 *gOverrideEeprom;
 static u8 eeprom[512] = { 0 };
 
-static u8   sJoinRequestPlayerModel;
+static u8 sJoinRequestPlayerModel;
 static struct PlayerPalette sJoinRequestPlayerPalette;
 static char sJoinRequestPlayerName[MAX_CONFIG_STRING];
 static char sJoinRequestDiscordId[64];
@@ -48,24 +48,24 @@ void network_send_join_request(void) {
     snprintf(version, MAX_VERSION_LENGTH, "%s", get_version());
     packet_write(&p, &version, sizeof(u8) * MAX_VERSION_LENGTH);
 
-    packet_write(&p, &configPlayerModel,   sizeof(u8));
+    packet_write(&p, &configPlayerModel, sizeof(u8));
     packet_write(&p, &configPlayerPalette, sizeof(struct PlayerPalette));
-    packet_write(&p, &configPlayerName,    sizeof(u8) * MAX_CONFIG_STRING);
+    packet_write(&p, &configPlayerName, sizeof(u8) * MAX_CONFIG_STRING);
 
     network_send_to((gNetworkPlayerServer != NULL) ? gNetworkPlayerServer->localIndex : 0, &p);
     LOG_INFO("sending join request");
 }
 
-void network_receive_join_request(struct Packet* p) {
+void network_receive_join_request(struct Packet *p) {
     SOFT_ASSERT(gNetworkType == NT_SERVER);
     LOG_INFO("received join request");
 
     if (p->dataLength > 5) {
         char version[MAX_VERSION_LENGTH] = { 0 };
         packet_read(p, &version, sizeof(u8) * MAX_VERSION_LENGTH);
-        packet_read(p, &sJoinRequestPlayerModel,   sizeof(u8));
+        packet_read(p, &sJoinRequestPlayerModel, sizeof(u8));
         packet_read(p, &sJoinRequestPlayerPalette, sizeof(struct PlayerPalette));
-        packet_read(p, &sJoinRequestPlayerName,    sizeof(u8) * MAX_CONFIG_STRING);
+        packet_read(p, &sJoinRequestPlayerName, sizeof(u8) * MAX_CONFIG_STRING);
     } else {
         sJoinRequestPlayerModel = 0;
         sJoinRequestPlayerPalette = DEFAULT_MARIO_PALETTE;
@@ -75,7 +75,7 @@ void network_receive_join_request(struct Packet* p) {
     network_send_join(p);
 }
 
-void network_send_join(struct Packet* joinRequestPacket) {
+void network_send_join(struct Packet *joinRequestPacket) {
     SOFT_ASSERT(gNetworkType == NT_SERVER);
 
     // figure out id
@@ -98,9 +98,10 @@ void network_send_join(struct Packet* joinRequestPacket) {
     LOG_INFO("chose globalIndex: %d", globalIndex);
 
     // do connection event
-    network_player_connected(NPT_CLIENT, globalIndex, sJoinRequestPlayerModel, &sJoinRequestPlayerPalette, sJoinRequestPlayerName, sJoinRequestDiscordId);
+    network_player_connected(NPT_CLIENT, globalIndex, sJoinRequestPlayerModel,
+                             &sJoinRequestPlayerPalette, sJoinRequestPlayerName, sJoinRequestDiscordId);
 
-    fs_file_t* fp = fs_open(SAVE_FILENAME);
+    fs_file_t *fp = fs_open(SAVE_FILENAME);
     if (fp != NULL) {
         fs_read(fp, eeprom, 512);
         fs_close(fp);
@@ -134,7 +135,7 @@ void network_send_join(struct Packet* joinRequestPacket) {
     network_send_network_players(globalIndex);
 }
 
-void network_receive_join(struct Packet* p) {
+void network_receive_join(struct Packet *p) {
     SOFT_ASSERT(gNetworkType == NT_CLIENT);
     if (gNetworkPlayerLocal != NULL) { return; }
     LOG_INFO("received join packet");
@@ -161,7 +162,10 @@ void network_receive_join(struct Packet* p) {
         network_shutdown(true, false, false, false);
         LOG_ERROR("version mismatch");
         char mismatchMessage[256] = { 0 };
-        snprintf(mismatchMessage, 256, "\\#ffa0a0\\Error:\\#\\ Version mismatch.\n\nYour version: \\#a0a0ff\\%s\\#\\\nTheir version: \\#a0a0ff\\%s\\#\\\n\nSomeone is out of date!\n", version, remoteVersion);
+        snprintf(mismatchMessage, 256,
+                 "\\#ffa0a0\\Error:\\#\\ Version mismatch.\n\nYour version: \\#a0a0ff\\%s\\#\\\nTheir "
+                 "version: \\#a0a0ff\\%s\\#\\\n\nSomeone is out of date!\n",
+                 version, remoteVersion);
         djui_panel_join_message_error(mismatchMessage);
         return;
     }
@@ -182,7 +186,8 @@ void network_receive_join(struct Packet* p) {
     packet_read(p, eeprom, sizeof(u8) * 512);
 
     network_player_connected(NPT_SERVER, 0, 0, &DEFAULT_MARIO_PALETTE, "Player", "0");
-    network_player_connected(NPT_LOCAL, myGlobalIndex, configPlayerModel, &configPlayerPalette, configPlayerName, get_local_discord_id());
+    network_player_connected(NPT_LOCAL, myGlobalIndex, configPlayerModel, &configPlayerPalette,
+                             configPlayerName, get_local_discord_id());
     djui_chat_box_create();
 
     save_file_load_all(TRUE);

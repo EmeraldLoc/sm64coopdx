@@ -32,10 +32,10 @@
 typedef unsigned int MD5_u32plus;
 
 typedef struct {
-	MD5_u32plus lo, hi;
-	MD5_u32plus a, b, c, d;
-	unsigned char buffer[64];
-	MD5_u32plus block[16];
+    MD5_u32plus lo, hi;
+    MD5_u32plus a, b, c, d;
+    unsigned char buffer[64];
+    MD5_u32plus block[16];
 } MD5_CTX;
 
 extern void MD5_Init(MD5_CTX *ctx);
@@ -44,4 +44,4 @@ extern void MD5_Final(unsigned char *result, MD5_CTX *ctx);
 
 #endif
 
-void MD5_ToString(unsigned char* dataHash, char* outString);
+void MD5_ToString(unsigned char *dataHash, char *outString);

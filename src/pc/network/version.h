@@ -33,9 +33,9 @@
 
 #define MAX_VERSION_LENGTH 128
 
-const char* get_version(void);
+const char *get_version(void);
 #ifdef COMPILE_TIME
-const char* get_version_with_build_date(void);
+const char *get_version_with_build_date(void);
 #endif
 
 #endif

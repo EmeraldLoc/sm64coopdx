@@ -17,10 +17,11 @@
 #define HAS_NEON 0
 #endif
 
-#pragma GCC optimize ("unroll-loops")
+#pragma GCC optimize("unroll-loops")
 
 #if HAS_SSE41
-#define LOADLH(l, h) _mm_castpd_si128(_mm_loadh_pd(_mm_load_sd((const double *)(l)), (const double *)(h)))
+#define LOADLH(l, h)                                                                                   \
+    _mm_castpd_si128(_mm_loadh_pd(_mm_load_sd((const double *)(l)), (const double *)(h)))
 #endif
 
 #define ROUND_UP_32(v) (((v) + 31) & ~31)
@@ -54,38 +55,38 @@ static struct {
 } rspa;
 
 static int16_t resample_table[64][4] = {
-    {0x0c39, 0x66ad, 0x0d46, 0xffdf}, {0x0b39, 0x6696, 0x0e5f, 0xffd8},
-    {0x0a44, 0x6669, 0x0f83, 0xffd0}, {0x095a, 0x6626, 0x10b4, 0xffc8},
-    {0x087d, 0x65cd, 0x11f0, 0xffbf}, {0x07ab, 0x655e, 0x1338, 0xffb6},
-    {0x06e4, 0x64d9, 0x148c, 0xffac}, {0x0628, 0x643f, 0x15eb, 0xffa1},
-    {0x0577, 0x638f, 0x1756, 0xff96}, {0x04d1, 0x62cb, 0x18cb, 0xff8a},
-    {0x0435, 0x61f3, 0x1a4c, 0xff7e}, {0x03a4, 0x6106, 0x1bd7, 0xff71},
-    {0x031c, 0x6007, 0x1d6c, 0xff64}, {0x029f, 0x5ef5, 0x1f0b, 0xff56},
-    {0x022a, 0x5dd0, 0x20b3, 0xff48}, {0x01be, 0x5c9a, 0x2264, 0xff3a},
-    {0x015b, 0x5b53, 0x241e, 0xff2c}, {0x0101, 0x59fc, 0x25e0, 0xff1e},
-    {0x00ae, 0x5896, 0x27a9, 0xff10}, {0x0063, 0x5720, 0x297a, 0xff02},
-    {0x001f, 0x559d, 0x2b50, 0xfef4}, {0xffe2, 0x540d, 0x2d2c, 0xfee8},
-    {0xffac, 0x5270, 0x2f0d, 0xfedb}, {0xff7c, 0x50c7, 0x30f3, 0xfed0},
-    {0xff53, 0x4f14, 0x32dc, 0xfec6}, {0xff2e, 0x4d57, 0x34c8, 0xfebd},
-    {0xff0f, 0x4b91, 0x36b6, 0xfeb6}, {0xfef5, 0x49c2, 0x38a5, 0xfeb0},
-    {0xfedf, 0x47ed, 0x3a95, 0xfeac}, {0xfece, 0x4611, 0x3c85, 0xfeab},
-    {0xfec0, 0x4430, 0x3e74, 0xfeac}, {0xfeb6, 0x424a, 0x4060, 0xfeaf},
-    {0xfeaf, 0x4060, 0x424a, 0xfeb6}, {0xfeac, 0x3e74, 0x4430, 0xfec0},
-    {0xfeab, 0x3c85, 0x4611, 0xfece}, {0xfeac, 0x3a95, 0x47ed, 0xfedf},
-    {0xfeb0, 0x38a5, 0x49c2, 0xfef5}, {0xfeb6, 0x36b6, 0x4b91, 0xff0f},
-    {0xfebd, 0x34c8, 0x4d57, 0xff2e}, {0xfec6, 0x32dc, 0x4f14, 0xff53},
-    {0xfed0, 0x30f3, 0x50c7, 0xff7c}, {0xfedb, 0x2f0d, 0x5270, 0xffac},
-    {0xfee8, 0x2d2c, 0x540d, 0xffe2}, {0xfef4, 0x2b50, 0x559d, 0x001f},
-    {0xff02, 0x297a, 0x5720, 0x0063}, {0xff10, 0x27a9, 0x5896, 0x00ae},
-    {0xff1e, 0x25e0, 0x59fc, 0x0101}, {0xff2c, 0x241e, 0x5b53, 0x015b},
-    {0xff3a, 0x2264, 0x5c9a, 0x01be}, {0xff48, 0x20b3, 0x5dd0, 0x022a},
-    {0xff56, 0x1f0b, 0x5ef5, 0x029f}, {0xff64, 0x1d6c, 0x6007, 0x031c},
-    {0xff71, 0x1bd7, 0x6106, 0x03a4}, {0xff7e, 0x1a4c, 0x61f3, 0x0435},
-    {0xff8a, 0x18cb, 0x62cb, 0x04d1}, {0xff96, 0x1756, 0x638f, 0x0577},
-    {0xffa1, 0x15eb, 0x643f, 0x0628}, {0xffac, 0x148c, 0x64d9, 0x06e4},
-    {0xffb6, 0x1338, 0x655e, 0x07ab}, {0xffbf, 0x11f0, 0x65cd, 0x087d},
-    {0xffc8, 0x10b4, 0x6626, 0x095a}, {0xffd0, 0x0f83, 0x6669, 0x0a44},
-    {0xffd8, 0x0e5f, 0x6696, 0x0b39}, {0xffdf, 0x0d46, 0x66ad, 0x0c39}
+    { 0x0c39, 0x66ad, 0x0d46, 0xffdf }, { 0x0b39, 0x6696, 0x0e5f, 0xffd8 },
+    { 0x0a44, 0x6669, 0x0f83, 0xffd0 }, { 0x095a, 0x6626, 0x10b4, 0xffc8 },
+    { 0x087d, 0x65cd, 0x11f0, 0xffbf }, { 0x07ab, 0x655e, 0x1338, 0xffb6 },
+    { 0x06e4, 0x64d9, 0x148c, 0xffac }, { 0x0628, 0x643f, 0x15eb, 0xffa1 },
+    { 0x0577, 0x638f, 0x1756, 0xff96 }, { 0x04d1, 0x62cb, 0x18cb, 0xff8a },
+    { 0x0435, 0x61f3, 0x1a4c, 0xff7e }, { 0x03a4, 0x6106, 0x1bd7, 0xff71 },
+    { 0x031c, 0x6007, 0x1d6c, 0xff64 }, { 0x029f, 0x5ef5, 0x1f0b, 0xff56 },
+    { 0x022a, 0x5dd0, 0x20b3, 0xff48 }, { 0x01be, 0x5c9a, 0x2264, 0xff3a },
+    { 0x015b, 0x5b53, 0x241e, 0xff2c }, { 0x0101, 0x59fc, 0x25e0, 0xff1e },
+    { 0x00ae, 0x5896, 0x27a9, 0xff10 }, { 0x0063, 0x5720, 0x297a, 0xff02 },
+    { 0x001f, 0x559d, 0x2b50, 0xfef4 }, { 0xffe2, 0x540d, 0x2d2c, 0xfee8 },
+    { 0xffac, 0x5270, 0x2f0d, 0xfedb }, { 0xff7c, 0x50c7, 0x30f3, 0xfed0 },
+    { 0xff53, 0x4f14, 0x32dc, 0xfec6 }, { 0xff2e, 0x4d57, 0x34c8, 0xfebd },
+    { 0xff0f, 0x4b91, 0x36b6, 0xfeb6 }, { 0xfef5, 0x49c2, 0x38a5, 0xfeb0 },
+    { 0xfedf, 0x47ed, 0x3a95, 0xfeac }, { 0xfece, 0x4611, 0x3c85, 0xfeab },
+    { 0xfec0, 0x4430, 0x3e74, 0xfeac }, { 0xfeb6, 0x424a, 0x4060, 0xfeaf },
+    { 0xfeaf, 0x4060, 0x424a, 0xfeb6 }, { 0xfeac, 0x3e74, 0x4430, 0xfec0 },
+    { 0xfeab, 0x3c85, 0x4611, 0xfece }, { 0xfeac, 0x3a95, 0x47ed, 0xfedf },
+    { 0xfeb0, 0x38a5, 0x49c2, 0xfef5 }, { 0xfeb6, 0x36b6, 0x4b91, 0xff0f },
+    { 0xfebd, 0x34c8, 0x4d57, 0xff2e }, { 0xfec6, 0x32dc, 0x4f14, 0xff53 },
+    { 0xfed0, 0x30f3, 0x50c7, 0xff7c }, { 0xfedb, 0x2f0d, 0x5270, 0xffac },
+    { 0xfee8, 0x2d2c, 0x540d, 0xffe2 }, { 0xfef4, 0x2b50, 0x559d, 0x001f },
+    { 0xff02, 0x297a, 0x5720, 0x0063 }, { 0xff10, 0x27a9, 0x5896, 0x00ae },
+    { 0xff1e, 0x25e0, 0x59fc, 0x0101 }, { 0xff2c, 0x241e, 0x5b53, 0x015b },
+    { 0xff3a, 0x2264, 0x5c9a, 0x01be }, { 0xff48, 0x20b3, 0x5dd0, 0x022a },
+    { 0xff56, 0x1f0b, 0x5ef5, 0x029f }, { 0xff64, 0x1d6c, 0x6007, 0x031c },
+    { 0xff71, 0x1bd7, 0x6106, 0x03a4 }, { 0xff7e, 0x1a4c, 0x61f3, 0x0435 },
+    { 0xff8a, 0x18cb, 0x62cb, 0x04d1 }, { 0xff96, 0x1756, 0x638f, 0x0577 },
+    { 0xffa1, 0x15eb, 0x643f, 0x0628 }, { 0xffac, 0x148c, 0x64d9, 0x06e4 },
+    { 0xffb6, 0x1338, 0x655e, 0x07ab }, { 0xffbf, 0x11f0, 0x65cd, 0x087d },
+    { 0xffc8, 0x10b4, 0x6626, 0x095a }, { 0xffd0, 0x0f83, 0x6669, 0x0a44 },
+    { 0xffd8, 0x0e5f, 0x6696, 0x0b39 }, { 0xffdf, 0x0d46, 0x66ad, 0x0c39 }
 };
 
 #if !HAS_SSE41 && !HAS_NEON
@@ -217,10 +218,10 @@ void OPTIMIZE_O3 aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
     const __m128i mult = _mm_set_epi16(0x10, 0x01, 0x10, 0x01, 0x10, 0x01, 0x10, 0x01);
     const __m128i mask = _mm_set1_epi16((int16_t)0xf000);
 #elif HAS_NEON
-    static const int8_t pos0_data[] = {-1, 0, -1, 0, -1, 1, -1, 1, -1, 2, -1, 2, -1, 3, -1, 3};
-    static const int8_t pos1_data[] = {-1, 4, -1, 4, -1, 5, -1, 5, -1, 6, -1, 6, -1, 7, -1, 7};
-    static const int16_t mult_data[] = {0x01, 0x10, 0x01, 0x10, 0x01, 0x10, 0x01, 0x10};
-    static const int16_t table_prefix_data[] = {0, 0, 0, 0, 0, 0, 0, 1 << 11};
+    static const int8_t pos0_data[] = { -1, 0, -1, 0, -1, 1, -1, 1, -1, 2, -1, 2, -1, 3, -1, 3 };
+    static const int8_t pos1_data[] = { -1, 4, -1, 4, -1, 5, -1, 5, -1, 6, -1, 6, -1, 7, -1, 7 };
+    static const int16_t mult_data[] = { 0x01, 0x10, 0x01, 0x10, 0x01, 0x10, 0x01, 0x10 };
+    static const int16_t table_prefix_data[] = { 0, 0, 0, 0, 0, 0, 0, 1 << 11 };
     const int8x16_t pos0 = vld1q_s8(pos0_data);
     const int8x16_t pos1 = vld1q_s8(pos1_data);
     const int16x8_t mult = vld1q_s16(mult_data);
@@ -245,7 +246,7 @@ void OPTIMIZE_O3 aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
     int16x8_t result = vld1q_s16(out - 8);
 #endif
     while (nbytes > 0) {
-        int shift = *in >> 4; // should be in 0..12
+        int shift = *in >> 4;          // should be in 0..12
         int table_index = *in++ & 0xf; // should be in 0..7
         int16_t (*tbl)[8] = rspa.adpcm_table[table_index];
         int i;
@@ -253,14 +254,16 @@ void OPTIMIZE_O3 aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
         // The _mm_loadu_si64 instruction was added in GCC 9, and results in the same
         // asm as the following instructions, so better be compatible with old GCC.
         //__m128i inv = _mm_loadu_si64(in);
-        uint64_t v; memcpy(&v, in, 8);
+        uint64_t v;
+        memcpy(&v, in, 8);
         __m128i inv = _mm_set_epi64x(0, v);
-        __m128i invec[2] = {_mm_shuffle_epi8(inv, pos0), _mm_shuffle_epi8(inv, pos1)};
+        __m128i invec[2] = { _mm_shuffle_epi8(inv, pos0), _mm_shuffle_epi8(inv, pos1) };
         __m128i tblvec0 = _mm_loadu_si128((const __m128i *)tbl[0]);
         __m128i tblvec1 = _mm_loadu_si128((const __m128i *)(tbl[1]));
         __m128i tbllo = _mm_unpacklo_epi16(tblvec0, tblvec1);
         __m128i tblhi = _mm_unpackhi_epi16(tblvec0, tblvec1);
-        __m128i shiftcount = _mm_set_epi64x(0, 12 - shift); // _mm_cvtsi64_si128 does not exist on 32-bit x86
+        __m128i shiftcount =
+            _mm_set_epi64x(0, 12 - shift); // _mm_cvtsi64_si128 does not exist on 32-bit x86
         __m128i tblvec1_rev[8];
 
         tblvec1_rev[0] = _mm_insert_epi16(_mm_shuffle_epi8(tblvec1, tblrev), 1 << 11, 7);
@@ -288,8 +291,10 @@ void OPTIMIZE_O3 aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
             muls[1] = _mm_madd_epi16(tblvec1_rev[6], invec[i]);
             muls[0] = _mm_madd_epi16(tblvec1_rev[7], invec[i]);
 
-            acc0 = _mm_add_epi32(acc0, _mm_hadd_epi32(_mm_hadd_epi32(muls[0], muls[1]), _mm_hadd_epi32(muls[2], muls[3])));
-            acc1 = _mm_add_epi32(acc1, _mm_hadd_epi32(_mm_hadd_epi32(muls[4], muls[5]), _mm_hadd_epi32(muls[6], muls[7])));
+            acc0 = _mm_add_epi32(acc0, _mm_hadd_epi32(_mm_hadd_epi32(muls[0], muls[1]),
+                                                      _mm_hadd_epi32(muls[2], muls[3])));
+            acc1 = _mm_add_epi32(acc1, _mm_hadd_epi32(_mm_hadd_epi32(muls[4], muls[5]),
+                                                      _mm_hadd_epi32(muls[6], muls[7])));
 
             acc0 = _mm_srai_epi32(acc0, 11);
             acc1 = _mm_srai_epi32(acc1, 11);
@@ -302,11 +307,11 @@ void OPTIMIZE_O3 aADPCMdecImpl(uint8_t flags, ADPCM_STATE state) {
         }
 #elif HAS_NEON
         int8x8_t inv = vld1_s8((int8_t *)in);
-        int16x8_t tblvec[2] = {vld1q_s16(tbl[0]), vld1q_s16(tbl[1])};
-        int16x8_t invec[2] = {vreinterpretq_s16_s8(vcombine_s8(vtbl1_s8(inv, vget_low_s8(pos0)),
-                                                               vtbl1_s8(inv, vget_high_s8(pos0)))),
-                              vreinterpretq_s16_s8(vcombine_s8(vtbl1_s8(inv, vget_low_s8(pos1)),
-                                                               vtbl1_s8(inv, vget_high_s8(pos1))))};
+        int16x8_t tblvec[2] = { vld1q_s16(tbl[0]), vld1q_s16(tbl[1]) };
+        int16x8_t invec[2] = { vreinterpretq_s16_s8(vcombine_s8(vtbl1_s8(inv, vget_low_s8(pos0)),
+                                                                vtbl1_s8(inv, vget_high_s8(pos0)))),
+                               vreinterpretq_s16_s8(vcombine_s8(vtbl1_s8(inv, vget_low_s8(pos1)),
+                                                                vtbl1_s8(inv, vget_high_s8(pos1)))) };
         int16x8_t shiftcount = vdupq_n_s16(shift - 12); // negative means right shift
         int16x8_t tblvec1[8];
 
@@ -413,9 +418,10 @@ void OPTIMIZE_O3 aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE sta
     __m128i acc_b = _mm_add_epi32(_mm_unpackhi_epi16(pl, ph), pitchacclo_vec);
 
     do {
-        __m128i tbl_positions = _mm_srli_epi16(_mm_packus_epi32(
-            _mm_and_si128(acc_a, _mm_set1_epi32(0xffff)),
-            _mm_and_si128(acc_b, _mm_set1_epi32(0xffff))), 10);
+        __m128i tbl_positions =
+            _mm_srli_epi16(_mm_packus_epi32(_mm_and_si128(acc_a, _mm_set1_epi32(0xffff)),
+                                            _mm_and_si128(acc_b, _mm_set1_epi32(0xffff))),
+                           10);
 
         __m128i in_positions = _mm_packus_epi32(_mm_srli_epi32(acc_a, 16), _mm_srli_epi32(acc_b, 16));
         __m128i tbl_entries[4];
@@ -432,20 +438,29 @@ void OPTIMIZE_O3 aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE sta
 
             samples[i] = _mm_mulhrs_epi16(samples[i], tbl_entries[i]);
         }*/
-        tbl_entries[0] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 0)], resample_table[_mm_extract_epi16(tbl_positions, 1)]);
-        tbl_entries[1] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 2)], resample_table[_mm_extract_epi16(tbl_positions, 3)]);
-        tbl_entries[2] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 4)], resample_table[_mm_extract_epi16(tbl_positions, 5)]);
-        tbl_entries[3] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 6)], resample_table[_mm_extract_epi16(tbl_positions, 7)]);
-        samples[0] = LOADLH(&in[_mm_extract_epi16(in_positions, 0)], &in[_mm_extract_epi16(in_positions, 1)]);
-        samples[1] = LOADLH(&in[_mm_extract_epi16(in_positions, 2)], &in[_mm_extract_epi16(in_positions, 3)]);
-        samples[2] = LOADLH(&in[_mm_extract_epi16(in_positions, 4)], &in[_mm_extract_epi16(in_positions, 5)]);
-        samples[3] = LOADLH(&in[_mm_extract_epi16(in_positions, 6)], &in[_mm_extract_epi16(in_positions, 7)]);
+        tbl_entries[0] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 0)],
+                                resample_table[_mm_extract_epi16(tbl_positions, 1)]);
+        tbl_entries[1] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 2)],
+                                resample_table[_mm_extract_epi16(tbl_positions, 3)]);
+        tbl_entries[2] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 4)],
+                                resample_table[_mm_extract_epi16(tbl_positions, 5)]);
+        tbl_entries[3] = LOADLH(resample_table[_mm_extract_epi16(tbl_positions, 6)],
+                                resample_table[_mm_extract_epi16(tbl_positions, 7)]);
+        samples[0] =
+            LOADLH(&in[_mm_extract_epi16(in_positions, 0)], &in[_mm_extract_epi16(in_positions, 1)]);
+        samples[1] =
+            LOADLH(&in[_mm_extract_epi16(in_positions, 2)], &in[_mm_extract_epi16(in_positions, 3)]);
+        samples[2] =
+            LOADLH(&in[_mm_extract_epi16(in_positions, 4)], &in[_mm_extract_epi16(in_positions, 5)]);
+        samples[3] =
+            LOADLH(&in[_mm_extract_epi16(in_positions, 6)], &in[_mm_extract_epi16(in_positions, 7)]);
         samples[0] = _mm_mulhrs_epi16(samples[0], tbl_entries[0]);
         samples[1] = _mm_mulhrs_epi16(samples[1], tbl_entries[1]);
         samples[2] = _mm_mulhrs_epi16(samples[2], tbl_entries[2]);
         samples[3] = _mm_mulhrs_epi16(samples[3], tbl_entries[3]);
 
-        _mm_storeu_si128((__m128i *)out, _mm_hadds_epi16(_mm_hadds_epi16(samples[0], samples[1]), _mm_hadds_epi16(samples[2], samples[3])));
+        _mm_storeu_si128((__m128i *)out, _mm_hadds_epi16(_mm_hadds_epi16(samples[0], samples[1]),
+                                                         _mm_hadds_epi16(samples[2], samples[3])));
 
         acc_a = _mm_add_epi32(acc_a, pitchvec_8_steps);
         acc_b = _mm_add_epi32(acc_b, pitchvec_8_steps);
@@ -455,7 +470,7 @@ void OPTIMIZE_O3 aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE sta
     in += (uint16_t)_mm_extract_epi16(acc_a, 1);
     pitch_accumulator = (uint16_t)_mm_extract_epi16(acc_a, 0);
 #elif HAS_NEON
-    static const uint16_t multiples_data[8] = {0, 2, 4, 6, 8, 10, 12, 14};
+    static const uint16_t multiples_data[8] = { 0, 2, 4, 6, 8, 10, 12, 14 };
     uint16x8_t multiples = vld1q_u16(multiples_data);
     uint32x4_t pitchvec_8_steps = vdupq_n_u32((pitch << 1) * 8);
     uint32x4_t pitchacclo_vec = vdupq_n_u32((uint16_t)pitch_accumulator);
@@ -471,14 +486,22 @@ void OPTIMIZE_O3 aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE sta
         int16x8x2_t unzipped1;
         int16x8x2_t unzipped2;
 
-        tbl_entries[0] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 0)]), vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 1)]));
-        tbl_entries[1] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 2)]), vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 3)]));
-        tbl_entries[2] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 4)]), vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 5)]));
-        tbl_entries[3] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 6)]), vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 7)]));
-        samples[0] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 0)]), vld1_s16(&in[vgetq_lane_u16(in_positions, 1)]));
-        samples[1] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 2)]), vld1_s16(&in[vgetq_lane_u16(in_positions, 3)]));
-        samples[2] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 4)]), vld1_s16(&in[vgetq_lane_u16(in_positions, 5)]));
-        samples[3] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 6)]), vld1_s16(&in[vgetq_lane_u16(in_positions, 7)]));
+        tbl_entries[0] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 0)]),
+                                      vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 1)]));
+        tbl_entries[1] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 2)]),
+                                      vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 3)]));
+        tbl_entries[2] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 4)]),
+                                      vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 5)]));
+        tbl_entries[3] = vcombine_s16(vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 6)]),
+                                      vld1_s16(resample_table[vgetq_lane_u16(tbl_positions, 7)]));
+        samples[0] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 0)]),
+                                  vld1_s16(&in[vgetq_lane_u16(in_positions, 1)]));
+        samples[1] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 2)]),
+                                  vld1_s16(&in[vgetq_lane_u16(in_positions, 3)]));
+        samples[2] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 4)]),
+                                  vld1_s16(&in[vgetq_lane_u16(in_positions, 5)]));
+        samples[3] = vcombine_s16(vld1_s16(&in[vgetq_lane_u16(in_positions, 6)]),
+                                  vld1_s16(&in[vgetq_lane_u16(in_positions, 7)]));
         samples[0] = vqrdmulhq_s16(samples[0], tbl_entries[0]);
         samples[1] = vqrdmulhq_s16(samples[1], tbl_entries[1]);
         samples[2] = vqrdmulhq_s16(samples[2], tbl_entries[2]);
@@ -504,10 +527,8 @@ void OPTIMIZE_O3 aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE sta
     do {
         for (i = 0; i < 8; i++) {
             tbl = resample_table[pitch_accumulator * 64 >> 16];
-            sample = ((in[0] * tbl[0] + 0x4000) >> 15) +
-                     ((in[1] * tbl[1] + 0x4000) >> 15) +
-                     ((in[2] * tbl[2] + 0x4000) >> 15) +
-                     ((in[3] * tbl[3] + 0x4000) >> 15);
+            sample = ((in[0] * tbl[0] + 0x4000) >> 15) + ((in[1] * tbl[1] + 0x4000) >> 15)
+                     + ((in[2] * tbl[2] + 0x4000) >> 15) + ((in[3] * tbl[3] + 0x4000) >> 15);
             *out++ = clamp16(sample);
 
             pitch_accumulator += (pitch << 1);
@@ -522,18 +543,17 @@ void OPTIMIZE_O3 aResampleImpl(uint8_t flags, uint16_t pitch, RESAMPLE_STATE sta
     memcpy(state, in, 4 * sizeof(int16_t));
     i = (in - in_initial + 4) & 7;
     in -= i;
-    if (i != 0) {
-        i = -8 - i;
-    }
+    if (i != 0) { i = -8 - i; }
     state[5] = i;
     memcpy(state + 8, in, 8 * sizeof(int16_t));
 }
 
-
 void OPTIMIZE_O3 aEnvMixerImpl(uint8_t flags, ENVMIX_STATE state) {
     int16_t *in = rspa.buf.as_s16 + rspa.in / sizeof(int16_t);
-    int16_t *dry[2] = {rspa.buf.as_s16 + rspa.out / sizeof(int16_t), rspa.buf.as_s16 + rspa.dry_right / sizeof(int16_t)};
-    int16_t *wet[2] = {rspa.buf.as_s16 + rspa.wet_left / sizeof(int16_t), rspa.buf.as_s16 + rspa.wet_right / sizeof(int16_t)};
+    int16_t *dry[2] = { rspa.buf.as_s16 + rspa.out / sizeof(int16_t),
+                        rspa.buf.as_s16 + rspa.dry_right / sizeof(int16_t) };
+    int16_t *wet[2] = { rspa.buf.as_s16 + rspa.wet_left / sizeof(int16_t),
+                        rspa.buf.as_s16 + rspa.wet_right / sizeof(int16_t) };
     int nbytes = ROUND_UP_16(rspa.nbytes);
 
 #if HAS_SSE41
@@ -549,17 +569,21 @@ void OPTIMIZE_O3 aEnvMixerImpl(uint8_t flags, ENVMIX_STATE state) {
     int c;
 
     if (flags & A_INIT) {
-        float vol_init[2] = {rspa.vol[0], rspa.vol[1]};
-        float rate_float[2] = {(float)rspa.rate[0] * (1.0f / 65536.0f), (float)rspa.rate[1] * (1.0f / 65536.0f)};
-        float step_diff[2] = {vol_init[0] * (rate_float[0] - 1.0f), vol_init[1] * (rate_float[1] - 1.0f)};
+        float vol_init[2] = { rspa.vol[0], rspa.vol[1] };
+        float rate_float[2] = { (float)rspa.rate[0] * (1.0f / 65536.0f),
+                                (float)rspa.rate[1] * (1.0f / 65536.0f) };
+        float step_diff[2] = { vol_init[0] * (rate_float[0] - 1.0f),
+                               vol_init[1] * (rate_float[1] - 1.0f) };
 
         for (c = 0; c < 2; c++) {
-            vols[c][0] = _mm_add_ps(
-                _mm_set_ps1(vol_init[c]),
-                _mm_mul_ps(_mm_set1_ps(step_diff[c]), _mm_setr_ps(1.0f / 8.0f, 2.0f / 8.0f, 3.0f / 8.0f, 4.0f / 8.0f)));
-            vols[c][1] = _mm_add_ps(
-                _mm_set_ps1(vol_init[c]),
-                _mm_mul_ps(_mm_set1_ps(step_diff[c]), _mm_setr_ps(5.0f / 8.0f, 6.0f / 8.0f, 7.0f / 8.0f, 8.0f / 8.0f)));
+            vols[c][0] =
+                _mm_add_ps(_mm_set_ps1(vol_init[c]),
+                           _mm_mul_ps(_mm_set1_ps(step_diff[c]),
+                                      _mm_setr_ps(1.0f / 8.0f, 2.0f / 8.0f, 3.0f / 8.0f, 4.0f / 8.0f)));
+            vols[c][1] =
+                _mm_add_ps(_mm_set_ps1(vol_init[c]),
+                           _mm_mul_ps(_mm_set1_ps(step_diff[c]),
+                                      _mm_setr_ps(5.0f / 8.0f, 6.0f / 8.0f, 7.0f / 8.0f, 8.0f / 8.0f)));
 
             increasing[c] = rate_float[c] >= 1.0f;
             target[c] = _mm_set1_ps(rspa.target[c]);
@@ -604,17 +628,17 @@ void OPTIMIZE_O3 aEnvMixerImpl(uint8_t flags, ENVMIX_STATE state) {
             }
 
             vol_s16 = _mm_packs_epi32(_mm_cvtps_epi32(vols[c][0]), _mm_cvtps_epi32(vols[c][1]));
-            _mm_storeu_si128((__m128i *)dry[c],
-                             _mm_adds_epi16(
-                                 _mm_loadu_si128((const __m128i *)dry[c]),
-                                 _mm_mulhrs_epi16(in_loaded, _mm_mulhrs_epi16(vol_s16, dry_factor))));
+            _mm_storeu_si128(
+                (__m128i *)dry[c],
+                _mm_adds_epi16(_mm_loadu_si128((const __m128i *)dry[c]),
+                               _mm_mulhrs_epi16(in_loaded, _mm_mulhrs_epi16(vol_s16, dry_factor))));
             dry[c] += 8;
 
             if (flags & A_AUX) {
-                _mm_storeu_si128((__m128i *)wet[c],
-                                 _mm_adds_epi16(
-                                     _mm_loadu_si128((const __m128i *)wet[c]),
-                                     _mm_mulhrs_epi16(in_loaded, _mm_mulhrs_epi16(vol_s16, wet_factor))));
+                _mm_storeu_si128(
+                    (__m128i *)wet[c],
+                    _mm_adds_epi16(_mm_loadu_si128((const __m128i *)wet[c]),
+                                   _mm_mulhrs_epi16(in_loaded, _mm_mulhrs_epi16(vol_s16, wet_factor))));
                 wet[c] += 8;
             }
 
@@ -642,16 +666,23 @@ void OPTIMIZE_O3 aEnvMixerImpl(uint8_t flags, ENVMIX_STATE state) {
     int c;
 
     if (flags & A_INIT) {
-        float vol_init[2] = {rspa.vol[0], rspa.vol[1]};
-        float rate_float[2] = {(float)rspa.rate[0] * (1.0f / 65536.0f), (float)rspa.rate[1] * (1.0f / 65536.0f)};
-        float step_diff[2] = {vol_init[0] * (rate_float[0] - 1.0f), vol_init[1] * (rate_float[1] - 1.0f)};
-        static const float step_dividers_data[2][4] = {{1.0f / 8.0f, 2.0f / 8.0f, 3.0f / 8.0f, 4.0f / 8.0f},
-                                                      {5.0f / 8.0f, 6.0f / 8.0f, 7.0f / 8.0f, 8.0f / 8.0f}};
-        float32x4_t step_dividers[2] = {vld1q_f32(step_dividers_data[0]), vld1q_f32(step_dividers_data[1])};
+        float vol_init[2] = { rspa.vol[0], rspa.vol[1] };
+        float rate_float[2] = { (float)rspa.rate[0] * (1.0f / 65536.0f),
+                                (float)rspa.rate[1] * (1.0f / 65536.0f) };
+        float step_diff[2] = { vol_init[0] * (rate_float[0] - 1.0f),
+                               vol_init[1] * (rate_float[1] - 1.0f) };
+        static const float step_dividers_data[2][4] = {
+            { 1.0f / 8.0f, 2.0f / 8.0f, 3.0f / 8.0f, 4.0f / 8.0f },
+            { 5.0f / 8.0f, 6.0f / 8.0f, 7.0f / 8.0f, 8.0f / 8.0f }
+        };
+        float32x4_t step_dividers[2] = { vld1q_f32(step_dividers_data[0]),
+                                         vld1q_f32(step_dividers_data[1]) };
 
         for (c = 0; c < 2; c++) {
-            vols[c][0] = vaddq_f32(vdupq_n_f32(vol_init[c]), vmulq_n_f32(step_dividers[0], step_diff[c]));
-            vols[c][1] = vaddq_f32(vdupq_n_f32(vol_init[c]), vmulq_n_f32(step_dividers[1], step_diff[c]));
+            vols[c][0] =
+                vaddq_f32(vdupq_n_f32(vol_init[c]), vmulq_n_f32(step_dividers[0], step_diff[c]));
+            vols[c][1] =
+                vaddq_f32(vdupq_n_f32(vol_init[c]), vmulq_n_f32(step_dividers[1], step_diff[c]));
             increasing[c] = rate_float[c] >= 1.0f;
             target[c] = vdupq_n_f32(rspa.target[c]);
             rate[c] = rate_float[c];
@@ -693,11 +724,16 @@ void OPTIMIZE_O3 aEnvMixerImpl(uint8_t flags, ENVMIX_STATE state) {
                 vols[c][1] = vmaxq_f32(vols[c][1], target[c]);
             }
 
-            vol_s16 = vcombine_s16(vqmovn_s32(vcvtq_s32_f32(vols[c][0])), vqmovn_s32(vcvtq_s32_f32(vols[c][1])));
-            vst1q_s16(dry[c], vqaddq_s16(vld1q_s16(dry[c]), vqrdmulhq_s16(in_loaded, vqrdmulhq_n_s16(vol_s16, dry_factor))));
+            vol_s16 = vcombine_s16(vqmovn_s32(vcvtq_s32_f32(vols[c][0])),
+                                   vqmovn_s32(vcvtq_s32_f32(vols[c][1])));
+            vst1q_s16(dry[c],
+                      vqaddq_s16(vld1q_s16(dry[c]),
+                                 vqrdmulhq_s16(in_loaded, vqrdmulhq_n_s16(vol_s16, dry_factor))));
             dry[c] += 8;
             if (flags & A_AUX) {
-                vst1q_s16(wet[c], vqaddq_s16(vld1q_s16(wet[c]), vqrdmulhq_s16(in_loaded, vqrdmulhq_n_s16(vol_s16, wet_factor))));
+                vst1q_s16(wet[c],
+                          vqaddq_s16(vld1q_s16(wet[c]),
+                                     vqrdmulhq_s16(in_loaded, vqrdmulhq_n_s16(vol_s16, wet_factor))));
                 wet[c] += 8;
             }
             vols[c][0] = vmulq_n_f32(vols[c][0], rate[c]);
@@ -751,26 +787,25 @@ void OPTIMIZE_O3 aEnvMixerImpl(uint8_t flags, ENVMIX_STATE state) {
             for (i = 0; i < 8; i++) {
                 if ((rate[c] >> 16) > 0) {
                     // Increasing volume
-                    if ((vols[c][i] >> 16) > target[c]) {
-                        vols[c][i] = target[c] << 16;
-                    }
+                    if ((vols[c][i] >> 16) > target[c]) { vols[c][i] = target[c] << 16; }
                 } else {
                     // Decreasing volume
-                    if ((vols[c][i] >> 16) < target[c]) {
-                        vols[c][i] = target[c] << 16;
-                    }
+                    if ((vols[c][i] >> 16) < target[c]) { vols[c][i] = target[c] << 16; }
                 }
-                dry[c][i] = clamp16((dry[c][i] * 0x7fff + in[i] * (((vols[c][i] >> 16) * vol_dry + 0x4000) >> 15) + 0x4000) >> 15);
+                dry[c][i] = clamp16((dry[c][i] * 0x7fff
+                                     + in[i] * (((vols[c][i] >> 16) * vol_dry + 0x4000) >> 15) + 0x4000)
+                                    >> 15);
                 if (flags & A_AUX) {
-                    wet[c][i] = clamp16((wet[c][i] * 0x7fff + in[i] * (((vols[c][i] >> 16) * vol_wet + 0x4000) >> 15) + 0x4000) >> 15);
+                    wet[c][i] =
+                        clamp16((wet[c][i] * 0x7fff
+                                 + in[i] * (((vols[c][i] >> 16) * vol_wet + 0x4000) >> 15) + 0x4000)
+                                >> 15);
                 }
                 vols[c][i] = clamp32((int64_t)vols[c][i] * rate[c] >> 16);
             }
 
             dry[c] += 8;
-            if (flags & A_AUX) {
-                wet[c] += 8;
-            }
+            if (flags & A_AUX) { wet[c] += 8; }
         }
 
         nbytes -= 16;

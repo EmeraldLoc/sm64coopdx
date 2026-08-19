@@ -53,7 +53,7 @@ extern s16 sCurrPlayMode;
 extern s16 gCurrCourseNum, gCurrActStarNum, gCurrLevelNum, gCurrAreaIndex;
 
 enum NetworkType gNetworkType = NT_NONE;
-struct NetworkSystem* gNetworkSystem = &gNetworkSystemSocket;
+struct NetworkSystem *gNetworkSystem = &gNetworkSystemSocket;
 
 #define LOADING_LEVEL_THRESHOLD 10
 #define MAX_PACKETS_PER_SECOND_PER_PLAYER ((u16)100)
@@ -64,7 +64,7 @@ bool gNetworkAreaSyncing = true;
 u32 gNetworkAreaTimerClock = 0;
 u32 gNetworkAreaTimer = 0;
 u32 gNetworkAreaRandomSeed = 0;
-void* gNetworkServerAddr = NULL;
+void *gNetworkServerAddr = NULL;
 bool gNetworkSentJoin = false;
 u16 gNetworkRequestLocationTimer = 0;
 
@@ -101,11 +101,18 @@ void network_set_system(enum NetworkSystemType nsType) {
     network_forget_all_reliable();
 
     switch (nsType) {
-        case NS_SOCKET:  gNetworkSystem = &gNetworkSystemSocket; break;
+        case NS_SOCKET:
+            gNetworkSystem = &gNetworkSystemSocket;
+            break;
 #ifdef COOPNET
-        case NS_COOPNET: gNetworkSystem = &gNetworkSystemCoopNet; break;
+        case NS_COOPNET:
+            gNetworkSystem = &gNetworkSystemCoopNet;
+            break;
 #endif
-        default: gNetworkSystem = &gNetworkSystemSocket; LOG_ERROR("Unknown network system: %d", nsType); break;
+        default:
+            gNetworkSystem = &gNetworkSystemSocket;
+            LOG_ERROR("Unknown network system: %d", nsType);
+            break;
     }
 }
 
@@ -168,8 +175,9 @@ bool network_init(enum NetworkType inNetworkType, bool reconnecting) {
         mods_activate(&gLocalMods);
         smlua_init();
 
-        network_player_connected(NPT_LOCAL, 0, configPlayerModel, &configPlayerPalette, configPlayerName, get_local_discord_id());
-        extern u8* gOverrideEeprom;
+        network_player_connected(NPT_LOCAL, 0, configPlayerModel, &configPlayerPalette,
+                                 configPlayerName, get_local_discord_id());
+        extern u8 *gOverrideEeprom;
         gOverrideEeprom = NULL;
 
         if (gCurrLevelNum != (s16)gLevelValues.entryLevel) {
@@ -183,9 +191,7 @@ bool network_init(enum NetworkType inNetworkType, bool reconnecting) {
     configfile_save(configfile_name());
 
 #ifdef DISCORD_SDK
-    if (gDiscordInitialized) {
-        discord_activity_update();
-    }
+    if (gDiscordInitialized) { discord_activity_update(); }
 #endif
 
     djui_base_set_visible(&gDjuiModReload->base, network_allow_mod_dev_mode());
@@ -207,10 +213,9 @@ void network_on_init_area(void) {
 
 void network_on_loaded_area(void) {
     area_remove_sync_ids_clear();
-    struct NetworkPlayer* np = gNetworkPlayerLocal;
+    struct NetworkPlayer *np = gNetworkPlayerLocal;
     if (np != NULL) {
-        bool levelMatch = (np->currCourseNum == gCurrCourseNum
-                           && np->currActNum == gCurrActStarNum
+        bool levelMatch = (np->currCourseNum == gCurrCourseNum && np->currActNum == gCurrActStarNum
                            && np->currLevelNum == gCurrLevelNum);
         if (np->currLevelSyncValid && levelMatch && np->currAreaIndex != gCurrAreaIndex) {
             network_send_change_area();
@@ -232,23 +237,16 @@ static void network_remember_debug_packet(u8 id, bool sent) {
 }
 
 bool network_allow_unknown_local_index(enum PacketType packetType) {
-    return (packetType == PACKET_JOIN_REQUEST)
-        || (packetType == PACKET_KICK)
-        || (packetType == PACKET_ACK)
-        || (packetType == PACKET_MOD_LIST_REQUEST)
-        || (packetType == PACKET_MOD_LIST)
-        || (packetType == PACKET_MOD_LIST_ENTRY)
-        || (packetType == PACKET_MOD_LIST_FILE)
-        || (packetType == PACKET_MOD_LIST_DONE)
-        || (packetType == PACKET_DOWNLOAD_REQUEST)
-        || (packetType == PACKET_DOWNLOAD)
-        || (packetType == PACKET_KEEP_ALIVE)
-        || (packetType == PACKET_DEBUG_SYNC)
-        || (packetType == PACKET_PING)
-        || (packetType == PACKET_PONG);
+    return (packetType == PACKET_JOIN_REQUEST) || (packetType == PACKET_KICK)
+           || (packetType == PACKET_ACK) || (packetType == PACKET_MOD_LIST_REQUEST)
+           || (packetType == PACKET_MOD_LIST) || (packetType == PACKET_MOD_LIST_ENTRY)
+           || (packetType == PACKET_MOD_LIST_FILE) || (packetType == PACKET_MOD_LIST_DONE)
+           || (packetType == PACKET_DOWNLOAD_REQUEST) || (packetType == PACKET_DOWNLOAD)
+           || (packetType == PACKET_KEEP_ALIVE) || (packetType == PACKET_DEBUG_SYNC)
+           || (packetType == PACKET_PING) || (packetType == PACKET_PONG);
 }
 
-void network_send_to(u8 localIndex, struct Packet* p) {
+void network_send_to(u8 localIndex, struct Packet *p) {
     if (p == NULL) {
         LOG_ERROR("no data to send");
         return;
@@ -264,17 +262,26 @@ void network_send_to(u8 localIndex, struct Packet* p) {
             LOG_ERROR("Could not set destination to %u", idx);
             return;
         }
-        packet_set_destination(p, p->requestBroadcast
-                                ? PACKET_DESTINATION_BROADCAST
-                                : gNetworkPlayers[idx].globalIndex);
+        packet_set_destination(p, p->requestBroadcast ? PACKET_DESTINATION_BROADCAST
+                                                      : gNetworkPlayers[idx].globalIndex);
     }
 
     // sanity checks
-    if (gNetworkType == NT_NONE) { LOG_ERROR("network type error none!"); return; }
-    if (p->error) { LOG_ERROR("packet error!"); return; }
-    if (gNetworkSystem == NULL) { LOG_ERROR("no network system attached"); return; }
+    if (gNetworkType == NT_NONE) {
+        LOG_ERROR("network type error none!");
+        return;
+    }
+    if (p->error) {
+        LOG_ERROR("packet error!");
+        return;
+    }
+    if (gNetworkSystem == NULL) {
+        LOG_ERROR("no network system attached");
+        return;
+    }
     if (localIndex == 0 && !network_allow_unknown_local_index(p->buffer[0])) {
-        LOG_ERROR("\n####################\nsending to myself, packetType: %d\n####################\n", p->packetType);
+        LOG_ERROR("\n####################\nsending to myself, packetType: %d\n####################\n",
+                  p->packetType);
         // SOFT_ASSERT(false); - Crash?
         return;
     }
@@ -284,17 +291,17 @@ void network_send_to(u8 localIndex, struct Packet* p) {
             LOG_ERROR("Could not get network player %u", localIndex);
             return;
         }
-        struct NetworkPlayer* np = &gNetworkPlayers[localIndex];
+        struct NetworkPlayer *np = &gNetworkPlayers[localIndex];
         // don't send a packet to a player that can't receive it
         if (p->levelAreaMustMatch) {
             if (p->courseNum != np->currCourseNum) { return; }
-            if (p->actNum    != np->currActNum)    { return; }
-            if (p->levelNum  != np->currLevelNum)  { return; }
+            if (p->actNum != np->currActNum) { return; }
+            if (p->levelNum != np->currLevelNum) { return; }
             if (p->areaIndex != np->currAreaIndex) { return; }
         } else if (p->levelMustMatch) {
             if (p->courseNum != np->currCourseNum) { return; }
-            if (p->actNum    != np->currActNum)    { return; }
-            if (p->levelNum  != np->currLevelNum)  { return; }
+            if (p->actNum != np->currActNum) { return; }
+            if (p->levelNum != np->currLevelNum) { return; }
         }
     }
 
@@ -304,9 +311,7 @@ void network_send_to(u8 localIndex, struct Packet* p) {
     p->localIndex = localIndex;
 
     // set ordered data (MUST BE IMMEDITAELY BEFORE network_remember_reliable())
-    if (p->orderedGroupId != 0 && !p->sent) {
-        packet_set_ordered_data(p);
-    }
+    if (p->orderedGroupId != 0 && !p->sent) { packet_set_ordered_data(p); }
 
     // remember reliable packets
     network_remember_reliable(p);
@@ -316,7 +321,8 @@ void network_send_to(u8 localIndex, struct Packet* p) {
     memcpy(&p->buffer[p->dataLength], &hash, sizeof(u32));
 
     // redirect to server if required
-    if (localIndex != 0 && gNetworkType != NT_SERVER && gNetworkSystem->requireServerBroadcast && gNetworkPlayerServer != NULL) {
+    if (localIndex != 0 && gNetworkType != NT_SERVER && gNetworkSystem->requireServerBroadcast
+        && gNetworkPlayerServer != NULL) {
         localIndex = gNetworkPlayerServer->localIndex;
     }
 
@@ -324,21 +330,23 @@ void network_send_to(u8 localIndex, struct Packet* p) {
 
     // rate limit packets
     bool tooManyPackets = false;
-    s32 maxPacketsPerSecond = (gNetworkType == NT_SERVER) ? (MAX_PACKETS_PER_SECOND_PER_PLAYER * (u16)network_player_connected_count()) : MAX_PACKETS_PER_SECOND_PER_PLAYER;
+    s32 maxPacketsPerSecond =
+        (gNetworkType == NT_SERVER)
+            ? (MAX_PACKETS_PER_SECOND_PER_PLAYER * (u16)network_player_connected_count())
+            : MAX_PACKETS_PER_SECOND_PER_PLAYER;
     static s32 sPacketsPerSecond[MAX_PLAYERS] = { 0 };
     static f32 sPacketsPerSecondTime[MAX_PLAYERS] = { 0 };
     f32 currentTime = clock_elapsed();
     if ((currentTime - sPacketsPerSecondTime[localIndex]) > 0) {
         if (sPacketsPerSecond[localIndex] > maxPacketsPerSecond) {
-            LOG_ERROR("Too many packets sent to localIndex %d! Attempted %d. Connected count %d.", localIndex, sPacketsPerSecond[localIndex], network_player_connected_count());
+            LOG_ERROR("Too many packets sent to localIndex %d! Attempted %d. Connected count %d.",
+                      localIndex, sPacketsPerSecond[localIndex], network_player_connected_count());
         }
         sPacketsPerSecondTime[localIndex] = currentTime;
         sPacketsPerSecond[localIndex] = 1;
     } else {
         sPacketsPerSecond[localIndex]++;
-        if (sPacketsPerSecond[localIndex] > maxPacketsPerSecond) {
-            tooManyPackets = true;
-        }
+        if (sPacketsPerSecond[localIndex] > maxPacketsPerSecond) { tooManyPackets = true; }
     }
 
     // send
@@ -346,26 +354,27 @@ void network_send_to(u8 localIndex, struct Packet* p) {
         if (p->keepSendingAfterDisconnect) {
             localIndex = 0; // Force this type of packet to use the saved addr
         }
-        u8* buffer = NULL;
+        u8 *buffer = NULL;
         u32 len = 0;
         packet_compress(p, &buffer, &len);
         if (!buffer || len == 0) {
             LOG_ERROR("Failed to compress!");
         } else {
             int rc = gNetworkSystem->send(localIndex, p->addr, buffer, len);
-            if (rc == SOCKET_ERROR) { LOG_ERROR("send error %d", rc); return; }
+            if (rc == SOCKET_ERROR) {
+                LOG_ERROR("send error %d", rc);
+                return;
+            }
         }
     }
     p->sent = true;
 
     network_remember_debug_packet(p->packetType, true);
 
-    if (localIndex < MAX_PLAYERS) {
-        gNetworkPlayers[localIndex].lastSent = clock_elapsed();
-    }
+    if (localIndex < MAX_PLAYERS) { gNetworkPlayers[localIndex].lastSent = clock_elapsed(); }
 }
 
-void network_send(struct Packet* p) {
+void network_send(struct Packet *p) {
     if (p == NULL) {
         LOG_ERROR("no data to send");
         return;
@@ -381,7 +390,8 @@ void network_send(struct Packet* p) {
 
     if (gNetworkType != NT_SERVER) {
         p->requestBroadcast = TRUE;
-        if (gNetworkSystem != NULL && gNetworkSystem->requireServerBroadcast && gNetworkPlayerServer != NULL) {
+        if (gNetworkSystem != NULL && gNetworkSystem->requireServerBroadcast
+            && gNetworkPlayerServer != NULL) {
             int i = gNetworkPlayerServer->localIndex;
             p->localIndex = i;
             p->sent = false;
@@ -391,19 +401,19 @@ void network_send(struct Packet* p) {
     }
 
     for (s32 i = 1; i < MAX_PLAYERS; i++) {
-        struct NetworkPlayer* np = &gNetworkPlayers[i];
+        struct NetworkPlayer *np = &gNetworkPlayers[i];
         if (!np->connected) { continue; }
 
         // don't send a packet to a player that can't receive it
         if (p->levelAreaMustMatch) {
             if (p->courseNum != np->currCourseNum) { continue; }
-            if (p->actNum    != np->currActNum)    { continue; }
-            if (p->levelNum  != np->currLevelNum)  { continue; }
+            if (p->actNum != np->currActNum) { continue; }
+            if (p->levelNum != np->currLevelNum) { continue; }
             if (p->areaIndex != np->currAreaIndex) { continue; }
         } else if (p->levelMustMatch) {
             if (p->courseNum != np->currCourseNum) { continue; }
-            if (p->actNum    != np->currActNum)    { continue; }
-            if (p->levelNum  != np->currLevelNum)  { continue; }
+            if (p->actNum != np->currActNum) { continue; }
+            if (p->levelNum != np->currLevelNum) { continue; }
         }
 
         p->localIndex = i;
@@ -412,7 +422,7 @@ void network_send(struct Packet* p) {
     }
 }
 
-void network_receive(u8 localIndex, void* addr, u8* data, u16 dataLength) {
+void network_receive(u8 localIndex, void *addr, u8 *data, u16 dataLength) {
 
     // receive packet
     struct Packet p = {
@@ -443,7 +453,7 @@ void network_receive(u8 localIndex, void* addr, u8* data, u16 dataLength) {
     packet_receive(&p);
 }
 
-void* network_duplicate_address(u8 localIndex) {
+void *network_duplicate_address(u8 localIndex) {
     assert(localIndex < MAX_PLAYERS);
     return gNetworkSystem->dup_addr(localIndex);
 }
@@ -456,16 +466,12 @@ void network_reset_reconnect_and_rehost(void) {
 }
 
 void network_reconnect_begin(void) {
-    if (sNetworkReconnectTimer > 0) {
-        return;
-    }
+    if (sNetworkReconnectTimer > 0) { return; }
 
     sNetworkReconnectTimer = 2 * 30;
 
 #ifdef COOPNET
-    sNetworkReconnectType = (gNetworkSystem == &gNetworkSystemCoopNet)
-                          ? NS_COOPNET
-                          : NS_SOCKET;
+    sNetworkReconnectType = (gNetworkSystem == &gNetworkSystemCoopNet) ? NS_COOPNET : NS_SOCKET;
 #else
     sNetworkReconnectType = NS_SOCKET;
 #endif
@@ -496,7 +502,7 @@ bool network_is_reconnecting(void) {
 
 void network_rehost_begin(void) {
     for (int i = 1; i < MAX_PLAYERS; i++) {
-        struct NetworkPlayer* np = &gNetworkPlayers[i];
+        struct NetworkPlayer *np = &gNetworkPlayers[i];
         if (!np->connected) { continue; }
 
         network_send_kick(i, EKT_REJOIN);
@@ -523,29 +529,21 @@ static void network_update_area_timer(void) {
     static u16 updateClockCount = 1;
     if (updateClockCount > 0) {
         updateClockCount--;
-        if (updateClockCount <= 0 || updateClockCount > 120) {
-            skipClockCount = rand() % 30;
-        }
-    }
-    else {
+        if (updateClockCount <= 0 || updateClockCount > 120) { skipClockCount = rand() % 30; }
+    } else {
         skipClockCount--;
-        if (skipClockCount <= 0 || skipClockCount > 60) {
-            updateClockCount = rand() % 120;
-        }
+        if (skipClockCount <= 0 || skipClockCount > 60) { updateClockCount = rand() % 120; }
     }
-    //brokenClock = (skipClockCount > 0);
+    // brokenClock = (skipClockCount > 0);
 #endif
     if (!brokenClock) {
-        if (network_check_singleplayer_pause()) {
-            gNetworkAreaTimerClock++;
-        }
+        if (network_check_singleplayer_pause()) { gNetworkAreaTimerClock++; }
         // update network area timer
         u32 desiredNAT = gNetworkAreaTimer + 1;
         gNetworkAreaTimer = (clock_elapsed_ticks() - gNetworkAreaTimerClock);
         if (gNetworkAreaTimer < desiredNAT) {
             gNetworkAreaTimer++;
-        }
-        else if (gNetworkAreaTimer > desiredNAT) {
+        } else if (gNetworkAreaTimer > desiredNAT) {
             gNetworkAreaTimer--;
         }
     }
@@ -560,9 +558,7 @@ void network_update_coopnet(void) {
 #endif
 
 void network_update(void) {
-    if (gNetworkStartupTimer > 0) {
-        gNetworkStartupTimer--;
-    }
+    if (gNetworkStartupTimer > 0) { gNetworkStartupTimer--; }
 
     network_rehost_update();
     network_reconnect_update();
@@ -593,9 +589,7 @@ void network_update(void) {
     }
 
     // receive packets
-    if (gNetworkSystem != NULL) {
-        gNetworkSystem->update();
-    }
+    if (gNetworkSystem != NULL) { gNetworkSystem->update(); }
 
     // update reliable and ordered packets
     if (gNetworkType != NT_NONE) {
@@ -611,15 +605,16 @@ void network_update(void) {
         gNetworkRequestLocationTimer++;
         if (gNetworkRequestLocationTimer > 30 * 10) {
             // find a NetworkPlayer around that location
-            struct NetworkPlayer *npLevelAreaMatch = get_network_player_from_area(np->currCourseNum, np->currActNum, np->currLevelNum, np->currAreaIndex);
-            struct NetworkPlayer *npLevelMatch     = get_network_player_from_level(np->currCourseNum, np->currActNum, np->currLevelNum);
-            struct NetworkPlayer *npAny = (npLevelAreaMatch == NULL) ? npLevelMatch : npLevelAreaMatch;
+            struct NetworkPlayer *npLevelAreaMatch = get_network_player_from_area(np->currCourseNum,
+    np->currActNum, np->currLevelNum, np->currAreaIndex); struct NetworkPlayer *npLevelMatch     =
+    get_network_player_from_level(np->currCourseNum, np->currActNum, np->currLevelNum); struct
+    NetworkPlayer *npAny = (npLevelAreaMatch == NULL) ? npLevelMatch : npLevelAreaMatch;
 
             bool inCredits = (np->currActNum == 99);
             if (gNetworkType == NT_SERVER && (npAny == NULL || inCredits)) {
                 // no NetworkPlayer in the level
-                network_send_sync_valid(np, np->currCourseNum, np->currActNum, np->currLevelNum, np->currAreaIndex, false);
-                return;
+                network_send_sync_valid(np, np->currCourseNum, np->currActNum, np->currLevelNum,
+    np->currAreaIndex, false); return;
             }
 
             // matching NetworkPlayer is client
@@ -652,10 +647,8 @@ void network_mod_dev_mode_reload(void) {
     network_rehost_begin();
 
     for (int i = 0; i < gLocalMods.entryCount; i++) {
-        struct Mod* mod = gLocalMods.entries[i];
-        if (mod->enabled) {
-            mod_refresh_files(mod);
-        }
+        struct Mod *mod = gLocalMods.entries[i];
+        if (mod->enabled) { mod_refresh_files(mod); }
     }
 
     djui_lua_error_clear();
@@ -669,7 +662,6 @@ void network_mod_dev_mode_reload(void) {
     LOG_CONSOLE("===================================================");
     LOG_CONSOLE("===================================================");
 }
-
 
 void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnecting) {
     smlua_call_event_hooks(HOOK_ON_EXIT);
@@ -685,7 +677,9 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     if (gNetworkSystem == NULL) {
         LOG_ERROR("no network system attached");
     } else {
-        if (gNetworkPlayerLocal != NULL && sendLeaving) { network_send_leaving(gNetworkPlayerLocal->globalIndex); }
+        if (gNetworkPlayerLocal != NULL && sendLeaving) {
+            network_send_leaving(gNetworkPlayerLocal->globalIndex);
+        }
         network_player_shutdown(popup);
         gNetworkSystem->shutdown(reconnecting);
     }
@@ -695,16 +689,14 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     }
     gNetworkPlayerServer = NULL;
 
-    if (sNetworkReconnectTimer <= 0 || sNetworkReconnectType != NS_COOPNET) {
-        gNetworkType = NT_NONE;
-    }
+    if (sNetworkReconnectTimer <= 0 || sNetworkReconnectType != NS_COOPNET) { gNetworkType = NT_NONE; }
 
     if (exiting) { return; }
 
     dynos_model_clear_pool(MODEL_POOL_SESSION);
 
     // reset other stuff
-    extern u8* gOverrideEeprom;
+    extern u8 *gOverrideEeprom;
     gOverrideEeprom = NULL;
     extern u8 gOverrideFreezeCamera;
     gOverrideFreezeCamera = false;
@@ -755,7 +747,7 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     gLuaVolumeSfx = 127;
     gLuaVolumeEnv = 127;
 
-    struct Controller* cnt = gPlayer1Controller;
+    struct Controller *cnt = gPlayer1Controller;
     cnt->rawStickX = 0;
     cnt->rawStickY = 0;
     cnt->stickX = 0;
@@ -800,9 +792,7 @@ void network_shutdown(bool sendLeaving, bool exiting, bool popup, bool reconnect
     djui_lua_error_clear();
 
 #ifdef DISCORD_SDK
-    if (gDiscordInitialized) {
-        discord_activity_update();
-    }
+    if (gDiscordInitialized) { discord_activity_update(); }
 #endif
     packet_ordered_clear_all();
 

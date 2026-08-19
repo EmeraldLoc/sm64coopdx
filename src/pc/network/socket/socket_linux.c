@@ -33,9 +33,7 @@ SOCKET socket_initialize(void) {
 void socket_shutdown(SOCKET socket) {
     if (socket == INVALID_SOCKET) { return; }
     int rc = closesocket(socket);
-    if (rc == (int)SOCKET_ERROR) {
-        LOG_ERROR("closesocket failed with error %d\n", SOCKET_LAST_ERROR);
-    }
+    if (rc == (int)SOCKET_ERROR) { LOG_ERROR("closesocket failed with error %d\n", SOCKET_LAST_ERROR); }
 }
 
 #endif

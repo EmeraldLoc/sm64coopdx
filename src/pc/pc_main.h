@@ -19,15 +19,25 @@ extern "C" {
 #include "audio/audio_null.h"
 
 #ifdef GIT_HASH
-#define TITLE ({ char title[96] = ""; snprintf(title, 96, "%s %s, [%s]", WINDOW_NAME, get_version(), GIT_HASH); title; })
+#define TITLE                                                                                          \
+    ({                                                                                                 \
+        char title[96] = "";                                                                           \
+        snprintf(title, 96, "%s %s, [%s]", WINDOW_NAME, get_version(), GIT_HASH);                      \
+        title;                                                                                         \
+    })
 #else
-#define TITLE ({ char title[96] = ""; snprintf(title, 96, "%s %s", WINDOW_NAME, get_version()); title; })
+#define TITLE                                                                                          \
+    ({                                                                                                 \
+        char title[96] = "";                                                                           \
+        snprintf(title, 96, "%s %s", WINDOW_NAME, get_version());                                      \
+        title;                                                                                         \
+    })
 #endif
 
 #define AT_STARTUP __attribute__((constructor))
 
-extern struct AudioAPI* gAudioApi;
-extern struct GfxRenderingAPI* gRenderApi;
+extern struct AudioAPI *gAudioApi;
+extern struct GfxRenderingAPI *gRenderApi;
 
 extern bool gGameInited;
 extern bool gGfxInited;

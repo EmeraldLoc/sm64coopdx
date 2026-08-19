@@ -16,7 +16,7 @@ void network_send_kick(u8 localIndex, enum KickReasonType kickReason) {
     network_send_to(localIndex, &p);
 }
 
-void network_receive_kick(struct Packet* p) {
+void network_receive_kick(struct Packet *p) {
     if (gNetworkType != NT_CLIENT) {
         LOG_ERROR("Kicking non-client... refuse!");
         return;
@@ -35,10 +35,18 @@ void network_receive_kick(struct Packet* p) {
     if ((now - sLastNotifyTime) > 3) {
         sLastNotifyTime = now;
         switch (kickReason) {
-            case EKT_FULL_PARTY: djui_popup_create(DLANG(NOTIF, DISCONNECT_FULL),   1); break;
-            case EKT_KICKED:     djui_popup_create(DLANG(NOTIF, DISCONNECT_KICK),   1); break;
-            case EKT_BANNED:     djui_popup_create(DLANG(NOTIF, DISCONNECT_BAN),    1); break;
-            default:             djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1); break;
+            case EKT_FULL_PARTY:
+                djui_popup_create(DLANG(NOTIF, DISCONNECT_FULL), 1);
+                break;
+            case EKT_KICKED:
+                djui_popup_create(DLANG(NOTIF, DISCONNECT_KICK), 1);
+                break;
+            case EKT_BANNED:
+                djui_popup_create(DLANG(NOTIF, DISCONNECT_BAN), 1);
+                break;
+            default:
+                djui_popup_create(DLANG(NOTIF, DISCONNECT_CLOSED), 1);
+                break;
         }
     }
 

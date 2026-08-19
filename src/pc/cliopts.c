@@ -7,7 +7,7 @@
 
 #include <strings.h>
 #include <stdlib.h>
-#define __NO_MINGW_LFS //Mysterious error in MinGW.org stdio.h
+#define __NO_MINGW_LFS // Mysterious error in MinGW.org stdio.h
 #include <stdio.h>
 #include <string.h>
 
@@ -15,14 +15,16 @@ struct CLIOptions gCLIOpts;
 
 static void print_help(void) {
     log_to_terminal("sm64coopdx\n");
-    log_to_terminal("--savepath SAVEPATH       Overrides the default save/config path ('!' expands to executable path).\n");
+    log_to_terminal("--savepath SAVEPATH       Overrides the default save/config path ('!' expands to "
+                    "executable path).\n");
     log_to_terminal("--configfile CONFIGNAME   Saves the configuration file as CONFIGNAME.\n");
     log_to_terminal("--hide-loading-screen     Hides the loading screen before the menu boots up.\n");
     log_to_terminal("--fullscreen              Starts the game in full screen mode.\n");
     log_to_terminal("--windowed                Starts the game in windowed mode.\n");
     log_to_terminal("--width WIDTH             Sets the window width.\n");
     log_to_terminal("--height HEIGHT           Sets the window height.\n");
-    log_to_terminal("--skip-intro              Skips the Peach and Lakitu intros when on a zero star save.\n");
+    log_to_terminal(
+        "--skip-intro              Skips the Peach and Lakitu intros when on a zero star save.\n");
     log_to_terminal("--server PORT             Starts the game and creates a new server on PORT.\n");
     log_to_terminal("--client IP PORT          Starts the game and joins an existing server.\n");
     log_to_terminal("--coopnet PASSWORD        Starts the game and creates a new CoopNet server.\n");
@@ -40,7 +42,7 @@ static void print_help(void) {
 
 static inline int arg_string(const char *name, const char *value, char *target, int maxLength) {
     const unsigned int arglen = strlen(value);
-    if (arglen >= (unsigned int) maxLength) {
+    if (arglen >= (unsigned int)maxLength) {
         fprintf(stderr, "Supplied value for `%s` is too long.\n", name);
         return 0;
     }
@@ -54,7 +56,7 @@ static inline int arg_uint(UNUSED const char *name, const char *value, unsigned 
     return 1;
 }
 
-bool parse_cli_opts(int argc, char* argv[]) {
+bool parse_cli_opts(int argc, char *argv[]) {
     // initialize options with false values
     memset(&gCLIOpts, 0, sizeof(gCLIOpts));
     gCLIOpts.enableMods = NULL;
@@ -106,9 +108,10 @@ bool parse_cli_opts(int argc, char* argv[]) {
         } else if (!strcmp(argv[i], "--enable-mod") && (i + 1) < argc) {
             gCLIOpts.enabledModsCount++;
             if (gCLIOpts.enableMods == NULL) {
-                gCLIOpts.enableMods = malloc(sizeof(char*));
+                gCLIOpts.enableMods = malloc(sizeof(char *));
             } else {
-                gCLIOpts.enableMods = realloc(gCLIOpts.enableMods, sizeof(char*) * gCLIOpts.enabledModsCount);
+                gCLIOpts.enableMods =
+                    realloc(gCLIOpts.enableMods, sizeof(char *) * gCLIOpts.enabledModsCount);
             }
             gCLIOpts.enableMods[gCLIOpts.enabledModsCount - 1] = strdup(argv[++i]);
         } else if (!strcmp(argv[i], "--headless")) {

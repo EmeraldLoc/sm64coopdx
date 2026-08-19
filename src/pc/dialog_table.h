@@ -9,8 +9,8 @@
 typedef struct GrowingArray DialogTable;
 
 void dialog_table_init(void);
-struct DialogEntry* dialog_table_alloc(s32 *dialogId);
-struct DialogEntry* dialog_table_get(s32 dialogId);
+struct DialogEntry *dialog_table_alloc(s32 *dialogId);
+struct DialogEntry *dialog_table_get(s32 dialogId);
 void dialog_table_reset(void);
 void dialog_table_shutdown(void);
 

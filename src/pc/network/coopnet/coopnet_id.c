@@ -14,7 +14,7 @@ struct DestinationId {
 struct DestinationId sDestinationIds[MAX_DEST_IDS] = { 0 };
 
 void coopnet_save_dest_id(uint64_t userId, uint64_t destId) {
-    struct DestinationId* dest = NULL;
+    struct DestinationId *dest = NULL;
     for (int i = 0; i < MAX_DEST_IDS; i++) {
         if (sDestinationIds[i].userId == userId) {
             sDestinationIds[i].destId = destId;
@@ -47,18 +47,14 @@ void coopnet_clear_dest_ids(void) {
 
 uint64_t coopnet_get_dest_id(uint64_t userId) {
     for (int i = 0; i < MAX_DEST_IDS; i++) {
-        if (sDestinationIds[i].userId == userId) {
-            return sDestinationIds[i].destId;
-        }
+        if (sDestinationIds[i].userId == userId) { return sDestinationIds[i].destId; }
     }
     return 0;
 }
 
 u8 coopnet_user_id_to_local_index(uint64_t userId) {
     for (int i = 1; i < MAX_PLAYERS; i++) {
-        if (gNetworkPlayers[i].connected && sNetworkUserIds[i] == userId) {
-            return i;
-        }
+        if (gNetworkPlayers[i].connected && sNetworkUserIds[i] == userId) { return i; }
     }
     return UNKNOWN_LOCAL_INDEX;
 }
@@ -96,8 +92,8 @@ void ns_coopnet_clear_id(u8 localIndex) {
     sNetworkUserIds[localIndex] = 0;
 }
 
-void* ns_coopnet_dup_addr(u8 localIndex) {
-    void* address = malloc(sizeof(u64));
+void *ns_coopnet_dup_addr(u8 localIndex) {
+    void *address = malloc(sizeof(u64));
     memcpy(address, &sNetworkUserIds[localIndex], sizeof(u64));
     return address;
 }

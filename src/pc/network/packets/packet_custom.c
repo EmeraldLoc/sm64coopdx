@@ -4,14 +4,15 @@
 #define MAX_CUSTOM_PACKETS 128
 
 struct NetworkCustomPacket {
-    void (*send_callback)(struct Packet* p, void* params);
-    void (*receive_callback)(struct Packet* p);
+    void (*send_callback)(struct Packet *p, void *params);
+    void (*receive_callback)(struct Packet *p);
 };
 
 static u8 onCustomPacketId = 0;
 static struct NetworkCustomPacket customPackets[MAX_CUSTOM_PACKETS] = { 0 };
 
-u8 network_register_custom_packet(void (*send_callback)(struct Packet* p, void* params), void (*receive_callback)(struct Packet* p)) {
+u8 network_register_custom_packet(void (*send_callback)(struct Packet *p, void *params),
+                                  void (*receive_callback)(struct Packet *p)) {
     // disabled, was for patches
     return 0;
     SOFT_ASSERT_RETURN(onCustomPacketId < MAX_CUSTOM_PACKETS, 0);
@@ -24,7 +25,8 @@ u8 network_register_custom_packet(void (*send_callback)(struct Packet* p, void* 
     return i;
 }
 
-void network_send_custom(u8 customId, bool reliable, enum PacketLevelMatchType levelAreaMustMatch, void* params) {
+void network_send_custom(u8 customId, bool reliable, enum PacketLevelMatchType levelAreaMustMatch,
+                         void *params) {
     // disabled, was for patches
     return;
     if (customPackets[customId].send_callback == NULL) { return; }
@@ -36,7 +38,7 @@ void network_send_custom(u8 customId, bool reliable, enum PacketLevelMatchType l
     network_send(&p);
 }
 
-void network_receive_custom(struct Packet* p) {
+void network_receive_custom(struct Packet *p) {
     // disabled, was for patches
     return;
     u8 customId;

@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include "../network.h"
 #include "pc/lua/smlua_hooks.h"
-//#define DISABLE_MODULE_LOG 1
+// #define DISABLE_MODULE_LOG 1
 #include "pc/debuglog.h"
 
-void network_send_sync_valid(struct NetworkPlayer* toNp, s16 courseNum, s16 actNum, s16 levelNum, s16 areaIndex, bool informServer) {
+void network_send_sync_valid(struct NetworkPlayer *toNp, s16 courseNum, s16 actNum, s16 levelNum,
+                             s16 areaIndex, bool informServer) {
     bool wasSyncValid = (toNp->currLevelSyncValid && toNp->currAreaSyncValid);
 
     // set the NetworkPlayers sync valid
     toNp->currLevelSyncValid = true;
-    toNp->currAreaSyncValid  = true;
+    toNp->currAreaSyncValid = true;
 
     if (gNetworkType == NT_SERVER && toNp == gNetworkPlayerLocal) {
         // the player is the server, no need to send sync valid
@@ -27,23 +28,23 @@ void network_send_sync_valid(struct NetworkPlayer* toNp, s16 courseNum, s16 actN
     u8 forGlobalIndex = toNp->globalIndex;
     struct Packet p = { 0 };
     packet_init(&p, PACKET_SYNC_VALID, true, PLMT_NONE);
-    packet_write(&p, &courseNum,      sizeof(s16));
-    packet_write(&p, &actNum,         sizeof(s16));
-    packet_write(&p, &levelNum,       sizeof(s16));
-    packet_write(&p, &areaIndex,      sizeof(s16));
-    packet_write(&p, &myGlobalIndex,  sizeof(u8));
+    packet_write(&p, &courseNum, sizeof(s16));
+    packet_write(&p, &actNum, sizeof(s16));
+    packet_write(&p, &levelNum, sizeof(s16));
+    packet_write(&p, &areaIndex, sizeof(s16));
+    packet_write(&p, &myGlobalIndex, sizeof(u8));
     packet_write(&p, &forGlobalIndex, sizeof(u8));
     network_send_to((informServer ? gNetworkPlayerServer->localIndex : toNp->localIndex), &p);
 
     LOG_INFO("tx sync valid");
 }
 
-void network_receive_sync_valid(struct Packet* p) {
+void network_receive_sync_valid(struct Packet *p) {
     s16 courseNum, actNum, levelNum, areaIndex;
     u8 fromGlobalIndex, forGlobalIndex;
     packet_read(p, &courseNum, sizeof(s16));
-    packet_read(p, &actNum,    sizeof(s16));
-    packet_read(p, &levelNum,  sizeof(s16));
+    packet_read(p, &actNum, sizeof(s16));
+    packet_read(p, &levelNum, sizeof(s16));
     packet_read(p, &areaIndex, sizeof(s16));
     packet_read(p, &fromGlobalIndex, sizeof(u8));
     packet_read(p, &forGlobalIndex, sizeof(u8));
@@ -53,13 +54,14 @@ void network_receive_sync_valid(struct Packet* p) {
     bool isOurSyncValid = (forGlobalIndex == gNetworkPlayerLocal->globalIndex);
     if (isOurSyncValid) {
         extern s16 gCurrCourseNum, gCurrActStarNum, gCurrLevelNum, gCurrAreaIndex;
-        if (courseNum != gCurrCourseNum || actNum != gCurrActStarNum || levelNum != gCurrLevelNum || (areaIndex != gCurrAreaIndex && areaIndex != -1)) {
+        if (courseNum != gCurrCourseNum || actNum != gCurrActStarNum || levelNum != gCurrLevelNum
+            || (areaIndex != gCurrAreaIndex && areaIndex != -1)) {
             LOG_ERROR("rx sync valid: received an improper location");
             return;
         }
     }
 
-    struct NetworkPlayer* np = network_player_from_global_index(forGlobalIndex);
+    struct NetworkPlayer *np = network_player_from_global_index(forGlobalIndex);
     if (np == NULL || np->localIndex == UNKNOWN_LOCAL_INDEX || !np->connected) {
         LOG_ERROR("Receiving sync valid from inactive player!");
         return;

@@ -27,7 +27,6 @@ void debug_context_begin(enum DebugContext ctx) {
     }
     sCtxStackIndex++;
 #endif
-
 }
 
 void debug_context_end(enum DebugContext ctx) {
@@ -39,7 +38,6 @@ void debug_context_end(enum DebugContext ctx) {
         sCtxTime[ctx] += clock_elapsed_f64() - sCtxStartTimeStack[sCtxStackIndex];
     }
 #endif
-
 }
 
 void debug_context_reset(void) {
@@ -50,7 +48,6 @@ void debug_context_reset(void) {
 #ifdef DEVELOPMENT
         sCtxTime[i] = 0;
 #endif
-
     }
 }
 

@@ -4,7 +4,7 @@
 #include "pc/djui/djui.h"
 #include "pc/debuglog.h"
 
-void network_send_global_popup(const char* message, int lines) {
+void network_send_global_popup(const char *message, int lines) {
     // get message length
     u16 messageLength = strlen(message);
 
@@ -13,13 +13,13 @@ void network_send_global_popup(const char* message, int lines) {
     packet_init(&p, PACKET_GLOBAL_POPUP, true, PLMT_NONE);
     packet_write(&p, &lines, sizeof(int));
     packet_write(&p, &messageLength, sizeof(u16));
-    packet_write(&p, (char*)message, messageLength * sizeof(u8));
+    packet_write(&p, (char *)message, messageLength * sizeof(u8));
 
     // send the packet
     network_send(&p);
 }
 
-void network_receive_global_popup(struct Packet* p) {
+void network_receive_global_popup(struct Packet *p) {
 
     u16 messageLength = 0;
     char message[256] = { 0 };
@@ -33,7 +33,7 @@ void network_receive_global_popup(struct Packet* p) {
     // show popup
     djui_popup_create(message, lines);
 
-    struct NetworkPlayer* np = &gNetworkPlayers[p->localIndex];
+    struct NetworkPlayer *np = &gNetworkPlayers[p->localIndex];
     if (gNetworkSystem && gNetworkSystem->get_id_str && np->connected && strlen(np->name) > 0) {
         LOG_CONSOLE("[%s] %s\\#\\: %s", gNetworkSystem->get_id_str(np->localIndex), np->name, message);
         LOG_INFO("[%s] %s: %s", gNetworkSystem->get_id_str(np->localIndex), np->name, message);

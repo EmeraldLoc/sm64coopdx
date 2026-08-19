@@ -15,17 +15,17 @@ static int sQueuedLobby = 0;
 static uint64_t sQueuedLobbyId = 0;
 static char sQueuedLobbyPassword[64] = "";
 
-static void on_activity_update_callback(UNUSED void* data, enum EDiscordResult result) {
+static void on_activity_update_callback(UNUSED void *data, enum EDiscordResult result) {
     LOG_INFO("on_activity_update_callback returned %d", result);
     DISCORD_REQUIRE(result);
 }
 
-static void on_activity_join(UNUSED void* data, const char* secret) {
+static void on_activity_join(UNUSED void *data, const char *secret) {
     LOG_INFO("on_activity_join, secret: %s", secret);
     char *token;
 
     // extract lobby type
-    token = strtok((char*)secret, ":");
+    token = strtok((char *)secret, ":");
     if (strcmp(token, "coopnet") != 0) {
         LOG_ERROR("Tried to join unrecognized lobby type: %s", token);
         return;
@@ -34,7 +34,7 @@ static void on_activity_join(UNUSED void* data, const char* secret) {
 #ifdef COOPNET
     // extract lobby ID
     token = strtok(NULL, ":");
-    char* end;
+    char *end;
     u64 lobbyId = strtoull(token, &end, 10);
 
     // extract lobby password
@@ -42,33 +42,32 @@ static void on_activity_join(UNUSED void* data, const char* secret) {
     if (token == NULL) { token = ""; }
 
     // join
-    if (gNetworkType != NT_NONE) {
-        network_shutdown(true, false, false, false);
-    }
+    if (gNetworkType != NT_NONE) { network_shutdown(true, false, false, false); }
     sQueuedLobbyId = lobbyId;
     snprintf(sQueuedLobbyPassword, 64, "%s", token);
     sQueuedLobby = 2;
 #endif
 }
 
-UNUSED static void on_activity_join_request_callback(UNUSED void* data, enum EDiscordResult result) {
+UNUSED static void on_activity_join_request_callback(UNUSED void *data, enum EDiscordResult result) {
     LOG_INFO("on_activity_join_request_callback returned %d", (int)result);
     DISCORD_REQUIRE(result);
 }
 
-static void on_activity_join_request(UNUSED void* data, struct DiscordUser* user) {
+static void on_activity_join_request(UNUSED void *data, struct DiscordUser *user) {
     LOG_INFO("on_activity_join_request from " DISCORD_ID_FORMAT, user->id);
 }
 
-UNUSED static void strncat_len(char* destination, char* source, size_t destinationLength, size_t sourceLength) {
+UNUSED static void strncat_len(char *destination, char *source, size_t destinationLength,
+                               size_t sourceLength) {
     char altered[128] = { 0 };
     snprintf(altered, (sourceLength < 127) ? sourceLength : 127, "%s", source);
     strncat(destination, altered, destinationLength);
 }
 
-static void discord_populate_details(char* buffer, int bufferLength) {
+static void discord_populate_details(char *buffer, int bufferLength) {
     // get version
-    const char* version = get_version();
+    const char *version = get_version();
     int versionLength = strlen(version);
     snprintf(buffer, bufferLength, "%s", version);
     buffer += versionLength;
@@ -76,7 +75,7 @@ static void discord_populate_details(char* buffer, int bufferLength) {
 
     // get mod strings
     if (gActiveMods.entryCount <= 0) { return; }
-    char* strings[gActiveMods.entryCount];
+    char *strings[gActiveMods.entryCount];
     for (int i = 0; i < gActiveMods.entryCount; i++) {
         strings[i] = gActiveMods.entries[i]->name;
     }
@@ -120,7 +119,8 @@ void discord_activity_update(void) {
         if (sCurActivity.party.size.max_size < 1) { sCurActivity.party.size.max_size = 1; }
     }
 
-    // HACK: give the detail population more space than the Discord details can fit so it gets truncated without cutting off the largest strings
+    // HACK: give the detail population more space than the Discord details can fit so it gets truncated
+    // without cutting off the largest strings
     char details[512] = { 0 };
     discord_populate_details(details, ARRAY_COUNT(details));
     djui_text_remove_colors(details);
@@ -159,9 +159,7 @@ void discord_activity_update_check(void) {
     u8 connectedCount = network_player_connected_count();
 
     if (connectedCount > 0) {
-        if (connectedCount != sCurActivity.party.size.current_size) {
-            shouldUpdate = true;
-        }
+        if (connectedCount != sCurActivity.party.size.current_size) { shouldUpdate = true; }
     }
 
     static int updateTimer = 30 * 60;
@@ -170,14 +168,12 @@ void discord_activity_update_check(void) {
         shouldUpdate = true;
     }
 
-    if (shouldUpdate) {
-        discord_activity_update();
-    }
+    if (shouldUpdate) { discord_activity_update(); }
 }
 
-struct IDiscordActivityEvents* discord_activity_initialize(void) {
+struct IDiscordActivityEvents *discord_activity_initialize(void) {
     static struct IDiscordActivityEvents events = { 0 };
-    events.on_activity_join         = on_activity_join;
+    events.on_activity_join = on_activity_join;
     events.on_activity_join_request = on_activity_join_request;
     return &events;
 }

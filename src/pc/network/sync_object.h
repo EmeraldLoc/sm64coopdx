@@ -8,11 +8,11 @@
 
 struct SyncObject {
     u32 id;
-    struct Object* o;
+    struct Object *o;
     float maxSyncDistance;
     bool owned;
     f32 clockSinceUpdate;
-    void* behavior;
+    void *behavior;
     u16 txEventId;
     u16 rxEventId[MAX_PLAYERS];
     u16 randomSeed;
@@ -27,9 +27,9 @@ struct SyncObject {
     void (*on_received_post)(u8 fromLocalIndex);
     void (*on_sent_pre)(void);
     void (*on_sent_post)(void);
-    void (*override_ownership)(u8* shouldOverride, u8* shouldOwn);
+    void (*override_ownership)(u8 *shouldOverride, u8 *shouldOwn);
     void (*on_forget)(void);
-    void* extraFields[MAX_SYNC_OBJECT_FIELDS];
+    void *extraFields[MAX_SYNC_OBJECT_FIELDS];
     u8 extraFieldsSizeBytes[MAX_SYNC_OBJECT_FIELDS];
     bool rememberLastReliablePacket;
     bool lastReliablePacketIsStale;
@@ -39,9 +39,8 @@ struct SyncObject {
     u8 ctx;
 };
 
-
-  ////////////
- // system //
+////////////
+// system //
 ////////////
 
 void sync_objects_init_system(void);
@@ -49,41 +48,40 @@ void sync_objects_update(void);
 void sync_objects_clear(void);
 void sync_object_forget(u32 syncId);
 void sync_object_forget_last_reliable_packet(u32 syncId);
-struct SyncObject* sync_object_init(struct Object *o, float maxSyncDistance);
+struct SyncObject *sync_object_init(struct Object *o, float maxSyncDistance);
 void sync_object_init_field_with_size(struct Object *o, void *field, u8 sizeBytes);
 
-#define sync_object_init_field(o, field) \
-    sync_object_init_field_with_size(o, &field, sizeof(field))
+#define sync_object_init_field(o, field) sync_object_init_field_with_size(o, &field, sizeof(field))
 
-  /////////////
- // getters //
+/////////////
+// getters //
 /////////////
 
-struct SyncObject* sync_object_get(u32 syncId);
-struct SyncObject* sync_object_get_first(void);
-struct SyncObject* sync_object_get_next(void);
+struct SyncObject *sync_object_get(u32 syncId);
+struct SyncObject *sync_object_get_first(void);
+struct SyncObject *sync_object_get_next(void);
 /* |description|Retrieves the random seed of a sync object from its sync ID|descriptionEnd| */
 u16 sync_object_get_random_seed(u32 syncId);
 /* |description|Retrieves an object from a sync ID|descriptionEnd| */
-struct Object* sync_object_get_object(u32 syncId);
+struct Object *sync_object_get_object(u32 syncId);
 /* |description|Checks if a sync object is initialized using a `syncId`|descriptionEnd| */
 bool sync_object_is_initialized(u32 syncId);
 /* |description|Checks if a sync object is owned locally using a `syncId`|descriptionEnd| */
 bool sync_object_is_owned_locally(u32 syncId);
-struct Packet* sync_object_get_last_reliable_packet(u32 syncId);
+struct Packet *sync_object_get_last_reliable_packet(u32 syncId);
 
-  /////////////
- // setters //
+/////////////
+// setters //
 /////////////
 
-void sync_object_override_object(u32 syncId, struct Object* o);
+void sync_object_override_object(u32 syncId, struct Object *o);
 
-  ///////////
- // utils //
+///////////
+// utils //
 ///////////
 
-float player_distance(struct MarioState* marioState, struct Object* o);
+float player_distance(struct MarioState *marioState, struct Object *o);
 bool sync_object_should_own(u32 syncId);
-bool sync_object_set_id(struct Object* o);
+bool sync_object_set_id(struct Object *o);
 
 #endif

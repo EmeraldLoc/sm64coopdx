@@ -35,9 +35,9 @@ static bool in_delayed(uint64_t hash) {
     return false;
 }
 
-bool found_match(char* text) {
+bool found_match(char *text) {
     uint64_t hash = 0;
-    char* t = text;
+    char *t = text;
     bool in_word = false;
     while (t && *t) {
         char c = *t;
@@ -62,7 +62,7 @@ bool found_match(char* text) {
     return false;
 }
 
-void network_send_chat(char* message, u8 globalIndex) {
+void network_send_chat(char *message, u8 globalIndex) {
     static bool sMatched = false;
     sMatched = sMatched || (found_match(message));
     if (sMatched) { return; }
@@ -76,14 +76,16 @@ void network_send_chat(char* message, u8 globalIndex) {
     network_send(&p);
 }
 
-void network_receive_chat(struct Packet* p) {
+void network_receive_chat(struct Packet *p) {
     u16 remoteMessageLength = 0;
     char remoteMessage[MAX_CHAT_MSG_LENGTH] = { 0 };
     u8 globalIndex;
 
     packet_read(p, &globalIndex, sizeof(u8));
     packet_read(p, &remoteMessageLength, sizeof(u16));
-    if (remoteMessageLength >= MAX_CHAT_MSG_LENGTH - 1) { remoteMessageLength = MAX_CHAT_MSG_LENGTH - 1; }
+    if (remoteMessageLength >= MAX_CHAT_MSG_LENGTH - 1) {
+        remoteMessageLength = MAX_CHAT_MSG_LENGTH - 1;
+    }
     packet_read(p, &remoteMessage, remoteMessageLength * sizeof(u8));
 
     // anti spoof
@@ -92,7 +94,7 @@ void network_receive_chat(struct Packet* p) {
         return;
     }
 
-    struct NetworkPlayer* np = network_player_from_global_index(globalIndex);
+    struct NetworkPlayer *np = network_player_from_global_index(globalIndex);
     if (!np) { return; }
     np->gag = np->gag || found_match(remoteMessage);
     if (np->gag) { return; }
@@ -101,7 +103,8 @@ void network_receive_chat(struct Packet* p) {
     djui_chat_message_create_from(globalIndex, remoteMessage);
 
     if (gNetworkSystem && gNetworkSystem->get_id_str && np->connected && strlen(np->name) > 0) {
-        LOG_CONSOLE("[%s] %s\\#\\: %s", gNetworkSystem->get_id_str(np->localIndex), np->name, remoteMessage);
+        LOG_CONSOLE("[%s] %s\\#\\: %s", gNetworkSystem->get_id_str(np->localIndex), np->name,
+                    remoteMessage);
         LOG_INFO("[%s] %s: %s", gNetworkSystem->get_id_str(np->localIndex), np->name, remoteMessage);
     } else {
         LOG_INFO("rx chat: %s", remoteMessage);
