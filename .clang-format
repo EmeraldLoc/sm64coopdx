@@ -4,8 +4,11 @@ UseTab: Never
 PointerAlignment: Right
 SpaceAfterCStyleCast: false
 BreakBeforeBraces: Attach
+InsertBraces: true
+InsertNewlineAtEOF: true
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: WithoutElse
+AllowShortBlocksOnASingleLine: Always
 AlignAfterOpenBracket: Align
 ColumnLimit: 104
 IndentCaseLabels: true
