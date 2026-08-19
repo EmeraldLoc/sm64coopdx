@@ -6,6 +6,7 @@ SpaceAfterCStyleCast: false
 BreakBeforeBraces: Attach
 InsertBraces: true
 InsertNewlineAtEOF: true
+AllowShortEnumsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: WithoutElse
 AllowShortBlocksOnASingleLine: Always
