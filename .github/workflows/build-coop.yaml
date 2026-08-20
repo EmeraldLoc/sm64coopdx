@@ -39,9 +39,7 @@ jobs:
               - name: macOS_ARM
                 os: macos-15
                 deps: brew install make mingw-w64 pkg-config glfw3 coreutils glew sdl3
-                make: |
-                  export PKG_CONFIG_PATH=/opt/homebrew/lib/pkgconfig:$PKG_CONFIG_PATH
-                  gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
+                make: gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
                 internal: .app/Contents/MacOS/sm64coopdx
                 zip: sm64coopdx.app
 
@@ -51,14 +49,6 @@ jobs:
                 make: gmake OSX_BUILD=1 -j$(sysctl -n hw.ncpu)
                 internal: .app/Contents/MacOS/sm64coopdx
                 zip: sm64coopdx.app
-
-        env:
-          MACOSX_DEPLOYMENT_TARGET: |-
-            ${{ case(
-              matrix.platform.os == 'macos-26', '11',
-              matrix.platform.os == 'macos-15-intel', '10.15',
-              ''
-            ) }}
 
         name: ${{ matrix.platform.name }}
         runs-on: ${{ matrix.platform.os }}
