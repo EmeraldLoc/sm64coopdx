@@ -1016,6 +1016,8 @@
 --- @field public showStarNumber integer
 --- @field public extendedPauseDisplay integer
 --- @field public pauseExitAnywhere integer
+--- @field public disableShadows integer
+--- @field public pauseExitMode PauseExitMode
 --- @field public disableActs integer
 --- @field public bubbleOnDeathBarrierInCapStages integer
 --- @field public entryLevel LevelNum
@@ -1053,6 +1055,8 @@
 --- @field public wallMaxRadius number
 --- @field public floorNormalMinY number
 --- @field public ceilNormalMaxY number
+--- @field public skipGoddard integer
+--- @field public skipFileSelect integer
 
 --- @class MarioAnimation
 --- @field public currentAnimAddr Pointer_integer

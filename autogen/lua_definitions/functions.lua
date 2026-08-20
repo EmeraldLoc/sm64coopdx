@@ -3912,7 +3912,7 @@ end
 --- It decides by checking where you entered the command, and will output to that source directly.<br>
 --- <br>
 --- It should be used in any function that is ran from `hook_chat_command` or `hook_console_command`.<br>
---- If ran independently of any of these hooks, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
+--- If ran independently of any hook, it decides on where to output by checking if the chat box is open. If so, log there, otherwise, log to the console and terminal
 function command_message_create(message, level)
     -- ...
 end
@@ -5312,7 +5312,7 @@ function pressed_pause()
     -- ...
 end
 
---- @param arg integer
+--- @param arg SpecialWarpDestination
 --- @param color integer
 --- Fades into a special warp with `arg` and using `color`
 function fade_into_special_warp(arg, color)
@@ -5339,15 +5339,15 @@ function initiate_painting_warp(paintingIndex)
 end
 
 --- @param m MarioState
---- @param warpOp integer
+--- @param warpOp WarpOperation
 --- @return integer
 --- Triggers a warp (WARP_OP_*) for the level. Pass in `gMarioStates[0]` for `m`
 function level_trigger_warp(m, warpOp)
     -- ...
 end
 
---- @param arg integer
---- Special warps to arg (`SPECIAL_WARP_*`)
+--- @param arg SpecialWarpDestination
+--- Special warps to arg (`WARP_SPECIAL_*`)
 function warp_special(arg)
     -- ...
 end
@@ -5355,9 +5355,9 @@ end
 --- @param destLevel integer
 --- @param destArea integer
 --- @param destWarpNode integer
---- @param arg integer
---- Initiates a warp to `destLevel` in `destArea` at `destWarpNode` with `arg`. This function is unstable and it's generally recommended to use `warp_to_level` instead
-function initiate_warp(destLevel, destArea, destWarpNode, arg)
+--- @param warpFlags integer
+--- Initiates a warp to `destLevel` in `destArea` at `destWarpNode` with `warpFlags`. This function is unstable and it's generally recommended to use `warp_to_level` instead
+function initiate_warp(destLevel, destArea, destWarpNode, warpFlags)
     -- ...
 end
 
@@ -7842,6 +7842,15 @@ end
 --- @return integer
 --- Linearly interpolates between `a` and `b` with `delta`
 function delta_interpolate_s32(a, b, delta)
+    -- ...
+end
+
+--- @param a integer
+--- @param b integer
+--- @param delta number
+--- @return integer
+--- Interpolates angle between `a` and `b` with `delta`
+function delta_interpolate_angle(a, b, delta)
     -- ...
 end
 
@@ -11994,6 +12003,12 @@ function get_network_area_timer()
 end
 
 --- @return integer
+--- Gets the current area's networked random seed
+function get_network_area_random_seed()
+    -- ...
+end
+
+--- @return integer
 --- Gets the area update counter incremented when objects are updated
 function get_area_update_counter()
     -- ...
@@ -13080,6 +13095,26 @@ function smlua_text_utils_allocate_dialog()
     -- ...
 end
 
+--- @param dialogId DialogId
+--- @return DialogType
+--- Gets the type of a `dialogId`
+function smlua_text_utils_dialog_get_type(dialogId)
+    -- ...
+end
+
+--- @param dialogId DialogId
+--- @param dialogType DialogType
+--- Sets the type of a `dialogId`
+function smlua_text_utils_dialog_set_type(dialogId, dialogType)
+    -- ...
+end
+
+--- @param dialogId DialogId
+--- Resets the type of a `dialogId`
+function smlua_text_utils_dialog_reset_type(dialogId)
+    -- ...
+end
+
 --- @param courseNum integer
 --- @param courseName string
 --- @param act1 string
@@ -13458,6 +13493,13 @@ end
 --- @return boolean
 --- Checks if a surface has force
 function surface_has_force(surfaceType)
+    -- ...
+end
+
+--- @param syncId integer
+--- @return integer
+--- Retrieves the random seed of a sync object from its sync ID
+function sync_object_get_random_seed(syncId)
     -- ...
 end
 
