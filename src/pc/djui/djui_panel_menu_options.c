@@ -23,6 +23,7 @@ static struct DjuiCheckbox* sRandomStageCheckbox = NULL;
 struct MainMenuSounds gMainMenuSounds[] = {
     { "Title Screen", SEQ_MENU_TITLE_SCREEN },
     { "File Select", SEQ_MENU_FILE_SELECT },
+    { "Inside the Castle", SEQ_LEVEL_INSIDE_CASTLE },
     { "Grass", SEQ_LEVEL_GRASS },
     { "Water", SEQ_LEVEL_WATER },
     { "Snow", SEQ_LEVEL_SNOW },
@@ -35,27 +36,6 @@ struct MainMenuSounds gMainMenuSounds[] = {
     { "Bowser Finale", SEQ_LEVEL_BOSS_KOOPA_FINAL },
     { "Staff Roll", SEQ_EVENT_CUTSCENE_CREDITS },
     { "Stage Music", STAGE_MUSIC },
-};
-
-static char* sLevelChoices[18] = {
-    "CG",
-    "BOB",
-    "WF",
-    "WMOTR",
-    "JRB",
-    "SSL",
-    "TTM",
-    "SL",
-    "BBH",
-    "LLL",
-    "THI",
-    "HMC",
-    "CCM",
-    "RR",
-    "BITDW",
-    "PSS",
-    "TTC",
-    "WDW"
 };
 
 void djui_panel_main_menu_create(struct DjuiBase* caller);
@@ -150,7 +130,7 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
 
         if (gDjuiInMainMenu) {
             // copy sound choices from gMainMenuSounds
-            int numSounds = sizeof(gMainMenuSounds) / sizeof(gMainMenuSounds[0]);
+            u32 numSounds = sizeof(gMainMenuSounds) / sizeof(gMainMenuSounds[0]);
             // if stage roll is on, we shouldn't be allowed to use Stage Music, so remove the entry
             if (configMenuStaffRoll) {
                 numSounds -= 1;
@@ -158,11 +138,18 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
             char* soundChoices[sizeof(gMainMenuSounds)];
 
             // loop thru all sounds names, and add those to the soundChoices string array
-            for (int i = 0; i < numSounds; i++) {
+            for (u32 i = 0; i < numSounds; i++) {
                 soundChoices[i] = gMainMenuSounds[i].name;
             }
 
-            struct DjuiSelectionbox* selectionbox1 = djui_selectionbox_create(body, DLANG(MENU_OPTIONS, LEVEL), sLevelChoices, 18, &configMenuLevel, NULL);
+            char *levelChoices[gMenuLevelsCount];
+
+            // construct level choices
+            for (u32 i = 0; i < gMenuLevelsCount; i++) {
+                levelChoices[i] = gMenuLevels[i].name;
+            }
+
+            struct DjuiSelectionbox* selectionbox1 = djui_selectionbox_create(body, DLANG(MENU_OPTIONS, LEVEL), levelChoices, 18, &configMenuLevel, NULL);
             djui_base_set_enabled(&selectionbox1->base, !(configMenuRandom || configMenuStaffRoll));
             sLevelBox = selectionbox1;
             djui_selectionbox_create(body, DLANG(MENU_OPTIONS, MUSIC), soundChoices, numSounds, &configMenuSound, NULL);
