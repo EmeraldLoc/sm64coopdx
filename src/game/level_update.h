@@ -120,7 +120,7 @@ struct CreditsEntry {
 extern struct CreditsEntry *gCurrCreditsEntry;
 
 struct MenuLevel {
-    char *name;
+    const char *name;
     enum LevelNum level;
     s16 area;
     s16 act;

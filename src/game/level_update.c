@@ -387,7 +387,10 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = -0x6000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = {
+            bhvStar,
+            NULL
+        }
     },
     {
         .name = "BITDW",
@@ -1808,7 +1811,6 @@ void update_menu_level(void) {
     // halt any sounds that may be incorrectly playing
     stop_cap_music();
     reset_volume();
-    disable_background_sound();
     if (gMainMenuSounds[configMenuSound].sound == STAGE_MUSIC) {
         // if staff roll is on, set configMenuSound to Title Screen sequence, or 0
         if (configMenuStaffRoll) {

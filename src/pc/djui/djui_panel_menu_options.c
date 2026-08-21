@@ -146,7 +146,7 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
 
             // construct level choices
             for (u32 i = 0; i < gMenuLevelsCount; i++) {
-                levelChoices[i] = gMenuLevels[i].name;
+                levelChoices[i] = (char *)gMenuLevels[i].name;
             }
 
             struct DjuiSelectionbox* selectionbox1 = djui_selectionbox_create(body, DLANG(MENU_OPTIONS, LEVEL), levelChoices, 18, &configMenuLevel, NULL);
@@ -154,12 +154,13 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
             sLevelBox = selectionbox1;
             djui_selectionbox_create(body, DLANG(MENU_OPTIONS, MUSIC), soundChoices, numSounds, &configMenuSound, NULL);
             djui_checkbox_create(body, DLANG(MENU_OPTIONS, STAFF_ROLL), &configMenuStaffRoll, djui_panel_staff_roll);
-            struct DjuiCheckbox* checkbox2 = djui_checkbox_create(body, DLANG(MENU_OPTIONS, RANDOM_STAGE), &configMenuRandom, djui_panel_level_menu);
-            djui_base_set_enabled(&checkbox2->base, !configMenuStaffRoll);
-            sRandomStageCheckbox = checkbox2;
-            // struct DjuiCheckbox* checkbox3 = djui_checkbox_create(body, DLANG(MENU_OPTIONS, PLAY_VANILLA_DEMOS), &configMenuDemos, stop_demo);
-            // djui_base_set_enabled(&checkbox3->base, !configMenuStaffRoll);
-            // sVanillaDemosCheckbox = checkbox3;
+            djui_checkbox_create(body, DLANG(MENU_OPTIONS, ENV), &configMenuEnvSounds, NULL);
+            struct DjuiCheckbox* checkbox1 = djui_checkbox_create(body, DLANG(MENU_OPTIONS, RANDOM_STAGE), &configMenuRandom, djui_panel_level_menu);
+            djui_base_set_enabled(&checkbox1->base, !configMenuStaffRoll);
+            sRandomStageCheckbox = checkbox1;
+            // struct DjuiCheckbox* checkbox2 = djui_checkbox_create(body, DLANG(MENU_OPTIONS, PLAY_VANILLA_DEMOS), &configMenuDemos, stop_demo);
+            // djui_base_set_enabled(&checkbox2->base, !configMenuStaffRoll);
+            // sVanillaDemosCheckbox = checkbox2;
         }
 
         djui_button_create(body, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_BACK, djui_panel_menu_back);
