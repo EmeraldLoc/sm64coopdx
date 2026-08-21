@@ -274,7 +274,10 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = {
+            bhvStar,
+            NULL
+        }
     },
     {
         .name = "Tall Tall Mountain",
@@ -287,7 +290,10 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0x1000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = {
+            bhvStar,
+            NULL
+        }
     },
     {
         .name = "Snowman's Land",
@@ -429,7 +435,10 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0x2000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = {
+            bhvStar,
+            NULL
+        }
     },
     {
         .name = "Wet-Dry World",
