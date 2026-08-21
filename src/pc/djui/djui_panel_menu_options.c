@@ -149,7 +149,7 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
                 levelChoices[i] = (char *)gMenuLevels[i].name;
             }
 
-            struct DjuiSelectionbox* selectionbox1 = djui_selectionbox_create(body, DLANG(MENU_OPTIONS, LEVEL), levelChoices, 18, &configMenuLevel, NULL);
+            struct DjuiSelectionbox* selectionbox1 = djui_selectionbox_create(body, DLANG(MENU_OPTIONS, LEVEL), levelChoices, gMenuLevelsCount, &configMenuLevel, NULL);
             djui_base_set_enabled(&selectionbox1->base, !(configMenuRandom || configMenuStaffRoll));
             sLevelBox = selectionbox1;
             djui_selectionbox_create(body, DLANG(MENU_OPTIONS, MUSIC), soundChoices, numSounds, &configMenuSound, NULL);
