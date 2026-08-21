@@ -843,7 +843,8 @@ void play_sound(s32 soundBits, f32 *pos) {
 void play_sound_with_freq_scale(s32 soundBits, f32* pos, f32 freqScale) {
     // if we are the main menu, have environment sounds turned off, and the sound isn't a menu sound
     // then do not play the sound
-    if (gDjuiInMainMenu && !configMenuEnvSounds && (soundBits < (s32)SOUND_MENU_CHANGE_SELECT || soundBits > (s32)SOUND_MENU_STAR_SOUND_LETS_A_GO)) {
+    u32 soundBank = (soundBits & SOUNDARGS_MASK_BANK) >> SOUNDARGS_SHIFT_BANK;
+    if (gDjuiInMainMenu && !configMenuEnvSounds && soundBank != SOUND_BANK_MENU) {
         return;
     }
 
