@@ -154,7 +154,7 @@ void djui_panel_main_menu_create(struct DjuiBase* caller) {
             sLevelBox = selectionbox1;
             djui_selectionbox_create(body, DLANG(MENU_OPTIONS, MUSIC), soundChoices, numSounds, &configMenuSound, NULL);
             djui_checkbox_create(body, DLANG(MENU_OPTIONS, STAFF_ROLL), &configMenuStaffRoll, djui_panel_staff_roll);
-            djui_checkbox_create(body, DLANG(MENU_OPTIONS, ENV), &configMenuEnvSounds, NULL);
+            djui_checkbox_create(body, DLANG(MENU_OPTIONS, ENV_SOUNDS), &configMenuEnvSounds, NULL);
             struct DjuiCheckbox* checkbox1 = djui_checkbox_create(body, DLANG(MENU_OPTIONS, RANDOM_STAGE), &configMenuRandom, djui_panel_level_menu);
             djui_base_set_enabled(&checkbox1->base, !configMenuStaffRoll);
             sRandomStageCheckbox = checkbox1;
