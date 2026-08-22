@@ -23,7 +23,6 @@ static struct DjuiCheckbox* sRandomStageCheckbox = NULL;
 struct MainMenuSounds gMainMenuSounds[] = {
     { "Title Screen", SEQ_MENU_TITLE_SCREEN },
     { "File Select", SEQ_MENU_FILE_SELECT },
-    { "Inside the Castle", SEQ_LEVEL_INSIDE_CASTLE },
     { "Grass", SEQ_LEVEL_GRASS },
     { "Water", SEQ_LEVEL_WATER },
     { "Snow", SEQ_LEVEL_SNOW },
@@ -36,6 +35,7 @@ struct MainMenuSounds gMainMenuSounds[] = {
     { "Bowser Finale", SEQ_LEVEL_BOSS_KOOPA_FINAL },
     { "Staff Roll", SEQ_EVENT_CUTSCENE_CREDITS },
     { "Stage Music", STAGE_MUSIC },
+    { "Inside the Castle", SEQ_LEVEL_INSIDE_CASTLE },
 };
 
 void djui_panel_main_menu_create(struct DjuiBase* caller);

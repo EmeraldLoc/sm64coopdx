@@ -196,19 +196,6 @@ struct MenuLevel gMenuLevels[] = {
         .behaviorsToRemove = NULL
     },
     {
-        .name = "Castle",
-        .level = LEVEL_CASTLE,
-        .area = 1,
-        .act = 1,
-        .marioPos = { -1020, -50, 724 },
-        .updateMarioPos = true,
-        .cameraPos = { -1020, 240, 2724 },
-        .updateCameraPos = true,
-        .marioYaw = 0,
-        .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
-    },
-    {
         .name = "Bob-omb Battlefield",
         .level = LEVEL_BOB,
         .area = 1,
@@ -450,6 +437,19 @@ struct MenuLevel gMenuLevels[] = {
         .cameraPos = { -4002, 4000, 4622 },
         .updateCameraPos = true,
         .marioYaw = -0x1C34,
+        .updateMarioYaw = true,
+        .behaviorsToRemove = NULL
+    },
+    {
+        .name = "Castle",
+        .level = LEVEL_CASTLE,
+        .area = 1,
+        .act = 1,
+        .marioPos = { -1020, -50, 724 },
+        .updateMarioPos = true,
+        .cameraPos = { -1020, 240, 2724 },
+        .updateCameraPos = true,
+        .marioYaw = 0,
         .updateMarioYaw = true,
         .behaviorsToRemove = NULL
     }
