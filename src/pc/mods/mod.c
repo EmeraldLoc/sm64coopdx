@@ -663,12 +663,12 @@ bool mod_load(struct Mods* mods, char* basePath, char* modName) {
                 manifestModEntryPath = jsonEntryFilePath;
             }
         }
-        yyjson_doc_free(doc);
 
         snprintf(relativeEntryFilePath, SYS_MAX_PATH, "%s", (manifestModEntryPath != NULL ? manifestModEntryPath : MOD_ENTRY_FILE));
         hasManifest = fs_sys_file_exists(manifestPath);
         isCustomEntryFile = (manifestModEntryPath != NULL);
         free((char *)manifestModEntryPath);
+        yyjson_doc_free(doc);
 
         // get full entry lua path
         char fullEntryPath[SYS_MAX_PATH] = { 0 };

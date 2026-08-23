@@ -361,10 +361,10 @@ bool path_has_traversal(const char *path) {
     const char *start = path;
 
     // iterate through path
-    while (*start) {
+    while (start && *start) {
         const char *end = start;
         // look for the next path separator to get the end
-        while (end[0] && end[0] != *PATH_SEPARATOR) {
+        while (end[0] && end[0] != *PATH_SEPARATOR && end[0] != *PATH_SEPARATOR_ALT) {
             end++;
         }
 

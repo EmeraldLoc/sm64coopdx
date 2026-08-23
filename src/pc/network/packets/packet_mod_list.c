@@ -90,6 +90,7 @@ void network_send_mod_list(void) {
         packet_write(&p, mod->relativePath, sizeof(u8) * relativePathLength);
         packet_write(&p, &relativeEntryPathFileLength, sizeof(u16));
         packet_write(&p, mod->relativeEntryPath, sizeof(u8) * relativeEntryPathFileLength);
+        packet_write(&p, &mod->isCustomEntryFile, sizeof(u8));
         packet_write(&p, &modSize, sizeof(u64));
         packet_write(&p, &mod->isDirectory, sizeof(u8));
         packet_write(&p, &mod->pausable, sizeof(u8));
@@ -244,6 +245,7 @@ void network_receive_mod_list_entry(struct Packet* p) {
     packet_read(p, mod->relativePath, relativePathLength * sizeof(u8));
     packet_read(p, &relativeEntryPathFileLength, sizeof(u16));
     packet_read(p, mod->relativeEntryPath, relativeEntryPathFileLength * sizeof(u8));
+    packet_read(p, &mod->isCustomEntryFile, sizeof(u8));
     packet_read(p, &mod->size, sizeof(u64));
     packet_read(p, &mod->isDirectory, sizeof(u8));
     packet_read(p, &mod->pausable, sizeof(u8));
