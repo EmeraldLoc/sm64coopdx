@@ -242,8 +242,16 @@ void network_receive_mod_list_entry(struct Packet* p) {
     u16 relativePathLength = 0;
     u16 relativeEntryPathFileLength = 0;
     packet_read(p, &relativePathLength, sizeof(u16));
+    if (relativePathLength >= SYS_MAX_PATH) {
+        LOG_ERROR("Relative path length is too large!");
+        return;
+    }
     packet_read(p, mod->relativePath, relativePathLength * sizeof(u8));
     packet_read(p, &relativeEntryPathFileLength, sizeof(u16));
+    if (relativeEntryPathFileLength >= SYS_MAX_PATH) {
+        LOG_ERROR("Relative entry path file length is too large!");
+        return;
+    }
     packet_read(p, mod->relativeEntryPath, relativeEntryPathFileLength * sizeof(u8));
     packet_read(p, &mod->isCustomEntryFile, sizeof(u8));
     packet_read(p, &mod->size, sizeof(u64));
