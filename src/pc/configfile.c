@@ -859,23 +859,10 @@ static void configfile_load_internal(const char *filename, bool* error) {
                             }
                             break;
                         case CONFIG_TYPE_DJUI_COLOR:
-                            for (int i = 0; i < 4 && i < numTokens - 1; ++i) {
-                                sscanf(tokens[i + 1], "%x", &temp);
-                                switch (i) {
-                                    case 0:
-                                        option->djuiColorValue->r = temp;
-                                        break;
-                                    case 1:
-                                        option->djuiColorValue->g = temp;
-                                        break;
-                                    case 2:
-                                        option->djuiColorValue->b = temp;
-                                        break;
-                                    case 3:
-                                        option->djuiColorValue->a = temp;
-                                        break;
-                                }
-                            }
+                            sscanf(tokens[1], "%hhx", &option->djuiColorValue->r);
+                            sscanf(tokens[2], "%hhx", &option->djuiColorValue->g);
+                            sscanf(tokens[3], "%hhx", &option->djuiColorValue->b);
+                            sscanf(tokens[4], "%hhx", &option->djuiColorValue->a);
                             break;
                         default:
                             LOG_ERROR("Configfile read bad type '%d': %s", (int)option->type, line);
