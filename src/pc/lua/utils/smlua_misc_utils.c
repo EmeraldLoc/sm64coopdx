@@ -125,7 +125,7 @@ enum DjuiFontType djui_menu_get_font(void) {
     return configDjuiThemeFont;
 }
 
-struct DjuiTheme* djui_menu_get_theme(void) {
+struct DjuiTheme *djui_menu_get_theme(void) {
     sRefDjuiTheme = configDjuiTheme;
     return &sRefDjuiTheme;
 }

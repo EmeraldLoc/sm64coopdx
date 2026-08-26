@@ -785,7 +785,8 @@
 | Field | Type | Access |
 | ----- | ---- | ------ |
 | name | `string` |  |
-| elements | `Array` <`DjuiColor`> | read-only |
+| path | `string` |  |
+| elements | `Array` <`DjuiColor`> | read-only, starts at index 0 |
 | headerFont | `integer` |  |
 | useRainbowColor | `boolean` |  |
 | gradients | `boolean` |  |

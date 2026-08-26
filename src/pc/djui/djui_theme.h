@@ -14,73 +14,9 @@ enum DjuiBuiltinThemes {
 };
 
 enum DjuiThemeElements {
-    DJUI_THEME_ELEMENT_PRIMARY,
-    DJUI_THEME_ELEMENT_PRIMARY_HOVER,
-    DJUI_THEME_ELEMENT_PRIMARY_DOWN,
-    DJUI_THEME_ELEMENT_PRIMARY_DISABLED,
-    DJUI_THEME_ELEMENT_PRIMARY_TEXT,
-    DJUI_THEME_ELEMENT_PRIMARY_TEXT_DISABLED,
-
-    DJUI_THEME_ELEMENT_PRIMARY_BORDER,
-    DJUI_THEME_ELEMENT_PRIMARY_BORDER_HOVER,
-    DJUI_THEME_ELEMENT_PRIMARY_BORDER_DOWN,
-    DJUI_THEME_ELEMENT_PRIMARY_BORDER_DISABLED,
-
-    DJUI_THEME_ELEMENT_SECONDARY,
-    DJUI_THEME_ELEMENT_SECONDARY_HOVER,
-    DJUI_THEME_ELEMENT_SECONDARY_DOWN,
-    DJUI_THEME_ELEMENT_SECONDARY_DISABLED,
-    DJUI_THEME_ELEMENT_SECONDARY_TEXT,
-    DJUI_THEME_ELEMENT_SECONDARY_TEXT_DISABLED,
-
-    DJUI_THEME_ELEMENT_SECONDARY_BORDER,
-    DJUI_THEME_ELEMENT_SECONDARY_BORDER_HOVER,
-    DJUI_THEME_ELEMENT_SECONDARY_BORDER_DOWN,
-    DJUI_THEME_ELEMENT_SECONDARY_BORDER_DISABLED,
-
-    DJUI_THEME_ELEMENT_INPUTBOX,
-    DJUI_THEME_ELEMENT_INPUTBOX_HOVER,
-    DJUI_THEME_ELEMENT_INPUTBOX_DOWN,
-    DJUI_THEME_ELEMENT_INPUTBOX_DISABLED,
-    DJUI_THEME_ELEMENT_INPUTBOX_TEXT,
-    DJUI_THEME_ELEMENT_INPUTBOX_TEXT_PLACEHOLDER,
-
-    DJUI_THEME_ELEMENT_INPUTBOX_BORDER,
-    DJUI_THEME_ELEMENT_INPUTBOX_BORDER_HOVER,
-    DJUI_THEME_ELEMENT_INPUTBOX_BORDER_DOWN,
-    DJUI_THEME_ELEMENT_INPUTBOX_BORDER_DISABLED,
-
-    DJUI_THEME_ELEMENT_CHECKBOX,
-    DJUI_THEME_ELEMENT_CHECKBOX_HOVER,
-    DJUI_THEME_ELEMENT_CHECKBOX_DOWN,
-    DJUI_THEME_ELEMENT_CHECKBOX_DISABLED,
-
-    DJUI_THEME_ELEMENT_CHECKBOX_BORDER,
-    DJUI_THEME_ELEMENT_CHECKBOX_BORDER_HOVER,
-    DJUI_THEME_ELEMENT_CHECKBOX_BORDER_DOWN,
-    DJUI_THEME_ELEMENT_CHECKBOX_BORDER_DISABLED,
-
-    DJUI_THEME_ELEMENT_SLIDER,
-    DJUI_THEME_ELEMENT_SLIDER_HOVER,
-    DJUI_THEME_ELEMENT_SLIDER_DOWN,
-    DJUI_THEME_ELEMENT_SLIDER_DISABLED,
-
-    DJUI_THEME_ELEMENT_SLIDER_BORDER,
-    DJUI_THEME_ELEMENT_SLIDER_BORDER_HOVER,
-    DJUI_THEME_ELEMENT_SLIDER_BORDER_DOWN,
-    DJUI_THEME_ELEMENT_SLIDER_BORDER_DISABLED,
-
-    DJUI_THEME_ELEMENT_TEXT,
-    DJUI_THEME_ELEMENT_TEXT_DISABLED,
-
-    DJUI_THEME_ELEMENT_SELECTIONBOX_IMAGE,
-    DJUI_THEME_ELEMENT_SELECTIONBOX_IMAGE_DISABLED,
-
-    DJUI_THEME_ELEMENT_THREE_PANEL,
-    DJUI_THEME_ELEMENT_THREE_PANEL_BORDER,
-
-    DJUI_THEME_ELEMENT_PANEL_HEADER_COLOR,
-
+    #define DEFINE_THEME_ELEMENT(name) name,
+    #include "djui_theme_elements.inl"
+    #undef DEFINE_THEME_ELEMENT
     DJUI_THEME_ELEMENT_COUNT,
 };
 
@@ -95,13 +31,14 @@ struct DjuiDeprecatedTheme {
     PROPERTY(rectColor,             djui_theme_get_rect_color,               NULL);
     PROPERTY(borderColor,           djui_theme_get_border_color,             NULL);
     PROPERTY(hudFontHeader,         djui_theme_get_hud_font_header,          NULL);
-    bool unused;
+    bool unused; // needed to keep the compiler happy
 };
 
 struct DjuiTheme {
     char name[MAX_DJUI_THEME_NAME_LEN];
-    struct DjuiColor elements[DJUI_THEME_ELEMENT_COUNT];
-    unsigned int headerFont;
+    char path[SYS_MAX_PATH];
+    C_ARRAY struct DjuiColor elements[DJUI_THEME_ELEMENT_COUNT];
+    u32 headerFont;
     bool useRainbowColor;
     bool gradients;
     struct DjuiDeprecatedTheme interactables;
@@ -109,15 +46,15 @@ struct DjuiTheme {
     struct DjuiDeprecatedTheme panels;
 };
 
-extern struct DjuiTheme* gDjuiThemes[MAX_DJUI_THEMES];
+extern struct GrowingArray *gDjuiThemes;
 extern struct DjuiTheme gDjuiThemeDark;
 
 struct DjuiColor djui_theme_shade_color(struct DjuiColor color, f32 mult);
-bool djui_theme_compare_theme_elements(struct DjuiTheme *themeOne, struct DjuiTheme *themeTwo);
-bool djui_themes_save_current(bool setThemeArray);
-bool djui_themes_save(struct DjuiTheme* theme, bool setThemeArray);
-void djui_themes_load(void);
-void djui_theme_delete(struct DjuiTheme* theme);
+bool djui_themes_save(struct DjuiTheme *theme);
+void djui_theme_load(const char *path);
+void djui_themes_load_all(void);
+void djui_theme_delete(struct DjuiTheme *theme);
+void djui_theme_init(void);
 /* |description|Gets the color of the `DJUI_THEME_ELEMENT_TEXT` of the current menu theme|descriptionEnd| */
 struct DjuiColor *djui_theme_get_text_color(UNUSED struct DjuiDeprecatedTheme *deprecatedTheme);
 /* |description|Gets the color of the `DJUI_THEME_ELEMENT_PRIMARY` of the current menu theme|descriptionEnd| */

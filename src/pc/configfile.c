@@ -981,8 +981,10 @@ void configfile_reset_keybinds(bool extra) {
 }
 
 void configfile_load(void) {
-    // init theme here
+    // init default theme here
     configDjuiTheme = gDjuiThemeDark;
+
+    // load configfile
     bool configReadError = false;
 #ifdef DEVELOPMENT
     configfile_load_internal(configfile_name(), &configReadError);

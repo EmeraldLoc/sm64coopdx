@@ -557,6 +557,7 @@
 
 --- @class DjuiTheme
 --- @field public name string
+--- @field public path string
 --- @field public elements DjuiColor[]
 --- @field public headerFont integer
 --- @field public useRainbowColor boolean

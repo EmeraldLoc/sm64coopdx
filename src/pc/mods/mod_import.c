@@ -103,25 +103,25 @@ static bool mod_import_palette(char* src) {
     return true;
 }
 
-static bool mod_import_theme(char* src) {
-    const char* themesDirectory = fs_get_write_path(THEMES_DIRECTORY);
+static bool mod_import_theme(char *src) {
+    const char *themesDirectory = fs_get_write_path(THEMES_DIRECTORY);
     fs_sys_mkdir(themesDirectory);
 
     char dst[SYS_MAX_PATH] = { 0 };
-    if (!concat_path(dst, (char*)themesDirectory, path_basename(src))) {
-        LOG_ERROR("Failed to concat path for theme ini import");
+    if (!concat_path(dst, (char *)themesDirectory, path_basename(src))) {
+        LOG_ERROR("Failed to concat path for theme json import");
         return false;
     }
 
     FILE* fin = fopen(src, "rb");
     if (fin == NULL) {
-        LOG_ERROR("Failed to open src path for theme ini import");
+        LOG_ERROR("Failed to open src path for theme json import");
         return false;
     }
 
     FILE* fout = fopen(dst, "wb");
     if (fout == NULL) {
-        LOG_ERROR("Failed to open dst path for theme ini import");
+        LOG_ERROR("Failed to open dst path for theme json import");
         fclose(fin);
         return false;
     }
@@ -142,46 +142,15 @@ static bool mod_import_theme(char* src) {
     fclose(fin);
 
     if (wbytes) {
-        LOG_ERROR("Write error on theme ini import");
+        LOG_ERROR("Write error on theme json import");
         return false;
     }
 
-    LOG_INFO("Imported theme ini: '%s' -> '%s'", src, dst);
-    // nuke current themes and load them back
-    for (int i = DJUI_THEME_COUNT; i < MAX_DJUI_THEMES; i++) {
-        free(gDjuiThemes[i]);
-        gDjuiThemes[i] = NULL;
-    }
-    djui_themes_load();
+    LOG_INFO("Imported theme json: '%s' -> '%s'", src, dst);
+
+    djui_theme_load(dst);
 
     return true;
-}
-
-static bool mod_import_ini(char* src) {
-    struct ini_t* importIni = ini_load(src);
-    if (!importIni) { return false; }
-    bool ret = false;
-
-    char msg[SYS_MAX_PATH] = { 0 };
-    char* basename = path_basename(src);
-
-    // bit hacky, but works
-    if (ini_get(importIni, "PALETTE", "PANTS_R") != NULL) {
-        ret = mod_import_palette(src);
-        if (ret) {
-            djui_language_replace(DLANG(NOTIF, IMPORT_PALETTE_SUCCESS), msg, SYS_MAX_PATH, '@', basename);
-            djui_popup_create(msg, 2);
-        }
-    } else if (ini_get(importIni, "THEME", "theme_header_font") != NULL) {
-        ret = mod_import_theme(src);
-        if (ret) {
-            djui_language_replace(DLANG(NOTIF, IMPORT_THEME_SUCCESS), msg, SYS_MAX_PATH, '@', basename);
-            djui_popup_create(msg, 2);
-        }
-    }
-
-    ini_free(importIni);
-    return ret;
 }
 
 static bool mod_import_zip(char* path, bool* isLua, bool* isDynos) {
@@ -337,6 +306,8 @@ static bool mod_import_zip(char* path, bool* isLua, bool* isDynos) {
 bool mod_import_file(char* path) {
     bool isLua = false;
     bool isDynos = false;
+    bool isPalette = false;
+    bool isTheme = false;
     bool ret = false;
 
     if (gNetworkType != NT_NONE && !path_ends_with(path, ".ini")) {
@@ -348,7 +319,11 @@ bool mod_import_file(char* path) {
         isLua = true;
         ret = mod_import_lua(path);
     } else if (path_ends_with(path, ".ini")) {
-        ret = mod_import_ini(path);
+        isPalette = true;
+        ret = mod_import_palette(path);
+    } else if (path_ends_with(path, ".json")) {
+        isTheme = true;
+        ret = mod_import_theme(path);
     } else if (path_ends_with(path, ".zip")) {
         ret = mod_import_zip(path, &isLua, &isDynos);
     }
@@ -364,6 +339,12 @@ bool mod_import_file(char* path) {
         } else if (isDynos) {
             dynos_gfx_init();
             djui_language_replace(DLANG(NOTIF, IMPORT_DYNOS_SUCCESS), msg, SYS_MAX_PATH, '@', basename);
+            djui_popup_create(msg, 2);
+        } else if (isPalette) {
+            djui_language_replace(DLANG(NOTIF, IMPORT_PALETTE_SUCCESS), msg, SYS_MAX_PATH, '@', basename);
+            djui_popup_create(msg, 2);
+        } else if (isTheme) {
+            djui_language_replace(DLANG(NOTIF, IMPORT_THEME_SUCCESS), msg, SYS_MAX_PATH, '@', basename);
             djui_popup_create(msg, 2);
         }
     } else {

@@ -770,16 +770,17 @@ static struct LuaObjectField sDjuiDeprecatedThemeFields[LUA_DJUI_DEPRECATED_THEM
     { "unused",                LVT_BOOL,     offsetof(struct DjuiDeprecatedTheme, unused), false, LOT_NONE },
 };
 
-#define LUA_DJUI_THEME_FIELD_COUNT 8
+#define LUA_DJUI_THEME_FIELD_COUNT 9
 static struct LuaObjectField sDjuiThemeFields[LUA_DJUI_THEME_FIELD_COUNT] = {
-    { "elements",        LVT_COBJECT, offsetof(struct DjuiTheme, elements),        true,  LOT_DJUICOLOR,         DJUI_THEME_ELEMENT_COUNT, sizeof(struct DjuiColor) },
-    { "gradients",       LVT_BOOL,    offsetof(struct DjuiTheme, gradients),       false, LOT_NONE                                                                  },
-    { "headerFont",      LVT_U32,     offsetof(struct DjuiTheme, headerFont),      false, LOT_NONE                                                                  },
-    { "interactables",   LVT_COBJECT, offsetof(struct DjuiTheme, interactables),   true,  LOT_DJUIDEPRECATEDTHEME                                                   },
-    { "name",            LVT_STRING,  offsetof(struct DjuiTheme, name),            false, LOT_NONE                                                                  },
-    { "panels",          LVT_COBJECT, offsetof(struct DjuiTheme, panels),          true,  LOT_DJUIDEPRECATEDTHEME                                                   },
-    { "threePanels",     LVT_COBJECT, offsetof(struct DjuiTheme, threePanels),     true,  LOT_DJUIDEPRECATEDTHEME                                                   },
-    { "useRainbowColor", LVT_BOOL,    offsetof(struct DjuiTheme, useRainbowColor), false, LOT_NONE                                                                  },
+    { "elements",        LVT_COBJECT, offsetof(struct DjuiTheme, elements),        true,  LOT_DJUICOLOR,         DJUI_THEME_ELEMENT_COUNT, sizeof(struct DjuiColor), true },
+    { "gradients",       LVT_BOOL,    offsetof(struct DjuiTheme, gradients),       false, LOT_NONE                                                                        },
+    { "headerFont",      LVT_U32,     offsetof(struct DjuiTheme, headerFont),      false, LOT_NONE                                                                        },
+    { "interactables",   LVT_COBJECT, offsetof(struct DjuiTheme, interactables),   true,  LOT_DJUIDEPRECATEDTHEME                                                         },
+    { "name",            LVT_STRING,  offsetof(struct DjuiTheme, name),            false, LOT_NONE                                                                        },
+    { "panels",          LVT_COBJECT, offsetof(struct DjuiTheme, panels),          true,  LOT_DJUIDEPRECATEDTHEME                                                         },
+    { "path",            LVT_STRING,  offsetof(struct DjuiTheme, path),            false, LOT_NONE                                                                        },
+    { "threePanels",     LVT_COBJECT, offsetof(struct DjuiTheme, threePanels),     true,  LOT_DJUIDEPRECATEDTHEME                                                         },
+    { "useRainbowColor", LVT_BOOL,    offsetof(struct DjuiTheme, useRainbowColor), false, LOT_NONE                                                                        },
 };
 
 #define LUA_EXCLAMATION_BOX_CONTENT_FIELD_COUNT 5
