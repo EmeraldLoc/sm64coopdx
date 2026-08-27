@@ -293,6 +293,9 @@ void djui_theme_load(const char *path) {
 
     // get basic theme values
     theme->headerFont = yyjson_get_uint(yyjson_obj_get(root, "headerFont"));
+    if (theme->headerFont >= FONT_COUNT) {
+        theme->headerFont = FONT_MENU;
+    }
     theme->useRainbowColor = yyjson_get_bool(yyjson_obj_get(root, "useRainbowColor"));
     theme->gradients = yyjson_get_bool(yyjson_obj_get(root, "gradients"));
 

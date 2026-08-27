@@ -107,25 +107,51 @@ static bool mod_import_theme(char *src) {
     const char *themesDirectory = fs_get_write_path(THEMES_DIRECTORY);
     fs_sys_mkdir(themesDirectory);
 
-    char dst[SYS_MAX_PATH] = { 0 };
-    if (!concat_path(dst, (char *)themesDirectory, path_basename(src))) {
-        LOG_ERROR("Failed to concat path for theme json import");
-        return false;
+    // get the basename
+    char baseName[MAX_DJUI_THEME_NAME_LEN];
+    snprintf(baseName, MAX_DJUI_THEME_NAME_LEN, "%s", path_basename(src));
+
+    // iterate and find the first .
+    char *c = baseName;
+    while (*c != '\0' && *c != '.') {
+        c++;
     }
 
-    FILE* fin = fopen(src, "rb");
+    // strip the . and everything after
+    *c = '\0';
+
+    // make sure the name isn't empty
+    if (baseName[0] == '\0') { return false; }
+
+    // get the destination using the basename and the themes dir
+    char dst[SYS_MAX_PATH];
+    snprintf(dst, SYS_MAX_PATH, "%s/%s.json", themesDirectory, baseName);
+
+    // if this file already exists, look for a unique name and use that
+    if (fs_sys_file_exists(dst)) {
+        u32 uniqueIdentifier = 2;
+        do {
+            snprintf(dst, SYS_MAX_PATH, "%s/%s-%u.json", themesDirectory, baseName, uniqueIdentifier);
+            uniqueIdentifier++;
+        } while (fs_sys_file_exists(dst));
+    }
+
+    // open file input
+    FILE *fin = fopen(src, "rb");
     if (fin == NULL) {
         LOG_ERROR("Failed to open src path for theme json import");
         return false;
     }
 
-    FILE* fout = fopen(dst, "wb");
+    // open file output
+    FILE *fout = fopen(dst, "wb");
     if (fout == NULL) {
         LOG_ERROR("Failed to open dst path for theme json import");
         fclose(fin);
         return false;
     }
 
+    // for each read byte, write that same byte to the dest file, effectively copying the file
     size_t rbytes;
     size_t wbytes;
     unsigned char buff[8192];
@@ -138,6 +164,7 @@ static bool mod_import_theme(char *src) {
         }
     } while ((rbytes > 0) && (rbytes == wbytes));
 
+    // close file input and output
     fclose(fout);
     fclose(fin);
 

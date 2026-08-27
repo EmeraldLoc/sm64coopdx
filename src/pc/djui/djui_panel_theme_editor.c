@@ -26,7 +26,7 @@ static struct DjuiTheme *sDjuiTheme = NULL;
 static unsigned int sDjuiHeaderFontSelected = 0;
 static unsigned int sElementChoice = 0;
 static bool sCreatingTheme = false;
-static bool sCancelling = false;
+static bool sSaving = false;
 
 static struct {
     u32 r;
@@ -63,7 +63,7 @@ static bool djui_panel_theme_editor_on_back(UNUSED struct DjuiBase *caller) {
     // reset config theme to old theme
     configDjuiTheme = sOldDjuiTheme;
 
-    if (sCancelling && sCreatingTheme) {
+    if (!sSaving && sCreatingTheme) {
         growing_array_swap_and_pop(gDjuiThemes, sDjuiTheme); // remove created theme
     }
 
@@ -273,13 +273,14 @@ static void djui_panel_theme_editor_edit_theme_name_on_focus_end(struct DjuiBase
 }
 
 static void djui_panel_theme_editor_cancel(UNUSED struct  DjuiBase *caller) {
-    sCancelling = true;
     djui_panel_theme_editor_on_back(NULL);
 }
 
 // TODO: Redo saving
 static void djui_panel_theme_editor_edit_theme_save(UNUSED struct DjuiBase *caller) {
     if (!djui_panel_theme_editor_edit_theme_name_valid(sThemeNameTextBox->buffer)) { return; }
+
+    sSaving = true;
 
     // copy the name and path to our configs djui theme
     snprintf(configDjuiTheme.name, MAX_DJUI_THEME_NAME_LEN, "%s", sThemeNameTextBox->buffer);
@@ -368,7 +369,7 @@ void djui_panel_theme_editor_create(struct DjuiBase *caller) {
     sButtonsCount = 0;
     sCheckboxesCount = 0;
     sSelectionboxesCount = 0;
-    sCancelling = false;
+    sSaving = false;
     if (!caller || caller->tag < DJUI_THEME_COUNT) {
         sCreatingTheme = true;
 
@@ -379,13 +380,16 @@ void djui_panel_theme_editor_create(struct DjuiBase *caller) {
             return; // bail early!
         }
 
+        // set old djui theme to the config theme
+        sOldDjuiTheme = configDjuiTheme;
+
         // set djui theme to our config theme
         *sDjuiTheme = configDjuiTheme;
 
         // empty out path and name
-        snprintf(sDjuiTheme->path, SYS_MAX_PATH, "");
-        snprintf(sDjuiTheme->name, MAX_DJUI_THEME_NAME_LEN, "");
-        snprintf(configDjuiTheme.name, MAX_DJUI_THEME_NAME_LEN, "");
+        sDjuiTheme->path[0] = '\0';
+        sDjuiTheme->name[0] = '\0';
+        configDjuiTheme.name[0] = '\0';
     } else {
         sCreatingTheme = false;
 
