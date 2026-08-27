@@ -188,6 +188,7 @@ static bool djui_panel_themes_renderer(struct DjuiBase *base) {
     struct DjuiThreePanel *threePanel = (struct DjuiThreePanel *)base;
     djui_base_set_color_with_color(&threePanel->base, configDjuiTheme.elements[DJUI_THEME_ELEMENT_THREE_PANEL]);
     djui_base_set_border_color_with_color(&threePanel->base, configDjuiTheme.elements[DJUI_THEME_ELEMENT_THREE_PANEL_BORDER]);
+    djui_base_set_gradient(&threePanel->base, configDjuiTheme.gradients);
     struct DjuiBase *headerBase = djui_three_panel_get_header(threePanel);
     struct DjuiText *headerText = (struct DjuiText *)headerBase;
     djui_text_set_font(headerText, gDjuiFonts[configDjuiTheme.headerFont]);

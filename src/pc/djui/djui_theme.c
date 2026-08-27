@@ -246,13 +246,10 @@ bool djui_themes_save(struct DjuiTheme *theme) {
     // add theme elements
     yyjson_mut_val *elementsObj = yyjson_mut_obj(doc);
     for (int i = 0; i < DJUI_THEME_ELEMENT_COUNT; i++) {
-        yyjson_mut_val *colorObj = yyjson_mut_obj(doc);
-        yyjson_mut_obj_add_uint(doc, colorObj, "r", theme->elements[i].r);
-        yyjson_mut_obj_add_uint(doc, colorObj, "g", theme->elements[i].g);
-        yyjson_mut_obj_add_uint(doc, colorObj, "b", theme->elements[i].b);
-        yyjson_mut_obj_add_uint(doc, colorObj, "a", theme->elements[i].a);
+        char hexColor[10];
+        snprintf(hexColor, sizeof(hexColor), "#%02x%02x%02x%02x", theme->elements[i].r, theme->elements[i].g, theme->elements[i].b, theme->elements[i].a);
 
-        yyjson_mut_obj_add_val(doc, elementsObj, sDjuiThemeElementKeys[i], colorObj);
+        yyjson_mut_obj_add_strcpy(doc, elementsObj, sDjuiThemeElementKeys[i], hexColor);
     }
     yyjson_mut_obj_add_val(doc, root, "elements", elementsObj);
 
@@ -307,17 +304,22 @@ void djui_theme_load(const char *path) {
 
         // iterate over elements
         yyjson_obj_foreach(elements, idx, max, keyVal, colorVal) {
-            // get key and validate color value
+            // get key and validate color string value
             const char *key = yyjson_get_str(keyVal);
-            if (!key || !yyjson_is_obj(colorVal)) { continue; }
+            const char *hexStr = yyjson_get_str(colorVal);
+            if (!key || !hexStr) { continue; }
 
-            // get rgba from json
-            struct DjuiColor color = {
-                .r = (u8)yyjson_get_uint(yyjson_obj_get(colorVal, "r")),
-                .g = (u8)yyjson_get_uint(yyjson_obj_get(colorVal, "g")),
-                .b = (u8)yyjson_get_uint(yyjson_obj_get(colorVal, "b")),
-                .a = (u8)yyjson_get_uint(yyjson_obj_get(colorVal, "a"))
-            };
+            // skip # if it exists
+            if (hexStr[0] == '#') {
+                hexStr++;
+            }
+
+            // convert hex to rgba
+            struct DjuiColor color = { 0 };
+            if (sscanf(hexStr, "%02hhx%02hhx%02hhx%02hhx", &color.r, &color.g, &color.b, &color.a) < 4) {
+                // bail if we don't have all the necessary colors
+                continue;
+            }
 
             // figure out the key and set the color
             for (int i = 0; i < DJUI_THEME_ELEMENT_COUNT; i++) {
