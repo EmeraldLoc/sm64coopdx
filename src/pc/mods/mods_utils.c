@@ -358,6 +358,11 @@ bool directory_sanity_check(struct dirent* dir, char* dirPath, char* outPath) {
 bool path_has_traversal(const char *path) {
     if (!path) { return true; }
 
+    // reject empty and absolute paths
+    if (path[0] == '\0' || path[0] == *PATH_SEPARATOR || path[0] == *PATH_SEPARATOR_ALT) {
+        return true;
+    }
+
     const char *start = path;
 
     // iterate through path

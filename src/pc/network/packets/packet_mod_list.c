@@ -238,21 +238,39 @@ void network_receive_mod_list_entry(struct Packet* p) {
         packet_read(p, 0, 0);
     }
 
-    // get other fields
+    // get relative path length
     u16 relativePathLength = 0;
     u16 relativeEntryPathFileLength = 0;
     packet_read(p, &relativePathLength, sizeof(u16));
-    if (relativePathLength >= SYS_MAX_PATH) {
-        LOG_ERROR("Relative path length is too large!");
+    if (relativePathLength == 0 || relativePathLength >= SYS_MAX_PATH) {
+        LOG_ERROR("Relative path length is invalid!");
         return;
     }
+
+    // get relative path
     packet_read(p, mod->relativePath, relativePathLength * sizeof(u8));
+    if (path_has_traversal(mod->relativePath)) {
+        LOG_ERROR("Received an invalid relative path!");
+        mod->relativePath[0] = '\0'; // clear relative path so it isn't incorrectly used elsewhere
+        return;
+    }
+
+    // get realtive entry path len
     packet_read(p, &relativeEntryPathFileLength, sizeof(u16));
     if (relativeEntryPathFileLength >= SYS_MAX_PATH) {
         LOG_ERROR("Relative entry path file length is too large!");
         return;
     }
+
+    // get relative entry path
     packet_read(p, mod->relativeEntryPath, relativeEntryPathFileLength * sizeof(u8));
+    if (path_has_traversal(mod->relativeEntryPath)) {
+        LOG_ERROR("Received an invalid relative entry path!");
+        mod->relativeEntryPath[0] = '\0';
+        return;
+    }
+
+    // get other fields
     packet_read(p, &mod->isCustomEntryFile, sizeof(u8));
     packet_read(p, &mod->size, sizeof(u64));
     packet_read(p, &mod->isDirectory, sizeof(u8));
@@ -327,9 +345,23 @@ void network_receive_mod_list_file(struct Packet* p) {
         return;
     }
 
+    // read relative path len
     u16 relativePathLength = 0;
     packet_read(p, &relativePathLength, sizeof(u16));
+    if (relativePathLength == 0 || relativePathLength >= SYS_MAX_PATH) {
+        LOG_ERROR("Relative path length is invalid!");
+        return;
+    }
+
+    // read relative path
     packet_read(p, file->relativePath, relativePathLength * sizeof(u8));
+    if (path_has_traversal(file->relativePath)) {
+        LOG_ERROR("Received an invalid relative path!");
+        file->relativePath[0] = '\0';
+        return;
+    }
+
+    // read other fields
     packet_read(p, &file->size, sizeof(u64));
     packet_read(p, &file->dataHash, sizeof(u8) * 16);
     file->fp = NULL;
