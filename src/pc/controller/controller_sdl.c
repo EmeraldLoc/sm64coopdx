@@ -356,12 +356,16 @@ static void controller_sdl_read(OSContPad *pad) {
 }
 
 static void controller_sdl_rumble_play(f32 strength, f32 length) {
+    if (strength < 0 || strength > 1) { return; } // make sure strengh is between 0 and 1
     if (sSdlHaptic) {
+        // play rumble haptics
         SDL_PlayHapticRumble(sSdlHaptic, strength, (u32)(length * 1000.0f));
     } else {
         if (SDL_GetBooleanProperty(SDL_GetGamepadProperties(sSdlGamepad), SDL_PROP_GAMEPAD_CAP_RUMBLE_BOOLEAN, false)) {
-            uint16_t scaled_strength = strength * pow(2, 16) - 1;
-            SDL_RumbleGamepad(sSdlGamepad, scaled_strength, scaled_strength, (u32)(length * 1000.0f));
+            // scale strength to be in between 0 and 65535
+            u16 scaledStrength = (u16)(strength * 65535);
+            // rumble!!!
+            SDL_RumbleGamepad(sSdlGamepad, scaledStrength, scaledStrength, (u32)(length * 1000.0f));
         }
     }
 }
