@@ -305,6 +305,8 @@ void djui_theme_load(const char *path) {
         size_t idx, max;
         yyjson_val *keyVal, *colorVal;
 
+        bool loadedKeys[DJUI_THEME_ELEMENT_COUNT] = { 0 };
+
         // iterate over elements
         yyjson_obj_foreach(elements, idx, max, keyVal, colorVal) {
             // get key and validate color string value
@@ -328,8 +330,16 @@ void djui_theme_load(const char *path) {
             for (int i = 0; i < DJUI_THEME_ELEMENT_COUNT; i++) {
                 if (sys_strcasecmp(key, sDjuiThemeElementKeys[i]) == 0) {
                     theme->elements[i] = color;
+                    loadedKeys[i] = true;
                     break;
                 }
+            }
+        }
+
+        // for every key NOT loaded, set it to the default dark theme
+        for (int i = 0; i < DJUI_THEME_ELEMENT_COUNT; i++) {
+            if (!loadedKeys[i]) {
+                theme->elements[i] = gDjuiThemeDark.elements[i];
             }
         }
     }
