@@ -664,12 +664,15 @@ static void gfx_opengl_set_vsync(UNUSED bool enabled) {
 static void upload_opengl_uniform_buffers(struct Shader *shader) {
     for (int i = 0; i < shader->uniformBlockCount; i++) {
         struct ShaderUniformBlock *uniformBlock = &shader->uniformBlocks[i];
-        if (uniformBlock->size > 0 && uniformBlock->glBufferId != 0) {
-            glBindBuffer(GL_UNIFORM_BUFFER, uniformBlock->glBufferId);
-            glBufferData(GL_UNIFORM_BUFFER, uniformBlock->size, NULL, GL_STREAM_DRAW); // orphan
-            glBufferSubData(GL_UNIFORM_BUFFER, 0, uniformBlock->size, uniformBlock->buffer);
-            glBindBufferBase(GL_UNIFORM_BUFFER, uniformBlock->location, uniformBlock->glBufferId);
+
+        if (uniformBlock->size == 0 || uniformBlock->glBufferId == 0) {
+            continue;
         }
+
+        glBindBuffer(GL_UNIFORM_BUFFER, uniformBlock->glBufferId);
+        glBufferData(GL_UNIFORM_BUFFER, uniformBlock->size, NULL, GL_STREAM_DRAW); // orphan
+        glBufferSubData(GL_UNIFORM_BUFFER, 0, uniformBlock->size, uniformBlock->buffer);
+        glBindBufferBase(GL_UNIFORM_BUFFER, uniformBlock->location, uniformBlock->glBufferId);
     }
     glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }

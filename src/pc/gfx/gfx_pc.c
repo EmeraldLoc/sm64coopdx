@@ -2282,8 +2282,13 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
         gCurrentFramePassIndex = i;
 
         // setup framebuffer
-        if (framePass->fbo == 0) {
+        if (framePass->fbo == 0 || framePass->width != framePass->lastWidth || framePass->height != framePass->lastHeight) {
+            if (framePass->fbo != 0) {
+                gfx_rapi->delete_framebuffer(framePass);
+            }
             gfx_rapi->create_framebuffer(framePass);
+            framePass->lastWidth = framePass->width;
+            framePass->lastHeight = framePass->height;
         }
         gfx_rapi->set_framebuffer(framePass);
 

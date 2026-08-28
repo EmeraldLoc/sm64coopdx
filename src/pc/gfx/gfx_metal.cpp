@@ -613,6 +613,8 @@ void gfx_metal_set_framebuffer(struct FramePass *framePass) {
     vp.zfar    = 1.0;
     metal.encoder->setViewport(vp);
 
+    LOG_CONSOLE("set framebuffer: %d %d", viewportWidth, viewportHeight);
+
     MTL::ScissorRect scissorRect;
     scissorRect.x      = 0;
     scissorRect.y      = 0;
@@ -660,6 +662,8 @@ void gfx_metal_reset_framebuffer(void) {
     vp.znear   = 0.0;
     vp.zfar    = 1.0;
     metal.encoder->setViewport(vp);
+
+    LOG_CONSOLE("reset framebuffer: %d %d", metal.currentWidth, metal.currentHeight);
 
     MTL::ScissorRect scissorRect;
     scissorRect.x      = 0;
