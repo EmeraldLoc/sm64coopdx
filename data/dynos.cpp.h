@@ -767,7 +767,8 @@ void PrintInfoNoNewLine(const char *aFmt, Args... aArgs) {
 template <typename... Args>
 void PrintInfo(const char *aFmt, Args... aArgs) {
     if (!log_type_should_print(LOG_TYPE_INFO)) { return; }
-    Print(aFmt, aArgs...);
+    log_to_terminal(aFmt, aArgs...);
+    log_to_terminal("\r\n");
     PrintConsole(LOG_TYPE_INFO, aFmt, aArgs...);
 }
 
@@ -782,8 +783,8 @@ void PrintError(const char *aFmt, Args... aArgs) {
     if (aGfxData->mErrorCount == 0) Print("  ERROR!"); \
     Print(__VA_ARGS__); \
     PrintConsole(LOG_TYPE_ERROR, __VA_ARGS__); \
-    aGfxData->mErrorCount++; \
     } \
+    aGfxData->mErrorCount++; \
 }
 
 #if DEBUG

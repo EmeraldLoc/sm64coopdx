@@ -752,7 +752,7 @@ static void configfile_load_internal(const char *filename, bool* error) {
 
                 if (option == NULL) {
 #ifdef DEVELOPMENT
-                    LOG_ERROR("unknown option '%s'\n", tokens[0]);
+                    LOG_ERROR("unknown option '%s'", tokens[0]);
 #endif
                 } else {
                     switch (option->type) {
