@@ -767,15 +767,15 @@ void PrintInfoNoNewLine(const char *aFmt, Args... aArgs) {
 template <typename... Args>
 void PrintInfo(const char *aFmt, Args... aArgs) {
     if (!log_type_should_print(LOG_TYPE_INFO)) { return; }
-    log_to_terminal(aFmt, aArgs...);
-    log_to_terminal("\r\n");
+    Print(aFmt, aArgs...);
     PrintConsole(LOG_TYPE_INFO, aFmt, aArgs...);
 }
 
 template <typename... Args>
 void PrintError(const char *aFmt, Args... aArgs) {
     if (!log_type_should_print(LOG_TYPE_ERROR)) { return; }
-    Print(aFmt, aArgs...);
+    log_to_terminal(aFmt, aArgs...);
+    log_to_terminal("\r\n");
     PrintConsole(LOG_TYPE_ERROR, aFmt, aArgs...);
 }
 #define PrintDataError(...) { \
