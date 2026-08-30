@@ -14,10 +14,11 @@
 - [controller_mouse.h](#controller_mouseh)
 - [course_defines.h](#course_definesh)
     - [enum CourseNum](#enum-CourseNum)
+- [debuglog.h](#debuglogh)
+    - [enum LogType](#enum-LogType)
 - [dialog_ids.h](#dialog_idsh)
     - [enum DialogId](#enum-DialogId)
 - [djui_console.h](#djui_consoleh)
-    - [enum ConsoleMessageLevel](#enum-ConsoleMessageLevel)
 - [djui_hud_utils.h](#djui_hud_utilsh)
     - [enum HudUtilsResolution](#enum-HudUtilsResolution)
     - [enum HudUtilsFilter](#enum-HudUtilsFilter)
@@ -1028,6 +1029,21 @@
 
 <br />
 
+## [debuglog.h](#debuglog.h)
+
+### [enum LogType](#LogType)
+| Identifier | Value |
+| :--------- | :---- |
+| LOG_TYPE_DEBUG | 0 |
+| LOG_TYPE_INFO | 1 |
+| LOG_TYPE_WARNING | 2 |
+| LOG_TYPE_ERROR | 3 |
+- MAX_LOG_SIZE
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [dialog_ids.h](#dialog_ids.h)
 
 ### [enum DialogId](#DialogId)
@@ -1212,13 +1228,6 @@
 
 ## [djui_console.h](#djui_console.h)
 - MAX_CONSOLE_INPUT_LENGTH
-
-### [enum ConsoleMessageLevel](#ConsoleMessageLevel)
-| Identifier | Value |
-| :--------- | :---- |
-| CONSOLE_MESSAGE_INFO | 0 |
-| CONSOLE_MESSAGE_WARNING | 1 |
-| CONSOLE_MESSAGE_ERROR | 2 |
 
 [:arrow_up_small:](#)
 
