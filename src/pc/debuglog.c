@@ -90,8 +90,6 @@ static int debuglog_print_short_filename(const char *filename, char *buffer, siz
 }
 
 void debuglog_print_log(enum LogType logType, const char *filename, const char *fmt, ...) {
-    if (!log_type_should_print(logType)) { return; }
-
     const char *ansiColor = log_type_ansi_color(logType);
     const char *logTypeString = log_type_name(logType);
 

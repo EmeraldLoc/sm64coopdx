@@ -24,10 +24,11 @@ void debuglog_print_log(enum LogType logType, const char *filename, const char *
 #define LOG_WARNING(...)
 #define LOG_ERROR(...)
 #else
-#define LOG_DEBUG(...)   (debuglog_print_log(LOG_TYPE_DEBUG,   __FILE__, __VA_ARGS__))
-#define LOG_INFO(...)    (debuglog_print_log(LOG_TYPE_INFO,    __FILE__, __VA_ARGS__))
-#define LOG_WARNING(...) (debuglog_print_log(LOG_TYPE_WARNING, __FILE__, __VA_ARGS__))
-#define LOG_ERROR(...)   (debuglog_print_log(LOG_TYPE_ERROR,   __FILE__, __VA_ARGS__))
+#define LOG(_logType, ...) ((log_type_should_print(_logType)) ? debuglog_print_log(_logType, __FILE__, __VA_ARGS__) : (void)0)
+#define LOG_DEBUG(...)   LOG(LOG_TYPE_DEBUG, __VA_ARGS__)
+#define LOG_INFO(...)    LOG(LOG_TYPE_INFO, __VA_ARGS__)
+#define LOG_WARNING(...) LOG(LOG_TYPE_WARNING, __VA_ARGS__)
+#define LOG_ERROR(...)   LOG(LOG_TYPE_ERROR, __VA_ARGS__)
 #endif
 
 #define LOG_CONSOLE(...)  { snprintf(gDjuiConsoleTmpBuffer, CONSOLE_MAX_TMP_BUFFER, __VA_ARGS__), djui_console_message_create(gDjuiConsoleTmpBuffer, LOG_TYPE_INFO); }
