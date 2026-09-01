@@ -8,6 +8,7 @@
 - [BehaviorTrajectories](#BehaviorTrajectories)
 - [BehaviorValues](#BehaviorValues)
 - [Camera](#Camera)
+- [CameraFOVStatus](#CameraFOVStatus)
 - [ChainSegment](#ChainSegment)
 - [Character](#Character)
 - [Color](#Color)
@@ -363,6 +364,22 @@
 | doorStatus | `integer` |  |
 | areaCenY | `number` |  |
 | mtx | [Mat4](structs.md#Mat4) | read-only |
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [CameraFOVStatus](#CameraFOVStatus)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| fovFunc | `integer` |  |
+| fov | `number` |  |
+| fovOffset | `number` |  |
+| shakeAmplitude | `number` |  |
+| shakePhase | `integer` |  |
+| shakeSpeed | `integer` |  |
+| decay | `integer` |  |
 
 [:arrow_up_small:](#)
 
@@ -1314,6 +1331,8 @@
 | near | `integer` |  |
 | far | `integer` |  |
 | prevFov | `number` |  |
+| prevNear | `number` |  |
+| prevFar | `number` |  |
 | prevTimestamp | `number` |  |
 
 [:arrow_up_small:](#)
