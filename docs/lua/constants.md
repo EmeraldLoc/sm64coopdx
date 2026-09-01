@@ -1679,6 +1679,7 @@
 <br />
 
 ## [level_update.h](#level_update.h)
+- MAX_BHVS_TO_REMOVE_IN_MENU_LEVEL
 
 ### [enum TimerControl](#TimerControl)
 | Identifier | Value |
