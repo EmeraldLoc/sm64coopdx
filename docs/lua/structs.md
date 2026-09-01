@@ -8,11 +8,13 @@
 - [BehaviorTrajectories](#BehaviorTrajectories)
 - [BehaviorValues](#BehaviorValues)
 - [Camera](#Camera)
+- [CameraFOVStatus](#CameraFOVStatus)
 - [ChainSegment](#ChainSegment)
 - [Character](#Character)
 - [Color](#Color)
 - [Controller](#Controller)
 - [CustomLevelInfo](#CustomLevelInfo)
+- [CustomWarpNode](#CustomWarpNode)
 - [DateTime](#DateTime)
 - [DialogEntry](#DialogEntry)
 - [DisplayListNode](#DisplayListNode)
@@ -365,6 +367,22 @@
 
 <br />
 
+## [CameraFOVStatus](#CameraFOVStatus)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| fovFunc | `integer` |  |
+| fov | `number` |  |
+| fovOffset | `number` |  |
+| shakeAmplitude | `number` |  |
+| shakePhase | `integer` |  |
+| shakeSpeed | `integer` |  |
+| decay | `integer` |  |
+
+[:arrow_up_small:](#)
+
+<br />
+
 ## [ChainSegment](#ChainSegment)
 
 | Field | Type | Access |
@@ -711,6 +729,18 @@
 | echoLevel3 | `integer` |  |
 | modIndex | `integer` |  |
 | next | [CustomLevelInfo](structs.md#CustomLevelInfo) | read-only |
+
+[:arrow_up_small:](#)
+
+<br />
+
+## [CustomWarpNode](#CustomWarpNode)
+
+| Field | Type | Access |
+| ----- | ---- | ------ |
+| node | [ObjectWarpNode](structs.md#ObjectWarpNode) | read-only |
+| spawnInfo | [SpawnInfo](structs.md#SpawnInfo) | read-only |
+| marioSpawnType | [enum MarioSpawnType](constants.md#enum-MarioSpawnType) |  |
 
 [:arrow_up_small:](#)
 
@@ -1274,6 +1304,8 @@
 | near | `integer` |  |
 | far | `integer` |  |
 | prevFov | `number` |  |
+| prevNear | `number` |  |
+| prevFar | `number` |  |
 | prevTimestamp | `number` |  |
 
 [:arrow_up_small:](#)
@@ -3134,7 +3166,7 @@
 
 | Field | Type | Access |
 | ----- | ---- | ------ |
-| id | `integer` |  |
+| id | `integer` | read-only |
 | destLevel | `integer` |  |
 | destArea | `integer` |  |
 | destNode | `integer` |  |
