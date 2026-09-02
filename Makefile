@@ -719,7 +719,12 @@ endif
 
 BACKEND_CFLAGS += -DHAVE_SDL3=1
 BACKEND_CFLAGS += $(shell pkg-config sdl3 --cflags)
-BACKEND_LDFLAGS := $(shell pkg-config sdl3 --static --libs)
+
+ifeq ($(OSX_BUILD),1)
+  BACKEND_LDFLAGS := $(shell pkg-config sdl3 --libs)
+else
+  BACKEND_LDFLAGS := $(shell pkg-config sdl3 --static --libs)
+endif
 
 # D3D11 flags
 ifeq ($(WINDOWS_BUILD),1)
