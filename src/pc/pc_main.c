@@ -19,7 +19,7 @@
 #include "rom_assets.h"
 #include "rom_checker.h"
 #include "pc_main.h"
-#include "loading.h"
+#include "rom_setup.h"
 #include "cliopts.h"
 #include "configfile.h"
 #include "thread.h"
@@ -109,6 +109,8 @@ u8 gLuaVolumeEnv = 127;
 struct AudioAPI* gAudioApi = &audio_null;
 struct GfxRenderingAPI* gRenderApi = &gfx_dummy_renderer_api;
 
+struct ThreadHandle sLoadingThread = { 0 };
+
 extern void gfx_run(Gfx *commands);
 extern void thread5_game_loop(void *arg);
 extern void create_next_audio_buffer(s16 *samples, u32 num_samples);
@@ -118,7 +120,7 @@ void dispatch_audio_sptask(UNUSED struct SPTask *spTask) {}
 void set_vblank_handler(UNUSED s32 index, UNUSED struct VblankHandler *handler, UNUSED OSMesgQueue *queue, UNUSED OSMesg *msg) {}
 
 void send_display_list(struct SPTask *spTask) {
-    if (!gGameInited) { return; }
+    //if (!gGameInited) { return; }
     gfx_run((Gfx *)spTask->task.t.data_ptr);
 }
 
@@ -472,32 +474,25 @@ void game_exit(void) {
 }
 
 void* main_game_init(UNUSED void* dummy) {
-    // load language
-    if (!djui_language_init(configLanguage)) { snprintf(configLanguage, MAX_CONFIG_STRING, "%s", ""); }
+    if (gCLIOpts.network != NT_SERVER && !gCLIOpts.skipUpdateCheck) {
+        check_for_updates();
 
-    LOADING_SCREEN_MUTEX(loading_screen_set_segment_text("Loading"));
+        update_update_information(true);
+
+        if (can_update_game()) {
+            djui_open_update_panel();
+        }
+    }
+
     dynos_gfx_init();
     enable_queued_dynos_packs();
     sync_objects_init_system();
 
-    if (gCLIOpts.network != NT_SERVER && !gCLIOpts.skipUpdateCheck) {
-        check_for_updates();
-    }
-
-    LOADING_SCREEN_MUTEX(loading_screen_set_segment_text("Loading ROM Assets"));
-    rom_assets_load();
     smlua_text_utils_init();
 
     mods_init();
     enable_queued_mods();
-    LOADING_SCREEN_MUTEX(
-        gCurrLoadingSegment.percentage = 0;
-        loading_screen_set_segment_text("Starting Game");
-    );
 
-    audio_init();
-    sound_init();
-    network_player_init();
     mumble_init();
 
     gGameInited = true;
@@ -567,38 +562,38 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // load rom assets
+    rom_assets_load();
+
+    // load language
+    if (!djui_language_init(configLanguage)) { snprintf(configLanguage, MAX_CONFIG_STRING, "%s", ""); }
+
+    // initialize sm64 data and controllers
+    thread5_game_loop(NULL);
+    audio_init();
+    sound_init();
+    network_player_init();
+
     // start the thread for setting up the game
     bool threadSuccess = false;
     if (!gCLIOpts.hideLoadingScreen && !gCLIOpts.headless) {
-        if (init_thread_handle(&gLoadingThread, main_game_init, NULL, NULL, 0) == 0) {
-            render_loading_screen(); // render the loading screen while the game is setup
+        if (init_thread_handle(&sLoadingThread, main_game_init, NULL, NULL, 0) == 0) {
             threadSuccess = true;
-            destroy_mutex(&gLoadingThread);
         }
     }
     if (!threadSuccess) {
         main_game_init(NULL); // failsafe incase threading doesn't work
     }
 
-    // initialize sm64 data and controllers
-    thread5_game_loop(NULL);
-
     // Initialize the audio thread if possible.
     // init_thread_handle(&gAudioThread, audio_thread, NULL, NULL, 0);
 
-    loading_screen_reset();
 
     // initialize djui
     djui_init();
     djui_unicode_init();
     djui_init_late();
     djui_console_message_dequeue();
-
-    show_update_popup();
-
-    if (can_update_game()) {
-        djui_open_update_panel();
-    }
 
     // initialize network
     if (gCLIOpts.network == NT_CLIENT) {
@@ -629,6 +624,7 @@ int main(int argc, char *argv[]) {
 
     // initialize terminal
     terminal_init();
+
 
     // main loop
     while (true) {

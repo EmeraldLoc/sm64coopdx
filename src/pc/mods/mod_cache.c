@@ -9,7 +9,6 @@
 #include "mods_utils.h"
 #include "pc/utils/md5.h"
 #include "pc/lua/smlua_hooks.h"
-#include "pc/loading.h"
 #include "data/dynos_cmap.cpp.h"
 
 #define MOD_CACHE_FILENAME "mod.cache"
@@ -261,8 +260,6 @@ void mod_cache_update(struct Mod* mod, struct ModFile* file) {
 }
 
 void mod_cache_load(void) {
-    LOADING_SCREEN_MUTEX(loading_screen_set_segment_text("Loading Mod Cache"));
-
     mod_cache_shutdown();
     LOG_INFO("Loading mod cache");
 

@@ -8,8 +8,8 @@
 
 #include "update_checker.h"
 #include "pc/djui/djui.h"
+#include "pc/djui/djui_panel_main.h"
 #include "pc/network/version.h"
-#include "pc/loading.h"
 #include "pc/debuglog.h"
 
 #define URL "https://raw.githubusercontent.com/coop-deluxe/sm64coopdx/refs/heads/main/src/pc/network/version.h"
@@ -31,19 +31,26 @@ struct Version {
 };
 
 bool is_version_newer(struct Version client, struct Version remote) {
-    if (remote.maj != client.maj) return remote.maj > client.maj;
-    if (remote.min != client.min) return remote.min > client.min;
+    if (remote.maj != client.maj) { return remote.maj > client.maj; }
+    if (remote.min != client.min) { return remote.min > client.min; }
     return remote.fix > client.fix;
 }
 
 static struct Version sClientVersion = { 0 };
 static struct Version sRemoteVersion = { 0 };
+static bool sHasChecked = false;
 
 bool gUpdateMessage = false;
 
-void show_update_popup(void) {
-    if (sVersionUpdateTextBuffer[0] == '\0') { return; }
-    djui_popup_create(sVersionUpdateTextBuffer, 3);
+void update_update_information(bool showPopup) {
+    if (!sHasChecked) { return; }
+    if (sVersionUpdateTextBuffer[0] == '\0') {
+        djui_base_set_color(&gUpdateMessageText->base, 0, 0, 0, 0);
+        return;
+    }
+    djui_text_set_text(gUpdateMessageText, DLANG(NOTIF, UPDATE_AVAILABLE));
+    djui_base_set_color(&gUpdateMessageText->base, 255, 255, 160, 255);
+    if (showPopup) { djui_popup_create(sVersionUpdateTextBuffer, 3); }
 }
 
 #if !(defined(_WIN32) || defined(_WIN64))
@@ -180,8 +187,6 @@ void get_version_remote(void) {
 }
 
 void check_for_updates(void) {
-    LOADING_SCREEN_MUTEX(loading_screen_set_segment_text("Checking For Updates"));
-
     get_version_remote();
     if (sRemoteVersionStr[0] == 'v' && is_version_newer(sClientVersion, sRemoteVersion)) {
         snprintf(
@@ -195,4 +200,5 @@ void check_for_updates(void) {
         );
         gUpdateMessage = true;
     }
+    sHasChecked = true;
 }
