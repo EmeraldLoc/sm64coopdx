@@ -631,7 +631,6 @@ int main(int argc, char *argv[]) {
     // initialize terminal
     terminal_init();
 
-
     // main loop
     while (true) {
         debug_context_reset();
