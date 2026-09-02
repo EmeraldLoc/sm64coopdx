@@ -45,11 +45,13 @@ bool gUpdateMessage = false;
 void update_update_information(bool showPopup) {
     if (!sHasChecked) { return; }
     if (sVersionUpdateTextBuffer[0] == '\0') {
-        djui_base_set_color(&gUpdateMessageText->base, 0, 0, 0, 0);
+        if (gUpdateMessageText) { djui_base_set_color(&gUpdateMessageText->base, 0, 0, 0, 0); }
         return;
     }
-    djui_text_set_text(gUpdateMessageText, DLANG(NOTIF, UPDATE_AVAILABLE));
-    djui_base_set_color(&gUpdateMessageText->base, 255, 255, 160, 255);
+    if (gUpdateMessageText) {
+        djui_text_set_text(gUpdateMessageText, DLANG(NOTIF, UPDATE_AVAILABLE));
+        djui_base_set_color(&gUpdateMessageText->base, 255, 255, 160, 255);
+    }
     if (showPopup) { djui_popup_create(sVersionUpdateTextBuffer, 3); }
 }
 

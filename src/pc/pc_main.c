@@ -501,6 +501,33 @@ void* main_game_init(UNUSED void* dummy) {
 
     mumble_init();
 
+    // initialize network
+    if (gCLIOpts.network == NT_CLIENT) {
+        network_set_system(NS_SOCKET);
+        snprintf(gGetHostName, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
+        snprintf(configJoinIp, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
+        configJoinPort = gCLIOpts.networkPort;
+        network_init(NT_CLIENT, false);
+    } else if (gCLIOpts.network == NT_SERVER || gCLIOpts.coopnet) {
+        if (gCLIOpts.network == NT_SERVER) {
+            configNetworkSystem = NS_SOCKET;
+            configHostPort = gCLIOpts.networkPort;
+        } else {
+            configNetworkSystem = NS_COOPNET;
+            snprintf(configPassword, MAX_CONFIG_STRING, "%s", gCLIOpts.coopnetPassword);
+        }
+
+        // horrible, hacky fix for mods that access marioObj straight away
+        // best fix: host with the standard main menu method
+        static struct Object sHackyObject = { 0 };
+        gMarioStates[0].marioObj = &sHackyObject;
+
+        extern void djui_panel_do_host(bool reconnecting, bool playSound);
+        djui_panel_do_host(NULL, false);
+    } else {
+        network_init(NT_NONE, false);
+    }
+
     gGameInited = true;
     return NULL;
 }
@@ -599,33 +626,6 @@ int main(int argc, char *argv[]) {
 
     // Initialize the audio thread if possible.
     // init_thread_handle(&gAudioThread, audio_thread, NULL, NULL, 0);
-
-    // initialize network
-    if (gCLIOpts.network == NT_CLIENT) {
-        network_set_system(NS_SOCKET);
-        snprintf(gGetHostName, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
-        snprintf(configJoinIp, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
-        configJoinPort = gCLIOpts.networkPort;
-        network_init(NT_CLIENT, false);
-    } else if (gCLIOpts.network == NT_SERVER || gCLIOpts.coopnet) {
-        if (gCLIOpts.network == NT_SERVER) {
-            configNetworkSystem = NS_SOCKET;
-            configHostPort = gCLIOpts.networkPort;
-        } else {
-            configNetworkSystem = NS_COOPNET;
-            snprintf(configPassword, MAX_CONFIG_STRING, "%s", gCLIOpts.coopnetPassword);
-        }
-
-        // horrible, hacky fix for mods that access marioObj straight away
-        // best fix: host with the standard main menu method
-        static struct Object sHackyObject = { 0 };
-        gMarioStates[0].marioObj = &sHackyObject;
-
-        extern void djui_panel_do_host(bool reconnecting, bool playSound);
-        djui_panel_do_host(NULL, false);
-    } else {
-        network_init(NT_NONE, false);
-    }
 
     // initialize terminal
     terminal_init();
