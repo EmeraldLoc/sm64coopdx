@@ -594,7 +594,6 @@ int main(int argc, char *argv[]) {
     // Initialize the audio thread if possible.
     // init_thread_handle(&gAudioThread, audio_thread, NULL, NULL, 0);
 
-
     // initialize djui
     djui_init();
     djui_unicode_init();
