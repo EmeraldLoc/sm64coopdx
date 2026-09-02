@@ -99,6 +99,11 @@ static u32 sDrawnFrames = 0;
 bool gGameInited = false;
 bool gModsInited = false;
 bool gDynosPacksInited = false;
+
+static bool sQueueGameInited = false;
+static bool sQueueModsInited = false;
+static bool sQueueDynosPacksInited = false;
+
 bool gGfxInited = false;
 
 f32 gMasterVolume;
@@ -488,7 +493,9 @@ void* main_game_init(UNUSED void* dummy) {
     dynos_gfx_init();
     enable_queued_dynos_packs();
 
-    gDynosPacksInited = true;
+    MUTEX_LOCK(sLoadingThread);
+    sQueueDynosPacksInited = true;
+    MUTEX_UNLOCK(sLoadingThread);
 
     sync_objects_init_system();
 
@@ -497,7 +504,9 @@ void* main_game_init(UNUSED void* dummy) {
     mods_init();
     enable_queued_mods();
 
-    gModsInited = true;
+    MUTEX_LOCK(sLoadingThread);
+    sQueueModsInited = true;
+    MUTEX_UNLOCK(sLoadingThread);
 
     mumble_init();
 
@@ -528,7 +537,10 @@ void* main_game_init(UNUSED void* dummy) {
         network_init(NT_NONE, false);
     }
 
-    gGameInited = true;
+    MUTEX_LOCK(sLoadingThread);
+    sQueueGameInited = true;
+    MUTEX_UNLOCK(sLoadingThread);
+
     return NULL;
 }
 
@@ -634,6 +646,13 @@ int main(int argc, char *argv[]) {
     while (true) {
         debug_context_reset();
         CTX_BEGIN(CTX_TOTAL);
+
+        MUTEX_LOCK(sLoadingThread);
+        gDynosPacksInited = sQueueDynosPacksInited;
+        gModsInited = sQueueModsInited;
+        gGameInited = sQueueGameInited;
+        MUTEX_UNLOCK(sLoadingThread);
+
         gfx_wm_main_loop(produce_one_frame);
 #ifdef DISCORD_SDK
         discord_update();
