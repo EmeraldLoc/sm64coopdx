@@ -145,12 +145,14 @@ void djui_init_late(void) {
     djui_cursor_create();
 }
 
-void djui_connect_menu_open(void) {
+void djui_connect_menu_open(bool reconnecting) {
+    if (gDjuiPanelJoinMessageVisible) { return; }
     djui_panel_shutdown();
     gDjuiInMainMenu = true;
     djui_panel_main_create(NULL);
     djui_panel_join_create(NULL);
     djui_panel_join_message_create(NULL);
+    gDjuiPanelJoinMessageStartedConnection = reconnecting;
 }
 
 static void djui_update_game(UNUSED struct DjuiBase *caller) {

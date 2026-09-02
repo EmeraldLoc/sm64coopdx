@@ -96,13 +96,22 @@ static f64 sFpsTimeLast = 0;
 static f64 sFrameTimeStart = 0;
 static u32 sDrawnFrames = 0;
 
+char gLoadingMessage[MAX_LOADING_MESSAGE] = { 0 };
+f32 gLoadingPercent = 0;
+
 bool gGameInited = false;
 bool gModsInited = false;
 bool gDynosPacksInited = false;
 
+// for the purposes of safety while threading, use queue variables in the loading thread
+// and update the main variables in the main loop
+static char sQueueLoadingMessage[MAX_LOADING_MESSAGE] = { 0 };
+static f32 sQueueLoadingPercent = 0;
+static bool sQueueUpdateInfo = false;
 static bool sQueueGameInited = false;
 static bool sQueueModsInited = false;
 static bool sQueueDynosPacksInited = false;
+static s16 sQueueNetworkInitType = -1;
 
 bool gGfxInited = false;
 
@@ -116,7 +125,7 @@ u8 gLuaVolumeEnv = 127;
 struct AudioAPI* gAudioApi = &audio_null;
 struct GfxRenderingAPI* gRenderApi = &gfx_dummy_renderer_api;
 
-struct ThreadHandle sLoadingThread = { 0 };
+static struct ThreadHandle sLoadingThread = { 0 };
 
 extern void gfx_run(Gfx *commands);
 extern void thread5_game_loop(void *arg);
@@ -479,22 +488,52 @@ void game_exit(void) {
     exit(0);
 }
 
-void* main_game_init(UNUSED void* dummy) {
+void set_loading_message(const char *format, ...) {
+    if (gCLIOpts.hideLoadingScreen) { return; }
+    if (sLoadingThread.state != RUNNING) { return; }
+    if (gGameInited) { return; }
+
+    char buffer[MAX_LOADING_MESSAGE];
+    va_list args;
+    va_start(args, format);
+    vsnprintf(buffer, sizeof(buffer), format, args);
+    va_end(args);
+
+    MUTEX_LOCK(sLoadingThread);
+
+    snprintf(sQueueLoadingMessage, MAX_LOADING_MESSAGE, "%s", buffer);
+
+    MUTEX_UNLOCK(sLoadingThread);
+}
+
+void set_loading_percentage(f32 percent) {
+    if (gCLIOpts.hideLoadingScreen) { return; }
+    if (sLoadingThread.state != RUNNING) { return; }
+    if (gGameInited) { return; }
+    if (percent < 0 || percent > 1) { return; }
+
+    MUTEX_LOCK(sLoadingThread);
+
+    sQueueLoadingPercent = percent;
+
+    MUTEX_UNLOCK(sLoadingThread);
+}
+
+void *main_game_init(UNUSED void *dummy) {
     if (gCLIOpts.network != NT_SERVER && !gCLIOpts.skipUpdateCheck) {
         check_for_updates();
-
-        update_update_information(true);
-
-        if (can_update_game()) {
-            djui_open_update_panel();
-        }
+        sQueueUpdateInfo = true;
     }
+
+    set_loading_message("Loading");
 
     dynos_gfx_init();
     enable_queued_dynos_packs();
 
     MUTEX_LOCK(sLoadingThread);
+
     sQueueDynosPacksInited = true;
+
     MUTEX_UNLOCK(sLoadingThread);
 
     sync_objects_init_system();
@@ -505,41 +544,30 @@ void* main_game_init(UNUSED void* dummy) {
     enable_queued_mods();
 
     MUTEX_LOCK(sLoadingThread);
+
     sQueueModsInited = true;
+
     MUTEX_UNLOCK(sLoadingThread);
 
     mumble_init();
 
-    // initialize network
+    MUTEX_LOCK(sLoadingThread);
+
+    set_loading_message("Finalizing");
+
     if (gCLIOpts.network == NT_CLIENT) {
-        network_set_system(NS_SOCKET);
-        snprintf(gGetHostName, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
-        snprintf(configJoinIp, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
-        configJoinPort = gCLIOpts.networkPort;
-        network_init(NT_CLIENT, false);
+        sQueueNetworkInitType = NT_CLIENT;
     } else if (gCLIOpts.network == NT_SERVER || gCLIOpts.coopnet) {
-        if (gCLIOpts.network == NT_SERVER) {
-            configNetworkSystem = NS_SOCKET;
-            configHostPort = gCLIOpts.networkPort;
-        } else {
-            configNetworkSystem = NS_COOPNET;
-            snprintf(configPassword, MAX_CONFIG_STRING, "%s", gCLIOpts.coopnetPassword);
-        }
-
-        // horrible, hacky fix for mods that access marioObj straight away
-        // best fix: host with the standard main menu method
-        static struct Object sHackyObject = { 0 };
-        gMarioStates[0].marioObj = &sHackyObject;
-
-        extern void djui_panel_do_host(bool reconnecting, bool playSound);
-        djui_panel_do_host(NULL, false);
+        sQueueNetworkInitType = NT_SERVER;
     } else {
-        network_init(NT_NONE, false);
+        sQueueNetworkInitType = NT_NONE;
     }
 
-    MUTEX_LOCK(sLoadingThread);
     sQueueGameInited = true;
+
     MUTEX_UNLOCK(sLoadingThread);
+
+    destroy_mutex(&sLoadingThread);
 
     return NULL;
 }
@@ -647,11 +675,64 @@ int main(int argc, char *argv[]) {
         debug_context_reset();
         CTX_BEGIN(CTX_TOTAL);
 
-        MUTEX_LOCK(sLoadingThread);
-        gDynosPacksInited = sQueueDynosPacksInited;
-        gModsInited = sQueueModsInited;
-        gGameInited = sQueueGameInited;
-        MUTEX_UNLOCK(sLoadingThread);
+        // if game is not initialized, synchronize our state with the threaded loading
+        // and initialize anything necessary
+        if (!gGameInited) {
+            MUTEX_LOCK(sLoadingThread);
+
+            if (sQueueLoadingMessage[0] != '\0') {
+                snprintf(gLoadingMessage, MAX_LOADING_MESSAGE, "%s", sQueueLoadingMessage);
+                sQueueLoadingMessage[0] = '\0';
+            }
+
+            gLoadingPercent = sQueueLoadingPercent;
+
+            if (sQueueUpdateInfo) {
+                show_update_popup();
+
+                if (can_update_game()) {
+                    djui_open_update_panel();
+                }
+
+                sQueueUpdateInfo = false;
+            }
+
+            gDynosPacksInited = sQueueDynosPacksInited;
+            gModsInited = sQueueModsInited;
+
+            if (sQueueNetworkInitType == NT_CLIENT) {
+                network_set_system(NS_SOCKET);
+                snprintf(gGetHostName, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
+                snprintf(configJoinIp, MAX_CONFIG_STRING, "%s", gCLIOpts.joinIp);
+                configJoinPort = gCLIOpts.networkPort;
+                network_init(NT_CLIENT, false);
+                sQueueNetworkInitType = -1;
+            } else if (sQueueNetworkInitType == NT_SERVER) {
+                if (gCLIOpts.network == NT_SERVER) {
+                    configNetworkSystem = NS_SOCKET;
+                    configHostPort = gCLIOpts.networkPort;
+                } else {
+                    configNetworkSystem = NS_COOPNET;
+                    snprintf(configPassword, MAX_CONFIG_STRING, "%s", gCLIOpts.coopnetPassword);
+                }
+
+                // horrible, hacky fix for mods that access marioObj straight away
+                // best fix: host with the standard main menu method
+                static struct Object sHackyObject = { 0 };
+                gMarioStates[0].marioObj = &sHackyObject;
+
+                extern void djui_panel_do_host(bool reconnecting, bool playSound);
+                djui_panel_do_host(NULL, false);
+                sQueueNetworkInitType = -1;
+            } else if (sQueueNetworkInitType == NT_NONE) {
+                network_init(NT_NONE, false);
+                sQueueNetworkInitType = -1;
+            }
+
+            gGameInited = sQueueGameInited;
+
+            MUTEX_UNLOCK(sLoadingThread);
+        }
 
         gfx_wm_main_loop(produce_one_frame);
 #ifdef DISCORD_SDK

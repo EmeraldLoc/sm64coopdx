@@ -295,11 +295,6 @@ static bool djui_base_hook_check_slices(struct DjuiBase *base) {
 
         // check if the value changed, and if so...
         if (memcmp(base->hookSlices[i].ptr, base->prevHookSlices[i].ptr, base->hookSlices[i].size) != 0) {
-            // call update func
-            if (base->hookSlices[i].on_changed(base)) {
-                return true;
-            }
-
             // free previous prev hook slice allocation
             free(base->prevHookSlices[i].ptr);
 
@@ -308,6 +303,11 @@ static bool djui_base_hook_check_slices(struct DjuiBase *base) {
 
             // copy memory over
             memcpy(base->prevHookSlices[i].ptr, base->hookSlices[i].ptr, base->hookSlices[i].size);
+
+            // call update func
+            if (base->hookSlices[i].on_changed(base)) {
+                return true;
+            }
         }
     }
 
@@ -348,7 +348,7 @@ void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, bo
 bool djui_base_update_hooks(struct DjuiBase *base) {
     if (base == NULL) { return false; }
 
-    // update any necessary hooks
+    // update hooks
     if (djui_base_hook_check_slices(base)) {
         return true;
     }

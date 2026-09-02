@@ -4,5 +4,5 @@
 
 extern bool gUpdateMessage;
 
-void update_update_information(bool showPopup);
+void show_update_popup(void);
 void check_for_updates(void);

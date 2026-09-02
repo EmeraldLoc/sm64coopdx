@@ -2,6 +2,7 @@
 #include <unistd.h>
 #define DISABLE_MODULE_LOG 1
 #include "pc/gfx/gfx_pc.h"
+#include "pc/pc_main.h"
 #include "pc/debuglog.h"
 #include "mod_cache.h"
 #include "mods.h"
@@ -260,6 +261,8 @@ void mod_cache_update(struct Mod* mod, struct ModFile* file) {
 }
 
 void mod_cache_load(void) {
+    set_loading_message("Loading Mod Cache");
+
     mod_cache_shutdown();
     LOG_INFO("Loading mod cache");
 
