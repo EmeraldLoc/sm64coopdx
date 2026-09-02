@@ -228,8 +228,7 @@ static void mods_load(struct Mods* mods, char* modsBasePath, UNUSED bool isUserM
 
     // iterate
     char path[SYS_MAX_PATH] = { 0 };
-    for (u32 i = 0; (dir = readdir(d)) != NULL; ++i) {
-
+    while ((dir = readdir(d)) != NULL) {
         // sanity check / fill path[]
         if (!directory_sanity_check(dir, modsBasePath, path)) { continue; }
 

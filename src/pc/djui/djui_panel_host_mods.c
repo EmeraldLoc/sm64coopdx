@@ -277,7 +277,7 @@ void djui_panel_host_mods_create(struct DjuiBase* caller) {
 
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
-        if (gGameInited) {
+        if (gModsInited) {
             struct DjuiSearchbox* searchbox = djui_searchbox_create(body, djui_panel_rebuild_mods_list);
             sSearchInputbox = searchbox->inputbox;
 
@@ -291,7 +291,7 @@ void djui_panel_host_mods_create(struct DjuiBase* caller) {
         struct DjuiPaginated* paginated = djui_paginated_create(body, 8);
         paginated->showMaxCount = true;
         sModLayout = paginated->layout;
-        if (gGameInited) {
+        if (gModsInited) {
             djui_panel_host_mods_add_mods(&paginated->layout->base);
         } else {
             struct DjuiText *loadingText = djui_text_create(&paginated->layout->base, "Loading...");
@@ -299,12 +299,12 @@ void djui_panel_host_mods_create(struct DjuiBase* caller) {
             djui_base_set_size(&loadingText->base, 1, 1);
             djui_text_set_alignment(loadingText, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
             djui_text_set_drop_shadow(loadingText, 64, 64, 64, 100);
-            djui_base_hook_on_changed(&loadingText->base, &gGameInited, sizeof(gGameInited), djui_panel_host_mods_reload_panel);
+            djui_base_hook_on_changed(&loadingText->base, &gModsInited, sizeof(gModsInited), djui_panel_host_mods_reload_panel);
         }
         djui_paginated_calculate_height(paginated);
         sModPaginated = paginated;
 
-        if (gNetworkType == NT_NONE && gGameInited) {
+        if (gNetworkType == NT_NONE && gModsInited) {
             struct DjuiRect* rect1 = djui_rect_container_create(body, 45);
             struct DjuiRect* rect2 = djui_rect_container_create(body, 45);
             {

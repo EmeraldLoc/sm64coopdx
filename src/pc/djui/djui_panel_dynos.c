@@ -81,7 +81,7 @@ void djui_panel_dynos_create(struct DjuiBase* caller) {
     struct DjuiThreePanel* panel = djui_panel_menu_create(DLANG(DYNOS, DYNOS), true);
     struct DjuiBase* body = djui_three_panel_get_body(panel);
     {
-        if (gGameInited) {
+        if (gDynosPacksInited) {
             struct DjuiSearchbox* searchbox = djui_searchbox_create(body, djui_panel_dynos_rebuild_list);
             sSearchInputbox = searchbox->inputbox;
         }
@@ -90,7 +90,7 @@ void djui_panel_dynos_create(struct DjuiBase* caller) {
         paginated->showMaxCount = true;
         struct DjuiBase* layoutBase = &paginated->layout->base;
         sDynosLayout = paginated->layout;
-        if (gGameInited) {
+        if (gDynosPacksInited) {
             djui_panel_dynos_add_packs(layoutBase);
         } else {
             struct DjuiText *loadingText = djui_text_create(layoutBase, "Loading...");
@@ -98,13 +98,13 @@ void djui_panel_dynos_create(struct DjuiBase* caller) {
             djui_base_set_size(&loadingText->base, 1, 1);
             djui_text_set_alignment(loadingText, DJUI_HALIGN_CENTER, DJUI_VALIGN_CENTER);
             djui_text_set_drop_shadow(loadingText, 64, 64, 64, 100);
-            djui_base_hook_on_changed(&loadingText->base, &gGameInited, sizeof(gGameInited), djui_panel_dynos_reload_panel);
+            djui_base_hook_on_changed(&loadingText->base, &gDynosPacksInited, sizeof(gDynosPacksInited), djui_panel_dynos_reload_panel);
         }
         djui_paginated_calculate_height(paginated);
         sDynosPaginated = paginated;
 
         djui_checkbox_create(body, DLANG(DYNOS, LOCAL_PLAYER_MODEL_ONLY), &configDynosLocalPlayerModelOnly, djui_panel_dynos_local_player_model_only);
-        if (gNetworkType == NT_NONE && gGameInited) {
+        if (gNetworkType == NT_NONE && gDynosPacksInited) {
             struct DjuiRect* rect1 = djui_rect_container_create(body, 45);
             {
                 struct DjuiButton* button1 = djui_button_left_create(&rect1->base, DLANG(MENU, BACK), DJUI_BUTTON_STYLE_BACK, djui_panel_menu_back);

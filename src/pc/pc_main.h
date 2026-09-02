@@ -30,6 +30,8 @@ extern struct AudioAPI* gAudioApi;
 extern struct GfxRenderingAPI* gRenderApi;
 
 extern bool gGameInited;
+extern bool gModsInited;
+extern bool gDynosPacksInited;
 extern bool gGfxInited;
 
 extern f32 gMasterVolume;

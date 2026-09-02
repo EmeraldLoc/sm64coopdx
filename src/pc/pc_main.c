@@ -97,6 +97,8 @@ static f64 sFrameTimeStart = 0;
 static u32 sDrawnFrames = 0;
 
 bool gGameInited = false;
+bool gModsInited = false;
+bool gDynosPacksInited = false;
 bool gGfxInited = false;
 
 f32 gMasterVolume;
@@ -486,12 +488,17 @@ void* main_game_init(UNUSED void* dummy) {
 
     dynos_gfx_init();
     enable_queued_dynos_packs();
+
+    gDynosPacksInited = true;
+
     sync_objects_init_system();
 
     smlua_text_utils_init();
 
     mods_init();
     enable_queued_mods();
+
+    gModsInited = true;
 
     mumble_init();
 
