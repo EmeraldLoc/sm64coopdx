@@ -122,7 +122,6 @@ void dispatch_audio_sptask(UNUSED struct SPTask *spTask) {}
 void set_vblank_handler(UNUSED s32 index, UNUSED struct VblankHandler *handler, UNUSED OSMesgQueue *queue, UNUSED OSMesg *msg) {}
 
 void send_display_list(struct SPTask *spTask) {
-    //if (!gGameInited) { return; }
     gfx_run((Gfx *)spTask->task.t.data_ptr);
 }
 
