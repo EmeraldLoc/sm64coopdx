@@ -25,5 +25,5 @@ enum DjuiVAlign { DJUI_VALIGN_TOP, DJUI_VALIGN_CENTER, DJUI_VALIGN_BOTTOM };
 struct DjuiHookSlice {
     void *ptr;
     size_t size;
-    void (*on_changed)(struct DjuiBase *);
+    bool (*on_changed)(struct DjuiBase *);
 };

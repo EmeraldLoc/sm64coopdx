@@ -234,7 +234,7 @@ static void djui_panel_menu_refresh(UNUSED struct DjuiBase* base) {
     }
 }
 
-static void djui_panel_host_mods_reload_panel(UNUSED struct DjuiBase *caller) {
+static bool djui_panel_host_mods_reload_panel(UNUSED struct DjuiBase *caller) {
     if (sDescriptionPanel != NULL) {
         djui_base_destroy(&sDescriptionPanel->base);
         sDescriptionPanel = NULL;
@@ -258,6 +258,8 @@ static void djui_panel_host_mods_reload_panel(UNUSED struct DjuiBase *caller) {
         djui_panel_host_create(NULL);
         djui_panel_host_mods_create(NULL);
     }
+
+    return true;
 }
 
 static void djui_mod_website_open(UNUSED struct DjuiBase* caller) {

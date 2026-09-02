@@ -288,7 +288,9 @@ static void djui_base_render_border(struct DjuiBase* base) {
  // hooks //
 ///////////
 
-static void djui_base_hook_check_slices(struct DjuiBase *base) {
+static bool djui_base_hook_check_slices(struct DjuiBase *base) {
+    bool killHookIteration = false;
+
     // iterate through hooked slices
     for (u32 i = 0; i < MAX_DJUI_HOOKED_SLICES; i++) {
         if (base->hookSlices[i].ptr == NULL) { continue; }
@@ -296,7 +298,7 @@ static void djui_base_hook_check_slices(struct DjuiBase *base) {
         // check if the value changed, and if so...
         if (memcmp(base->hookSlices[i].ptr, base->prevHookSlices[i].ptr, base->hookSlices[i].size) != 0) {
             // call update func
-            base->hookSlices[i].on_changed(base);
+            killHookIteration = base->hookSlices[i].on_changed(base) ? true : killHookIteration;
 
             // free previous prev hook slice allocation
             free(base->prevHookSlices[i].ptr);
@@ -308,9 +310,11 @@ static void djui_base_hook_check_slices(struct DjuiBase *base) {
             memcpy(base->prevHookSlices[i].ptr, base->hookSlices[i].ptr, base->hookSlices[i].size);
         }
     }
+
+    return killHookIteration;
 }
 
-void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, void (*on_slice_changed)(struct DjuiBase *)) {
+void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, bool (*on_slice_changed)(struct DjuiBase *)) {
     // sanity checks
     if (ptr == NULL) { return; }
     if (size == 0) { return; }
@@ -326,6 +330,7 @@ void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, vo
         base->hookSlices[i].on_changed = on_slice_changed;
 
         // set prev hook slice
+        base->prevHookSlices[i].size = size;
         free(base->prevHookSlices[i].ptr);
         base->prevHookSlices[i].ptr = malloc(base->prevHookSlices[i].size);
         memcpy(base->prevHookSlices[i].ptr, base->hookSlices[i].ptr, base->hookSlices[i].size);
@@ -340,16 +345,22 @@ void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, vo
  // events //
 ////////////
 
-void djui_base_update_hooks(struct DjuiBase *base) {
+bool djui_base_update_hooks(struct DjuiBase *base) {
+    if (base == NULL) { return false; }
+
     // update any necessary hooks
-    djui_base_hook_check_slices(base);
+    if (djui_base_hook_check_slices(base)) {
+        return true;
+    }
 
     // check children
     struct DjuiBaseChild *child = base->child;
     while (child != NULL) {
-        djui_base_update_hooks(child->base);
+        if (djui_base_update_hooks(child->base)) { return true; }
         child = child->next;
     }
+
+    return false;
 }
 
 bool djui_base_render(struct DjuiBase* base) {

@@ -28,12 +28,13 @@ static void djui_panel_dynos_local_player_model_only(UNUSED struct DjuiBase* cal
     }
 }
 
-static void djui_panel_dynos_reload_panel(UNUSED struct DjuiBase *caller) {
+static bool djui_panel_dynos_reload_panel(UNUSED struct DjuiBase *caller) {
     djui_panel_shutdown();
     gDjuiInMainMenu = true;
     djui_panel_main_create(NULL);
     djui_panel_options_create(NULL);
     djui_panel_dynos_create(NULL);
+    return true;
 }
 
 static void djui_panel_dynos_refresh(UNUSED struct DjuiBase* base) {

@@ -25,8 +25,9 @@ static void djui_panel_main_quit(struct DjuiBase* caller) {
                               djui_panel_main_quit_yes);
 }
 
-static void djui_panel_main_on_initialize(struct DjuiBase *caller) {
+static bool djui_panel_main_on_initialize(struct DjuiBase *caller) {
     djui_base_set_enabled(caller, gGameInited);
+    return false;
 }
 
 void djui_panel_main_create(struct DjuiBase* caller) {

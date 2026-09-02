@@ -89,8 +89,9 @@ static void djui_panel_host_do_host(struct DjuiBase* caller) {
     }
 }
 
-static void djui_panel_host_on_initialize(struct DjuiBase *caller) {
+static bool djui_panel_host_on_initialize(struct DjuiBase *caller) {
     djui_base_set_enabled(caller, gGameInited);
+    return false;
 }
 
 void djui_panel_host_create(struct DjuiBase* caller) {

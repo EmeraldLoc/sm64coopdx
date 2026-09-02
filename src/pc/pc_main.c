@@ -580,6 +580,12 @@ int main(int argc, char *argv[]) {
     sound_init();
     network_player_init();
 
+    // initialize djui
+    djui_init();
+    djui_unicode_init();
+    djui_init_late();
+    djui_console_message_dequeue();
+
     // start the thread for setting up the game
     bool threadSuccess = false;
     if (!gCLIOpts.hideLoadingScreen && !gCLIOpts.headless) {
@@ -593,12 +599,6 @@ int main(int argc, char *argv[]) {
 
     // Initialize the audio thread if possible.
     // init_thread_handle(&gAudioThread, audio_thread, NULL, NULL, 0);
-
-    // initialize djui
-    djui_init();
-    djui_unicode_init();
-    djui_init_late();
-    djui_console_message_dequeue();
 
     // initialize network
     if (gCLIOpts.network == NT_CLIENT) {

@@ -73,9 +73,9 @@ void djui_base_set_gradient(struct DjuiBase* base, bool gradient);
 void djui_base_compute(struct DjuiBase* base);
 void djui_base_compute_tree(struct DjuiBase* base);
 
-void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, void (*on_slice_changed)(struct DjuiBase *));
+void djui_base_hook_on_changed(struct DjuiBase *base, void *ptr, size_t size, bool (*on_slice_changed)(struct DjuiBase *));
 
-void djui_base_update_hooks(struct DjuiBase *base);
+bool djui_base_update_hooks(struct DjuiBase *base);
 bool djui_base_render(struct DjuiBase* base);
 void djui_base_destroy(struct DjuiBase* base);
 void djui_base_destroy_children(struct DjuiBase* base);
