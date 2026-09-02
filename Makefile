@@ -741,22 +741,17 @@ else
   BACKEND_LDFLAGS += -lGL
 endif
 
-# glslang and spirv-tools
+# glslang
+GLSLANG_LIBS :=
 ifeq ($(WINDOWS_BUILD),1)
-  BACKEND_LDFLAGS += -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
+  GLSLANG_LIBS := -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
+  BACKEND_LDFLAGS += $(GLSLANG_LIBS)
 else ifeq ($(OSX_BUILD),1)
-  BACKEND_LDFLAGS += -lglslang -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
+  GLSLANG_LIBS := -lglslang -lSPIRV -lSPIRV-Tools -lSPIRV-Tools-opt -lglslang-default-resource-limits
+  BACKEND_LDFLAGS += $(GLSLANG_LIBS)
 else
-  ifeq ($(TARGET_RPI),1)
-    ARCH_DIR := linux_arm
-  else ifeq ($(TARGET_RK3588),1)
-    ARCH_DIR := linux_arm
-  else
-    ARCH_DIR := linux_x86_64
-  endif
-
-  BACKEND_CFLAGS += -Ilib/glslang/include -Ilib/spirv-tools/include
-  BACKEND_LDFLAGS += -Llib/glslang/$(ARCH_DIR) -Llib/spirv-tools/$(ARCH_DIR) -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lglslang-default-resource-limits -lSPIRV-Tools-opt -lSPIRV-Tools
+  GLSLANG_LIBS := $(shell pkg-config --static --libs glslang SPIRV-Tools)
+  BACKEND_LDFLAGS += $(GLSLANG_LIBS) -lglslang-default-resource-limits
 endif
 
 # SPIR-V Cross

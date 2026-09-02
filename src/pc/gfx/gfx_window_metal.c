@@ -54,7 +54,7 @@ static void gfx_window_metal_handle_events(SDL_Event event) {
         gfx_metal_api.on_resize();
     }
 
-    if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+    if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
         gfx_metal_api.on_resize();
     }
 }
