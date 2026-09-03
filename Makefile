@@ -725,7 +725,7 @@ ifeq ($(OSX_BUILD),1)
 else ifeq ($(WINDOWS_BUILD),1)
   BACKEND_LDFLAGS := $(shell pkg-config sdl3 --static --libs)
 else
-  BACKEND_LDFLAGS := -Wl,-Bstatic -lSDL3 -Wl,-Bdynamic $(shell pkg-config sdl3 --static --libs-only-other)
+  BACKEND_LDFLAGS := -Wl,-Bstatic -lSDL3 -Wl,-Bdynamic $(filter-out -lSDL3,$(shell pkg-config sdl3 --static --libs))
 endif
 
 # D3D11 flags
