@@ -725,7 +725,13 @@ ifeq ($(OSX_BUILD),1)
 else ifeq ($(WINDOWS_BUILD),1)
   BACKEND_LDFLAGS := $(shell pkg-config sdl3 --static --libs)
 else
-  BACKEND_LDFLAGS := -Wl,-Bstatic -lSDL3 -Wl,-Bdynamic $(filter-out -lSDL3,$(shell pkg-config sdl3 --static --libs))
+  ifeq ($(TARGET_RPI),1)
+    LDFLAGS += -Llib/sdl3/linux_arm -l:libSDL3.a
+  else ifeq ($(TARGET_RK3588),1)
+    LDFLAGS += -Llib/sdl3/linux_arm -l:libSDL3.a
+  else
+    LDFLAGS += -Llib/sdl3/linux_x86_64 -l:libSDL3.a
+  endif
 endif
 
 # D3D11 flags
