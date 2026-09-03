@@ -1,13 +1,5 @@
 # Contributing
 
-## Languages
-
-When writing up any new feature, English is considered the main language. For anything that may need to be translated, add the appropriate key and value pair to the `lang/English.ini` file in the appropriate section.
-
-For any pull requests made, the English language **must** be provided. You do *not* need to include other languages, but you are encouraged to include other languages if possible.
-
-For more details, see the [language documentation](docs/c/sections/lang.md).
-
 ## Creating a Pull Request
 
 - For all pull requests, target the `dev` branch
