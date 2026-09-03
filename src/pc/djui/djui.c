@@ -160,6 +160,7 @@ static void djui_update_game(UNUSED struct DjuiBase *caller) {
 }
 
 void djui_open_update_panel(void) {
+    if (gDjuiPanelJoinMessageVisible) { return; }
     djui_panel_confirm_create(NULL, DLANG(UPDATE, UPDATE_TITLE), DLANG(UPDATE, UPDATE_AVAILABLE), djui_update_game);
 }
 
