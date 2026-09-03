@@ -41,14 +41,6 @@ static void gfx_dummy_wm_swap_buffers_begin(void) {
 static void gfx_dummy_wm_swap_buffers_end(void) {
 }
 
-static double gfx_dummy_wm_get_time(void) {
-    return 0.0;
-}
-
-static bool gfx_dummy_renderer_z_is_from_0_to_1(void) {
-    return false;
-}
-
 static void gfx_dummy_renderer_unload_shader(UNUSED struct ShaderProgram *old_prg) {
 }
 
@@ -67,10 +59,6 @@ static struct ShaderProgram *gfx_dummy_renderer_create_or_load_post_process_shad
 }
 
 static struct ShaderProgram *gfx_dummy_renderer_lookup_shader(UNUSED struct ColorCombiner* cc) {
-    return NULL;
-}
-
-static struct ShaderProgram *gfx_dummy_renderer_lookup_shader_using_index(UNUSED u8 shaderIndex, UNUSED u8 framePassIndex) {
     return NULL;
 }
 
@@ -175,19 +163,16 @@ struct GfxWindowBackendAPI gfx_window_dummy = {
     gfx_dummy_wm_start_frame,
     gfx_dummy_wm_swap_buffers_begin,
     gfx_dummy_wm_swap_buffers_end,
-    gfx_dummy_wm_get_time,
-    gfx_dummy_wm_get_max_msaa
+    gfx_dummy_wm_get_max_msaa,
 };
 
 struct GfxRenderingAPI gfx_dummy_renderer_api = {
-    gfx_dummy_renderer_z_is_from_0_to_1,
     gfx_dummy_renderer_unload_shader,
     gfx_dummy_renderer_load_shader,
     gfx_dummy_renderer_remove_shaders,
     gfx_dummy_renderer_create_and_load_new_shader,
     gfx_dummy_renderer_create_or_load_post_process_shader,
     gfx_dummy_renderer_lookup_shader,
-    gfx_dummy_renderer_lookup_shader_using_index,
     gfx_dummy_renderer_shader_get_info,
     gfx_dummy_renderer_create_framebuffer,
     gfx_dummy_renderer_delete_framebuffer,

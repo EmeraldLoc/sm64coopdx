@@ -229,51 +229,50 @@ static u32 get_target_refresh_rate(void) {
     return get_display_refresh_rate();
 }
 
+static struct GfxRenderingAPI *get_rendering_api_for_backend(enum GfxWindowBackend backend) {
+    switch (backend) {
+        case GFX_WINDOW_BACKEND_OPENGL:
+            return &gfx_opengl_api;
+#if defined(_WIN32)
+        case GFX_WINDOW_BACKEND_DIRECTX11:
+            return &gfx_direct3d11_api;
+        case GFX_WINDOW_BACKEND_DIRECTX12:
+        case GFX_WINDOW_BACKEND_VULKAN:
+#elif defined(__APPLE__)
+        case GFX_WINDOW_BACKEND_METAL:
+#else
+        case GFX_WINDOW_BACKEND_VULKAN:
+#endif
+            return &gfx_sdl_gpu_api;
+        default:
+            return &gfx_dummy_renderer_api;
+    }
+}
+
+static enum GfxWindowBackend get_supported_graphics_backend(enum GfxWindowBackend backend) {
+    if (backend < GFX_WINDOW_BACKEND_COUNT && gfx_wm_is_backend_supported(backend)) { return backend; }
+
+    for (enum GfxWindowBackend i = 0; i < GFX_WINDOW_BACKEND_MAX; i++) {
+        if (gfx_wm_is_backend_supported(i)) { return i; }
+    }
+
+    return GFX_WINDOW_BACKEND_DUMMY;
+}
+
 static void select_graphics_backend(void) {
     if (gCLIOpts.headless) {
         return;
     }
 
-#if defined(_WIN32)
-    if (configGraphicsBackend == GFX_WINDOW_BACKEND_OPENGL && !gfx_window_opengl_check_compatibility()) {
-        configGraphicsBackend = GFX_WINDOW_BACKEND_DIRECTX;
+    configGraphicsBackend = get_supported_graphics_backend(configGraphicsBackend);
+    if (gCLIOpts.backend < GFX_WINDOW_BACKEND_COUNT) {
+        gCLIOpts.backend = get_supported_graphics_backend(gCLIOpts.backend);
     }
-#endif
-    int backend = configGraphicsBackend;
-#if defined(_WIN32) || defined(OSX_BUILD)
-    if (gCLIOpts.backend < GFX_WINDOW_BACKEND_COUNT) { backend = gCLIOpts.backend; }
-#endif
 
-    switch (backend) {
-        case GFX_WINDOW_BACKEND_DUMMY:
-            gRenderApi = &gfx_dummy_renderer_api;
-            gAudioApi  = &audio_null;
-            break;
-        case GFX_WINDOW_BACKEND_OPENGL:
-            gRenderApi = &gfx_opengl_api;
-            gAudioApi  = &audio_sdl;
-            break;
-#if defined(_WIN32)
-        case GFX_WINDOW_BACKEND_DIRECTX:
-            gRenderApi = &gfx_direct3d11_api;
-            gAudioApi  = &audio_sdl;
-            break;
-#endif
-#ifdef OSX_BUILD
-        case GFX_WINDOW_BACKEND_METAL:
-            gRenderApi = &gfx_metal_api;
-            gAudioApi  = &audio_sdl;
-            break;
-#endif
-        case GFX_WINDOW_BACKEND_SDL_GPU:
-            gRenderApi = &gfx_sdl_gpu_api;
-            gAudioApi  = &audio_sdl;
-            break;
-        default:
-            gRenderApi = &gfx_opengl_api;
-            gAudioApi  = &audio_sdl;
-            break;
-    }
+    enum GfxWindowBackend backend = (gCLIOpts.backend < GFX_WINDOW_BACKEND_COUNT) ? gCLIOpts.backend : configGraphicsBackend;
+
+    gRenderApi = get_rendering_api_for_backend(backend);
+    gAudioApi  = (gRenderApi == &gfx_dummy_renderer_api) ? &audio_null : &audio_sdl;
 
     if (!gAudioApi->init()) {
         gAudioApi = &audio_null;

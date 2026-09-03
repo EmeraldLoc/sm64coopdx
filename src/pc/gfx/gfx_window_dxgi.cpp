@@ -46,7 +46,6 @@ static SDL_Window *sSdlWindow;
 
 static struct {
     HWND h_wnd;
-    bool showing_error;
     std::string window_title;
 
     HMODULE dxgi_module;
@@ -56,11 +55,12 @@ static struct {
     ComPtr<IDXGIFactory2> factory;
     ComPtr<IDXGISwapChain1> swap_chain;
     HANDLE waitable_object;
-    uint64_t qpc_init, qpc_freq;
     bool allow_tearing;
 } dxgi;
 
 static void load_dxgi_library(void) {
+    if (dxgi.dxgi_module != nullptr) { return; }
+
     dxgi.dxgi_module = LoadLibraryW(L"dxgi.dll");
     *(FARPROC *)&dxgi.CreateDXGIFactory1 = GetProcAddress(dxgi.dxgi_module, "CreateDXGIFactory1");
     *(FARPROC *)&dxgi.CreateDXGIFactory2 = GetProcAddress(dxgi.dxgi_module, "CreateDXGIFactory2");
@@ -82,12 +82,6 @@ static void gfx_window_dxgi_set_fullscreen(void) {
 }
 
 static void gfx_window_dxgi_init(const char *window_title) {
-    LARGE_INTEGER qpc_init, qpc_freq;
-    QueryPerformanceCounter(&qpc_init);
-    QueryPerformanceFrequency(&qpc_freq);
-    dxgi.qpc_init = qpc_init.QuadPart;
-    dxgi.qpc_freq = qpc_freq.QuadPart;
-
     dxgi.window_title = window_title;
 
     int xpos = (configWindow.x == WAPI_WIN_CENTERPOS) ? SDL_WINDOWPOS_CENTERED : configWindow.x;
@@ -117,6 +111,10 @@ static void gfx_window_dxgi_handle_events(SDL_Event event) {
 }
 
 static bool gfx_window_dxgi_start_frame(void) {
+    // prevents unlimited frame rates in fullscreen when VSync is enabled
+    if (dxgi.waitable_object != nullptr) {
+        WaitForSingleObject(dxgi.waitable_object, 1000);
+    }
     return true;
 }
 
@@ -132,13 +130,7 @@ static void gfx_window_dxgi_swap_buffers_begin(void) {
 static void gfx_window_dxgi_swap_buffers_end(void) {
 }
 
-static double gfx_window_dxgi_get_time(void) {
-    LARGE_INTEGER t;
-    QueryPerformanceCounter(&t);
-    return (double)(t.QuadPart - dxgi.qpc_init) / dxgi.qpc_freq;
-}
-
-void gfx_window_dxgi_create_factory_and_device(bool debug, int d3d_version, bool (*create_device_fn)(IDXGIAdapter1 *adapter, bool test_only)) {
+void gfx_window_dxgi_create_factory_and_device(bool debug, bool (*create_device_fn)(IDXGIAdapter1 *adapter, bool required)) {
     if (dxgi.CreateDXGIFactory2 != nullptr) {
         ThrowIfFailed(dxgi.CreateDXGIFactory2(debug ? DXGI_CREATE_FACTORY_DEBUG : 0, __uuidof(IDXGIFactory2), &dxgi.factory));
     } else {
@@ -146,22 +138,27 @@ void gfx_window_dxgi_create_factory_and_device(bool debug, int d3d_version, bool
     }
 
     ComPtr<IDXGIAdapter1> adapter;
+    bool created = false;
     for (UINT i = 0; dxgi.factory->EnumAdapters1(i, &adapter) != DXGI_ERROR_NOT_FOUND; i++) {
         DXGI_ADAPTER_DESC1 desc;
         adapter->GetDesc1(&desc);
         if (desc.Flags & 2/*DXGI_ADAPTER_FLAG_SOFTWARE*/) { // declaration missing in mingw headers
             continue;
         }
-        if (create_device_fn(adapter.Get(), true)) {
+        if (create_device_fn(adapter.Get(), false)) {
+            created = true;
             break;
         }
     }
-    create_device_fn(adapter.Get(), false);
+
+    if (!created) {
+        create_device_fn(adapter.Get(), true);
+    }
 
     SDL_SetWindowTitle(sSdlWindow, dxgi.window_title.c_str());
 }
 
-ComPtr<IDXGISwapChain1> gfx_window_dxgi_create_swap_chain(IUnknown *device) {
+ComPtr<IDXGISwapChain1> gfx_window_dxgi_create_swap_chain(IUnknown *device, UINT max_frame_latency) {
     bool win8 = IsWindows8OrGreater(); // DXGI_SCALING_NONE is only supported on Win8 and beyond
     bool dxgi_13 = dxgi.CreateDXGIFactory2 != nullptr; // DXGI 1.3 introduced waitable object
 
@@ -197,13 +194,13 @@ ComPtr<IDXGISwapChain1> gfx_window_dxgi_create_swap_chain(IUnknown *device) {
 
     ComPtr<IDXGISwapChain2> swap_chain2;
     if (dxgi.swap_chain->QueryInterface(__uuidof(IDXGISwapChain2), &swap_chain2) == S_OK) {
-        ThrowIfFailed(swap_chain2->SetMaximumFrameLatency(1));
+        ThrowIfFailed(swap_chain2->SetMaximumFrameLatency(max_frame_latency));
         dxgi.waitable_object = swap_chain2->GetFrameLatencyWaitableObject();
         WaitForSingleObject(dxgi.waitable_object, INFINITE);
     } else {
         ComPtr<IDXGIDevice1> device1;
         ThrowIfFailed(device->QueryInterface(IID_PPV_ARGS(&device1)));
-        ThrowIfFailed(device1->SetMaximumFrameLatency(1));
+        ThrowIfFailed(device1->SetMaximumFrameLatency(max_frame_latency));
     }
 
     ThrowIfFailed(dxgi.swap_chain->GetDesc1(&swap_chain_desc));
@@ -230,7 +227,6 @@ void ThrowIfFailed(HRESULT res, HWND h_wnd, const char *message) {
     if (FAILED(res)) {
         char full_message[256];
         sprintf(full_message, "%s\n\nHRESULT: 0x%08X", message, res);
-        dxgi.showing_error = true;
         MessageBoxA(h_wnd, full_message, "Error", MB_OK | MB_ICONERROR);
         throw res;
     }
@@ -243,7 +239,6 @@ struct GfxWindowBackendAPI gfx_window_dxgi = {
     gfx_window_dxgi_start_frame,
     gfx_window_dxgi_swap_buffers_begin,
     gfx_window_dxgi_swap_buffers_end,
-    gfx_window_dxgi_get_time,
     gfx_window_dxgi_get_max_msaa,
 };
 

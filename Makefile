@@ -708,10 +708,6 @@ ifeq ($(TARGET_N64),1)
   INCLUDE_DIRS += include/libc
 else
   INCLUDE_DIRS += sound lib/lua/include lib/coopnet/include $(EXTRA_INCLUDES)
-
-  ifeq ($(OSX_BUILD),1)
-    INCLUDE_DIRS += include/metal-cpp
-  endif
 endif
 
 # Configure backend flags

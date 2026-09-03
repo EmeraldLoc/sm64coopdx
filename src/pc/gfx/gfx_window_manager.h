@@ -18,15 +18,17 @@ extern "C" {
 typedef bool (*kb_callback_t)(int code);
 
 enum GfxWindowBackend {
-    GFX_WINDOW_BACKEND_DUMMY = -1,
-    #ifdef _WIN32
-        GFX_WINDOW_BACKEND_DIRECTX,
-    #endif
-    #ifdef __APPLE__
+    #if defined(_WIN32)
+        GFX_WINDOW_BACKEND_DIRECTX11,
+        GFX_WINDOW_BACKEND_DIRECTX12,
+        GFX_WINDOW_BACKEND_VULKAN,
+    #elif defined(__APPLE__)
         GFX_WINDOW_BACKEND_METAL,
+    #else
+        GFX_WINDOW_BACKEND_VULKAN,
     #endif
-    GFX_WINDOW_BACKEND_SDL_GPU,
     GFX_WINDOW_BACKEND_OPENGL,
+    GFX_WINDOW_BACKEND_DUMMY,
     GFX_WINDOW_BACKEND_COUNT,
     GFX_WINDOW_BACKEND_MAX = GFX_WINDOW_BACKEND_COUNT - 1,
 };
@@ -38,7 +40,6 @@ struct GfxWindowBackendAPI {
     bool (*start_frame)(void);
     void (*swap_buffers_begin)(void);
     void (*swap_buffers_end)(void);
-    double (*get_time)(void); // For debug
     int  (*get_max_msaa)(void);
 };
 
@@ -46,6 +47,10 @@ void gfx_wm_set_window(SDL_Window *window);
 SDL_Window *gfx_wm_get_window(void);
 
 void gfx_wm_init(const char *window_title);
+enum GfxWindowBackend gfx_wm_get_backend(void);
+const char *gfx_wm_get_backend_name(enum GfxWindowBackend backend);
+enum GfxWindowBackend gfx_wm_get_backend_from_name(const char *name);
+bool gfx_wm_is_backend_supported(enum GfxWindowBackend backend);
 void gfx_wm_set_keyboard_callbacks(kb_callback_t on_key_down, kb_callback_t on_key_up, void (*on_all_keys_up)(void),
     void (*on_text_input)(char*), void (*on_text_editing)(char*, int));
 void gfx_wm_set_scroll_callback(void (*on_scroll)(float, float));
@@ -55,7 +60,6 @@ void gfx_wm_handle_events(void);
 bool gfx_wm_start_frame(void);
 void gfx_wm_swap_buffers_begin(void);
 void gfx_wm_swap_buffers_end(void);
-double gfx_wm_get_time(void); // For debug
 void gfx_wm_shutdown(void);
 void gfx_wm_start_text_input(void);
 void gfx_wm_stop_text_input(void);

@@ -48,6 +48,7 @@
 #endif
 
 static SDL_Window *sSdlWindow;
+static SDL_GLContext sGlContext = NULL;
 static bool sAppliedVsync = false;
 
   //////////////////////////
@@ -129,13 +130,13 @@ static void gfx_window_opengl_init(const char *window_title) {
     sSdlWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
 
-    SDL_GLContext ctx = SDL_GL_CreateContext(sSdlWindow);
+    sGlContext = SDL_GL_CreateContext(sSdlWindow);
 
-    if (!ctx) {
+    if (!sGlContext) {
         // try again with 4.1
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-        ctx = SDL_GL_CreateContext(sSdlWindow);
+        sGlContext = SDL_GL_CreateContext(sSdlWindow);
     }
 
     gfx_wm_set_window(sSdlWindow);
@@ -173,9 +174,14 @@ bool gfx_window_opengl_check_compatibility(void) {
     return validVersion;
 }
 
-static void gfx_window_opengl_handle_events(UNUSED SDL_Event event) {
+static void gfx_window_opengl_handle_events(SDL_Event event) {
     if (configWindow.settings_changed) {
         gfx_window_opengl_reset_dimension_and_pos();
+        gfx_opengl_api.on_resize();
+    }
+
+    if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+        gfx_opengl_api.on_resize();
     }
 }
 
@@ -195,10 +201,6 @@ static void gfx_window_opengl_swap_buffers_begin(void) {
 static void gfx_window_opengl_swap_buffers_end(void) {
 }
 
-static double gfx_window_opengl_get_time(void) {
-    return 0.0;
-}
-
 static int gfx_window_opengl_get_max_msaa(void) {
     int maxSamples = 0;
     glGetIntegerv(GL_MAX_SAMPLES, &maxSamples);
@@ -213,6 +215,5 @@ struct GfxWindowBackendAPI gfx_window_opengl = {
     gfx_window_opengl_start_frame,
     gfx_window_opengl_swap_buffers_begin,
     gfx_window_opengl_swap_buffers_end,
-    gfx_window_opengl_get_time,
     gfx_window_opengl_get_max_msaa,
 };

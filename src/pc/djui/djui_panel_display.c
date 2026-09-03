@@ -72,17 +72,12 @@ void djui_panel_display_create(struct DjuiBase* caller) {
         djui_checkbox_create(body, DLANG(DISPLAY, SHOW_FPS), &configShowFPS, NULL);
         djui_checkbox_create(body, DLANG(DISPLAY, VSYNC), &configWindow.vsync, djui_panel_display_apply);
 
-        if (GFX_WINDOW_BACKEND_COUNT > 1) {
-            char *gfxBackendChoices[GFX_WINDOW_BACKEND_COUNT] = {
-#ifdef OSX_BUILD
-                (char *)gfx_metal_api.get_name(),
-#elif defined(_WIN32)
-                (char *)gfx_direct3d11_api.get_name(),
-#endif
-                (char *)gfx_sdl_gpu_api.get_name(),
-                (char *)gfx_opengl_api.get_name(),
-            };
-            djui_selectionbox_create(body, DLANG(DISPLAY, GRAPHICS_BACKEND), gfxBackendChoices, GFX_WINDOW_BACKEND_COUNT, &configGraphicsBackend, djui_panel_display_update_restart_text);
+        if (GFX_WINDOW_BACKEND_MAX > 1) {
+            char *gfxBackendChoices[GFX_WINDOW_BACKEND_MAX];
+            for (s32 i = 0; i < GFX_WINDOW_BACKEND_MAX; i++) {
+                gfxBackendChoices[i] = (char *)gfx_wm_get_backend_name(i);
+            }
+            djui_selectionbox_create(body, DLANG(DISPLAY, GRAPHICS_BACKEND), gfxBackendChoices, GFX_WINDOW_BACKEND_MAX, &configGraphicsBackend, djui_panel_display_update_restart_text);
         }
 
         char* framerateModeChoices[3] = { DLANG(DISPLAY, AUTO), DLANG(DISPLAY, MANUAL), DLANG(DISPLAY, UNCAPPED) };
