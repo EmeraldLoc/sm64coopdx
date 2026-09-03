@@ -24,6 +24,9 @@
 #include <SDL2/SDL_opengles2.h>
 #else
 #include <SDL2/SDL_opengl.h>
+#ifdef __linux__
+#include <GL/glext.h>
+#endif
 #endif
 
 #include "../platform.h"
