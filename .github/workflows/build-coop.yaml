@@ -93,6 +93,11 @@ jobs:
               run: |
                 codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
 
+            - name: Code sign the app (Ad-Hoc) (macOS)
+              if: ${{ contains(matrix.platform.name, 'macOS') }}
+              run: |
+                codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
+
             - name: Generate hash
               run: |
                 cd tools
