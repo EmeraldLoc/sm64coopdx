@@ -722,8 +722,10 @@ BACKEND_CFLAGS += $(shell pkg-config sdl3 --cflags)
 
 ifeq ($(OSX_BUILD),1)
   BACKEND_LDFLAGS := $(shell pkg-config sdl3 --libs)
+else ifeq ($(WINDOWS_BUILD),1)
+  BACKEND_LDFLAGS := $(shell pkg-config sdl3 --static --libs)
 else
-  BACKEND_LDFLAGS := -Wl,-Bstatic $(shell pkg-config sdl3 --static --libs) -Wl,-Bdynamic
+  BACKEND_LDFLAGS := -Wl,-Bstatic -lSDL3 -Wl,-Bdynamic
 endif
 
 # D3D11 flags
