@@ -718,19 +718,21 @@ endif
 # Configure backend flags
 
 BACKEND_CFLAGS += -DHAVE_SDL3=1
-BACKEND_CFLAGS += $(shell pkg-config sdl3 --cflags)
 
 ifeq ($(OSX_BUILD),1)
-  BACKEND_LDFLAGS := $(shell pkg-config sdl3 --libs)
+  BACKEND_CFLAGS += $(shell pkg-config sdl3 --cflags)
+  BACKEND_LDFLAGS += $(shell pkg-config sdl3 --libs)
 else ifeq ($(WINDOWS_BUILD),1)
-  BACKEND_LDFLAGS := $(shell pkg-config sdl3 --static --libs)
+  BACKEND_CFLAGS += $(shell pkg-config sdl3 --cflags)
+  BACKEND_LDFLAGS += $(shell pkg-config sdl3 --static --libs)
 else
+  BACKEND_CFLAGS += -Ilib/sdl3/include
   ifeq ($(TARGET_RPI),1)
-    LDFLAGS += -Llib/sdl3/linux_arm -l:libSDL3.a
+    BACKEND_LDFLAGS += -Llib/sdl3/linux -l:libSDL3_arm.a
   else ifeq ($(TARGET_RK3588),1)
-    LDFLAGS += -Llib/sdl3/linux_arm -l:libSDL3.a
+    BACKEND_LDFLAGS += -Llib/sdl3/linux -l:libSDL3_arm.a
   else
-    LDFLAGS += -Llib/sdl3/linux_x86_64 -l:libSDL3.a
+    BACKEND_LDFLAGS += -Llib/sdl3/linux -l:libSDL3.a
   endif
 endif
 
