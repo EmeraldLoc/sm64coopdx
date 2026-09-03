@@ -778,7 +778,7 @@ else
   endif
 
   BACKEND_CFLAGS += -Ilib/glslang/include -Ilib/spirv-tools/include
-  BACKEND_LDFLAGS += -Llib/glslang/$(ARCH_DIR) -Llib/spirv-tools/$(ARCH_DIR) -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lglslang-default-resource-limits -lSPIRV-Tools
+  BACKEND_LDFLAGS += -Llib/glslang/$(ARCH_DIR) -Llib/spirv-tools/$(ARCH_DIR) -lglslang -lMachineIndependent -lGenericCodeGen -lOSDependent -lSPIRV -lglslang-default-resource-limits -lSPIRV-Tools-opt -lSPIRV-Tools
 endif
 
 # SPIR-V Cross
