@@ -193,7 +193,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Bob-omb Battlefield",
@@ -222,7 +222,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = -15536,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "WMOTR",
@@ -235,7 +235,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Jolly Roger Bay",
@@ -248,7 +248,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0x4000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Shifting Sand Land",
@@ -293,7 +293,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0x4000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Big Boo's Haunt",
@@ -322,7 +322,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = -0x2800,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Tiny-Huge Island",
@@ -367,7 +367,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = -0x1000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Rainbow Ride",
@@ -396,7 +396,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0x4000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "PSS",
@@ -409,7 +409,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0x5000,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Tick Tock Clock",
@@ -438,7 +438,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = -0x1C34,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     },
     {
         .name = "Castle",
@@ -451,7 +451,7 @@ struct MenuLevel gMenuLevels[] = {
         .updateCameraPos = true,
         .marioYaw = 0,
         .updateMarioYaw = true,
-        .behaviorsToRemove = NULL
+        .behaviorsToRemove = { NULL }
     }
 };
 u32 gMenuLevelsCount = ARRAY_COUNT(gMenuLevels);

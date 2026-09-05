@@ -3558,9 +3558,6 @@ LEVEL_COUNT            = 39 --- @type LevelNum
 --- | `LEVEL_UNKNOWN_38`
 --- | `LEVEL_COUNT`
 
---- @type integer
-MAX_BHVS_TO_REMOVE_IN_MENU_LEVEL = 8
-
 TIMER_CONTROL_SHOW  = 0 --- @type TimerControl
 TIMER_CONTROL_START = 1 --- @type TimerControl
 TIMER_CONTROL_STOP  = 2 --- @type TimerControl
