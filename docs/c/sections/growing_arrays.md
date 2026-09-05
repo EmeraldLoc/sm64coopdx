@@ -22,7 +22,7 @@ You can initialize a growing array using the function
 struct GrowingArray *growing_array_init(struct GrowingArray *array, u32 capacity, GrowingArrayAllocFunc alloc, GrowingArrayFreeFunc free);
 ```
 
-The first param is the array it points to. If you ever need to reinitialize a growing array, you'd insert your `gGrowingArrayExample`. Technically, we don't need to do that for a first time initialization, so we could pass in `NULL`, however it's recommended to pass in your growing array for clarity.
+The first param is the array it points to. If you ever need to reinitialize a growing array, you'd insert your `gGrowingArrayExample`. Technically, we don't need to do that for a first-time initialization, so we could pass in `NULL`, however it's recommended to pass in your growing array for clarity.
 
 The `capacity` argument is the initial capacity. You generally want to avoid reallocations as reallocations are slow, so keep this number as a good average for how much capacity your array would typically need.
 
@@ -61,11 +61,11 @@ One takes in a pointer to the block of data you want to remove, and another take
 
 The `growing_array_swap_and_pop` finds the pointer in the array and then calls `growing_array_swap_and_pop_index` internally.
 
-What "swap" and "pop" means is quite simple. What's happening under the hood is it is taking the index provided, moving it to the end of the array, and decrementing the `count`. The element is still there and allocated, but can't be read unless you explicitly try to. On the next allocation using `growing_array_alloc`, the element will be zeroed out and the `count` will be incremented, acting like the popped element never existed.
+What "swap" and "pop" mean is quite simple. What's happening under the hood is it is taking the index provided, moving it to the end of the array, and decrementing the `count`. The element is still there and allocated, but can't be read unless you explicitly try to. On the next allocation using `growing_array_alloc`, the element will be zeroed out and the `count` will be incremented, acting like the popped element never existed.
 
 This behavior is effectively equivalent to removing an element, we just don't bother with the processing required to actually free the element, especially since it will probably be used again anyways. It would be quite inefficent to free the memory and then use it again shortly after, requiring unecessary allocation.
 
-Do note this shifts the indexes for all the elements in an array! Account for that when using this function.
+Do note this swaps the last element with whatever index you passed into the function! Account for that when using this function.
 
 ## Cleanup
 
@@ -75,4 +75,4 @@ If you ever need to cleanup a growing array and remove it entirely, use the `gro
 void growing_array_free(struct GrowingArray **array);
 ```
 
-This function is quite simple, it just takes in your growing array and frees the entire thing, including making the array passed in `NULL`.
+This function is quite simple. It just takes in your growing array and frees every element inside it, every allocated pointer, and the passed in array itself. It also `NULL`'s the passed in array.
