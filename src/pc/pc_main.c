@@ -522,7 +522,12 @@ void set_loading_percentage(f32 percent) {
 void *main_game_init(UNUSED void *dummy) {
     if (gCLIOpts.network != NT_SERVER && !gCLIOpts.skipUpdateCheck) {
         check_for_updates();
+
+        MUTEX_LOCK(sLoadingThread);
+
         sQueueUpdateInfo = true;
+
+        MUTEX_UNLOCK(sLoadingThread);
     }
 
     set_loading_message("Loading");
@@ -551,9 +556,9 @@ void *main_game_init(UNUSED void *dummy) {
 
     mumble_init();
 
-    MUTEX_LOCK(sLoadingThread);
-
     set_loading_message("Finalizing");
+
+    MUTEX_LOCK(sLoadingThread);
 
     if (gCLIOpts.network == NT_CLIENT) {
         sQueueNetworkInitType = NT_CLIENT;
@@ -566,8 +571,6 @@ void *main_game_init(UNUSED void *dummy) {
     sQueueGameInited = true;
 
     MUTEX_UNLOCK(sLoadingThread);
-
-    destroy_mutex(&sLoadingThread);
 
     return NULL;
 }
@@ -732,6 +735,8 @@ int main(int argc, char *argv[]) {
             gGameInited = sQueueGameInited;
 
             MUTEX_UNLOCK(sLoadingThread);
+
+            destroy_mutex(&sLoadingThread);
         }
 
         gfx_wm_main_loop(produce_one_frame);
