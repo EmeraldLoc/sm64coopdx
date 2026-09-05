@@ -48,7 +48,7 @@ This function takes in your Growing Array, and requests a size. The size is the 
 
 The function returns a pointer to the data allocated. It always pushes to the end of the array, so if you need to store the index, the index will always be `gGrowingArrayExample->count` before allocation, or `gGrowingArrayExample->count - 1` after allocation.
 
-## Removing elements from a Growing Array
+## Removing Elements from a Growing Array
 
 These are the functions for it:
 
