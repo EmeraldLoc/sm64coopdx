@@ -63,7 +63,7 @@ The `growing_array_swap_and_pop` finds the pointer in the array and then calls `
 
 What "swap" and "pop" mean is quite simple. What's happening under the hood is it is taking the index provided, moving it to the end of the array, and decrementing the `count`. The element is still there and allocated, but can't be read unless you explicitly try to. On the next allocation using `growing_array_alloc`, the element will be zeroed out and the `count` will be incremented, acting like the popped element never existed.
 
-This behavior is effectively equivalent to removing an element, we just don't bother with the processing required to actually free the element, especially since it will probably be used again anyways. It would be quite inefficent to free the memory and then use it again shortly after, requiring unecessary allocation.
+This behavior is effectively equivalent to removing an element, we just don't bother with the processing required to actually free the element, especially since it will probably be used again either way. It would be quite inefficient to free the memory and then use it again shortly after, requiring unnecessary allocation.
 
 Do note this swaps the last element with whatever index you passed into the function! Account for that when using this function.
 
