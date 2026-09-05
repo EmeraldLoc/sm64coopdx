@@ -41,7 +41,7 @@ Each growing array has a `count` and the `buffer`. The `count` is the number of 
 To allocate data to the growing array, use the `growing_array_alloc` function.
 
 ```c
-void *growing_array_alloc(struct GrowingArray *array, u32 size)
+void *growing_array_alloc(struct GrowingArray *array, u32 size);
 ```
 
 This function takes in your Growing Array, and requests a size. The size is the amount of bytes to allocate to the array element, typically the size of the struct being used.
@@ -67,6 +67,35 @@ This behavior is effectively equivalent to removing an element, we just don't bo
 
 Do note this swaps the last element with whatever index you passed into the function! Account for that when using this function.
 
+## Iterating through a Growing Array
+
+You have 2 options to iterate through a growing array. A standard for loop iterating `count` times and accessing the var via `gGrowingArrayExample->buffer[i]`, or using the `growing_array_for_each_` macro.
+
+A simple for loop iteration looks like so:
+
+```c
+for (u32 i = 0; i < gGrowingArrayExample->count; i++) {
+    // note: StoredStruct and storedStruct are placeholder names! use what you are storing
+    // also note that in C++ you will need to cast gGrowingArrayExample->buffer[i]
+    // into the type you are wanting
+    struct StoredStruct *storedStruct = gGrowingArrayExample->buffer[i];
+
+    // do stuff with stored struct
+}
+```
+
+The other option is `growing_array_for_each_`. This macro takes in your growing array, the type for each element, and finally the last param is the variable to be created. The best way to show what it does is to show an example:
+
+```c
+growing_array_for_each_(gGrowingArrayExample, struct StoredStruct, storedStruct) {
+    // do something with storedStruct. It's already the StoredStruct type
+}
+```
+
+Very simple usage! Like before, `StoredStruct` and `storedStruct` are placeholders, use what you need there.
+
+Note: When mixing types in a growing array, do **not** use `growing_array_for_each_`, use a conventional for loop instead.
+
 ## Cleanup
 
 If you ever need to cleanup a growing array and remove it entirely, use the `growing_array_free` function:
@@ -75,4 +104,4 @@ If you ever need to cleanup a growing array and remove it entirely, use the `gro
 void growing_array_free(struct GrowingArray **array);
 ```
 
-This function is quite simple. It just takes in your growing array and frees every element inside it, every allocated pointer, and the passed in array itself. It also `NULL`'s the passed in array.
+This function is quite simple. It just takes in your growing array and frees every element inside it, every allocated pointer, and the passed in array itself. It also `NULL`'s the passed in array, so you need to pass in a reference to the growing array, or `&gGrowingArrayExample`.
