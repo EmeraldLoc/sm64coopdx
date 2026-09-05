@@ -24,7 +24,7 @@ struct GrowingArray *growing_array_init(struct GrowingArray *array, u32 capacity
 
 The first param is the array it points to. If you ever need to reinitialize a growing array, you'd insert your `gGrowingArrayExample`. Technically, we don't need to do that for a first time initialization, so we could pass in `NULL`, however it's recommended to pass in your growing array for clarity.
 
-The `capacity` argument is the initial capacity. You generally want to avoid reallocations as reallocations are slow, so keep this number as a good average for how much capacity your array would typically need, but don't make it too large to effectively remove the use case of the growing array for 99% of users.
+The `capacity` argument is the initial capacity. You generally want to avoid reallocations as reallocations are slow, so keep this number as a good average for how much capacity your array would typically need.
 
 Then there's an `alloc` function and a `free` function. In 99.999% of cases, you will pass in `malloc` for the allocation function and `free` for the free function. Note that while `malloc` usually doesn't zero-initialize the block of memory allocated, the growing array will zero-initialize the block, so all allocated memory is zero-initialized.
 
