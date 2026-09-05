@@ -22,7 +22,7 @@ You can initialize a growing array using the function
 struct GrowingArray *growing_array_init(struct GrowingArray *array, u32 capacity, GrowingArrayAllocFunc alloc, GrowingArrayFreeFunc free);
 ```
 
-The first param is the array it points to. If you ever need to reinitialize a growing array, you'd insert your `gGrowingArrayExample`. Technically, we don't need to do that for a first-time initialization, so we could pass in `NULL`, however it's recommended to pass in your growing array for clarity.
+The first param is the array it points to. If you are reinitializing a growing array, you'd pass in your `gGrowingArrayExample`. If you're doing a first-time initialization, you could pass in `NULL`, however it's recommended to pass in your growing array for clarity.
 
 The `capacity` argument is the initial capacity. You generally want to avoid reallocations as reallocations are slow, so keep this number as a good average for how much capacity your array would typically need.
 
