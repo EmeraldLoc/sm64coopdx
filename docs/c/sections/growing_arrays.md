@@ -64,3 +64,15 @@ The `growing_array_swap_and_pop` finds the pointer in the array and then calls `
 What "swap" and "pop" means is quite simple. What's happening under the hood is it is taking the index provided, moving it to the end of the array, and decrementing the `count`. The element is still there and allocated, but can't be read unless you explicitly try to. On the next allocation using `growing_array_alloc`, the element will be zeroed out and the `count` will be incremented, acting like the popped element never existed.
 
 This behavior is effectively equivalent to removing an element, we just don't bother with the processing required to actually free the element, especially since it will probably be used again anyways. It would be quite inefficent to free the memory and then use it again shortly after, requiring unecessary allocation.
+
+Do note this shifts the indexes for all the elements in an array! Account for that when using this function.
+
+## Cleanup
+
+If you ever need to cleanup a growing array and remove it entirely, use the `growing_array_free` function:
+
+```c
+void growing_array_free(struct GrowingArray **array);
+```
+
+This function is quite simple, it just takes in your growing array and frees the entire thing, including making the array passed in `NULL`.
