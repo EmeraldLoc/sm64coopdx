@@ -20,4 +20,4 @@ AI is allowed, however if a PR isn't deemed to be useful, we reserve the right t
 
 ## Documentation
 
-For reading documentation on the project, check out the [C Documentation](docs/c/c.md)!
+For reading documentation on the sm64coopdx codebase, check out the [C Documentation](docs/c/c.md)!

@@ -1,32 +1,38 @@
-# Lua Reference
+# Modding
 
-## How to install Lua mods
+## How to install mods
+
+TODO: Should be redone
+
 Lua scripts you make can be placed either the `mods` folder in the base directory, or in `<SAVE FILE LOCATION>/mods`. You can also drag and drop mods into the window to install them.
 
 Save file locations:
+
 - Windows: `%appdata%/sm64coopdx`
 - Linux: `~/.local/share/sm64coopdx`
 - MacOS: `~/Library/Application Support/sm64coopdx`
 
-<br />
-
 ## Tips
+
+TODO: Figure out if this is OK
+
 - When developing Lua mods, open the console with `~` or `F1` to see Lua errors and warnings.
 - When a function requests a time parameter, it is almost if not always in frames.
 - You can use the `print()` command when debugging. Your logs will show up in the console and terminal.
 - You can create a folder within the mods folder containing multiple lua scripts as long as one script is called `main.lua`. Dynos actors can be placed inside this mod folder under `<your mod folder>/actors/`.
 - If you're just starting out, you should take a look at the guide for [creating a mod](guides/creating-mod.md).
-<br />
 
 ## Sections
+
 - [Globals](globals.md)
 - [Constants](constants.md)
 - [Functions](functions.md)
 - [Structs](structs.md)
 
 ### Guides
+
 - [Setting up Visual Studio Code](guides/vs-code-setup.md)
-- [Creating a mod](guides/creating-mod.md)
+- [Creating a mod](guides/creating-mod.md) TODO: This should be splattered somewhere more prevalent
 - [Hooks](guides/hooks.md)
 - [gMarioStates](guides/mario-state.md)
 - [Behavior Object Lists](guides/object-lists.md)
@@ -34,6 +40,8 @@ Save file locations:
 - [ModFS](guides/modfs.md)
 
 ## Important notes on player indices
+
+TODO: Figure out if this goes in its own section
 
 Something important to realize is that the `localIndex` for each player is different (unfortunately).
 
@@ -45,9 +53,8 @@ The `globalIndex` of each player is consistent among everyone connected. So if y
 
 All of this is a holdover from when there were only two players. It was a reasonable idea back then.
 
-<br />
-
 ## Example Lua mods (small)
+
 - [Low Gravity](examples/low-gravity.lua)
 - [Faster Swimming](../../mods/faster-swimming.lua)
 - [Mario Run](examples/Mario-Run.lua)
@@ -74,4 +81,5 @@ All of this is a holdover from when there were only two players. It was a reason
 - [Lighting Engine Demo](examples/lighting-engine-demo)
 
 ## Example Lua mods (large)
+
 - [Hide and Seek Gamemode](../../mods/hide-and-seek.lua)

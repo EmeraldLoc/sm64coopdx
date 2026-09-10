@@ -3,7 +3,7 @@
 # Enums
 
 In C, enums are the best tool to map a type to a list of named constant values.<br>
-[Autogen](./smlua.md#autogen) even recognizes enums and associates their values with their underlying type.
+[Autogen](./smmodding.md#autogen) even recognizes enums and associates their values with their underlying type.
 
 However, enums are usually used as indices or entries in look-up tables to map them to other values.<br>
 Writing those tables manually can fragment the code and make it harder to maintain (for example, when adding a new entry, you would need to find where the enum is used and could easily miss a spot).

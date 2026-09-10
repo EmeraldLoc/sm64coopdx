@@ -1,4 +1,4 @@
-## [:rewind: Lua Reference](lua.md)
+## [:rewind: Modding](modding.md)
 
 # Globals
 Globals are variables that are always exposed to the Lua API.

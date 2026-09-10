@@ -1055,7 +1055,7 @@ def doc_files(processed_files):
     page_len_limit = 150000
     extra_space = 25000
 
-    s = '## [:rewind: Lua Reference](lua.md)\n\n'
+    s = '## [:rewind: Modding](modding.md)\n\n'
     s += '---\n\n$[FUNCTION_NAV_HERE]\n\n---\n\n'
     s += '$[FUNCTION_INDEX_HERE]'
 
@@ -1207,7 +1207,7 @@ def def_files(processed_files):
 def doc_hooks(in_filename, out_filename):
     hooks, classes = read_manually_written_functions(in_filename)
 
-    s  = '## [:rewind: Lua Reference](../lua.md)\n\n'
+    s  = '## [:rewind: Modding](../modding.md)\n\n'
     s += '# Hooks\n'
     s += 'Hooks are a way for the game to trigger Lua code, whereas the functions listed in [functions](../functions.md) allow Lua to trigger SM64 code.\n\n'
 

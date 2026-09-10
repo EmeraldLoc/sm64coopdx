@@ -1,4 +1,4 @@
-## [:rewind: Lua Reference](lua.md)
+## [:rewind: Modding](modding.md)
 
 # Supported Constants
 - [area.h](#areah)

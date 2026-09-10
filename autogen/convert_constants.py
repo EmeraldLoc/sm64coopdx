@@ -410,7 +410,7 @@ def doc_file(processed_file):
     return s
 
 def doc_files(processed_files):
-    s = '## [:rewind: Lua Reference](lua.md)\n\n'
+    s = '## [:rewind: Modding](modding.md)\n\n'
     s += doc_constant_index(processed_files)
     for file in processed_files:
         s += doc_file(file)

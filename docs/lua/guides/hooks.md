@@ -1,4 +1,4 @@
-## [:rewind: Lua Reference](../lua.md)
+## [:rewind: Modding](../modding.md)
 
 # Hooks
 Hooks are a way for the game to trigger Lua code, whereas the functions listed in [functions](../functions.md) allow Lua to trigger SM64 code.

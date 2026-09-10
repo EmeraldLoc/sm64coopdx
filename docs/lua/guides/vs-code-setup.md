@@ -1,4 +1,4 @@
-## [:rewind: Lua Reference](../lua.md)
+## [:rewind: Modding](../modding.md)
 
 Setting up Visual Studio Code will allow you to have all of the modern benefits of IDEs like autocomplete.
 

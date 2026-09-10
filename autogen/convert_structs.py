@@ -713,7 +713,7 @@ def doc_structs(structs):
     structs.extend(parse_structs(lua_manually_defined_structs, False)) # Don't sort fields for vec types in the documentation
     structs = sorted(structs, key=lambda d: d['identifier'])
 
-    s = '## [:rewind: Lua Reference](lua.md)\n\n'
+    s = '## [:rewind: Modding](modding.md)\n\n'
     s += doc_struct_index(structs)
     for struct in structs:
         if struct['identifier'] in structs_excluded:

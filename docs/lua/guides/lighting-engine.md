@@ -1,4 +1,4 @@
-## [:rewind: Lua Reference](../lua.md)
+## [:rewind: Modding](../modding.md)
 
 # How to use the Lighting Engine
 

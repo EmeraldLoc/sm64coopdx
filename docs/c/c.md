@@ -4,7 +4,7 @@ If you haven't, please read up on [contributing](../../CONTRIBUTING.md)!
 
 ## Sections
 
-- [SMLua](sections/smlua.md)
+- [SMLua](sections/smmodding.md)
 - [Config File](sections/configfile.md)
 - [DJUI](sections/djui.md)
 - [Languages](sections/lang.md)
