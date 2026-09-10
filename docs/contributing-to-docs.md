@@ -19,5 +19,5 @@ View the [configuration file](../.markdownlint.json) to see every single rule ig
 - Every single document should contain a back button going back to what linked to it. The back button is a `h2` header hyperlink that uses the :rewind: (`:rewind:`) emoji along with where it goes back to. As an example:
 
 ```md
-## [:rewind: Modding](lua/modding.md)
+## [:rewind: Modding](../modding.md)
 ```
