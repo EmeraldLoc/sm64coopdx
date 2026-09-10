@@ -21,3 +21,5 @@ View the [configuration file](../.markdownlint.json) to see every single rule ig
 ```md
 ## [:rewind: Modding](../modding.md)
 ```
+
+## TODO: Add documentation on actually contributing with a PR
