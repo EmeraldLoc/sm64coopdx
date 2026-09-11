@@ -2,7 +2,7 @@
 #include "djui_panel.h"
 #include "djui_flow_layout.h"
 #include "pc/controller/controller_mouse.h"
-#include "pc/gfx/gfx_window_manager_api.h"
+#include "pc/gfx/gfx_window_manager.h"
 #include "pc/debuglog.h"
 #include "pc/pc_main.h"
 
@@ -32,12 +32,10 @@ void djui_cursor_set_visible(bool visible) {
         djui_base_set_visible(&sMouseCursor->base, visible);
     }
 
-    if (gWindowApi) {
-        if (configWindow.fullscreen) {
-            gWindowApi->set_cursor_visible(false);
-        } else {
-            gWindowApi->set_cursor_visible(!visible);
-        }
+    if (configWindow.fullscreen) {
+        gfx_wm_set_cursor_visible(false);
+    } else {
+        gfx_wm_set_cursor_visible(!visible);
     }
     sSavedMouseX = mouse_window_x;
     sSavedMouseY = mouse_window_y;
