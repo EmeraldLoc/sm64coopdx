@@ -81,6 +81,7 @@ in_files = [
     "src/engine/lighting_engine.h",
     "src/pc/network/sync_object.h",
     "src/audio/load.h",
+    "src/pc/djui/djui_gfx.h",
 ]
 
 override_allowed_functions = {
@@ -93,7 +94,7 @@ override_allowed_functions = {
     "src/pc/lua/utils/smlua_model_utils.h": [ "smlua_model_util_get_id" ],
     "src/game/object_list_processor.h":     [ "set_object_respawn_info_bits" ],
     "src/game/platform_displacement.h":     [ "apply_platform_displacement" ],
-    "src/game/mario_misc.h":                [ "bhv_toad.*", "bhv_unlock_door.*", "geo_get_.*_state" ],
+    "src/game/mario_misc.h":                [ "bhv_toad.*", "bhv_unlock_door.*", "geo_get_.*" ],
     "src/game/level_update.h":              [ "level_trigger_warp", "get_painting_warp_node", "initiate_warp", "initiate_painting_warp", "warp_special", "lvl_set_current_level", "level_control_timer_running", "pressed_pause", "fade_into_special_warp", "get_instant_warp" ],
     "src/game/area.h":                      [ "get_mario_spawn_type", "area_get_warp_node", "area_get_any_warp_node", "play_transition" ],
     "src/engine/level_script.h":            [ "area_create_warp_node" ],
@@ -101,6 +102,7 @@ override_allowed_functions = {
     "src/audio/seqplayer.h":                [ "sequence_player_set_tempo", "sequence_player_set_tempo_acc", "sequence_player_set_transposition", "sequence_player_get_tempo", "sequence_player_get_tempo_acc", "sequence_player_get_transposition", "sequence_player_get_volume", "sequence_player_get_fade_volume", "sequence_player_get_mute_volume_scale" ],
     "src/pc/network/sync_object.h":         [ "sync_object_is_initialized", "sync_object_is_owned_locally", "sync_object_get_object" ],
     "src/audio/load.h":                     [ "set_sound_bank_override" ],
+    "src/pc/djui/djui_gfx.h":               [ "djui_gfx_get_scale" ],
 }
 
 override_disallowed_functions = {
@@ -112,7 +114,7 @@ override_disallowed_functions = {
     "src/game/mario_actions_cutscene.c":        [ "^[us]32 act_.*", " geo_", "spawn_obj", "print_displaying_credits_entry" ],
     "src/game/mario_actions_moving.c":          [ "^[us]32 act_.*" ],
     "src/game/mario_actions_object.c":          [ "^[us]32 act_.*" ],
-    "src/game/mario_actions_stationary.c":      [ "^[us]32 act_.*" ],
+    "src/game/mario_actions_stationary.c":      [ "^[us]32 act_.*", "mario_exit_palette_editor" ],
     "src/game/mario_actions_submerged.c":       [ "^[us]32 act_.*" ],
     "src/game/mario_step.h":                    [ " stub_mario_step", "transfer_bully_speed" ],
     "src/game/mario.h":                         [ " init_mario" ],
@@ -142,7 +144,7 @@ override_disallowed_functions = {
     "src/engine/behavior_script.h":             [ "stub_behavior_script_2", "cur_obj_update" ],
     "src/pc/mods/mod_storage.h":                [ "mod_storage_shutdown" ],
     "src/pc/mods/mod_fs.h":                     [ "mod_fs_read_file_from_uri", "mod_fs_shutdown" ],
-    "src/pc/utils/misc.h":                      [ "str_.*", "file_get_line", "delta_interpolate_(normal|rgba|mtx)", "detect_and_skip_mtx_interpolation", "precise_delay_f64" ],
+    "src/pc/utils/misc.h":                      [ "str_.*", "file_get_line", "delta_interpolate_(normal|rgba|mtx)", "detect_and_skip_mtx_interpolation", "precise_delay_f64", "can_update_game", "update_game", "open_url", "open_folder" ],
     "src/engine/lighting_engine.h":             [ "le_calculate_vertex_lighting", "le_clear", "le_shutdown" ],
 }
 
@@ -973,10 +975,7 @@ def build_function(function, do_extern):
 
     fparams, freturns = split_function_parameters_and_returns(function)
 
-    if len(function['params']) <= 0:
-        s += 'int smlua_func_%s(UNUSED lua_State* L) {\n' % function['identifier']
-    else:
-        s += 'int smlua_func_%s(lua_State* L) {\n' % function['identifier']
+    s += 'int smlua_func_%s(lua_State* L) {\n' % function['identifier']
 
     # make sure the bhv functions have a current object
     fname = function['filename']
@@ -1076,7 +1075,7 @@ def build_function(function, do_extern):
     else:
         global total_functions
         total_functions += 1
-        if function['description'] != "":
+        if function['description'][0] != "":
             global total_doc_functions
             total_doc_functions += 1
         elif verbose:
@@ -1212,7 +1211,7 @@ def process_functions(fname, file_str, extracted_descriptions):
             rejects += line + '\n'
             continue
         line = line.strip()
-        description = extracted_descriptions.get(line, "")
+        description = extracted_descriptions.get(line, [""])
         fn = process_function(fname, line, description)
         if fn == None:
             continue
@@ -1354,14 +1353,15 @@ def doc_function(fname, function):
     fid = function['identifier']
     s = '\n## [%s](#%s)\n' % (fid, fid)
 
-    description = function.get('description', "")
+    description = function.get('description', [""])
 
     rtype, rlink = translate_type_to_lua(function['type'])
     param_str = ', '.join([x['identifier'] for x in function['params'] if 'RET' not in x])
 
-    if description != "":
+    if description[0] != "":
         s += '\n### Description\n'
-        s +=  f'{description}\n'
+        for line in description:
+            s +=  f'{line}\n'
 
     s += "\n### Lua Example\n"
     rvalues = []
@@ -1510,7 +1510,7 @@ def def_function(fname, function):
         rid = param['identifier']
         rtypes.append((rtype, rid))
 
-    if function['description'].startswith("[DEPRECATED"):
+    if function['description'][0].startswith("[DEPRECATED"):
         s += "--- @deprecated\n"
 
     for param in fparams:
@@ -1532,8 +1532,9 @@ def def_function(fname, function):
         if rtype != "nil":
             s += ('--- @return %s' % rtype) + (' %s' % rid if rid else '') + '\n'
 
-    if function['description'] != "":
-        s += "--- %s\n" % (function['description'])
+    if function['description'][0] != "":
+        for n, line in enumerate(function['description']):
+            s += "--- %s%s\n" % (line, "<br>" if n != len(function['description']) - 1 else "")
     s += "function %s(%s)\n    -- ...\nend\n\n" % (fid, param_str)
 
     return s

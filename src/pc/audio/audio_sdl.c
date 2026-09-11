@@ -1,4 +1,3 @@
-#ifdef AAPI_SDL2
 #include <stdio.h>
 
 #include <SDL2/SDL.h>
@@ -44,7 +43,7 @@ static void audio_sdl_play(const uint8_t *buf, size_t len) {
     }
 }
 
-static void audio_sdl_shutdown(void) 
+static void audio_sdl_shutdown(void)
 {
     if (SDL_WasInit(SDL_INIT_AUDIO)) {
         if (dev != 0) {
@@ -62,5 +61,3 @@ struct AudioAPI audio_sdl = {
     audio_sdl_play,
     audio_sdl_shutdown
 };
-
-#endif
