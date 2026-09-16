@@ -265,6 +265,10 @@ static void select_graphics_backend(void) {
             gAudioApi  = &audio_sdl;
             break;
 #endif
+        case GFX_WINDOW_BACKEND_SDL_GPU:
+            gRenderApi = &gfx_sdl_gpu_api;
+            gAudioApi  = &audio_sdl;
+            break;
         default:
             gRenderApi = &gfx_opengl_api;
             gAudioApi  = &audio_sdl;
