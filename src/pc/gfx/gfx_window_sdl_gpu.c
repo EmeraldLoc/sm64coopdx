@@ -36,12 +36,11 @@ static void gfx_window_sdl_gpu_init(const char *window_title) {
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, ypos);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, configWindow.w);
     SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, configWindow.h);
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_METAL | SDL_WINDOW_RESIZABLE);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, SDL_WINDOW_RESIZABLE);
     sSdlWindow = SDL_CreateWindowWithProperties(props);
     SDL_DestroyProperties(props);
 
     gfx_wm_set_window(sSdlWindow);
-    gfx_window_sdl_gpu_set_vsync(configWindow.vsync);
 }
 
 static void gfx_window_sdl_gpu_handle_events(SDL_Event event) {

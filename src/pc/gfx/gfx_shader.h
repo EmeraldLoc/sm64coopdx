@@ -34,6 +34,7 @@ extern "C" {
 
 #define UNIFORM_BINDING_SLOT_OFFSET 1
 #define MAX_UNIFORM_BLOCKS 8
+#define SAMPLER_SLOT_UNUSED 0xFF
 
 typedef struct {
     u32 *words; // SPIR-V words
@@ -106,6 +107,7 @@ struct Shader {
     struct ShaderUniformBlock uniformBlocks[MAX_UNIFORM_BLOCKS];
     int uniformBlockCount;
     int samplerCount;
+    u8 sdlGpuSamplerSlots[MAX_SHADER_BINDINGS];
 };
 
 extern struct ShaderInput *gShaderInputs;
@@ -116,6 +118,8 @@ extern struct ShaderBinding *gPostProcessShaderBindings;
 extern const char *gDefaultPostProcessVertexShader;
 extern const char *gDefaultPostProcessFragmentShader;
 
+extern bool gUseSdlGpuBindings;
+
 char *gfx_get_default_vertex_shader_from_cc(UNUSED struct ColorCombiner *cc);
 char *gfx_get_default_fragment_shader_from_cc(struct ColorCombiner *cc);
 void gfx_init_shaders();
@@ -124,6 +128,7 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
 void gfx_convert_spirv_to_glsl_410(char **shaderCode, struct Shader *shader);
 void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader);
 void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader);
+void gfx_reflect_spirv(struct Shader *shader);
 bool gfx_generate_vertex_and_fragment_shader_from_cc(struct Shader *vertexShader, struct Shader *fragmentShader, struct ColorCombiner *cc, char **outVertShader, char **outFragShader);
 bool gfx_generate_post_process_vertex_and_fragment_shader(struct Shader *vertexShader, struct Shader *fragmentShader, char **outVertShader, char **outFragShader);
 void gfx_destroy_shader_contents(struct Shader *shader);
