@@ -10,11 +10,11 @@
 
 #define GL_GLEXT_PROTOTYPES 1
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 #ifdef USE_GLES
-#include <SDL2/SDL_opengles2.h>
+#include <SDL3/SDL_opengles2.h>
 #else
-#include <SDL2/SDL_opengl.h>
+#include <SDL3/SDL_opengl.h>
 #endif
 
 #include "gfx_pc.h"
@@ -56,6 +56,10 @@ static int sShaderOutputCount = 0;
 static int sShaderUniformBlockCount = 0;
 static bool sShaderInsideCustomUniformBlock = false;
 static bool sShaderHasVersion = false;
+
+bool gUseSdlGpuBindings = false;
+static int sSdlGpuSamplerBinding = 0;
+static int sSdlGpuUniformBinding = 0;
 
 static char sShaderUniformCode[MAX_UNIFORM_CODE] = { 0 };
 
@@ -676,7 +680,12 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
     if (!sShaderInsideCustomUniformBlock && (sscanf(line, " uniform %127s %c", name, &brace) == 2 || sscanf(line, "uniform %127s %c", name, &brace) == 2) && brace == '{') {
         sShaderInsideCustomUniformBlock = true;
         char layoutLine[128];
-        snprintf(layoutLine, sizeof(layoutLine), "layout(std140, set = 0, binding = %d) uniform %s {\n", sShaderUniformBlockCount++, name);
+        if (gUseSdlGpuBindings) {
+            snprintf(layoutLine, sizeof(layoutLine), "layout(std140, set = %d, binding = %d) uniform %s {\n",
+                (shader->stage == SHADER_STAGE_VERTEX ? 1 : 3), sSdlGpuUniformBinding++, name);
+        } else {
+            snprintf(layoutLine, sizeof(layoutLine), "layout(std140, set = 0, binding = %d) uniform %s {\n", sShaderUniformBlockCount++, name);
+        }
         append_and_realloc_str(output, outputSize, layoutLine);
         return true;
     }
@@ -767,7 +776,17 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
             for (int i = 0; i < MAX_SHADER_BINDINGS; i++) {
                 if (referenceBindings[i].name[0] != '\0' && strcmp(referenceBindings[i].name, name) == 0) {
                     char layoutLine[sizeof(type) + MAX_SHADER_VARIABLE_NAME + 64];
-                    snprintf(layoutLine, sizeof(layoutLine), "layout(binding=%d) uniform %s %s", referenceBindings[i].binding, type, name);
+                    if (gUseSdlGpuBindings) {
+                        int sdlSlot = sSdlGpuSamplerBinding++;
+                        int engineSlot = referenceBindings[i].binding;
+                        if (engineSlot >= 0 && engineSlot < MAX_SHADER_BINDINGS) {
+                            shader->sdlGpuSamplerSlots[engineSlot] = (u8)sdlSlot;
+                        }
+                        snprintf(layoutLine, sizeof(layoutLine), "layout(set=%d, binding=%d) uniform %s %s",
+                            (shader->stage == SHADER_STAGE_VERTEX ? 0 : 2), sdlSlot, type, name);
+                    } else {
+                        snprintf(layoutLine, sizeof(layoutLine), "layout(binding=%d) uniform %s %s", referenceBindings[i].binding, type, name);
+                    }
                     append_and_realloc_str(output, outputSize, layoutLine);
                     return true;
                 }
@@ -799,6 +818,10 @@ static bool process_shader_line(struct Shader *shader, struct ShaderInput *refer
 
 static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *referenceInputs, struct ShaderBinding *referenceBindings, char **shaderCode) {
     if (!shaderCode || !*shaderCode) { return; }
+
+    sSdlGpuSamplerBinding = 0;
+    sSdlGpuUniformBinding = 0;
+    memset(shader->sdlGpuSamplerSlots, SAMPLER_SLOT_UNUSED, sizeof(shader->sdlGpuSamplerSlots));
 
     size_t sizeofShaderCode = strlen(*shaderCode) + 1; // +1 for null terminator
 
@@ -877,7 +900,12 @@ static void gfx_sanitize_shader(struct Shader *shader, struct ShaderInput *refer
 
         // append block
         char defaultUniformBlockString[MAX_SHADER_VARIABLE_NAME + 128];
-        snprintf(defaultUniformBlockString, sizeof(defaultUniformBlockString), "layout(std140, set = 0, binding = %d) uniform %s {\n", sShaderUniformBlockCount++, defaultUniformBlockName);
+        if (gUseSdlGpuBindings) {
+            snprintf(defaultUniformBlockString, sizeof(defaultUniformBlockString), "layout(std140, set = %d, binding = %d) uniform %s {\n",
+                (shader->stage == SHADER_STAGE_VERTEX ? 1 : 3), sSdlGpuUniformBinding++, defaultUniformBlockName);
+        } else {
+            snprintf(defaultUniformBlockString, sizeof(defaultUniformBlockString), "layout(std140, set = 0, binding = %d) uniform %s {\n", sShaderUniformBlockCount++, defaultUniformBlockName);
+        }
         append_and_realloc_str(&sanitized, &sizeofShaderCode, defaultUniformBlockString);
 
         // append uniform code
@@ -1030,7 +1058,7 @@ bool gfx_compile_shader_to_spirv(glslang_stage_t stage, const char *shaderCode, 
         } \
     } while(0)
 
-static void reflect_uniform_data(struct Shader *shader, spvc_context context, spvc_compiler compiler) {
+static void reflect_shader_data(struct Shader *shader, spvc_context context, spvc_compiler compiler) {
     spvc_resources resources;
     spvc_compiler_create_shader_resources(compiler, &resources);
 
@@ -1169,6 +1197,19 @@ static void reflect_uniform_data(struct Shader *shader, spvc_context context, sp
             }
         }
     }
+
+    // reflect samplers
+    const spvc_reflected_resource *samplerList;
+    size_t samplerCount = 0;
+    shader->samplerCount = 0;
+
+    if (spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE, &samplerList, &samplerCount) == SPVC_SUCCESS) {
+        shader->samplerCount += (int)samplerCount;
+    }
+
+    if (spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SEPARATE_SAMPLERS, &samplerList, &samplerCount) == SPVC_SUCCESS) {
+        shader->samplerCount += (int)samplerCount;
+    }
 }
 
 void gfx_convert_spirv_to_glsl_410(char **shaderCode, struct Shader *shader) {
@@ -1186,7 +1227,7 @@ void gfx_convert_spirv_to_glsl_410(char **shaderCode, struct Shader *shader) {
     spvc_resources resources;
     spvc_compiler_create_shader_resources(compiler, &resources);
 
-    reflect_uniform_data(shader, context, compiler);
+    reflect_shader_data(shader, context, compiler);
 
     spvc_compiler_options options;
     spvc_compiler_create_compiler_options(compiler, &options);
@@ -1202,7 +1243,7 @@ void gfx_convert_spirv_to_glsl_410(char **shaderCode, struct Shader *shader) {
     spvc_context_destroy(context);
 }
 
-void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
+void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader, u32 shaderModel) {
     spvc_context context = NULL;
     spvc_compiler compiler = NULL;
     spvc_parsed_ir ir = NULL;
@@ -1214,11 +1255,11 @@ void gfx_convert_spirv_to_hlsl(char **shaderCode, struct Shader *shader) {
     SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
     SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_HLSL, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
 
-    reflect_uniform_data(shader, context, compiler);
+    reflect_shader_data(shader, context, compiler);
 
     spvc_compiler_options options;
     spvc_compiler_create_compiler_options(compiler, &options);
-    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL, 50);
+    spvc_compiler_options_set_uint(options, SPVC_COMPILER_OPTION_HLSL_SHADER_MODEL, shaderModel);
     spvc_compiler_install_compiler_options(compiler, options);
 
     spvc_compiler_compile(compiler, &hlsl_code);
@@ -1243,7 +1284,7 @@ void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
     spvc_resources resources;
     spvc_compiler_create_shader_resources(compiler, &resources);
 
-    reflect_uniform_data(shader, context, compiler);
+    reflect_shader_data(shader, context, compiler);
 
     // set compilations options
     spvc_compiler_options options;
@@ -1260,6 +1301,22 @@ void gfx_convert_spirv_to_msl(char **shaderCode, struct Shader *shader) {
 
     spvc_context_destroy(context);
     return;
+}
+
+void gfx_reflect_spirv(struct Shader *shader) {
+    spvc_context context = NULL;
+    spvc_compiler compiler = NULL;
+    spvc_parsed_ir ir = NULL;
+
+    SpirVShader *spirvShader = &shader->spirVShader;
+
+    SPVC_CHECK(spvc_context_create(&context));
+    SPVC_CHECK(spvc_context_parse_spirv(context, spirvShader->words, spirvShader->size, &ir));
+    SPVC_CHECK(spvc_context_create_compiler(context, SPVC_BACKEND_NONE, ir, SPVC_CAPTURE_MODE_TAKE_OWNERSHIP, &compiler));
+
+    reflect_shader_data(shader, context, compiler);
+
+    spvc_context_destroy(context);
 }
 
 #undef SPVC_CHECK

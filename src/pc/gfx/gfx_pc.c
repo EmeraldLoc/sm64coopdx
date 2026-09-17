@@ -1805,18 +1805,16 @@ static void gfx_draw_fullscreen_quad() {
          1.0f,  1.0f, 0.0f, 1.0f,   1.0f, 1.0f
     };
 
-#if defined(WIN32) || defined(OSX_BUILD)
 #if defined(WIN32)
-    if (gRenderApi == &gfx_direct3d11_api) {
+    if (gRenderApi == &gfx_sdl_gpu_api || gRenderApi == &gfx_direct3d11_api) {
 #else
-    if (gRenderApi == &gfx_metal_api) {
+    if (gRenderApi == &gfx_sdl_gpu_api) {
 #endif
         // flip y coordinates
         for (int i = 0; i < 6; i++) {
             quadVertices[i * 6 + 5] = 1.0f - quadVertices[i * 6 + 5];
         }
     }
-#endif
 
     gfx_rapi->create_or_load_post_process_shader();
 
@@ -2366,7 +2364,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
 
 // a helper function when porting over new render apis to not deal with framebuffers
 // in one go
-/*void gfx_run_basic(Gfx *commands) {
+void gfx_run_basic(Gfx *commands) {
     gfx_sp_reset();
 
     if (!gfx_wm_start_frame()) {
@@ -2378,7 +2376,7 @@ static void gfx_process_lua_passes(Gfx *commands, bool *isLuaPassesActive) {
     gfx_rapi->reset_framebuffer();
     gfx_rapi->start_frame();
     gfx_run_dl(commands);
-}*/
+}
 
 void gfx_run(Gfx *commands) {
     if (!gfx_wm_start_frame()) {
@@ -2469,16 +2467,34 @@ void gfx_display_frame(void) {
     }
 }
 
-void gfx_end_frame(void) {
-    gfx_end_frame_render();
-    gfx_display_frame();
+void gfx_run_one_game_iter(void (*runOneGameIter)(void)) {
+    gfx_wm_main_loop(runOneGameIter);
 }
 
 void gfx_shutdown(void) {
-    if (gfx_rapi) {
-        if (gfx_rapi->shutdown) gfx_rapi->shutdown();
-        gfx_rapi = NULL;
+    if (gfx_rapi == NULL) { return; }
+
+    if (gfx_rapi->delete_framebuffer != NULL) {
+        gfx_rapi->delete_framebuffer(&gDefaultGeoFramePass);
+        for (int i = 0; i < MAX_CUSTOM_FRAME_PASSES; i++) {
+            gfx_rapi->delete_framebuffer(&gFramePasses[i]);
+        }
     }
+
+    gDefaultGeoFramePass.width = 0;
+    gDefaultGeoFramePass.height = 0;
+
+    if (gfx_rapi->remove_shaders != NULL) { gfx_rapi->remove_shaders(); }
+
+    gfx_remove_all_color_combiners();
+    gfx_texture_cache_clear();
+
+    sRenderingState.shader_program = NULL;
+    sRenderingState.textures[0] = NULL;
+    sRenderingState.textures[1] = NULL;
+
+    gfx_rapi = NULL;
+
     gfx_wm_shutdown();
     gGfxInited = false;
 }

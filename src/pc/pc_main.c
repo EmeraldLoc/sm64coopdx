@@ -70,7 +70,7 @@
 #include <windows.h>
 #endif
 
-#include <SDL2/SDL.h>
+#include <SDL3/SDL.h>
 
 extern Vp gViewportFullscreen;
 
@@ -204,14 +204,22 @@ static s32 get_num_frames_to_draw(f64 t, u32 frameLimit) {
 
 static u32 get_display_refresh_rate(void) {
     static u32 refreshRate = 0;
+
     if (!refreshRate) {
-        SDL_DisplayMode mode;
-        if (SDL_GetCurrentDisplayMode(0, &mode) == 0) {
-            if (mode.refresh_rate > 0) { refreshRate = (u32) mode.refresh_rate; }
+        SDL_DisplayID display = SDL_GetPrimaryDisplay();
+        const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display);
+
+        if (mode && mode->refresh_rate > 0.f) {
+            refreshRate = (u32)mode->refresh_rate;
         } else {
             refreshRate = 60;
         }
     }
+
+    if (refreshRate < 30) {
+        refreshRate = 30;
+    }
+
     return refreshRate;
 }
 
@@ -221,47 +229,50 @@ static u32 get_target_refresh_rate(void) {
     return get_display_refresh_rate();
 }
 
+static struct GfxRenderingAPI *get_rendering_api_for_backend(enum GfxWindowBackend backend) {
+    switch (backend) {
+        case GFX_WINDOW_BACKEND_OPENGL:
+            return &gfx_opengl_api;
+#if defined(_WIN32)
+        case GFX_WINDOW_BACKEND_DIRECTX11:
+            return &gfx_direct3d11_api;
+        case GFX_WINDOW_BACKEND_DIRECTX12:
+        case GFX_WINDOW_BACKEND_VULKAN:
+#elif defined(__APPLE__)
+        case GFX_WINDOW_BACKEND_METAL:
+#else
+        case GFX_WINDOW_BACKEND_VULKAN:
+#endif
+            return &gfx_sdl_gpu_api;
+        default:
+            return &gfx_dummy_renderer_api;
+    }
+}
+
+static enum GfxWindowBackend get_supported_graphics_backend(enum GfxWindowBackend backend) {
+    if (backend < GFX_WINDOW_BACKEND_COUNT && gfx_wm_is_backend_supported(backend)) { return backend; }
+
+    for (enum GfxWindowBackend i = 0; i < GFX_WINDOW_BACKEND_MAX; i++) {
+        if (gfx_wm_is_backend_supported(i)) { return i; }
+    }
+
+    return GFX_WINDOW_BACKEND_DUMMY;
+}
+
 static void select_graphics_backend(void) {
     if (gCLIOpts.headless) {
         return;
     }
 
-#if defined(_WIN32)
-    if (configGraphicsBackend == GFX_WINDOW_BACKEND_OPENGL && !gfx_window_opengl_check_compatibility()) {
-        configGraphicsBackend = GFX_WINDOW_BACKEND_DIRECTX;
+    configGraphicsBackend = get_supported_graphics_backend(configGraphicsBackend);
+    if (gCLIOpts.backend < GFX_WINDOW_BACKEND_COUNT) {
+        gCLIOpts.backend = get_supported_graphics_backend(gCLIOpts.backend);
     }
-#endif
-    int backend = configGraphicsBackend;
-#if defined(_WIN32) || defined(OSX_BUILD)
-    if (gCLIOpts.backend < GFX_WINDOW_BACKEND_COUNT) { backend = gCLIOpts.backend; }
-#endif
 
-    switch (backend) {
-        case GFX_WINDOW_BACKEND_DUMMY:
-            gRenderApi = &gfx_dummy_renderer_api;
-            gAudioApi  = &audio_null;
-            break;
-        case GFX_WINDOW_BACKEND_OPENGL:
-            gRenderApi = &gfx_opengl_api;
-            gAudioApi  = &audio_sdl;
-            break;
-#if defined(_WIN32)
-        case GFX_WINDOW_BACKEND_DIRECTX:
-            gRenderApi = &gfx_direct3d11_api;
-            gAudioApi  = &audio_sdl;
-            break;
-#endif
-#ifdef OSX_BUILD
-        case GFX_WINDOW_BACKEND_METAL:
-            gRenderApi = &gfx_metal_api;
-            gAudioApi  = &audio_sdl;
-            break;
-#endif
-        default:
-            gRenderApi = &gfx_opengl_api;
-            gAudioApi  = &audio_sdl;
-            break;
-    }
+    enum GfxWindowBackend backend = (gCLIOpts.backend < GFX_WINDOW_BACKEND_COUNT) ? gCLIOpts.backend : configGraphicsBackend;
+
+    gRenderApi = get_rendering_api_for_backend(backend);
+    gAudioApi  = (gRenderApi == &gfx_dummy_renderer_api) ? &audio_null : &audio_sdl;
 
     if (!gAudioApi->init()) {
         gAudioApi = &audio_null;

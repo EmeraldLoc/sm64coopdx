@@ -11,14 +11,12 @@ struct ColorCombiner;
 struct FramePass;
 
 struct GfxRenderingAPI {
-    bool (*z_is_from_0_to_1)(void);
     void (*unload_shader)(struct ShaderProgram *old_prg);
     void (*load_shader)(struct ShaderProgram *new_prg);
     void (*remove_shaders)(void);
     struct ShaderProgram *(*create_and_load_new_shader)(struct ColorCombiner* cc);
     struct ShaderProgram *(*create_or_load_post_process_shader)(void);
     struct ShaderProgram *(*lookup_shader)(struct ColorCombiner* cc);
-    struct ShaderProgram *(*lookup_shader_using_index)(uint8_t shaderIndex, uint8_t framePassIndex);
     void (*shader_get_info)(struct ShaderProgram *prg, uint8_t *num_inputs, bool used_textures[2]);
     void (*create_framebuffer)(struct FramePass *framePass);
     void (*delete_framebuffer)(struct FramePass *framePass);
@@ -29,7 +27,7 @@ struct GfxRenderingAPI {
     void (*set_uniform)(struct ShaderProgram *prg, const char *name, ShaderUniformType type, const void *data, uint32_t numElements);
     uint32_t (*new_texture)(void);
     void (*select_texture)(int tile, uint32_t texture_id);
-    void (*bind_texture_raw)(int tile, uint64_t texture_id);
+    void (*bind_texture_raw)(int tile, u64 texture_id);
     void (*upload_texture)(const uint8_t *rgba32_buf, int width, int height);
     void (*set_sampler_parameters)(int sampler, bool linear_filter, uint32_t cms, uint32_t cmt);
     void (*set_depth_test)(bool depth_test);
