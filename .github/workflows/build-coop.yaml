@@ -86,12 +86,7 @@ jobs:
               run: ${{ matrix.platform.deps }}
 
             - name: Build the game
-              run: ${{ matrix.platform.make }} ${{ case(matrix.platform.name == 'SteamOS', 'HANDHELD=1', '') }}
-
-            - name: Codesign Ad-Hoc (macOS)
-              if: ${{ contains(matrix.platform.name, 'macOS') }}
-              run: |
-                codesign --force --deep --sign - ./build/us_pc/sm64coopdx.app
+              run: ${{ matrix.platform.make }}
 
             - name: Code sign the app (Ad-Hoc) (macOS)
               if: ${{ contains(matrix.platform.name, 'macOS') }}
@@ -101,8 +96,8 @@ jobs:
             - name: Generate hash
               run: |
                 cd tools
-                g++ -std=c++17 -o hash_file${{ matrix.platform.exe }} hash_file.cpp
-                echo "::notice ::$(./hash_file${{ matrix.platform.exe }} ../build/us_pc/sm64coopdx${{ matrix.platform.exe }}${{ matrix.platform.internal }})"
+                g++ -std=c++17 -o hash_file.exe hash_file.cpp
+                echo "::notice ::$(./hash_file.exe ../build/us_pc/sm64coopdx.exe)"
 
             - name: Zip the game
               run: |
@@ -112,5 +107,5 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-artifact@v7
               with:
+                name: sm64coopdx-${{ matrix.platform.name }}
                 path: ./build/us_pc/sm64coopdx_${{ matrix.platform.name }}.zip
-                archive: false
