@@ -2,12 +2,13 @@
 #include "../network.h"
 #include "pc/debuglog.h"
 #include "pc/djui/djui.h"
+#include "engine/math_util.h"
 
 #define MAX_POPUP_MESSAGE_LENGTH 512
 
 void network_send_global_popup(const char* message, int lines) {
     // get message length capped to max popup message length
-    u16 messageLength = MIN(strlen(message), MAX_POPUP_MESSAGE_LENGTH);
+    u16 messageLength = min(strlen(message), MAX_POPUP_MESSAGE_LENGTH - 1);
 
     // configure packet
     struct Packet p = { 0 };

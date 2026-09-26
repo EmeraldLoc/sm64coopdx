@@ -2,10 +2,11 @@
 #include "../network.h"
 #include "pc/debuglog.h"
 #include "pc/djui/djui.h"
+#include "engine/math_util.h"
 
 void network_send_global_chat_message(const char *message) {
     // get message length capped to the max chat message length
-    u16 messageLength = MIN(strlen(message), MAX_CHAT_MSG_LENGTH);
+    u16 messageLength = min(strlen(message), MAX_CHAT_MSG_LENGTH - 1);
 
     // configure packet
     struct Packet p = { 0 };
