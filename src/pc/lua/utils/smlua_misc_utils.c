@@ -77,8 +77,8 @@ s32 deref_s32_pointer(s32* pointer) {
 void djui_popup_create_global(const char* message, int lines) {
     char truncatedMessage[MAX_GLOBAL_POPUP_MESSAGE_LENGTH] = { 0 };
     snprintf(truncatedMessage, MAX_GLOBAL_POPUP_MESSAGE_LENGTH, "%s", message);
-    djui_popup_create(message, lines);
-    network_send_global_popup(message, lines);
+    djui_popup_create(truncatedMessage, lines);
+    network_send_global_popup(truncatedMessage, lines);
 }
 
 struct AllowDjuiPopupOverride {
