@@ -116,6 +116,11 @@ u8 djui_get_playerlist_page_index(void) {
     return sPageIndex;
 }
 
+void djui_chat_message_create_global(const char *message) {
+    djui_chat_message_create(message);
+    network_send_global_chat_message(message);
+}
+
 bool djui_is_chatbox_open(void) {
     return gDjuiChatBox->chatInput->base.visible;
 }
