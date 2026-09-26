@@ -369,8 +369,8 @@ void network_send_global_chat_message(const char *message);
 void network_receive_global_chat_message(struct Packet *p);
 
 // packet_global_popup.c
-void network_send_global_popup(const char* message, int lines);
-void network_receive_global_popup(struct Packet* p);
+void network_send_global_popup(const char *message, int lines);
+void network_receive_global_popup(struct Packet *p);
 
 // packet_lua_sync_table.c
 void network_send_lua_sync_table_request(void);

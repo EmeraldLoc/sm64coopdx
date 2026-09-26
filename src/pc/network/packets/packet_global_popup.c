@@ -4,11 +4,9 @@
 #include "pc/djui/djui.h"
 #include "engine/math_util.h"
 
-#define MAX_POPUP_MESSAGE_LENGTH 512
-
-void network_send_global_popup(const char* message, int lines) {
+void network_send_global_popup(const char *message, int lines) {
     // get message length capped to max popup message length
-    u16 messageLength = min(strlen(message), MAX_POPUP_MESSAGE_LENGTH - 1);
+    u16 messageLength = min(strlen(message), MAX_GLOBAL_POPUP_MESSAGE_LENGTH - 1);
 
     // configure packet
     struct Packet p = { 0 };
@@ -21,15 +19,15 @@ void network_send_global_popup(const char* message, int lines) {
     network_send(&p);
 }
 
-void network_receive_global_popup(struct Packet* p) {
+void network_receive_global_popup(struct Packet *p) {
     u16 messageLength = 0;
-    char message[MAX_POPUP_MESSAGE_LENGTH] = { 0 };
+    char message[MAX_GLOBAL_POPUP_MESSAGE_LENGTH] = { 0 };
     int lines;
 
     // read data
     packet_read(p, &lines, sizeof(int));
     packet_read(p, &messageLength, sizeof(u16));
-    if (messageLength >= MAX_POPUP_MESSAGE_LENGTH) { messageLength = MAX_POPUP_MESSAGE_LENGTH - 1; }
+    if (messageLength >= MAX_GLOBAL_POPUP_MESSAGE_LENGTH) { messageLength = MAX_GLOBAL_POPUP_MESSAGE_LENGTH - 1; }
     packet_read(p, message, messageLength * sizeof(u8));
 
     // show popup

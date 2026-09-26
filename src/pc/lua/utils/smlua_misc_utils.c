@@ -75,6 +75,8 @@ s32 deref_s32_pointer(s32* pointer) {
 ///
 
 void djui_popup_create_global(const char* message, int lines) {
+    char truncatedMessage[MAX_GLOBAL_POPUP_MESSAGE_LENGTH] = { 0 };
+    snprintf(truncatedMessage, MAX_GLOBAL_POPUP_MESSAGE_LENGTH, "%s", message);
     djui_popup_create(message, lines);
     network_send_global_popup(message, lines);
 }
@@ -117,8 +119,10 @@ u8 djui_get_playerlist_page_index(void) {
 }
 
 void djui_chat_message_create_global(const char *message) {
-    djui_chat_message_create(message);
-    network_send_global_chat_message(message);
+    char truncatedMessage[MAX_CHAT_MSG_LENGTH] = { 0 };
+    snprintf(truncatedMessage, MAX_CHAT_MSG_LENGTH, "%s", message);
+    djui_chat_message_create(truncatedMessage);
+    network_send_global_chat_message(truncatedMessage);
 }
 
 bool djui_is_chatbox_open(void) {
