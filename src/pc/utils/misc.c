@@ -19,6 +19,7 @@
 #include <ctype.h>
 
 #include "misc.h"
+#include "yyjson.h"
 
 #include "course_table.h"
 #include "game/area.h"
@@ -727,4 +728,31 @@ void update_game(void) {
     execl(updateExecFilePath, "coopdx_updater", "--game-update", NULL);
     exit(1);
 #endif
+}
+
+/**
+ * Grabs a yyjson doc from a specified path
+ *
+ * The returned yyjson doc must be freed using `yyjson_doc_free`. The path inserted is
+ * a full filepath, not virtual
+ */
+yyjson_doc *get_yyjson_doc_from_path(const char *path) {
+    // Get file contents and size
+    char *fileContents = NULL;
+    size_t size = 0;
+
+    // fs_sys_load_file returns heap-allocated fileContents, so it needs to be freed later
+    if (!fs_sys_load_file(path, &fileContents, &size)) {
+        return NULL;
+    }
+
+    // Get yyjson doc (must be freed by caller of this func)
+    yyjson_doc *doc = yyjson_read(fileContents, size, 0);
+    if (doc == NULL) {
+        free(fileContents);
+        return NULL;
+    }
+
+    free(fileContents);
+    return doc;
 }

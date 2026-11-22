@@ -174,6 +174,17 @@ bool str_ends_with(const char *string, const char *suffix) {
     return stringLength >= suffixLength && strncmp(string + stringLength - suffixLength, suffix, suffixLength) == 0;
 }
 
+s32 pathcmp(const char *path, const char *path2) {
+#if defined(_WIN32) || defined(OSX_BUILD)
+    // Paths on Windows and macOS are case-insensitive and might have
+    // upper-case or mixed-case endings.
+    return sys_strcasecmp(path, path2);
+#else
+    // Always expecting lower-case file paths and extensions
+    return strcmp(path, path2);
+#endif
+}
+
 bool path_ends_with(const char* path, const char* suffix) {
     if (path == NULL || suffix == NULL) { return false; }
 

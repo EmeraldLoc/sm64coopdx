@@ -426,3 +426,50 @@ bool fs_sys_rmdir(const char *name) {
     return rmdir(name) == 0;
 #endif
 }
+
+/**
+ * Loads a file using the specified path into a string providing the specified size
+ *
+ * `path`, `outContents`, and `outSize` may not be `NULL`
+ *
+ * `outContents` is allocated on the heap and must be freed by the caller of this function
+ *
+ * Function returns `false` on failure and `true` on success
+ */
+bool fs_sys_load_file(const char *path, char **outContents, size_t *outSize) {
+    // Open file with the task to read
+    FILE *file = fopen(path, "rb");
+    if (!file) { return false; }
+
+    // Get size of file
+    fseek(file, 0, SEEK_END);
+    s64 fileSize = ftell(file);
+    if (fileSize <= 0) {
+        fclose(file);
+        return false;
+    }
+    size_t size = (size_t)fileSize;
+    rewind(file); // Reset file cursor
+
+    // Allocate file contents with the size discovered above
+    char *fileContents = malloc(size);
+    if (!fileContents) {
+        fclose(file);
+        return false;
+    }
+
+    // Read the data
+    size_t readData = fread(fileContents, 1, size, file);
+    fclose(file);
+
+    // If we couldn't read the entire file, return early
+    if (readData < size) {
+        free(fileContents);
+        return false;
+    }
+
+    *outContents = fileContents;
+    *outSize = (size_t)size;
+
+    return true;
+}
