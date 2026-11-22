@@ -46,4 +46,6 @@ const char *strstr_lowercased(const char *haystack, const char *needle);
 bool can_update_game(void);
 void update_game(void);
 
+yyjson_doc *get_yyjson_doc_from_path(const char *path);
+
 #endif
